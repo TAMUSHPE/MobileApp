@@ -3,8 +3,8 @@ import React, { useLayoutEffect } from 'react'
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 // Types
-import { RootStackParamList } from '../config/Navigation';
-import { TestProps } from '../config/Navigation';
+import { RootStackParamList } from '../config/types';
+import { TestProps } from '../config/types';
 
 
 const TestScreen = ({ route, navigation }: TestProps) => {
