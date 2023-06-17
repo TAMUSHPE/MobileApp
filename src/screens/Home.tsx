@@ -1,12 +1,9 @@
 import { View, Button, Text } from 'react-native'
 import React, { useLayoutEffect } from 'react'
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from '../Navigation/types';
 
-// Types
 import { HomeProps } from '../Navigation/types';
 
-const HomeScreen = ({ route, navigation }: HomeProps) => {
+const Home = ({ route, navigation }: HomeProps) => {
     useLayoutEffect(() => {
         navigation.setOptions({
             headerShown: false,
@@ -19,11 +16,13 @@ const HomeScreen = ({ route, navigation }: HomeProps) => {
             <Button
                 title="Testing Navigation"
                 onPress={() => {
-                    navigation.navigate("Test");
+                    navigation.navigate("Settings", {
+                        userId: 4,
+                    });
                 }}
             />
         </View>
     );
 }
 
-export default HomeScreen
+export default Home
