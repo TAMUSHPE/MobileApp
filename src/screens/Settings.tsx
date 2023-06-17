@@ -1,20 +1,18 @@
 import { View, Text } from 'react-native'
-import React, { useLayoutEffect } from 'react'
+import React from 'react'
+import { useRoute } from '@react-navigation/native';
+import { SettingsScreenRouteProp } from '../Navigation/Navigation';
+import { SettingsProps } from '../Navigation/Navigation';
 
-import { SettingsProps } from '../Navigation/types';
 
-
-const Setting = ({ route, navigation }: SettingsProps) => {
-    useLayoutEffect(() => {
-        navigation.setOptions({
-            headerShown: false,
-        });
-    }, []);
-
+const Setting = ({ navigation }: SettingsProps) => {
+    const route = useRoute<SettingsScreenRouteProp>();
     const { userId } = route.params;
+
     return (
         <View className='flex-1 justify-center items-center'>
-            <Text>{userId}</Text>
+            <Text className="text-4xl font-bold text-center">Settings Page w/ Parm</Text>
+            <Text className='mt-4 text-2xl font-bold text-center text-green-700'>UserID: {userId}</Text>
         </View>
     )
 }

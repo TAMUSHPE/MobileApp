@@ -3,8 +3,8 @@ import React from 'react'
 
 const TestScreen = () => {
     return (
-        <View>
-            <Text>TestScreen</Text>
+        <View className='flex-1 justify-center items-center'>
+            <Text className="text-4xl font-bold text-center">TestScreen</Text>
         </View>
     )
 }
