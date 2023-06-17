@@ -1,10 +1,10 @@
 import { View, Button, Text } from 'react-native'
 import React, { useLayoutEffect } from 'react'
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { RootStackParamList } from '../config/types';
+import { RootStackParamList } from '../Navigation/types';
 
 // Types
-import { HomeProps } from '../config/types';
+import { HomeProps } from '../Navigation/types';
 
 const HomeScreen = ({ route, navigation }: HomeProps) => {
     useLayoutEffect(() => {
