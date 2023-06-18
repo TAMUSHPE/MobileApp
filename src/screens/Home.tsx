@@ -15,9 +15,9 @@ const Home = ({ route, navigation }: NativeStackScreenProps<HomeStackNavigatorPa
                 <TouchableOpacity
                     className='flex justify-center items-center mt-4 p-6 rounded-md bg-[#500] '
                     onPress={() => {
-                        navigation.navigate("Polling");
+                        navigation.navigate("PublicProfile");
                     }}>
-                    <Text className='font-bold text-white text-5xl'>Sample Poll</Text>
+                    <Text className='font-bold text-white text-5xl'>Member of the Month</Text>
                 </TouchableOpacity>
             </View>
         </View>

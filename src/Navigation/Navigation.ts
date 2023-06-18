@@ -4,7 +4,7 @@ import type {RouteProp} from '@react-navigation/native';
 
 export type HomeStackNavigatorParamList = {
     Home_: DrawerNavigatorParamList;
-    Polling: undefined;
+    PublicProfile: undefined;
 }
 
 export type DrawerNavigatorParamList = {
@@ -15,6 +15,10 @@ export type DrawerNavigatorParamList = {
         userId: number;
     };
 }
+export type TestStackNavigatorParamList = {
+    PublicProfile: undefined;
+}
+
 
 export type SettingsScreenRouteProp = RouteProp<DrawerNavigatorParamList, 'Settings'>;
 export type SettingsProps = NativeStackScreenProps<DrawerNavigatorParamList, "Settings">;
