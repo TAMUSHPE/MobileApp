@@ -1,13 +1,13 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { HomeStackNavigatorParamList } from './Navigation';
+import { HomeStackNavigatorParamList, TestStackNavigatorParamList } from './Navigation';
 
 // Screens  
 import Drawer from "./Drawer";
-import Polling from "../screens/Polling";
+import Polling from "../screens/PublicProfile";
 
 const HomeStack = createNativeStackNavigator<HomeStackNavigatorParamList>();
-const MainStackNavigator = () => {
+const HomeStackNavigator = () => {
     return (
         <HomeStack.Navigator
             screenOptions={{
@@ -15,9 +15,22 @@ const MainStackNavigator = () => {
             }}
         >
             <HomeStack.Screen name="Home_" component={Drawer} />
-            <HomeStack.Screen name="Polling" component={Polling} />
+            <HomeStack.Screen name="PublicProfile" component={Polling} />
         </HomeStack.Navigator>
     );
 };
 
-export { MainStackNavigator };
+const TestStack = createNativeStackNavigator<TestStackNavigatorParamList>();
+const TestStackNavigator = () => {
+    return (
+        <HomeStack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
+            <HomeStack.Screen name="PublicProfile" component={Polling} />
+        </HomeStack.Navigator>
+    );
+};
+
+export { HomeStackNavigator, TestStackNavigator };
