@@ -5,6 +5,7 @@ import { HomeStackNavigatorParamList, TestStackNavigatorParamList } from './Navi
 // Screens  
 import Drawer from "./Drawer";
 import Polling from "../screens/PublicProfile";
+import Home from "../screens/Home";
 
 const HomeStack = createNativeStackNavigator<HomeStackNavigatorParamList>();
 const HomeStackNavigator = () => {
@@ -23,13 +24,16 @@ const HomeStackNavigator = () => {
 const TestStack = createNativeStackNavigator<TestStackNavigatorParamList>();
 const TestStackNavigator = () => {
     return (
-        <HomeStack.Navigator
+        <TestStack.Navigator
             screenOptions={{
                 headerShown: false,
             }}
         >
-            <HomeStack.Screen name="PublicProfile" component={Polling} />
-        </HomeStack.Navigator>
+            <TestStack.Screen name="PublicProfile" component={Polling} />
+            <TestStack.Screen name="HomeTest" component={Home} />
+
+
+        </TestStack.Navigator>
     );
 };
 
