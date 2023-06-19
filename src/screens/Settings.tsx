@@ -1,8 +1,8 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 import { useRoute } from '@react-navigation/native';
-import { SettingsScreenRouteProp } from '../Navigation/Navigation';
-import { SettingsProps } from '../Navigation/Navigation';
+import { SettingsScreenRouteProp } from '../types/Navigation';
+import { SettingsProps } from '../types/Navigation';
 
 
 const Setting = ({ navigation }: SettingsProps) => {
