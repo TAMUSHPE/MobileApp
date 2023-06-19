@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Button } from 'react-native'
 import React from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { HomeStackNavigatorParamList } from '../Navigation/Navigation';
+import { HomeStackNavigatorParamList } from '../types/Navigation';
 
 
 const Home = ({ route, navigation }: NativeStackScreenProps<HomeStackNavigatorParamList>) => {

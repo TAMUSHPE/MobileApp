@@ -1,6 +1,6 @@
 import React from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { DrawerNavigatorParamList } from './Navigation';
+import { DrawerNavigatorParamList } from '../types/Navigation';
 
 // Screens
 import Home from '../screens/Home';
