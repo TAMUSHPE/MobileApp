@@ -8,8 +8,8 @@
     "ios": "npx expo start --ios",
     "web": "npx expo start --web",
     "prebuild": "npx expo prebuild",
-    "build-android": "npx expo prebuild && npm expo run:android",
-    "build-ios": "npx expo prebuild && npm expo run:ios"
+    "build-android": "npx expo prebuild && npx expo run:android",
+    "build-ios": "npx expo prebuild && npx expo run:ios"
   },
   "dependencies": {
     "@react-navigation/core": "^6.4.8",
