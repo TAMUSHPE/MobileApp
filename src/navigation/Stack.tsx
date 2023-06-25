@@ -30,7 +30,7 @@ const TestStackNavigator = () => {
             }}
         >
             <TestStack.Screen name="PublicProfile" component={Polling} />
-            <TestStack.Screen name="HomeTest" component={Home} />
+            <TestStack.Screen name="Home" component={HomeStackNavigator} />
         </TestStack.Navigator>
     );
 };

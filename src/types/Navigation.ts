@@ -17,7 +17,7 @@ export type DrawerNavigatorParamList = {
 }
 export type TestStackNavigatorParamList = {
     PublicProfile: undefined;
-    HomeTest: undefined;
+    Home: undefined;
 }
 
 
