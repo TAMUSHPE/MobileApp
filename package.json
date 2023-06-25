@@ -17,7 +17,9 @@
     "@react-navigation/native": "^6.1.6",
     "@react-navigation/native-stack": "^6.9.12",
     "expo": "~48.0.18",
+    "expo-dev-client": "~2.2.1",
     "expo-status-bar": "~1.4.4",
+    "expo-system-ui": "~2.2.1",
     "firebase": "^9.23.0",
     "nativewind": "^2.0.11",
     "react": "^18.2.0",
@@ -31,6 +33,8 @@
     "@babel/core": "^7.20.0",
     "@types/react": "~18.0.14",
     "@types/react-native": "^0.72.2",
+    "eas-cli": "^3.14.0",
+    "sharp-cli": "^4.1.1",
     "tailwindcss": "^3.3.2",
     "typescript": "^4.9.4"
   },
