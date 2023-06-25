@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
-    "start": "expo start --tunnel",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "start": "npx expo start --tunnel",
+    "android": "npx expo start --android",
+    "ios": "npx expo start --ios",
+    "web": "npx expo start --web",
+    "prebuild": "npx expo prebuild",
+    "build-android": "npx expo prebuild && npm expo run:android",
+    "build-ios": "npx expo prebuild && npm expo run:ios"
   },
   "dependencies": {
     "@react-navigation/core": "^6.4.8",
@@ -15,6 +18,7 @@
     "@react-navigation/native-stack": "^6.9.12",
     "expo": "~48.0.18",
     "expo-status-bar": "~1.4.4",
+    "firebase": "^9.23.0",
     "nativewind": "^2.0.11",
     "react": "^18.2.0",
     "react-native": "0.71.8",
