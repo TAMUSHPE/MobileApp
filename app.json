@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "SHPE-App",
-    "slug": "SHPE-App",
+    "name": "TAMU SHPE",
+    "slug": "TAMU SHPE",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,13 +15,15 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.TAMUSHPE"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.anonymous.TAMUSHPE"
     },
     "web": {
       "favicon": "./assets/favicon.png"
