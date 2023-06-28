@@ -1,11 +1,11 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { View, Text } from 'react-native';
+import React from 'react';
 import { useRoute } from '@react-navigation/native';
 import { SettingsScreenRouteProp } from '../types/Navigation';
 import { SettingsProps } from '../types/Navigation';
 
 
-const Setting = ({ navigation }: SettingsProps) => {
+const SettingsScreen = ({ navigation }: SettingsProps) => {
     const route = useRoute<SettingsScreenRouteProp>();
     const { userId } = route.params;
 
@@ -17,4 +17,4 @@ const Setting = ({ navigation }: SettingsProps) => {
     )
 }
 
-export default Setting
+export default SettingsScreen;
