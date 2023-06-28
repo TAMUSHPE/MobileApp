@@ -12,6 +12,7 @@
     "build-ios": "npx expo prebuild && npx expo run:ios"
   },
   "dependencies": {
+    "@react-navigation/bottom-tabs": "^6.5.8",
     "@react-navigation/core": "^6.4.8",
     "@react-navigation/drawer": "^6.6.2",
     "@react-navigation/native": "^6.1.6",
