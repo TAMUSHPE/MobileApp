@@ -3,23 +3,33 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type {RouteProp} from '@react-navigation/native';
 
 export type HomeStackNavigatorParamList = {
-    Home_: DrawerNavigatorParamList;
+    HomeDrawer: HomeDrawerNavigatorParamList;
     PublicProfile: undefined;
+    HomeBottomTabs: undefined;
 }
 
-export type DrawerNavigatorParamList = {
+export type HomeDrawerNavigatorParamList = {
     Home: undefined;
     Members: undefined;
-    Test: undefined;
     Settings: {
         userId: number;
     };
+    Logout: undefined;
 }
-export type TestStackNavigatorParamList = {
-    PublicProfile: undefined;
+
+export type HomeBottomTabNavigatorParamList = {
+    Home: undefined;
+    Profile: {
+        email: string;
+    };
+}
+
+export type MainStackNavigatorParamList = {
+    Login: undefined;
+    Register: undefined;
     Home: undefined;
 }
 
 
-export type SettingsScreenRouteProp = RouteProp<DrawerNavigatorParamList, 'Settings'>;
-export type SettingsProps = NativeStackScreenProps<DrawerNavigatorParamList, "Settings">;
+export type SettingsScreenRouteProp = RouteProp<HomeDrawerNavigatorParamList, "Settings">;
+export type SettingsProps = NativeStackScreenProps<HomeDrawerNavigatorParamList, "Settings">;
