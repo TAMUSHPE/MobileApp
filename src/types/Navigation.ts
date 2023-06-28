@@ -4,7 +4,7 @@ import type {RouteProp} from '@react-navigation/native';
 
 export type HomeStackNavigatorParamList = {
     HomeDrawer: HomeDrawerNavigatorParamList;
-    PublicProfile: undefined;
+    MemberOfTheMonth: undefined;
     HomeBottomTabs: undefined;
 }
 

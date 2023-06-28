@@ -19,7 +19,7 @@ const HomeStackNavigator = () => {
             }}
         >
             <HomeStack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
-            <HomeStack.Screen name="PublicProfile" component={PublicProfile} />
+            <HomeStack.Screen name="MemberOfTheMonth" component={PublicProfile} />
         </HomeStack.Navigator>
     );
 };
