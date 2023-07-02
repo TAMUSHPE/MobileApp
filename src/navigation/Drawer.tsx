@@ -1,23 +1,19 @@
 import React from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer';
-import { DrawerNavigatorParamList } from '../types/Navigation';
+import { HomeDrawerNavigatorParamList } from '../types/Navigation';
 
 // Screens
-import Home from '../screens/Home';
-import MembersList from '../screens/Members';
-import TestScreen from '../screens/TestScreen';
-import Setting from '../screens/Settings';
+import HomeScreen from '../screens/Home';
+import SettingsScreen from '../screens/Settings';
 
-const Drawer = () => {
-    const Drawer = createDrawerNavigator<DrawerNavigatorParamList>();
+const HomeDrawer = () => {
+    const HomeDrawer = createDrawerNavigator<HomeDrawerNavigatorParamList>();
     return (
-        <Drawer.Navigator>
-            <Drawer.Screen name="Home" component={Home} />
-            <Drawer.Screen name="Members" component={MembersList} />
-            <Drawer.Screen name="Test" component={TestScreen} />
-            <Drawer.Screen name="Settings" component={Setting} initialParams={{ userId: 20 }} />
-        </Drawer.Navigator>
+        <HomeDrawer.Navigator>
+            <HomeDrawer.Screen name="Home" component={HomeScreen} />
+            <HomeDrawer.Screen name="Settings" component={SettingsScreen} initialParams={{ userId: 20 }} />
+        </HomeDrawer.Navigator>
     )
 }
 
-export default Drawer
+export default HomeDrawer;
