@@ -1,7 +1,7 @@
-import { View, Text } from 'react-native'
-import React from 'react'
+import { View, Text } from 'react-native';
+import React from 'react';
 
-const Members = () => {
+const MembersScreen = () => {
     return (
         <View className='flex-1 items-center justify-center'>
             <Text className="text-4xl font-bold text-center">Members</Text>
@@ -9,4 +9,4 @@ const Members = () => {
     )
 }
 
-export default Members
+export default MembersScreen;

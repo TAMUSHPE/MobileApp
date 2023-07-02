@@ -32,7 +32,70 @@ We are excited to introduce our mobile app project for the Society of Hispanic P
 
 - [![React][React.js]][React-url]
 
+## Table of Contents
+
+1. [Getting Started](#getting-started)
+    - [Dependencies](#dependencies)
+    - [Setup](#setup)
+2. [Usage](#usage)
+3. [Contact](#contact)
+
 ## Getting Started
+
+### Dependencies
+
+Various dependencies are required in order to test and build the application. The bare minimum required are the following:
+
+- [Node.js][Node-url]
+- [Yarn][Yarn-url]
+- [ngrok][ngrok-url]
+- [Java 11][Java-url] (Oracle JDK)
+- iOS/Android emulator
+    - The iOS emulator is only available on mac devices. The SDK can be   installed via Xcode.
+    - The Android emulator can be installed via [Android Studio]  [Android-Studio-url].
+
+Any extra information about environment setup can be found [here](https://reactnative.dev/docs/environment-setup).
+
+There are more dependencies that aren't necessarily required to run the application, but can be handy when testing:
+
+- [Expo Go][Expo-Go-url]
+    - App for testing on a physical mobile device. If you're running the app, make sure the device is connected to the same network as the development server device.
+- [React native snippets for VSCode][React-Native-Snippets-url]
+    - These can be handy for generating boilerplate code for things like screens or components which repetitive templates.
+- [EAS][EAS-url]
+    - Used for building application utilizing EAS Build which can host app binaries on the cloud
+
+### Setup
+
+Once the basic dependencies are installed, you're almost ready to go. First, open a terminal and navigate to the directory of the application. Afterwards, execute the following to install any node module dependencies:
+
+```
+$ yarn
+```
+
+Once finished, the application can be started using `yarn start` or one of the following:
+
+```
+$ npx expo start                # Default method
+      or
+$ npx expo start --tunnel       # For Windows
+      or
+$ npx expo start --dev-client   # Hosts on development server
+```
+
+There are also various macros in `package.json` under the "scripts" key which can be used via `yarn <script-name>`.
+
+There are two main ways to build the application: locally and with EAS. To build locally onto an emulator, simple execute the following:
+
+```
+$ npx expo run:android
+      or
+$ npx expo run:ios
+```
+
+These can also be run using `yarn build-android` or `yarn build-ios`.
+
+To build using EAS, carefully follow the documentation stated [here][EAS-url]. This will build and host the application on the cloud.
 
 ## Usage
 
@@ -71,3 +134,11 @@ Eliseo Garza, eliseogarza@tamu.edu
 [Bootstrap-url]: https://getbootstrap.com
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
 [JQuery-url]: https://jquery.com
+[Node-url]: https://nodejs.org/en/download
+[Yarn-url]: https://classic.yarnpkg.com/lang/en/docs/install/#windows-stable
+[ngrok-url]: https://ngrok.com/download
+[Android-Studio-url]: https://developer.android.com/studio?gclid=CjwKCAjwkeqkBhAnEiwA5U-uM4C0y7a37MdCipZw33fmboKRKOAS8vgwCoPiRKLnEsEbUB2qRpS1YBoCBAcQAvD_BwE&gclsrc=aw.ds
+[React-Native-Snippets-url]: https://marketplace.visualstudio.com/items?itemName=dsznajder.es7-react-js-snippets
+[Expo-Go-url]: https://expo.dev/client
+[Java-url]: https://www.oracle.com/java/technologies/downloads/#java11
+[EAS-url]: https://docs.expo.dev/build/introduction/

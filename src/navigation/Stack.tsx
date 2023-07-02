@@ -1,38 +1,43 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { HomeStackNavigatorParamList, TestStackNavigatorParamList } from '../types/Navigation';
+import { MainStackNavigatorParamList, HomeStackNavigatorParamList } from '../types/Navigation';
 
 // Screens  
-import Drawer from "./Drawer";
-import Polling from "../screens/PublicProfile";
-import Home from "../screens/Home";
+import HomeDrawer from "./Drawer";
+import PublicProfile from "../screens/PublicProfile";
+import LoginScreen from "../screens/Login";
+import HomeScreen from "../screens/Home";
+import RegisterScreen from "../screens/Register";
+import HomeBottomTabs from "./BottomTabs";
 
-const HomeStack = createNativeStackNavigator<HomeStackNavigatorParamList>();
 const HomeStackNavigator = () => {
+    const HomeStack = createNativeStackNavigator<HomeStackNavigatorParamList>();
     return (
         <HomeStack.Navigator
             screenOptions={{
                 headerShown: false,
             }}
         >
-            <HomeStack.Screen name="Home_" component={Drawer} />
-            <HomeStack.Screen name="PublicProfile" component={Polling} />
+            <HomeStack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
+            <HomeStack.Screen name="MemberOfTheMonth" component={PublicProfile} />
         </HomeStack.Navigator>
     );
 };
 
-const TestStack = createNativeStackNavigator<TestStackNavigatorParamList>();
-const TestStackNavigator = () => {
+const MainStackNavigator = () => {
+    const MainStack = createNativeStackNavigator<MainStackNavigatorParamList>();
     return (
-        <TestStack.Navigator
+        <MainStack.Navigator
             screenOptions={{
                 headerShown: false,
             }}
         >
-            <TestStack.Screen name="PublicProfile" component={Polling} />
-            <TestStack.Screen name="Home" component={HomeStackNavigator} />
-        </TestStack.Navigator>
+            <MainStack.Screen name="Login" component={LoginScreen} />
+            <MainStack.Screen name="Register" component={RegisterScreen} />
+            <MainStack.Screen name="Home" component={HomeStackNavigator} />
+        </MainStack.Navigator>
     );
 };
 
-export { HomeStackNavigator, TestStackNavigator };
+
+export { MainStackNavigator, HomeStackNavigator };
