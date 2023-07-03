@@ -3,12 +3,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackNavigatorParamList, HomeStackNavigatorParamList } from '../types/Navigation';
 
 // Screens  
-import HomeDrawer from "./Drawer";
 import PublicProfile from "../screens/PublicProfile";
 import LoginScreen from "../screens/Login";
-import HomeScreen from "../screens/Home";
 import RegisterScreen from "../screens/Register";
 import HomeBottomTabs from "./BottomTabs";
+import SettingsScreen from "../screens/Settings";
 
 const HomeStackNavigator = () => {
     const HomeStack = createNativeStackNavigator<HomeStackNavigatorParamList>();
@@ -20,6 +19,7 @@ const HomeStackNavigator = () => {
         >
             <HomeStack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
             <HomeStack.Screen name="MemberOfTheMonth" component={PublicProfile} />
+            <HomeStack.Screen name="Settings" component={SettingsScreen} />
         </HomeStack.Navigator>
     );
 };
