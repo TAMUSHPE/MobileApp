@@ -51,6 +51,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<MainStackNavi
                         onChangeText={(text) => setPassword(text)}
                         value={password}
                         inputMode="text"
+                        onSubmitEditing={() => signIn()}
                     />
                 </View>
                 <View className="flex-col mt-2">

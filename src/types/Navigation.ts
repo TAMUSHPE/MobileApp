@@ -6,30 +6,29 @@ export type HomeStackNavigatorParamList = {
     HomeDrawer: HomeDrawerNavigatorParamList;
     MemberOfTheMonth: undefined;
     HomeBottomTabs: undefined;
-}
+    Settings: {
+        userId: number;
+    };
+};
 
 export type HomeDrawerNavigatorParamList = {
     Home: undefined;
     Members: undefined;
-    Settings: {
-        userId: number;
-    };
     Logout: undefined;
-}
+};
 
 export type HomeBottomTabNavigatorParamList = {
     Home: undefined;
     Profile: {
         email: string;
     };
-}
+};
 
 export type MainStackNavigatorParamList = {
     Login: undefined;
     Register: undefined;
     Home: undefined;
-}
+};
 
-
-export type SettingsScreenRouteProp = RouteProp<HomeDrawerNavigatorParamList, "Settings">;
-export type SettingsProps = NativeStackScreenProps<HomeDrawerNavigatorParamList, "Settings">;
+export type SettingsScreenRouteProp = RouteProp<HomeStackNavigatorParamList, "Settings">;
+export type SettingsProps = NativeStackScreenProps<HomeStackNavigatorParamList, "Settings">;
