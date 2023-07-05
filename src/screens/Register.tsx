@@ -27,6 +27,10 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
 
     const registerUser = () => {
         // TODO: Add checking of each value before user is created.
+        if (password !== confirmationPassword) {
+            alert();
+            return;
+        }
 
         const createdUser = new User({
             email: email,
@@ -122,7 +126,8 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                 <InteractButton
                     pressFunction={() => registerUser()}
                     label="Register Account"
-                    buttonClassName='mt-4 mx-4'
+                    buttonStyle="bg-blue-500 mt-5 rounded-md"
+                    textStyle="text-white font-bold"
                 />
             </KeyboardAvoidingView>
             <View className="my-5 border-t-2 border-t-[#a8a8a8] w-11/12">
@@ -130,6 +135,6 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
             </View>
         </SafeAreaView>
     );
-}
+};
 
 export default RegisterScreen;
