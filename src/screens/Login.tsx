@@ -61,7 +61,8 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                     <InteractButton
                         pressFunction={() => signIn()}
                         label="Sign In"
-                        buttonClassName="mt-2"
+                        buttonStyle="bg-blue-500 mt-5 rounded-md"
+                        textStyle="text-white font-bold"
                     />
                     <View className="items-center my-4">
                         <Text>Or</Text>
@@ -69,16 +70,14 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                     <InteractButton
                         pressFunction={() => navigation.navigate("Register")}
                         label="Register Account"
-                        buttonColor="gray"
-                        textColor="gray"
-                        buttonClassName="mb-1"
+                        buttonStyle="bg-[#ddd] rounded-md"
+                        textStyle="text-[#3b3b3b] font-bold"
                     />
                     <InteractButton
                         pressFunction={() => guestSignIn()}
                         label="Sign In As Guest"
-                        buttonColor="gray"
-                        textColor="gray"
-                        buttonClassName="my-1"
+                        buttonStyle="bg-[#ddd] mt-2 rounded-md"
+                        textStyle="text-[#3b3b3b] font-bold"
                     />
                 </View>
             </View>
