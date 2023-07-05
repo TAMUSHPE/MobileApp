@@ -2,9 +2,11 @@ import { View, Button, Text, TouchableOpacity, TextInput, KeyboardAvoidingView }
 import React, { useState, useEffect } from "react";
 import { auth } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { LoginStackNavigatorParamList, MainStackNavigatorParamList } from "../types/Navigation";
+import { LoginStackNavigatorParamList } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InteractButton from "../components/InteractButton";
+import firebase from 'firebase/compat/app';
+import { User } from '../types/User';
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
@@ -26,7 +28,19 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
     }
 
     const guestSignIn = () => {
-        auth.signInAnonymously();
+        const tempUser = new User({
+            email: "",
+            username: "Guest Account",
+            photoURL: "https://t4.ftcdn.net/jpg/02/15/84/43/360_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg",
+            firstName:  "Guest",
+            lastName: "Account",
+        });
+
+        auth.signInAnonymously()
+            .then((authUser: firebase.auth.UserCredential) => {
+                authUser.user?.updateProfile(tempUser);
+            })
+            .catch((error) => alert(error.message));;
     }
 
     return (

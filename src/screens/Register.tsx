@@ -121,6 +121,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                         inputMode="text"
                         autoCorrect={false}
                         textContentType="password"
+                        onSubmitEditing={() => registerUser()}
                     />
                 </View>
                 <InteractButton
