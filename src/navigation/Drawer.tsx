@@ -11,10 +11,10 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         auth.signOut()
             .then(() => {
                 // Once signed out, forces user to login screen and resets navigation stack so that login is the only element.
-                props.navigation.navigate("Login");
+                props.navigation.navigate("LoginStack");
                 props.navigation.reset({
                     index: 0,
-                    routes: [{name: "Login"}]
+                    routes: [{ name: "LoginStack" }]
                 })
             })
             .catch((error) => alert(error));

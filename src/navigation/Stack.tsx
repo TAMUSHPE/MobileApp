@@ -1,6 +1,6 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { MainStackNavigatorParamList, HomeStackNavigatorParamList } from '../types/Navigation';
+import { MainStackNavigatorParamList, HomeStackNavigatorParamList, LoginStackNavigatorParamList } from '../types/Navigation';
 
 // Screens  
 import PublicProfile from "../screens/PublicProfile";
@@ -24,6 +24,16 @@ const HomeStackNavigator = () => {
     );
 };
 
+const LoginStackNavigator = () => {
+    const LoginStack = createNativeStackNavigator<LoginStackNavigatorParamList>();
+    return (
+        <LoginStack.Navigator>
+            <LoginStack.Screen name="Login" component={LoginScreen} />
+            <LoginStack.Screen name="Register" component={RegisterScreen} />
+        </LoginStack.Navigator>
+    );
+}
+
 const MainStackNavigator = () => {
     const MainStack = createNativeStackNavigator<MainStackNavigatorParamList>();
     return (
@@ -32,9 +42,8 @@ const MainStackNavigator = () => {
                 headerShown: false,
             }}
         >
-            <MainStack.Screen name="Login" component={LoginScreen} />
-            <MainStack.Screen name="Register" component={RegisterScreen} />
-            <MainStack.Screen name="Home" component={HomeStackNavigator} />
+            <MainStack.Screen name="LoginStack" component={LoginStackNavigator} />
+            <MainStack.Screen name="HomeStack" component={HomeStackNavigator} />
         </MainStack.Navigator>
     );
 };

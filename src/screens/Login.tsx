@@ -2,10 +2,11 @@ import { View, Button, Text, TouchableOpacity, TextInput, KeyboardAvoidingView }
 import React, { useState, useEffect } from "react";
 import { auth } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { MainStackNavigatorParamList } from "../types/Navigation";
+import { LoginStackNavigatorParamList, MainStackNavigatorParamList } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
+import InteractButton from "../components/InteractButton";
 
-const LoginScreen = ({ route, navigation }: NativeStackScreenProps<MainStackNavigatorParamList>) => {
+const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -13,7 +14,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<MainStackNavi
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((authUser) => {
             if (authUser) {
-                navigation.replace("Home");
+                navigation.replace("HomeStack");
             }
         });
 
@@ -34,15 +35,16 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<MainStackNavi
                 <Text>Registering as a new user is currently a WIP.</Text>
                 <Text>Please select "Guest Log In"</Text>
             </View>
-            <KeyboardAvoidingView className="flex-col w-4/5">
-                <View className="flex-col my-2">
+            <View className="flex-col w-4/5">
+                <KeyboardAvoidingView className="flex-col my-2">
                     <TextInput
-                        placeholder="Username/Email"
+                        placeholder="Email"
                         className="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1"
-                        onChangeText={(text) => setEmail(text)}
+                        onChangeText={(text: string) => setEmail(text)}
                         autoFocus
                         value={email}
                         inputMode="email"
+                        keyboardType="email-address"
                     />
                     <TextInput
                         placeholder="Password"
@@ -52,35 +54,34 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<MainStackNavi
                         value={password}
                         inputMode="text"
                         onSubmitEditing={() => signIn()}
+                        textContentType="password"
+                    />
+                </KeyboardAvoidingView>
+                <View className="flex-col mt-2">
+                    <InteractButton
+                        pressFunction={() => signIn()}
+                        label="Sign In"
+                        buttonClassName="mt-2"
+                    />
+                    <View className="items-center my-4">
+                        <Text>Or</Text>
+                    </View>
+                    <InteractButton
+                        pressFunction={() => navigation.navigate("Register")}
+                        label="Register Account"
+                        buttonColor="gray"
+                        textColor="gray"
+                        buttonClassName="mb-1"
+                    />
+                    <InteractButton
+                        pressFunction={() => guestSignIn()}
+                        label="Sign In As Guest"
+                        buttonColor="gray"
+                        textColor="gray"
+                        buttonClassName="my-1"
                     />
                 </View>
-                <View className="flex-col mt-2">
-                    <TouchableOpacity
-                        onPress={() => signIn()}
-                        className="flex justify-center items-center p-2 rounded-md bg-[#52b1ff]"
-                        activeOpacity={0.7}
-                    >
-                        <Text className="font-bold text-white">Log In</Text>
-                    </TouchableOpacity>
-                    <View className="items-center my-4">
-                        <Text className="">Or</Text>
-                    </View>
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate("Register")}
-                        className="flex justify-center items-center p-2 rounded-md bg-[#ddd]"
-                        activeOpacity={0.7}
-                    >
-                        <Text className="font-bold text-[#4b4b4b]">Register</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={() => guestSignIn()}
-                        className="flex justify-center items-center mt-2 p-2 rounded-md bg-[#ddd]"
-                        activeOpacity={0.7}
-                    >
-                        <Text className="font-bold text-[#4b4b4b]">Guest Log In</Text>
-                    </TouchableOpacity>
-                </View>
-            </KeyboardAvoidingView>
+            </View>
             <View className="my-5 border-t-2 border-t-[#a8a8a8] w-11/12">
                 <Text className="text-center mt-2">This is the footer</Text>
             </View>
