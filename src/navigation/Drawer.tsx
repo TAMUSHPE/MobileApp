@@ -33,29 +33,28 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
 
 const HomeDrawerHeader = (props: DrawerHeaderProps) => {
     return (
-        <SafeAreaView className="bg-white h-18 shadow-black drop-shadow-lg flex-row-reverse">
+        <SafeAreaView className="bg-white h-18 shadow-black drop-shadow-lg flex-row mx-5 mt-3">
+            <View
+                className='flex-1 justify-center items-start'
+            >
+                <Image
+                    className="h-10 w-52"
+                    source={require('../../assets/logo_light.png')}
+                />
+            </View>
+
             <TouchableOpacity
                 activeOpacity={0.6}
                 onPress={() => props.navigation.openDrawer()}
             >
                 <Image
-                    className="flex w-10 h-10 m-5 rounded-full"
+                    className="flex w-10 h-10 rounded-full"
                     source={{
                         uri: auth?.currentUser?.photoURL as string
                     }}
                 />
             </TouchableOpacity>
-            <View
-                className="w-10"
-            >
-                <Image
-                    className="h-auto w-full"
-                    source={{
-                        uri: "https://www.tamushpe.org/pictures/logo_light_png.png"
-                    }}
-                />
-            </View>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 
