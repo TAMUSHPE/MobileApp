@@ -15,7 +15,7 @@ const HomeBottomTabs = () => {
                 headerShown: false,
             }}
         >
-            <HomeBottomTabs.Screen name="HomeNavigation" component={HomeDrawer} />            
+            <HomeBottomTabs.Screen name="Home" component={HomeDrawer} />            
             <HomeBottomTabs.Screen name="Members" component={MembersScreen} />            
             <HomeBottomTabs.Screen name="PublicProfile" component={PublicProfileScreen} />            
         </HomeBottomTabs.Navigator>
