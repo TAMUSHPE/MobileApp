@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "TAMU SHPE",
-    "slug": "TAMU SHPE",
+    "slug": "TAMU-SHPE",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -28,6 +28,6 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "SHPE-MOBILE"
+    "scheme": "SHPE"
   }
 }
