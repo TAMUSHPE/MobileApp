@@ -3,18 +3,13 @@ import React from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackNavigatorParamList } from '../types/Navigation';
 import HighlightSlider from '../components/HighlightSlider';
+import OfficeHours from '../components/OfficeHours';
 
 const HomeScreen = ({ route, navigation }: NativeStackScreenProps<HomeStackNavigatorParamList>) => {
     return (
         <View className="flex flex-col justify-center items-center bg-white">
-
             <HighlightSlider />
-
-            {/* </View> */}
-            <View className="flex flex-1 flex-col justify-center items-center">
-                <Text className="text-2xl font-bold text-black">Welcome to the</Text>
-                <Text className="text-2xl font-bold text-black">SHPE</Text>
-            </View>
+            <OfficeHours />
         </View>
     );
 }
