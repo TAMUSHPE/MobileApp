@@ -31,7 +31,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
         const tempUser = new User({
             email: "",
             username: "Guest Account",
-            photoURL: "https://t4.ftcdn.net/jpg/02/15/84/43/360_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg",
+            photoURL: "",
             firstName:  "Guest",
             lastName: "Account",
         });
@@ -40,7 +40,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
             .then((authUser: firebase.auth.UserCredential) => {
                 authUser.user?.updateProfile(tempUser);
             })
-            .catch((error) => alert(error.message));;
+            .catch((error) => alert(error.message));
     }
 
     return (
