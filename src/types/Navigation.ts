@@ -28,7 +28,7 @@ export type MainStackNavigatorParamList = {
 // Drawers
 export type HomeDrawerNavigatorParamList = {
     Home: undefined;
-    Members: undefined;
+    Resources: undefined;
     Logout: undefined;
 };
 
