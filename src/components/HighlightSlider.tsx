@@ -2,6 +2,7 @@ import { View, Text } from 'react-native'
 import React from 'react'
 import { ScrollView } from 'react-native'
 import { Image } from 'react-native'
+import { Images } from '../../assets'
 
 const HighlightSlider = () => {
     return (
@@ -16,7 +17,7 @@ const HighlightSlider = () => {
         >
             <View className="relative mr-2">
                 <Image
-                    source={require("../../assets/carousel_1.jpg")}
+                    source={Images.CAROUSEL_1}
                     className="h-48 w-72 rounded"
                 />
                 <View className='flex mt-4 justify-center items-center text-center'>
@@ -25,7 +26,7 @@ const HighlightSlider = () => {
             </View>
             <View className="relative mr-2">
                 <Image
-                    source={require("../../assets/carousel_2.jpg")}
+                    source={Images.CAROUSEL_2}
                     className="h-48 w-72 rounded"
                 />
                 <View className='flex mt-4 justify-center items-center text-center'>
@@ -35,7 +36,7 @@ const HighlightSlider = () => {
             </View>
             <View className="relative mr-2">
                 <Image
-                    source={require("../../assets/carousel_3.jpg")}
+                    source={Images.CAROUSEL_3}
                     className="h-48 w-40 rounded"
                 />
                 <View className='flex mt-4 justify-center items-center text-center'>
@@ -46,7 +47,7 @@ const HighlightSlider = () => {
             <View className="relative mr-2">
                 <Image
                     style={{ opacity: 0.3 }}
-                    source={require("../../assets/carousel_3.jpg")}
+                    source={Images.CAROUSEL_3}
                     className="h-48 w-40 rounded opacity-25"
                 />
                 <View className='absolute'>

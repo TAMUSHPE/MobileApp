@@ -40,7 +40,7 @@ const HomeDrawerHeader = (props: DrawerHeaderProps) => {
             >
                 <Image
                     className="h-10 w-52"
-                    source={require('../../assets/logo_light.png')}
+                    source={Images.LOGO_LIGHT}
                 />
             </View>
 
@@ -50,9 +50,8 @@ const HomeDrawerHeader = (props: DrawerHeaderProps) => {
             >
                 <Image
                     className="flex w-10 h-10 rounded-full"
-                    source={{
-                        uri: auth?.currentUser?.photoURL as string
-                    }}
+                    defaultSource={Images.DEFAULT_USER_PICTURE}
+                    source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL as string } : Images.DEFAULT_USER_PICTURE}
                 />
             </TouchableOpacity>
         </SafeAreaView >
