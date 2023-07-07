@@ -5,7 +5,7 @@ import { HomeStackNavigatorParamList } from '../types/Navigation';
 
 const HomeScreen = ({ route, navigation }: NativeStackScreenProps<HomeStackNavigatorParamList>) => {
     return (
-        <View className="flex flex-1 flex-col justify-center items-center">
+        <View className="flex flex-1 flex-col justify-center items-center bg-white">
             <View className="flex-none mt-4">
                 <Text className="text-4xl font-bold text-center">Home Screen</Text>
             </View>
