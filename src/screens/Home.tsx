@@ -14,7 +14,6 @@ const HomeScreen = ({ route, navigation }: NativeStackScreenProps<HomeStackNavig
             <View className="flex flex-1 flex-col justify-center items-center">
                 <Text className="text-2xl font-bold text-black">Welcome to the</Text>
                 <Text className="text-2xl font-bold text-black">SHPE</Text>
-                <Text className="text-2xl font-bold text-black">Muslim Students' Association</Text>
             </View>
         </View>
     );
