@@ -34,24 +34,28 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
 
 const HomeDrawerHeader = (props: DrawerHeaderProps) => {
     return (
-        <SafeAreaView className="bg-white h-18 shadow-sm shadow-black flex-row-reverse">
+        <SafeAreaView className="bg-white h-18 shadow-black drop-shadow-lg flex-row px-5 pb-2 pt-3">
+            <View
+                className='flex-1 justify-center items-start'
+            >
+                <Image
+                    className="h-10 w-52"
+                    source={require('../../assets/logo_light.png')}
+                />
+            </View>
+
             <TouchableOpacity
                 activeOpacity={0.6}
                 onPress={() => props.navigation.openDrawer()}
             >
                 <Image
-                    className="flex w-10 h-10 m-5 rounded-full"
-                    defaultSource={Images.DEFAULT_USER_PICTURE}
-                    source={auth?.currentUser?.photoURL ? Images.DEFAULT_USER_PICTURE : { uri: auth?.currentUser?.photoURL as string }}
+                    className="flex w-10 h-10 rounded-full"
+                    source={{
+                        uri: auth?.currentUser?.photoURL as string
+                    }}
                 />
             </TouchableOpacity>
-            <View className="flex">
-                <Image
-                    className="w-20 h-10"
-                    source={Images.TAMU_SHPE_LOGO}
-                />
-            </View>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 
