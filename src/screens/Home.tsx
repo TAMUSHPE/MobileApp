@@ -2,22 +2,19 @@ import { View, Text, TouchableOpacity, Button } from 'react-native';
 import React from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackNavigatorParamList } from '../types/Navigation';
+import HighlightSlider from '../components/HighlightSlider';
 
 const HomeScreen = ({ route, navigation }: NativeStackScreenProps<HomeStackNavigatorParamList>) => {
     return (
-        <View className="flex flex-1 flex-col justify-center items-center bg-white">
-            <View className="flex-none mt-4">
-                <Text className="text-4xl font-bold text-center">Home Screen</Text>
-            </View>
-            <View className="grow justify-center items-center mb-32"
-            >
-                <TouchableOpacity
-                    className='flex justify-center items-center mt-4 p-6 rounded-md bg-[#500]'
-                    onPress={() => {
-                        navigation.navigate("MemberOfTheMonth");
-                    }}>
-                    <Text className='font-bold text-white text-5xl'>Member of the Month</Text>
-                </TouchableOpacity>
+        <View className="flex flex-col justify-center items-center bg-white">
+
+            <HighlightSlider />
+
+            {/* </View> */}
+            <View className="flex flex-1 flex-col justify-center items-center">
+                <Text className="text-2xl font-bold text-black">Welcome to the</Text>
+                <Text className="text-2xl font-bold text-black">SHPE</Text>
+                <Text className="text-2xl font-bold text-black">Muslim Students' Association</Text>
             </View>
         </View>
     );
