@@ -1,11 +1,12 @@
 import { View, Text, TextInput, KeyboardAvoidingView } from 'react-native';
-import React, { useLayoutEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoginStackNavigatorParamList } from '../types/Navigation';
-import firebase from 'firebase/compat/app';
 import { User } from '../types/User';
+import { Images } from '../../assets';
+import React, { useLayoutEffect, useState } from 'react';
+import firebase from 'firebase/compat/app';
 import InteractButton from '../components/InteractButton';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
@@ -28,14 +29,14 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
     const registerUser = () => {
         // TODO: Add checking of each value before user is created.
         if (password !== confirmationPassword) {
-            alert();
+            alert("Original password and re-entered password do not match!");
             return;
         }
 
         const createdUser = new User({
             email: email,
             username: username,
-            photoURL: "https://t4.ftcdn.net/jpg/02/15/84/43/360_F_215844325_ttX9YiIIyeaR7Ne6EaLLjMAmy4GvPC69.jpg",
+            photoURL: "",
             firstName: firstName || "",
             lastName: lastName || "",
         });

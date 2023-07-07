@@ -6,12 +6,16 @@ export interface Roles {
 }
 
 export class User {
+    /*
+        This class represents a user's information as it is stored in firebase.
+        Each argument must have a value, however some of these values may be "empty". For example, if a string's value is "", this means that there is no value in the data.
+    */
     email: string;
     username: string;
     photoURL: string;
-    roles: Roles;
     firstName: string;
     lastName: string;
+    roles: Roles;
 
     constructor(authData: { email: string, username: string, photoURL: string, firstName: string, lastName: string}) {
         this.email = authData.email
