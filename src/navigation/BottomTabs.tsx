@@ -26,15 +26,7 @@ const HomeBottomTabs = () => {
                     } else if (route.name === 'Members') {
                         iconName = 'search'
                     }
-
-                    return (
-                        <Octicons name={iconName} size={iconSize} color={iconColor} />
-                        // <View className='pt-2   '>
-                        //     <Text>
-
-                        //     </Text>
-                        // </View>
-                    )
+                    return <Octicons name={iconName} size={iconSize} color={iconColor} />
                 },
                 tabBarStyle: {
                     height: 65,
