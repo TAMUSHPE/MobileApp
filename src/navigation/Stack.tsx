@@ -19,7 +19,6 @@ const HomeStackNavigator = () => {
             }}
         >
             <HomeStack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
-            <HomeStack.Screen name="MemberOfTheMonth" component={PublicProfileScreen} />
             <HomeStack.Screen name="Settings" component={SettingsScreen} />
         </HomeStack.Navigator>
     );
@@ -54,7 +53,7 @@ const MembersStackNavigator = () => {
     return (
         <MembersStack.Navigator>
             <MembersStack.Screen name="Members" component={MembersScreen} />
-            <MembersStack.Screen name="PublicProfile" component={PublicProfileScreen} />
+            <MembersStack.Screen name="PublicProfile" component={PublicProfileScreen} initialParams={{ email: 'jhernandez18@tamu.edu' }} />
         </MembersStack.Navigator>
     )
 }
