@@ -1,8 +1,13 @@
 import { View, Text, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { pointsData } from '../components/FetchGoogleSheets';
+import { memberPoint, pointsData } from '../api/FetchGoogleSheets';
+import { MembersProps, MembersScreenRouteProp } from '../types/Navigation';
+import { useRoute } from '@react-navigation/native';
 
-const PublicProfileScreen = () => {
+const PublicProfileScreen = ({ navigation }: MembersProps) => {
+    const route = useRoute<MembersScreenRouteProp>();
+    const { email } = route.params;
+    // tempt method - fetch data directly from google sheets instead of firebase
     const [value, setValue] = useState();
     useEffect(() => {
         let data = async () => {
@@ -19,11 +24,11 @@ const PublicProfileScreen = () => {
             />
         );
     }
-    console.log(value)
+
     return (
         <View>
             <Text>
-                Look at Console for data
+                {email + " - Points: " + memberPoint(value, email)}
             </Text>
         </View>
     )

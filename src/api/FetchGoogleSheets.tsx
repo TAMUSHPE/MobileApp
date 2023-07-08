@@ -10,3 +10,8 @@ export const pointsData = async () => {
         console.log("Error");
     }
 };
+
+export const memberPoint = (data: any, email: string) => {
+    let member = data.filter((member: any) => member[2] === email);
+    return member[0][3];
+}
