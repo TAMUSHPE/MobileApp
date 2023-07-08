@@ -51,4 +51,5 @@ export type HomeBottomTabNavigatorParamList = {
 export type SettingsScreenRouteProp = RouteProp<HomeStackNavigatorParamList, "Settings">;
 export type SettingsProps = NativeStackScreenProps<HomeStackNavigatorParamList, "Settings">;
 
+export type MembersScreenRouteProp = RouteProp<MembersStackNavigatorParamList, "PublicProfile">;
 export type MembersProps = NativeStackScreenProps<MembersStackNavigatorParamList, "PublicProfile">;
