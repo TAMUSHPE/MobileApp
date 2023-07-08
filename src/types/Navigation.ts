@@ -24,6 +24,10 @@ export type MainStackNavigatorParamList = {
     HomeStack: undefined;
 };
 
+export type MembersStackNavigatorParamList = {
+    Members: undefined;
+    PublicProfile: undefined
+};
 
 // Drawers
 export type HomeDrawerNavigatorParamList = {
