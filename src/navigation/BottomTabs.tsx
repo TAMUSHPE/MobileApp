@@ -3,10 +3,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Octicons } from '@expo/vector-icons';
 import { View, Text } from 'react-native'
 // Screens
-import HomeScreen from '../screens/Home';
 import MembersScreen from '../screens/Members';
 import ResourcesScreen from '../screens/Resources';
 import HomeDrawer from './Drawer';
+import { MembersStackNavigator } from './Stack';
+
 
 
 
@@ -23,7 +24,7 @@ const HomeBottomTabs = () => {
                         iconName = 'home'
                     } else if (route.name === 'Resources') {
                         iconName = 'repo'
-                    } else if (route.name === 'Members') {
+                    } else if (route.name === 'MembersStack') {
                         iconName = 'search'
                     }
                     return <Octicons name={iconName} size={iconSize} color={iconColor} />
@@ -41,7 +42,7 @@ const HomeBottomTabs = () => {
         >
             <HomeBottomTabs.Screen name="Home" component={HomeDrawer} />
             <HomeBottomTabs.Screen name="Resources" component={ResourcesScreen} />
-            <HomeBottomTabs.Screen name="Members" component={MembersScreen} />
+            <HomeBottomTabs.Screen name="MembersStack" component={MembersStackNavigator} />
         </HomeBottomTabs.Navigator >
     )
 }

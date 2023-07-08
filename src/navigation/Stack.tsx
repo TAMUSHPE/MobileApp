@@ -1,13 +1,14 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { MainStackNavigatorParamList, HomeStackNavigatorParamList, LoginStackNavigatorParamList } from '../types/Navigation';
+import { MainStackNavigatorParamList, HomeStackNavigatorParamList, LoginStackNavigatorParamList, MembersStackNavigatorParamList } from '../types/Navigation';
 
 // Screens  
-import PublicProfile from "../screens/PublicProfile";
+import PublicProfileScreen from "../screens/PublicProfile";
 import LoginScreen from "../screens/Login";
 import RegisterScreen from "../screens/Register";
 import HomeBottomTabs from "./BottomTabs";
 import SettingsScreen from "../screens/Settings";
+import MembersScreen from "../screens/Members";
 
 const HomeStackNavigator = () => {
     const HomeStack = createNativeStackNavigator<HomeStackNavigatorParamList>();
@@ -18,7 +19,7 @@ const HomeStackNavigator = () => {
             }}
         >
             <HomeStack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
-            <HomeStack.Screen name="MemberOfTheMonth" component={PublicProfile} />
+            <HomeStack.Screen name="MemberOfTheMonth" component={PublicProfileScreen} />
             <HomeStack.Screen name="Settings" component={SettingsScreen} />
         </HomeStack.Navigator>
     );
@@ -48,5 +49,15 @@ const MainStackNavigator = () => {
     );
 };
 
+const MembersStackNavigator = () => {
+    const MembersStack = createNativeStackNavigator<MembersStackNavigatorParamList>();
+    return (
+        <MembersStack.Navigator>
+            <MembersStack.Screen name="Members" component={MembersScreen} />
+            <MembersStack.Screen name="PublicProfile" component={PublicProfileScreen} />
+        </MembersStack.Navigator>
+    )
+}
 
-export { MainStackNavigator, HomeStackNavigator };
+
+export { MainStackNavigator, HomeStackNavigator, MembersStackNavigator };
