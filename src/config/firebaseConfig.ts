@@ -6,12 +6,12 @@ import "firebase/compat/firestore";
 // import "firebase/compat/storage";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAGTrXfkTWKNACHcxU4KboqMN6E8JAobaQ",
-    authDomain: "shpe-app-testing.firebaseapp.com",
-    projectId: "shpe-app-testing",
-    storageBucket: "shpe-app-testing.appspot.com",
-    messagingSenderId: "375063934797",
-    appId: "1:375063934797:web:32f63de392a6e10c8e2904"
+    apiKey: "***REMOVED***",
+    authDomain: "tamushpemobileapp.firebaseapp.com",
+    projectId: "tamushpemobileapp",
+    storageBucket: "tamushpemobileapp.appspot.com",
+    messagingSenderId: "600060629240",
+    appId: "1:600060629240:web:1e97e43973746bcc266b0d"
 };
 
 
