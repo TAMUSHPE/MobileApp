@@ -20,6 +20,9 @@
     "scheme": "TAMUSHPE",
     "android": {
       "package": "com.tamu.shpe"
+    },
+    "ios": {
+      "bundleIdentifier": "com.tamu.shpe"
     }
   }
 }
