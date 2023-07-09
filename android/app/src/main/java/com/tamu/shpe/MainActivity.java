@@ -1,4 +1,4 @@
-package com.anonymous.TAMUSHPE;
+package com.tamu.shpe;
 
 import android.os.Build;
 import android.os.Bundle;

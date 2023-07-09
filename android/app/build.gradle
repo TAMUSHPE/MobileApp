@@ -113,9 +113,9 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace 'com.anonymous.TAMUSHPE'
+    namespace 'com.tamu.shpe'
     defaultConfig {
-        applicationId 'com.anonymous.TAMUSHPE'
+        applicationId 'com.tamu.shpe'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
