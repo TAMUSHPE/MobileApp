@@ -14,20 +14,12 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.TAMUSHPE"
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "com.anonymous.TAMUSHPE"
-    },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "SHPE"
+    "scheme": "TAMUSHPE",
+    "android": {
+      "package": "com.tamu.shpe"
+    }
   }
 }
