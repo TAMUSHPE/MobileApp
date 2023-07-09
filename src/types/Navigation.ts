@@ -24,6 +24,12 @@ export type MainStackNavigatorParamList = {
     HomeStack: undefined;
 };
 
+export type MembersStackNavigatorParamList = {
+    Members: undefined;
+    PublicProfile: {
+        email: string;
+    }
+};
 
 // Drawers
 export type HomeDrawerNavigatorParamList = {
@@ -44,3 +50,6 @@ export type HomeBottomTabNavigatorParamList = {
 
 export type SettingsScreenRouteProp = RouteProp<HomeStackNavigatorParamList, "Settings">;
 export type SettingsProps = NativeStackScreenProps<HomeStackNavigatorParamList, "Settings">;
+
+export type MembersScreenRouteProp = RouteProp<MembersStackNavigatorParamList, "PublicProfile">;
+export type MembersProps = NativeStackScreenProps<MembersStackNavigatorParamList, "PublicProfile">;
