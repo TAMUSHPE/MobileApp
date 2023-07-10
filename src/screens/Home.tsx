@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Button, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import React from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackNavigatorParamList } from '../types/Navigation';

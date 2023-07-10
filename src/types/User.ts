@@ -3,7 +3,7 @@ export interface Roles {
     officer?: boolean;
     admin?: boolean;
     developer?: boolean;
-}
+};
 
 export class User {
     /*
@@ -25,4 +25,4 @@ export class User {
         this.lastName = authData.lastName
         this.roles = { reader: true }
     }
-}
+};

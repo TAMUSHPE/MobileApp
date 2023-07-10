@@ -1,14 +1,10 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Octicons } from '@expo/vector-icons';
-import { View, Text } from 'react-native'
 // Screens
-import MembersScreen from '../screens/Members';
 import ResourcesScreen from '../screens/Resources';
 import HomeDrawer from './Drawer';
 import { MembersStackNavigator } from './Stack';
-
-
 
 
 const HomeBottomTabs = () => {

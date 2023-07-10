@@ -1,5 +1,5 @@
-import { View, Text, Button, TouchableOpacity } from 'react-native'
-import React from 'react'
+import { View, Text, TouchableOpacity } from 'react-native';
+import React from 'react';
 
 const OfficeHours = () => {
     let available = true;
@@ -19,4 +19,4 @@ const OfficeHours = () => {
     )
 }
 
-export default OfficeHours
+export default OfficeHours;

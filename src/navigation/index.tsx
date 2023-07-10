@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavigationContainer } from '@react-navigation/native';
-import { MainStackNavigator, HomeStackNavigator } from './Stack';
+import { MainStackNavigator } from './Stack';
 
 const RootNavigator = () => {
     return (
