@@ -4,7 +4,6 @@ import { auth } from '../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoginStackNavigatorParamList } from '../types/Navigation';
 import { User } from '../types/User';
-import { Images } from '../../assets';
 import React, { useLayoutEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import InteractButton from '../components/InteractButton';

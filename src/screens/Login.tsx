@@ -1,4 +1,4 @@
-import { View, Button, Text, TouchableOpacity, TextInput, KeyboardAvoidingView } from "react-native";
+import { View, Text, TextInput, KeyboardAvoidingView } from "react-native";
 import React, { useState, useEffect } from "react";
 import { auth } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";

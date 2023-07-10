@@ -33,7 +33,7 @@ export type MembersStackNavigatorParamList = {
 
 // Drawers
 export type HomeDrawerNavigatorParamList = {
-    Home: undefined;
+    HomePage: undefined;
     Resources: undefined;
     Logout: undefined;
 };
