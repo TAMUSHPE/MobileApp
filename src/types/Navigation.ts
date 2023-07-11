@@ -8,14 +8,14 @@ export type HomeStackNavigatorParamList = {
     HomeDrawer: HomeDrawerNavigatorParamList;
     MemberOfTheMonth: undefined;
     HomeBottomTabs: undefined;
-    Settings: {
+    SettingsScreen: {
         userId: number;
     };
 };
 
 export type LoginStackNavigatorParamList = {
-    Login: undefined;
-    Register: undefined;
+    LoginScreen: undefined;
+    RegisterScreen: undefined;
     HomeStack: undefined;
 }
 
@@ -25,7 +25,7 @@ export type MainStackNavigatorParamList = {
 };
 
 export type MembersStackNavigatorParamList = {
-    Members: undefined;
+    MembersScreen: undefined;
     PublicProfile: {
         email: string;
     }
@@ -33,7 +33,7 @@ export type MembersStackNavigatorParamList = {
 
 // Drawers
 export type HomeDrawerNavigatorParamList = {
-    HomePage: undefined;
+    HomeScreen: undefined;
     Resources: undefined;
     Logout: undefined;
 };
@@ -48,8 +48,8 @@ export type HomeBottomTabNavigatorParamList = {
 };
 
 
-export type SettingsScreenRouteProp = RouteProp<HomeStackNavigatorParamList, "Settings">;
-export type SettingsProps = NativeStackScreenProps<HomeStackNavigatorParamList, "Settings">;
+export type SettingsScreenRouteProp = RouteProp<HomeStackNavigatorParamList, "SettingsScreen">;
+export type SettingsProps = NativeStackScreenProps<HomeStackNavigatorParamList, "SettingsScreen">;
 
 export type MembersScreenRouteProp = RouteProp<MembersStackNavigatorParamList, "PublicProfile">;
 export type MembersProps = NativeStackScreenProps<MembersStackNavigatorParamList, "PublicProfile">;
