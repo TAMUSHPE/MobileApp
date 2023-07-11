@@ -31,7 +31,7 @@ const PublicProfileScreen = ({ navigation }: MembersProps) => {
     return (
         <View>
             <Text>
-                {email + " - Points: " + points}
+                {`${email} - Points: ${points.toFixed(2)}`}
             </Text>
         </View>
     )

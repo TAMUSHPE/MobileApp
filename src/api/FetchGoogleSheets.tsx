@@ -30,19 +30,19 @@ export const memberPoints = async (email: string): Promise<number> => {
     This function parses data obtained from querying a google sheets document containing each member and their point values.
     If any abnormal data is passed, the default value is 0.
     */
+    
     const data = await queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, `where C contains "${email}"`, "Master");
-
     if (!data || data["table"]["rows"].length < 1 || !email) {
         return 0;
     }
-
+    
     const userPointsRow = data["table"]["rows"].at(0);
-
+    
     if (!userPointsRow || userPointsRow["c"].length < 1 || userPointsRow["c"][PointsColumnVals.EMAIL]["v"] != email) {
         return 0;
     }
     else {
-        const value = userPointsRow["c"].at(PointsColumnVals.TOTAL_POINTS) ? ["v"] : 0;
+        const value = userPointsRow["c"].at(PointsColumnVals.TOTAL_POINTS)!["v"];
         return typeof value === "number" ? value : 0;
     }
 };
