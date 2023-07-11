@@ -9,9 +9,9 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackNaviga
             <TouchableOpacity
                 className='flex justify-center items-center mt-4 p-6 rounded-md bg-[#500]'
                 onPress={() => {
-                    navigation.navigate("PublicProfile", {email: ""}); // Email currently stubbed out
+                    navigation.navigate("PublicProfile", {email: "jhernandez18@tamu.edu"});
                 }}>
-                <Text className='font-bold text-white text-5xl'>go to a member public profole</Text>
+                <Text className='font-bold text-white text-5xl'>go to a member public profile</Text>
             </TouchableOpacity>
         </View>
     )
