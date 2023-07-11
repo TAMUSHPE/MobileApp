@@ -11,7 +11,7 @@ const MembersStackNavigator = () => {
     return (
         <MembersStack.Navigator>
             <MembersStack.Screen name="MembersScreen" component={MembersScreen} />
-            <MembersStack.Screen name="PublicProfile" component={PublicProfileScreen} initialParams={{ email: 'jhernandez18@tamu.edu' }} />
+            <MembersStack.Screen name="PublicProfile" component={PublicProfileScreen} initialParams={{ email: '' }} />
         </MembersStack.Navigator>
     );
 };
