@@ -1,21 +1,26 @@
 import { View, Text, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { memberPoint, pointsData } from '../api/FetchGoogleSheets';
+import { memberPoints, pointsData } from '../api/FetchGoogleSheets';
 import { MembersProps, MembersScreenRouteProp } from '../types/Navigation';
 import { useRoute } from '@react-navigation/native';
+import { auth } from '../config/firebaseConfig';
 
 const PublicProfileScreen = ({ navigation }: MembersProps) => {
     const route = useRoute<MembersScreenRouteProp>();
     const { email } = route.params;
-    // tempt method - fetch data directly from google sheets instead of firebase
-    const [value, setValue] = useState();
+    // In the future, this will be part of the auth object
+    const [points, setPoints] = useState<number>();
+
     useEffect(() => {
-        let data = async () => {
-            setValue(await pointsData());
+        let fetchData = async () => {
+            const email = auth.currentUser?.email ?? "";
+            const data = await pointsData(email);
+            setPoints(memberPoints(data, email));
         };
-        data();
-    }, []);
-    if (!value) {
+        fetchData();
+    }, [auth]);
+
+    if (!points && points != 0) {
         return (
             <ActivityIndicator
                 size="large"
@@ -28,7 +33,7 @@ const PublicProfileScreen = ({ navigation }: MembersProps) => {
     return (
         <View>
             <Text>
-                {email + " - Points: " + memberPoint(value, email)}
+                {email + " - Points: " + points}
             </Text>
         </View>
     )
