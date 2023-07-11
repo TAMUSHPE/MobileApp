@@ -82,7 +82,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                         <Text>Or</Text>
                     </View>
                     <InteractButton
-                        pressFunction={() => navigation.navigate("Register")}
+                        pressFunction={() => navigation.navigate("RegisterScreen")}
                         label="Register Account"
                         buttonStyle="bg-[#ddd] rounded-md"
                         textStyle="text-[#3b3b3b] font-bold"

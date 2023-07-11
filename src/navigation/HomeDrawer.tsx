@@ -25,8 +25,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
 
     return (
         <DrawerContentScrollView {...props}>
-            <DrawerItemList {...props} />
-            <DrawerItem label="Settings" onPress={() => props.navigation.navigate("Settings", { userId: 1234 })} />
+            <DrawerItem label="Settings" onPress={() => props.navigation.navigate("SettingsScreen", { userId: 1234 })} />
             <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOut()} />
         </DrawerContentScrollView>
     );
@@ -62,16 +61,16 @@ const HomeDrawer = () => {
     const HomeDrawer = createDrawerNavigator<HomeDrawerNavigatorParamList>();
     return (
         <HomeDrawer.Navigator
-            initialRouteName="HomePage"
+            initialRouteName="HomeScreen"
             drawerContent={(props) => <HomeDrawerContent {...props} />}
             screenOptions={{
                 header: HomeDrawerHeader,
                 drawerPosition: "right",
             }}
         >
-            <HomeDrawer.Screen name="HomePage" component={HomeScreen} />
+            <HomeDrawer.Screen name="HomeScreen" component={HomeScreen} />
         </HomeDrawer.Navigator>
-    )
+    );
 };
 
 export default HomeDrawer;

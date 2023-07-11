@@ -1,10 +1,11 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Octicons } from '@expo/vector-icons';
+import { MembersStackNavigator } from './MembersStack';
+
 // Screens
 import ResourcesScreen from '../screens/Resources';
-import HomeDrawer from './Drawer';
-import { MembersStackNavigator } from './Stack';
+import HomeDrawer from './HomeDrawer';
 
 
 const HomeBottomTabs = () => {
@@ -13,15 +14,22 @@ const HomeBottomTabs = () => {
         <HomeBottomTabs.Navigator
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused }) => {
-                    let iconSize = 24;
-                    let iconName: any = 'x-circle';
-                    let iconColor = focused ? 'maroon' : 'black';
-                    if (route.name === 'Home') {
-                        iconName = 'home'
-                    } else if (route.name === 'Resources') {
-                        iconName = 'repo'
-                    } else if (route.name === 'MembersStack') {
-                        iconName = 'search'
+                    const iconSize = 24;
+                    const iconColor = focused ? 'maroon' : 'black';
+                    var iconName: any = 'x-circle';
+
+                    switch (route.name) {
+                        case 'Home':
+                            iconName = 'home';
+                            break;
+                        case 'Resources':
+                            iconName = 'repo';
+                            break;
+                        case 'Members':
+                            iconName = 'search';
+                            break;
+                        default:
+                            iconName = 'x-circle';
                     }
                     return <Octicons name={iconName} size={iconSize} color={iconColor} />
                 },
@@ -38,9 +46,9 @@ const HomeBottomTabs = () => {
         >
             <HomeBottomTabs.Screen name="Home" component={HomeDrawer} />
             <HomeBottomTabs.Screen name="Resources" component={ResourcesScreen} />
-            <HomeBottomTabs.Screen name="MembersStack" component={MembersStackNavigator} />
+            <HomeBottomTabs.Screen name="Members" component={MembersStackNavigator} />
         </HomeBottomTabs.Navigator >
-    )
-}
+    );
+};
 
 export default HomeBottomTabs;

@@ -1,30 +1,36 @@
 import { GoogleSheetsResponse, PointsColumnVals } from "../types/GoogleSheetsTypes";
 
-export const pointsData = async (email: string): Promise<GoogleSheetsResponse | null> => {
-    // TODO: Create email validation function
-    if (!email) {
-        return null;
-    }
+export const GoogleSheetsIDs = {
+    POINTS_ID: "1gKGAPlJLJL4yqYwt9mo4YeiS9KKuQzPvsyY1zuj4ZsU",
+    TEST_BANK_ID: "",
+    RESUMES_ID: "",
+}
 
-    const uri = `https://docs.google.com/spreadsheets/d/1gKGAPlJLJL4yqYwt9mo4YeiS9KKuQzPvsyY1zuj4ZsU/gviz/tq?tq=${encodeURIComponent(`where C contains "${email}"`)}&sheet=Master`
-    return await fetch(uri)
+export const queryGoogleSpreadsheet = async (sheetID: string, query: string = "select *", sheetName: string = "Sheet1"): Promise<GoogleSheetsResponse | null> => {
+    /*
+    This function queries a google spreadsheet for data given certain parameters
+    */
+    const spreadsheetURI = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tq=${encodeURIComponent(query)}&sheet=${sheetName}`;
+
+    return await fetch(spreadsheetURI)
         .then(async (res) => {
             const responseText = await res.text()
-            const headerPattern = /(\/\*O_o\*\/\n|google\.visualization\.Query\.setResponse\(|\)\;)/g;
+            const headerPattern = /(\/\*O_o\*\/\n|google\.visualization\.Query\.setResponse\(|\)\;)/g; // Regex for identifying the header added on the to sheets response
             const data = JSON.parse(responseText.replace(headerPattern, ""));
             return data;
         })
         .catch((error) => {
-            console.error("Error:", error);
-            return null;
+            console.log("Error:", error);
+            return null
         });
 };
 
-export const memberPoints = (data: GoogleSheetsResponse | null, email: string): number => {
+export const memberPoints = async (email: string): Promise<number> => {
     /*
     This function parses data obtained from querying a google sheets document containing each member and their point values.
     If any abnormal data is passed, the default value is 0.
     */
+    const data = await queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, `where C contains "${email}"`, "Master");
 
     if (!data || data["table"]["rows"].length < 1 || !email) {
         return 0;
@@ -36,7 +42,7 @@ export const memberPoints = (data: GoogleSheetsResponse | null, email: string): 
         return 0;
     }
     else {
-        const value = userPointsRow["c"].at(PointsColumnVals.TOTAL_POINTS)?["v"] : 0;
+        const value = userPointsRow["c"].at(PointsColumnVals.TOTAL_POINTS) ? ["v"] : 0;
         return typeof value === "number" ? value : 0;
     }
 };
