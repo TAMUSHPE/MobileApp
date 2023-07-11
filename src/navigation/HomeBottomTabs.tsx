@@ -17,12 +17,19 @@ const HomeBottomTabs = () => {
                     const iconSize = 24;
                     const iconColor = focused ? 'maroon' : 'black';
                     var iconName: any = 'x-circle';
-                    if (route.name === 'Home') {
-                        iconName = 'home'
-                    } else if (route.name === 'Resources') {
-                        iconName = 'repo'
-                    } else if (route.name === 'MembersStack') {
-                        iconName = 'search'
+
+                    switch (route.name) {
+                        case 'Home':
+                            iconName = 'home';
+                            break;
+                        case 'Resources':
+                            iconName = 'repo';
+                            break;
+                        case 'Members':
+                            iconName = 'search';
+                            break;
+                        default:
+                            iconName = 'x-circle';
                     }
                     return <Octicons name={iconName} size={iconSize} color={iconColor} />
                 },
@@ -39,9 +46,9 @@ const HomeBottomTabs = () => {
         >
             <HomeBottomTabs.Screen name="Home" component={HomeDrawer} />
             <HomeBottomTabs.Screen name="Resources" component={ResourcesScreen} />
-            <HomeBottomTabs.Screen name="MembersStack" component={MembersStackNavigator} />
+            <HomeBottomTabs.Screen name="Members" component={MembersStackNavigator} />
         </HomeBottomTabs.Navigator >
-    )
-}
+    );
+};
 
 export default HomeBottomTabs;

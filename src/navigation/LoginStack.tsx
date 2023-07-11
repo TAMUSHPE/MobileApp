@@ -10,10 +10,10 @@ const LoginStackNavigator = () => {
     const LoginStack = createNativeStackNavigator<LoginStackNavigatorParamList>();
     return (
         <LoginStack.Navigator>
-            <LoginStack.Screen name="Login" component={LoginScreen} />
-            <LoginStack.Screen name="Register" component={RegisterScreen} />
+            <LoginStack.Screen name="LoginScreen" component={LoginScreen} />
+            <LoginStack.Screen name="RegisterScreen" component={RegisterScreen} />
         </LoginStack.Navigator>
     );
-}
+};
 
 export { LoginStackNavigator };

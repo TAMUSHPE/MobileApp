@@ -10,10 +10,10 @@ const MembersStackNavigator = () => {
     const MembersStack = createNativeStackNavigator<MembersStackNavigatorParamList>();
     return (
         <MembersStack.Navigator>
-            <MembersStack.Screen name="Members" component={MembersScreen} />
+            <MembersStack.Screen name="MembersScreen" component={MembersScreen} />
             <MembersStack.Screen name="PublicProfile" component={PublicProfileScreen} initialParams={{ email: 'jhernandez18@tamu.edu' }} />
         </MembersStack.Navigator>
-    )
+    );
 };
 
 export { MembersStackNavigator };
