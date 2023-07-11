@@ -15,10 +15,9 @@ const HomeStackNavigator = () => {
             }}
         >
             <HomeStack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
-            <HomeStack.Screen name="Settings" component={SettingsScreen} />
+            <HomeStack.Screen name="SettingsScreen" component={SettingsScreen} />
         </HomeStack.Navigator>
     );
 };
 
 export { HomeStackNavigator };
-
