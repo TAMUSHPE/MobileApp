@@ -1,6 +1,6 @@
 import { View, Text, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { memberPoints, pointsData } from '../api/FetchGoogleSheets';
+import { memberPoints } from '../api/FetchGoogleSheets';
 import { MembersProps, MembersScreenRouteProp } from '../types/Navigation';
 import { useRoute } from '@react-navigation/native';
 import { auth } from '../config/firebaseConfig';
@@ -13,9 +13,7 @@ const PublicProfileScreen = ({ navigation }: MembersProps) => {
 
     useEffect(() => {
         let fetchData = async () => {
-            const email = auth.currentUser?.email ?? "";
-            const data = await pointsData(email);
-            setPoints(memberPoints(data, email));
+            setPoints(await memberPoints(email));
         };
         fetchData();
     }, [auth]);
