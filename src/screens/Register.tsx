@@ -7,6 +7,7 @@ import { User } from '../types/User';
 import React, { useLayoutEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import InteractButton from '../components/InteractButton';
+import { validateEmail, validatePassword } from '../helpers/validation';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
@@ -31,13 +32,21 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
             alert("Original password and re-entered password do not match!");
             return;
         }
-
+        else if (!validateEmail(email)) {
+            alert("Invalid Email.")
+            return;
+        }
+        else if (!validatePassword(password)) {
+            alert("Password must meet specifications:\n- 4-64 characters\n- Spaces are allowed\n- Valid characters: A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~")
+            return;
+        }
+        
         const createdUser = new User({
             email: email,
             username: username,
             photoURL: "",
-            firstName: firstName || "",
-            lastName: lastName || "",
+            firstName: "",
+            lastName: "",
         });
 
         auth.createUserWithEmailAndPassword(email, password)
@@ -99,41 +108,14 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                         textContentType="password"
                     />
                 </View>
-                <View className='mt-2'>
-                    <Text>Enter your first name:</Text>
-                    <TextInput
-                        placeholder="First Name"
-                        className={inputStyle}
-                        onChangeText={(text: string) => setFirstName(text)}
-                        value={firstName}
-                        inputMode="text"
-                        autoCorrect={false}
-                        textContentType="password"
-                    />
-                </View>
-                <View className='mt-2'>
-                    <Text>Enter your last name:</Text>
-                    <TextInput
-                        placeholder="Last Name"
-                        className={inputStyle}
-                        onChangeText={(text: string) => setLastName(text)}
-                        value={lastName}
-                        inputMode="text"
-                        autoCorrect={false}
-                        textContentType="password"
-                        onSubmitEditing={() => registerUser()}
-                    />
-                </View>
                 <InteractButton
                     pressFunction={() => registerUser()}
                     label="Register Account"
-                    buttonStyle="bg-blue-500 mt-5 rounded-md"
+                    buttonStyle="bg-red mt-5 rounded-xl"
                     textStyle="text-white font-bold"
                 />
             </KeyboardAvoidingView>
-            <View className="my-5 border-t-2 border-t-[#a8a8a8] w-11/12">
-                <Text className="text-center mt-2"><Text className='text-red-600'>*</Text> - required</Text>
-            </View>
+            <View className="my-10 border-t-2 border-t-[#a8a8a8] w-11/12" />
         </SafeAreaView>
     );
 };

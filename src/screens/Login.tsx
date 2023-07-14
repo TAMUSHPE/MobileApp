@@ -46,7 +46,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
 
     return (
         <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
-            <View className="flex-col items-center">
+            <View className="flex-col items-center my-8">
                 <Image
                 className="flex-row h-20 w-20 mb-3"
                     source={Images.SHPE_LOGO}
@@ -94,6 +94,12 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                     <InteractButton
                         pressFunction={() => guestSignIn()}
                         label="Sign In As Guest"
+                        buttonStyle="bg-[#ddd] mt-2 rounded-xl"
+                        textStyle="text-[#3b3b3b] font-bold"
+                    />
+                    <InteractButton
+                        pressFunction={() => guestSignIn()}
+                        label="Sign In with TAMU Google Account"
                         buttonStyle="bg-[#ddd] mt-2 rounded-xl"
                         textStyle="text-[#3b3b3b] font-bold"
                     />
