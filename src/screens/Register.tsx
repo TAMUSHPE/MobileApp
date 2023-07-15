@@ -4,19 +4,19 @@ import { auth } from '../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoginStackNavigatorParamList } from '../types/Navigation';
 import { User } from '../types/User';
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import InteractButton from '../components/InteractButton';
-import { validateEmail, validatePassword } from '../helpers/validation';
+import { evaluatePasswordStrength, validateEmail, validatePassword } from '../helpers/validation';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmationPassword, setConfirmationPassword] = useState("");
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
+    const [username, setUsername] = useState<string>("");
+    const [email, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+    const [confirmationPassword, setConfirmationPassword] = useState<string>("");
+    const [passwordStrengthColor, setPasswordStrengthColor] = useState<string>("text-red");
+    const [passwordStrengthText, setPasswordStrengthText] = useState<string>("INVALID");
 
     const inputStyle = "bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1";
 
@@ -40,7 +40,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
             alert("Password must meet specifications:\n- 4-64 characters\n- Spaces are allowed\n- Valid characters: A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~")
             return;
         }
-        
+
         const createdUser = new User({
             email: email,
             username: username,
@@ -56,11 +56,36 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
             .catch((error) => alert(error.message));
     }
 
+    const handlePasswordStrengthIndicator = (text: string) => {
+        const passwordStrength = evaluatePasswordStrength(text);
+        const passwordStrengthValues = [
+            {
+                color: "text-[#f00]",
+                text: "INVALID"
+            },
+            {
+                color: "text-[#f90]",
+                text: "Weak"
+            },
+            {
+                color: "text-[#ff0]",
+                text: "Average"
+            },
+            {
+                color: "text-[#0f0]",
+                text: "Strong"
+            },
+        ]
+
+        setPasswordStrengthText(passwordStrengthValues[passwordStrength]["text"]);
+        setPasswordStrengthColor(passwordStrengthValues[passwordStrength]["color"]);
+    }
+
     return (
-        <SafeAreaView className="flex-1 items-center justify-between">
+        <SafeAreaView className="flex-1 items-center justify-between bg-slate-500">
             <KeyboardAvoidingView className="flex-col w-10/12">
                 <View className='mt-2'>
-                    <Text>Enter a unique username: <Text className='text-red-600'>*</Text></Text>
+                    <Text>Enter a unique username:</Text>
                     <TextInput
                         placeholder="Username"
                         className={inputStyle}
@@ -72,7 +97,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                     />
                 </View>
                 <View className='mt-2'>
-                    <Text>Enter your TAMU email address:<Text className='text-red-600'>*</Text></Text>
+                    <Text>Enter your TAMU email address:</Text>
                     <TextInput
                         placeholder="Email (eg. bob@tamu.edu)"
                         className={inputStyle}
@@ -83,20 +108,26 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                     />
                 </View>
                 <View className='mt-2'>
-                    <Text>Enter your password:<Text className='text-red-600'>*</Text></Text>
+                    <Text>Enter your password:</Text>
                     <TextInput
                         placeholder="Password"
                         className={inputStyle}
-                        onChangeText={(text: string) => setPassword(text)}
+                        onChangeText={(text: string) => {
+                            setPassword(text);
+                            handlePasswordStrengthIndicator(text);
+                        }}
                         secureTextEntry
                         value={password}
                         inputMode="text"
                         autoCorrect={false}
                         textContentType="password"
                     />
+                    <View className=''>
+                        <Text>Password Strength: <Text className={passwordStrengthColor}>{passwordStrengthText}</Text></Text>
+                    </View>
                 </View>
                 <View className='mt-2'>
-                    <Text>Re-enter your password:<Text className='text-red-600'>*</Text></Text>
+                    <Text>Re-enter your password:</Text>
                     <TextInput
                         placeholder="Confirm Password"
                         className={inputStyle}
