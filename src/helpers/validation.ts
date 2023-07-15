@@ -1,5 +1,5 @@
 export const validateEmail = (email: string): boolean => {
-    // Matches pattern {}
+    // Matches generic email pattern. {name}@{second-level domain}.{top-level domain}
     const emailRegex: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     return typeof email == 'string' && emailRegex.test(email);
 };
@@ -18,14 +18,21 @@ export enum PasswordStrength {
 };
 
 export const evaluatePasswordStrength = (password: string): number => {
-    const averagePasswordRegex: RegExp = /^[A-Z]{4,64}$|^[0-9]{4,64}$/i;
+    /*
+    Determines strength of a password based on certain conditions:
+    - Invalid passwords are less than 4 characters long or use invalid characters defined in validatePassword()
+    - Weak passwords are less than 7 characters long
+    - Average passwords are either less than 10 characters long or are just a collection of letters or numbers that are less than 14 characters long
+    - Strong passwords are greater than 10 characters and contain special characters or are greater than 14 characters
+    */
+    const averagePasswordRegex: RegExp = /^[A-Z ]{7,14}$|^[0-9]{7,14}$/i;
     if (!validatePassword(password)) {
         return PasswordStrength.INVALID;
     }
-    else if (password.length < 6) {
+    else if (password.length <= 7) {
         return PasswordStrength.WEAK;
     }
-    else if ((averagePasswordRegex.test(password) || password.length < 10) && !(password.length > 20)) {
+    else if ((averagePasswordRegex.test(password) || password.length < 10)) {
         return PasswordStrength.AVERAGE;
     }
     else {

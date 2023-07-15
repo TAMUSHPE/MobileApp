@@ -15,8 +15,8 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [confirmationPassword, setConfirmationPassword] = useState<string>("");
-    const [passwordStrengthColor, setPasswordStrengthColor] = useState<string>("text-red");
-    const [passwordStrengthText, setPasswordStrengthText] = useState<string>("INVALID");
+    const [passwordStrengthColor, setPasswordStrengthColor] = useState<string>("text-[#f00]");
+    const [passwordStrengthText, setPasswordStrengthText] = useState<string>("INVALID\n- Minimum 4 characters\n- Valid characters: : A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~");
 
     const inputStyle = "bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1";
 
@@ -61,7 +61,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
         const passwordStrengthValues = [
             {
                 color: "text-[#f00]",
-                text: "INVALID"
+                text: "INVALID\n- Minimum 4 characters\n- Valid characters: : A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~"
             },
             {
                 color: "text-[#f90]",
@@ -82,10 +82,10 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
     }
 
     return (
-        <SafeAreaView className="flex-1 items-center justify-between bg-slate-500">
+        <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
             <KeyboardAvoidingView className="flex-col w-10/12">
                 <View className='mt-2'>
-                    <Text>Enter a unique username:</Text>
+                    <Text className='text-white'>Enter a unique username:</Text>
                     <TextInput
                         placeholder="Username"
                         className={inputStyle}
@@ -97,7 +97,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                     />
                 </View>
                 <View className='mt-2'>
-                    <Text>Enter your TAMU email address:</Text>
+                    <Text className='text-white'>Enter your TAMU email address:</Text>
                     <TextInput
                         placeholder="Email (eg. bob@tamu.edu)"
                         className={inputStyle}
@@ -108,7 +108,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                     />
                 </View>
                 <View className='mt-2'>
-                    <Text>Enter your password:</Text>
+                    <Text className='text-white'>Enter your password:</Text>
                     <TextInput
                         placeholder="Password"
                         className={inputStyle}
@@ -122,12 +122,12 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                         autoCorrect={false}
                         textContentType="password"
                     />
-                    <View className=''>
-                        <Text>Password Strength: <Text className={passwordStrengthColor}>{passwordStrengthText}</Text></Text>
+                    <View className='bg-dark-navy'>
+                        <Text className='text-white'>Password Strength: <Text className={passwordStrengthColor}>{passwordStrengthText}</Text></Text>
                     </View>
                 </View>
                 <View className='mt-2'>
-                    <Text>Re-enter your password:</Text>
+                    <Text className='text-white'>Re-enter your password:</Text>
                     <TextInput
                         placeholder="Confirm Password"
                         className={inputStyle}
