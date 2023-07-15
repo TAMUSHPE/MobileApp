@@ -2,16 +2,13 @@ import { View, Text, Image } from 'react-native'
 import React from 'react'
 import { Slide } from '../types/Slide'
 
-interface HighLightSliderItemProps {
-    item: Slide;
-}
-const HighLightSliderItem: React.FC<HighLightSliderItemProps> = ({ item }) => {
+const HighLightSliderItem: React.FC<React.PropsWithChildren<{ item: Slide }>> = ({ item }) => {
     const isMember: boolean = item.type === "member";
     return (
         <View className='w-screen'>
             {!isMember ? (
                 <View
-                    className="pt-6 pb-4 ml-7"
+                    className="pt-5 pb-4 ml-7"
                 >
                     <Image
                         source={item.image}
@@ -30,8 +27,8 @@ const HighLightSliderItem: React.FC<HighLightSliderItemProps> = ({ item }) => {
                         />
                     </View>
                     <View className='w-36 mt-2'>
-                        <Text className='text-white text-center mb-1 text-xl'>Test</Text>
-                        <Text className='text-white'> Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus excepturi mollitia, repudiandae illo praesentium porro.</Text>
+                        <Text className='text-white text-center mb-1 text-xl'>{item.title}</Text>
+                        <Text className='text-white'> {item.description}</Text>
                     </View>
                 </View>
 
