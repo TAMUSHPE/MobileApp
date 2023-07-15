@@ -24,7 +24,7 @@ const HighlightSlider = () => {
 
     return (
         <View
-            className='mt-4'
+            className='mt-0'
         >
             <View>
                 <LinearGradient

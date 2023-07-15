@@ -33,7 +33,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
 
 const HomeDrawerHeader = (props: DrawerHeaderProps) => {
     return (
-        <SafeAreaView className="bg-white h-18 shadow-black drop-shadow-lg flex-row px-5 pb-2 pt-3">
+        <SafeAreaView className="bg-offwhite h-18 shadow-black drop-shadow-lg flex-row px-5 pb-2 pt-3">
             <View
                 className='flex-1 justify-center items-start'
             >
