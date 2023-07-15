@@ -31,6 +31,10 @@ export type MembersStackNavigatorParamList = {
     }
 };
 
+export type CommitteesStackNavigatorParamList = {
+    CommitteesScreen: undefined;
+}
+
 // Drawers
 export type HomeDrawerNavigatorParamList = {
     HomeScreen: undefined;

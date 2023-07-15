@@ -2,6 +2,7 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Octicons } from '@expo/vector-icons';
 import { MembersStackNavigator } from './MembersStack';
+import { CommitteesStackNavigator } from './CommitteesStack';
 
 // Screens
 import ResourcesScreen from '../screens/Resources';
@@ -14,7 +15,7 @@ const HomeBottomTabs = () => {
         <HomeBottomTabs.Navigator
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused }) => {
-                    const iconSize = 24;
+                    const iconSize = 28;
                     const iconColor = focused ? 'maroon' : 'black';
                     var iconName: any = 'x-circle';
 
@@ -25,6 +26,9 @@ const HomeBottomTabs = () => {
                         case 'Resources':
                             iconName = 'repo';
                             break;
+                        case 'Committees':
+                            iconName = 'people';
+                            break;
                         case 'Members':
                             iconName = 'search';
                             break;
@@ -34,18 +38,20 @@ const HomeBottomTabs = () => {
                     return <Octicons name={iconName} size={iconSize} color={iconColor} />
                 },
                 tabBarStyle: {
-                    height: 65,
-                    paddingBottom: 5,
-                    paddingTop: -10,
+                    height: 50,
+                    // paddingBottom: 5,
+                    // paddingTop: -10,
 
                 },
                 headerShown: false,
-                tabBarActiveTintColor: 'maroon', // the color of active icon
+                tabBarActiveTintColor: 'maroon',
                 tabBarInactiveTintColor: 'black',
+                tabBarShowLabel: false,
             })}
         >
             <HomeBottomTabs.Screen name="Home" component={HomeDrawer} />
             <HomeBottomTabs.Screen name="Resources" component={ResourcesScreen} />
+            <HomeBottomTabs.Screen name="Committees" component={CommitteesStackNavigator} />
             <HomeBottomTabs.Screen name="Members" component={MembersStackNavigator} />
         </HomeBottomTabs.Navigator >
     );
