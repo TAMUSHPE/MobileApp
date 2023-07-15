@@ -7,7 +7,7 @@ import OfficeHours from '../components/OfficeHours';
 
 const HomeScreen = ({ route, navigation }: NativeStackScreenProps<HomeStackNavigatorParamList>) => {
     return (
-        <ScrollView className="flex flex-col bg-white">
+        <ScrollView className="flex bg-white">
             <HighlightSlider />
             <OfficeHours />
         </ScrollView>
