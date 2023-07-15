@@ -40,6 +40,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
         auth.signInAnonymously()
             .then((authUser: firebase.auth.UserCredential) => {
                 authUser.user?.updateProfile(tempUser);
+                alert("Login as guest will be depricated in the future.");
             })
             .catch((error) => alert(error.message));
     }
@@ -98,7 +99,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                         textStyle="text-[#3b3b3b] font-bold"
                     />
                     <InteractButton
-                        pressFunction={() => guestSignIn()}
+                        pressFunction={() => alert("This feature is not implemented")}
                         label="Sign In with TAMU Google Account"
                         buttonStyle="bg-[#ddd] mt-2 rounded-xl"
                         textStyle="text-[#3b3b3b] font-bold"
