@@ -1,71 +1,58 @@
-import { View, Text, ScrollView } from 'react-native';
-import React from 'react';
-import { Image } from 'react-native';
-import { Images } from '../../assets';
+import { View, Text, ScrollView, Image, FlatList, Animated, ViewToken } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
+import HighLightSliderItem from './HighLightSliderItem';
+import { slides } from './slides'
+import { Slide } from '../types/Slide'
+import Paginator from './Paginator';
+
+interface SlideItem {
+    index: number;
+    item: Slide;
+}
 
 const HighlightSlider = () => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const slidesRef = useRef(null);
+    const scrollX = useRef(new Animated.Value(0)).current;
+
+    const viewableItemsChanged = useRef(({ viewableItems }: { viewableItems: Array<ViewToken> }) => {
+        setCurrentIndex(viewableItems[0].index ?? 0);
+    }).current;
+
+    const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+
     return (
-        <ScrollView
-            className='flex mx-8 mt-5 py-6 rounded-xl bg-pale-blue shadow-2xl'
-            contentContainerStyle={{
-                paddingHorizontal: 16,
-                // paddingTop: 32,
-            }}
-            horizontal
-            showsHorizontalScrollIndicator={false}
+        <View
+            className='mt-4'
         >
-            <View className="relative mr-2">
-                <Image
-                    source={Images.CAROUSEL_1}
-                    className="h-48 w-72 rounded mr-4"
+            <View>
+                <LinearGradient
+                    className='absolute top-0 left-0 bottom-0 right-0'
+                    colors={['#191740', '#72A9BE']}
                 />
-                <View className='flex mt-4 justify-center items-center text-center'>
-                    <Text className='font-bold '>SHPE EVENT 1</Text>
-                </View>
-            </View>
-            <View className="relative mr-2">
-                <Image
-                    source={Images.CAROUSEL_2}
-                    className="h-48 w-72 rounded mr-4"
+                <FlatList
+                    data={slides}
+                    renderItem={({ item }) => <HighLightSliderItem item={item} />}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    pagingEnabled
+                    bounces={false}
+                    keyExtractor={(item) => item.id}
+                    onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+                        useNativeDriver: false,
+                    })}
+                    scrollEventThrottle={32}
+                    onViewableItemsChanged={viewableItemsChanged}
+                    viewabilityConfig={viewConfig}
+                    ref={slidesRef}
                 />
-                <View className='flex mt-4 justify-center items-center text-center'>
-                    <Text className='font-bold '>SHPE EVENT 2</Text>
-
-                </View>
             </View>
-            <View className="relative mr-2">
-                <Image
-                    source={Images.CAROUSEL_3}
-                    className="h-48 w-36 rounded"
-                />
-                <View className='flex mt-4 justify-center items-center text-center'>
-                    <Text className='font-bold '>SHPESTER</Text>
-                </View>
 
-            </View>
-            <View className="relative mr-2">
-                {/* There is no direct way to gray-scale an image without relying on outdated package. This is an alternative method. */}
-                <View>
-                    <Image
-                        source={Images.CAROUSEL_3}
-                        className="h-48 w-36 rounded"
-                        style={{ tintColor: 'gray' }}
-                    />
-                    <Image
-                        source={Images.CAROUSEL_3}
-                        className="absolute h-48 w-36 rounded opacity-25"
-                        style={{ opacity: 0.3 }}
-                    />
-                    <View className='absolute'>
-                        <Text className=''> Lorem ipsum dolor sit amet consectetur adipisicing elit. Delectus excepturi mollitia, repudiandae illo praesentium porro.</Text>
-                    </View>
-                </View>
+            <Paginator data={slides} scrollX={scrollX} />
 
-                <View className='flex mt-4 justify-center items-center text-center'>
-                    <Text className='font-bold'>SHPESTER INFO</Text>
-                </View>
-            </View>
-        </ScrollView>
+
+        </View>
     )
 }
 
