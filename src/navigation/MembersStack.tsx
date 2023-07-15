@@ -9,7 +9,11 @@ import MembersScreen from "../screens/Members";
 const MembersStackNavigator = () => {
     const MembersStack = createNativeStackNavigator<MembersStackNavigatorParamList>();
     return (
-        <MembersStack.Navigator>
+        <MembersStack.Navigator
+            screenOptions={{
+                headerShown: false,
+            }}
+        >
             <MembersStack.Screen name="MembersScreen" component={MembersScreen} />
             <MembersStack.Screen name="PublicProfile" component={PublicProfileScreen} initialParams={{ email: '' }} />
         </MembersStack.Navigator>
