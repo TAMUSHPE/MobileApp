@@ -18,14 +18,14 @@ export enum PasswordStrength {
 };
 
 export const evaluatePasswordStrength = (password: string): number => {
-    const averagePasswordRegex: RegExp = /^[A-Z]{4,64}$/i;
+    const averagePasswordRegex: RegExp = /^[A-Z]{4,64}$|^[0-9]{4,64}$/i;
     if (!validatePassword(password)) {
         return PasswordStrength.INVALID;
     }
     else if (password.length < 6) {
         return PasswordStrength.WEAK;
     }
-    else if (averagePasswordRegex.test(password)) {
+    else if ((averagePasswordRegex.test(password) || password.length < 10) && !(password.length > 20)) {
         return PasswordStrength.AVERAGE;
     }
     else {
