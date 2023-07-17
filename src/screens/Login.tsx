@@ -11,19 +11,17 @@ import { initializeCurrentUserData } from "../api/firebaseUtils";
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
             if (authUser) {
                 const currentUserData = await initializeCurrentUserData();
-                console.log(currentUserData);
                 if(currentUserData.private?.privateInfo?.completedAccountSetup){
                     navigation.replace("HomeStack");
                 }
                 else{
-                    alert("Account not set up yet.");
                     navigation.replace("ProfileSetup");
                 }
             }
@@ -63,7 +61,6 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                         placeholder="Email"
                         className="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1"
                         onChangeText={(text: string) => setEmail(text)}
-                        autoFocus
                         value={email}
                         inputMode="email"
                         keyboardType="email-address"
