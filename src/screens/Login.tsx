@@ -6,7 +6,6 @@ import { LoginStackNavigatorParamList } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InteractButton from "../components/InteractButton";
 import firebase from 'firebase/compat/app';
-import { User } from '../types/User';
 import { Images } from "../../assets";
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
@@ -29,17 +28,12 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
     }
 
     const guestSignIn = () => {
-        const tempUser = new User({
-            email: "",
-            username: "Guest Account",
-            photoURL: "",
-            firstName:  "Guest",
-            lastName: "Account",
-        });
-
         auth.signInAnonymously()
             .then((authUser: firebase.auth.UserCredential) => {
-                authUser.user?.updateProfile(tempUser);
+                authUser.user?.updateProfile({
+                    displayName: "Guest Account",
+                    photoURL: "",
+                });
                 alert("Login as guest will be depricated in the future.");
             })
             .catch((error) => alert(error.message));
@@ -49,7 +43,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
         <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
             <View className="flex-col items-center my-8">
                 <Image
-                className="flex-row h-20 w-20 mb-3"
+                    className="flex-row h-20 w-20 mb-3"
                     source={Images.SHPE_LOGO}
                 />
                 <Text className="text-white text-center text-3xl">Welcome to SHPE</Text>
