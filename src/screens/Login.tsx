@@ -1,12 +1,13 @@
 import { View, Text, TextInput, KeyboardAvoidingView, Image } from "react-native";
 import React, { useState, useEffect } from "react";
-import { auth } from "../config/firebaseConfig";
+import { auth, db } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { LoginStackNavigatorParamList } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InteractButton from "../components/InteractButton";
 import firebase from 'firebase/compat/app';
 import { Images } from "../../assets";
+import { initializeCurrentUserData } from "../api/firebaseUtils";
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
@@ -14,9 +15,17 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
     const [password, setPassword] = useState("");
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((authUser) => {
+        const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
             if (authUser) {
-                navigation.replace("HomeStack");
+                const currentUserData = await initializeCurrentUserData();
+                console.log(currentUserData);
+                if(currentUserData.private?.privateInfo?.completedAccountSetup){
+                    navigation.replace("HomeStack");
+                }
+                else{
+                    alert("Account not set up yet.");
+                    navigation.replace("ProfileSetup");
+                }
             }
         });
 

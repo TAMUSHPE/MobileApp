@@ -17,11 +17,13 @@ export type LoginStackNavigatorParamList = {
     LoginScreen: undefined;
     RegisterScreen: undefined;
     HomeStack: undefined;
+    ProfileSetup: undefined;
 }
 
 export type MainStackNavigatorParamList = {
     LoginStack: undefined;
     HomeStack: undefined;
+    ProfileSetup: undefined;
 };
 
 export type MembersStackNavigatorParamList = {

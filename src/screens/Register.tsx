@@ -1,13 +1,13 @@
 import { View, Text, TextInput, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { auth, db } from '../config/firebaseConfig';
+import { auth } from '../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoginStackNavigatorParamList } from '../types/Navigation';
-import { Roles, PublicUserInfo, PrivateUserInfo, AppSettings, User } from '../types/User';
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import InteractButton from '../components/InteractButton';
 import { evaluatePasswordStrength, validateEmail, validatePassword } from '../helpers/validation';
+import { initializeCurrentUserData } from '../api/firebaseUtils';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
@@ -40,38 +40,16 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
             return;
         }
 
-        const defaultRoles: Roles = {
-            reader: true
-        }
-
         auth.createUserWithEmailAndPassword(email, password)
-            .then((authUser: firebase.auth.UserCredential) => {
-                authUser.user?.updateProfile({
+            .then(async (authUser: firebase.auth.UserCredential) => {
+                await authUser.user?.updateProfile({
                     displayName: displayName,
                     photoURL: ""
                 });
 
-                const defaultAppSettings: AppSettings = {
-                    darkMode: false,
-                }
-
-                const defaultUser: User = {
-                    publicInfo: {
-                        email: email,
-                        displayName: displayName,
-                        photoURL: "",
-                        roles: defaultRoles
-                    },
-                    privateInfo: {
-                        completedAccountSetup: false,
-                        settings: defaultAppSettings
-                    },
-                    roles: { reader: true }
-                }
-
-                db.collection("users").doc(authUser.user?.uid).set(defaultUser);
+                await initializeCurrentUserData();
             })
-            .catch((error) => {alert(error.message);});
+            .catch((error) => { alert(error.message); });
     }
 
     const handlePasswordStrengthIndicator = (text: string) => {
