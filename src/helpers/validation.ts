@@ -1,15 +1,22 @@
+/**
+ * Matches generic email pattern. {name}@{second-level domain}.{top-level domain}
+ */
 export const validateEmail = (email: string): boolean => {
-    // Matches generic email pattern. {name}@{second-level domain}.{top-level domain}
     const emailRegex: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     return typeof email == 'string' && emailRegex.test(email);
 };
 
+/**
+ * Matches passwords with 4-64 characters with characters being alphanumeric or any special characters on a standard qwerty keyboard
+ */
 export const validatePassword = (password: string): boolean => {
-    // Matches passwords with 4-64 characters with characters being alphanumeric or any special characters on a standard qwerty keyboard
     const passwordRegex: RegExp = /^[A-Z0-9 !"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{4,64}$/i;
     return typeof password == 'string' && passwordRegex.test(password);
 };
 
+/**
+ * Values used for password strength calculation 
+ */
 export enum PasswordStrength {
     INVALID = 0,
     WEAK = 1,
@@ -17,14 +24,14 @@ export enum PasswordStrength {
     STRONG = 3
 };
 
+/**
+ * Determines strength of a password based on certain conditions:
+ *   - Invalid passwords are less than 4 characters long or use invalid characters defined in validatePassword()
+ *   - Weak passwords are less than 7 characters long
+ *   - Average passwords are either less than 10 characters long or are just a collection of letters or numbers that are less than 14 characters long
+ *   - Strong passwords are greater than 10 characters and contain special characters or are greater than 14 characters
+ */
 export const evaluatePasswordStrength = (password: string): number => {
-    /*
-    Determines strength of a password based on certain conditions:
-    - Invalid passwords are less than 4 characters long or use invalid characters defined in validatePassword()
-    - Weak passwords are less than 7 characters long
-    - Average passwords are either less than 10 characters long or are just a collection of letters or numbers that are less than 14 characters long
-    - Strong passwords are greater than 10 characters and contain special characters or are greater than 14 characters
-    */
     const averagePasswordRegex: RegExp = /^[A-Z ]{7,14}$|^[0-9]{7,14}$/i;
     if (!validatePassword(password)) {
         return PasswordStrength.INVALID;

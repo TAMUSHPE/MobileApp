@@ -1,9 +1,9 @@
 import { View, Text, TextInput, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { auth } from '../config/firebaseConfig';
+import { auth, db } from '../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoginStackNavigatorParamList } from '../types/Navigation';
-import { User } from '../types/User';
+import { Roles, PublicUserInfo, PrivateUserInfo, AppSettings, User } from '../types/User';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import firebase from 'firebase/compat/app';
 import InteractButton from '../components/InteractButton';
@@ -11,7 +11,7 @@ import { evaluatePasswordStrength, validateEmail, validatePassword } from '../he
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
-    const [username, setUsername] = useState<string>("");
+    const [displayName, setDisplayName] = useState<string>("");
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [confirmationPassword, setConfirmationPassword] = useState<string>("");
@@ -27,7 +27,6 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
     }, [navigation]);
 
     const registerUser = () => {
-        // TODO: Add checking of each value before user is created.
         if (password !== confirmationPassword) {
             alert("Original password and re-entered password do not match!");
             return;
@@ -41,19 +40,38 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
             return;
         }
 
-        const createdUser = new User({
-            email: email,
-            username: username,
-            photoURL: "",
-            firstName: "",
-            lastName: "",
-        });
+        const defaultRoles: Roles = {
+            reader: true
+        }
 
         auth.createUserWithEmailAndPassword(email, password)
             .then((authUser: firebase.auth.UserCredential) => {
-                authUser.user?.updateProfile(createdUser);
+                authUser.user?.updateProfile({
+                    displayName: displayName,
+                    photoURL: ""
+                });
+
+                const defaultAppSettings: AppSettings = {
+                    darkMode: false,
+                }
+
+                const defaultUser: User = {
+                    publicInfo: {
+                        email: email,
+                        displayName: displayName,
+                        photoURL: "",
+                        roles: defaultRoles
+                    },
+                    privateInfo: {
+                        completedAccountSetup: false,
+                        settings: defaultAppSettings
+                    },
+                    roles: { reader: true }
+                }
+
+                db.collection("users").doc(authUser.user?.uid).set(defaultUser);
             })
-            .catch((error) => alert(error.message));
+            .catch((error) => {alert(error.message);});
     }
 
     const handlePasswordStrengthIndicator = (text: string) => {
@@ -87,11 +105,11 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                 <View className='mt-2'>
                     <Text className='text-white'>Enter a unique username:</Text>
                     <TextInput
-                        placeholder="Username"
+                        placeholder="Display Name"
                         className={inputStyle}
-                        onChangeText={(text: string) => setUsername(text)}
+                        onChangeText={(text: string) => setDisplayName(text)}
                         autoFocus
-                        value={username}
+                        value={displayName}
                         inputMode="text"
                         keyboardType="default"
                     />
