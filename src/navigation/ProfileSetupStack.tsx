@@ -1,13 +1,17 @@
 import React from "react";
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
-import { ProfileSetupNavigatorParamList } from "../types/Navigation";
+import { createStackNavigator } from '@react-navigation/stack';
+import { ProfileSetupStackNavigatorParamList } from "../types/Navigation";
 import { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupCommittees } from "../screens/ProfileSetup";
 
 
-const ProfileSetupNavigator = () => {
-    const ProfileSetupTabs = createMaterialTopTabNavigator<ProfileSetupNavigatorParamList>();
+const ProfileSetupStackNavigator = () => {
+    const ProfileSetupTabs = createStackNavigator<ProfileSetupStackNavigatorParamList>();
     return (
-        <ProfileSetupTabs.Navigator>
+        <ProfileSetupTabs.Navigator
+        screenOptions={{
+            headerShown: false,
+        }}
+        >
             <ProfileSetupTabs.Screen name="SetupNameAndBio" component={SetupNameAndBio} />
             <ProfileSetupTabs.Screen name="SetupProfilePicture" component={SetupProfilePicture} />
             <ProfileSetupTabs.Screen name="SetupAcademicInformation" component={SetupAcademicInformation} />
@@ -16,4 +20,4 @@ const ProfileSetupNavigator = () => {
     );
 };
 
-export { ProfileSetupNavigator };
+export { ProfileSetupStackNavigator };

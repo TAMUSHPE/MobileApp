@@ -1,4 +1,5 @@
-import { auth, db } from "../config/firebaseConfig";
+import { auth, db, storage } from "../config/firebaseConfig";
+import { ref, uploadBytesResumable, getDownloadURL, UploadTask, UploadMetadata } from "firebase/storage";
 import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
 
 /**
@@ -12,7 +13,7 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
     return await db.collection("users").doc(uid).get()
         .then((res) => {
             const responseData = res.data()
-            if(responseData){
+            if (responseData) {
                 return {
                     email: responseData?.email,
                     displayName: responseData?.displayName,
@@ -20,7 +21,7 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
                     roles: responseData?.roles,
                 }
             }
-            else{
+            else {
                 return responseData;
             }
         })
@@ -38,14 +39,14 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
 export const getPrivateUserData = async (uid: string): Promise<PrivateUserInfo | undefined> => {
     return await db.collection("users").doc(uid).collection("private").doc("privateInfo").get()
         .then((res) => {
-            const responseData = res.data() 
-            if(responseData){
+            const responseData = res.data()
+            if (responseData) {
                 return {
                     completedAccountSetup: responseData?.completedAccountSetup,
                     settings: responseData?.settings,
                 }
             }
-            else{
+            else {
                 return undefined;
             }
         })
@@ -133,6 +134,19 @@ export const initializeCurrentUserData = async (): Promise<User> => {
     else {
         return user;
     }
-}
+};
 
-
+/**
+ * Uploads a file blob to firebase given a url. Taken from: https://firebase.google.com/docs/storage/web/upload-files
+ * @param file
+ * File blob to be uploaded.
+ * @param path 
+ * Path name of file in firebase.
+ * @returns
+ * Task of file being uploaded.
+ */
+export const uploadFileToFirebase = (file: Blob, path: string, metadata?: UploadMetadata): UploadTask => {
+    const storageRef = ref(storage, path);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+    return uploadTask;
+};

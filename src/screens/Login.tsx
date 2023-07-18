@@ -1,6 +1,6 @@
 import { View, Text, TextInput, KeyboardAvoidingView, Image } from "react-native";
 import React, { useState, useEffect } from "react";
-import { auth, db } from "../config/firebaseConfig";
+import { auth } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { LoginStackNavigatorParamList } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";

@@ -33,6 +33,14 @@ export type MembersStackNavigatorParamList = {
     }
 };
 
+export type ProfileSetupStackNavigatorParamList = {
+    SetupNameAndBio: undefined;
+    SetupProfilePicture: undefined;
+    SetupAcademicInformation: undefined;
+    SetupCommittees: undefined;
+    HomeStack: undefined;
+}
+
 // Drawers
 export type HomeDrawerNavigatorParamList = {
     HomeScreen: undefined;
@@ -41,21 +49,13 @@ export type HomeDrawerNavigatorParamList = {
 };
 
 
-// Tabs
+// Bottom Tabs
 export type HomeBottomTabNavigatorParamList = {
     Home: undefined;
     Profile: {
         email: string;
     };
 };
-
-export type ProfileSetupNavigatorParamList = {
-    SetupNameAndBio: undefined;
-    SetupProfilePicture: undefined;
-    SetupAcademicInformation: undefined;
-    SetupCommittees: undefined;
-    HomeStack: undefined;
-}
 
 
 export type SettingsScreenRouteProp = RouteProp<HomeStackNavigatorParamList, "SettingsScreen">;
