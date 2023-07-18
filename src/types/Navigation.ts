@@ -41,13 +41,21 @@ export type HomeDrawerNavigatorParamList = {
 };
 
 
-// Bottom Tabs
+// Tabs
 export type HomeBottomTabNavigatorParamList = {
     Home: undefined;
     Profile: {
         email: string;
     };
 };
+
+export type ProfileSetupNavigatorParamList = {
+    SetupNameAndBio: undefined;
+    SetupProfilePicture: undefined;
+    SetupAcademicInformation: undefined;
+    SetupCommittees: undefined;
+    HomeStack: undefined;
+}
 
 
 export type SettingsScreenRouteProp = RouteProp<HomeStackNavigatorParamList, "SettingsScreen">;
