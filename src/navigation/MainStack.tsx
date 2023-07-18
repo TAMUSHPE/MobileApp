@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainStackNavigatorParamList } from '../types/Navigation';
 import { LoginStackNavigator } from "./LoginStack";
 import { HomeStackNavigator } from "./HomeStack";
-import { ProfileSetupNavigator } from "./ProfileSetupNavigator";
+import { ProfileSetupStackNavigator } from "./ProfileSetupStack";
 
 // Screens  
 
@@ -15,9 +15,9 @@ const MainStackNavigator = () => {
                 headerShown: false,
             }}
         >
+            <MainStack.Screen name="ProfileSetup" component={ProfileSetupStackNavigator} />
             <MainStack.Screen name="LoginStack" component={LoginStackNavigator} />
             <MainStack.Screen name="HomeStack" component={HomeStackNavigator} />
-            <MainStack.Screen name="ProfileSetup" component={ProfileSetupNavigator} />
         </MainStack.Navigator>
     );
 };
