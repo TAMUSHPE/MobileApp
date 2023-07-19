@@ -1,5 +1,6 @@
 import { auth, db, storage } from "../config/firebaseConfig";
-import { ref, uploadBytesResumable, getDownloadURL, UploadTask, UploadMetadata } from "firebase/storage";
+import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
 
 /**
@@ -10,7 +11,8 @@ import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
  * Promise of data. An undefined return means that the file does not exist or the user does not have permissions to access the document.
  */
 export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | undefined> => {
-    return await db.collection("users").doc(uid).get()
+    //return await db.collection("users").doc(uid).get()
+    return getDoc(doc(db, "users", uid))
         .then((res) => {
             const responseData = res.data()
             if (responseData) {
@@ -37,7 +39,8 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
  * Promise of data. An undefined return means that the file does not exist or the user does not have permissions to access the document.
  */
 export const getPrivateUserData = async (uid: string): Promise<PrivateUserInfo | undefined> => {
-    return await db.collection("users").doc(uid).collection("private").doc("privateInfo").get()
+    //return await db.collection("users").doc(uid).collection("private").doc("privateInfo").get()
+    return await getDoc(doc(db, `users/${uid}/private`, "privateInfo"))
         .then((res) => {
             const responseData = res.data()
             if (responseData) {
@@ -85,7 +88,8 @@ export const getUser = async (uid: string): Promise<User | undefined> => {
  * Data to be stored as the public data. 
  */
 export const setPublicUserData = async (data: PublicUserInfo) => {
-    await db.collection("users").doc(auth.currentUser?.uid).set(data)
+    //await db.collection("users").doc(auth.currentUser?.uid).set(data)
+    await setDoc(doc(db, "users", auth.currentUser?.uid!), data)
         .catch(err => console.log(err));
 };
 
@@ -95,7 +99,8 @@ export const setPublicUserData = async (data: PublicUserInfo) => {
  * Data to be stored as the private data. 
  */
 export const setPrivateUserData = async (data: PrivateUserInfo) => {
-    await db.collection("users").doc(auth.currentUser?.uid).collection("private").doc("privateInfo").set(data)
+    //await db.collection("users").doc(auth.currentUser?.uid).collection("private").doc("privateInfo").set(data)
+    await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), data)
         .catch(err => console.log(err));
 };
 

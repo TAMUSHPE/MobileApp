@@ -5,9 +5,9 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { LoginStackNavigatorParamList } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InteractButton from "../components/InteractButton";
-import firebase from 'firebase/compat/app';
 import { Images } from "../../assets";
 import { initializeCurrentUserData } from "../api/firebaseUtils";
+import { signInWithEmailAndPassword, signInAnonymously, UserCredential, onAuthStateChanged, updateProfile } from "firebase/auth";
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
@@ -15,13 +15,13 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
     const [password, setPassword] = useState<string>("");
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
             if (authUser) {
                 const currentUserData = await initializeCurrentUserData();
-                if(currentUserData.private?.privateInfo?.completedAccountSetup){
+                if (currentUserData.private?.privateInfo?.completedAccountSetup) {
                     navigation.replace("HomeStack");
                 }
-                else{
+                else {
                     navigation.replace("ProfileSetup");
                 }
             }
@@ -31,17 +31,18 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
     }, [navigation]);
 
     const signIn = () => {
-        auth.signInWithEmailAndPassword(email, password).catch(error => alert(error));
+        signInWithEmailAndPassword(auth, email, password).catch(error => alert(error));
     }
 
     const guestSignIn = () => {
-        auth.signInAnonymously()
-            .then((authUser: firebase.auth.UserCredential) => {
-                authUser.user?.updateProfile({
+        signInAnonymously(auth)
+            .then((authUser: UserCredential) => {
+                updateProfile(authUser.user, {
                     displayName: "Guest Account",
                     photoURL: "",
                 });
                 alert("Login as guest will be depricated in the future.");
+                navigation.replace("HomeStack");
             })
             .catch((error) => alert(error.message));
     }

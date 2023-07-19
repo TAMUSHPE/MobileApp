@@ -1,17 +1,18 @@
 import React from 'react';
-import { createDrawerNavigator, DrawerContentScrollView, DrawerItemList, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import { HomeDrawerNavigatorParamList } from '../types/Navigation';
-import { auth } from '../config/firebaseConfig';
 import { Image, TouchableOpacity, View } from 'react-native';
+import { auth } from '../config/firebaseConfig';
+import { signOut } from 'firebase/auth';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Screens
 import HomeScreen from '../screens/Home';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Images } from '../../assets';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
-    const signOut = () => {
-        auth.signOut()
+    const signOutUser = () => {
+        signOut(auth)
             .then(() => {
                 // Once signed out, forces user to login screen and resets navigation stack so that login is the only element.
                 props.navigation.navigate("LoginStack");
@@ -26,7 +27,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     return (
         <DrawerContentScrollView {...props}>
             <DrawerItem label="Settings" onPress={() => props.navigation.navigate("SettingsScreen", { userId: 1234 })} />
-            <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOut()} />
+            <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
         </DrawerContentScrollView>
     );
 };
