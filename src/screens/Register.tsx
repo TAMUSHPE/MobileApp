@@ -4,10 +4,10 @@ import { auth } from '../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoginStackNavigatorParamList } from '../types/Navigation';
 import React, { useLayoutEffect, useState } from 'react';
-import firebase from 'firebase/compat/app';
-import InteractButton from '../components/InteractButton';
+import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
 import { evaluatePasswordStrength, validateEmail, validatePassword } from '../helpers/validation';
 import { initializeCurrentUserData } from '../api/firebaseUtils';
+import InteractButton from '../components/InteractButton';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
@@ -40,9 +40,9 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
             return;
         }
 
-        auth.createUserWithEmailAndPassword(email, password)
-            .then(async (authUser: firebase.auth.UserCredential) => {
-                await authUser.user?.updateProfile({
+        createUserWithEmailAndPassword(auth, email, password)
+            .then(async (authUser: UserCredential) => {
+                await updateProfile(authUser.user, {
                     displayName: displayName,
                     photoURL: ""
                 });
