@@ -17,11 +17,13 @@ export type LoginStackNavigatorParamList = {
     LoginScreen: undefined;
     RegisterScreen: undefined;
     HomeStack: undefined;
+    ProfileSetup: undefined;
 }
 
 export type MainStackNavigatorParamList = {
     LoginStack: undefined;
     HomeStack: undefined;
+    ProfileSetup: undefined;
 };
 
 export type MembersStackNavigatorParamList = {
@@ -30,6 +32,14 @@ export type MembersStackNavigatorParamList = {
         email: string;
     }
 };
+
+export type ProfileSetupStackNavigatorParamList = {
+    SetupNameAndBio: undefined;
+    SetupProfilePicture: undefined;
+    SetupAcademicInformation: undefined;
+    SetupCommittees: undefined;
+    HomeStack: undefined;
+}
 
 export type CommitteesStackNavigatorParamList = {
     CommitteesScreen: undefined;

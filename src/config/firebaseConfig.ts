@@ -1,9 +1,10 @@
-import firebase from 'firebase/compat/app';
-import "firebase/compat/auth";
-import "firebase/compat/firestore";
-// import "firebase/compat/database";
-// import "firebase/compat/functions";
-// import "firebase/compat/storage";
+import { initializeApp, FirebaseApp } from 'firebase/app';
+import { getAuth } from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+// import {} from "firebase/database";
+// import {} from "firebase/functions";
+// import {} from "firebase/storage";
 
 const firebaseConfig = {
     apiKey: "***REMOVED***",
@@ -15,15 +16,11 @@ const firebaseConfig = {
 };
 
 
-let app: firebase.app.App;
-if (firebase.apps.length === 0) {
-    app = firebase.initializeApp(firebaseConfig);
-}
-else {
-    app = firebase.app();
-}
+let app: FirebaseApp;
+app = initializeApp(firebaseConfig);
 
-const db = app.firestore();
-const auth = firebase.auth();
+const db = getFirestore(app);
+const auth = getAuth(app);
+const storage = getStorage(app);
 
-export { db, auth };
+export { db, auth, storage };
