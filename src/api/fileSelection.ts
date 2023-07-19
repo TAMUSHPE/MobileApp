@@ -5,24 +5,26 @@ import * as ImagePicker from 'expo-image-picker';
  * @returns
  * Object containing data of selected image including local URI.
  */
-export const selectImage = async (): Promise<ImagePicker.ImagePickerResult | null> => {
-    return await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 1,
-    })
+export const selectImage = async (options: ImagePicker.ImagePickerOptions | undefined = {
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+}): Promise<ImagePicker.ImagePickerResult | undefined> => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+        alert("Image permissions are required to upload a picture!");
+        return undefined;
+    }
+    return await ImagePicker.launchImageLibraryAsync(options)
         .then((result) => {
-            if (!result.canceled) {
+            if (!(result.assets == undefined)) {
                 return result;
             }
             else {
-                return null;
+                return undefined;
             }
         })
         .catch(err => {
             console.error(err);
-            return null;
+            return undefined;
         });
 };
 

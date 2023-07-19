@@ -1,23 +1,20 @@
 import { View, Text, Animated, TextInput } from 'react-native';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleStartY, titleEndY, componentStyle, textInputStyle, focusTextStyle, blurTextStyle, placeholderText, maxCharacters, lineCount, isMultiline }: { setTextFunction: Function, inputValue: string | undefined, title?: string, titleStartY?: number, titleEndY?: number, componentStyle?: string, textInputStyle?: string, focusTextStyle?: string, blurTextStyle?: string, placeholderText?: string, maxCharacters?: number, lineCount?: number, isMultiline?: boolean }) => {
     const [titleStyle, setTitleStyle] = useState<string | undefined>(blurTextStyle ?? "");
     const moveTitle = useRef(new Animated.Value(0)).current;
 
-    const onFocusHandler = () => {
-        if (inputValue === "") {
+    useEffect(() => {
+        if (inputValue !== "") {
             moveTitleTop();
             setTitleStyle(focusTextStyle);
         }
-    }
-
-    const onBlurHandler = () => {
-        if (inputValue === "") {
+        else {
             moveTitleBottom();
             setTitleStyle(blurTextStyle);
         }
-    }
+    });
 
     const moveTitleTop = () => {
         Animated.timing(moveTitle, {
@@ -48,8 +45,6 @@ const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleS
                 <Text className={titleStyle}>{title ?? "Title"}</Text>
             </Animated.View>
             <TextInput
-                onBlur={onBlurHandler}
-                onFocus={onFocusHandler}
                 placeholder={placeholderText ?? ""}
                 className={textInputStyle ?? ""}
                 multiline={isMultiline ?? false}
