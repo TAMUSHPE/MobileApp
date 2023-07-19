@@ -3,19 +3,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LoginStackNavigatorParamList } from '../types/Navigation';
-import { User } from '../types/User';
 import React, { useLayoutEffect, useState } from 'react';
-import firebase from 'firebase/compat/app';
+import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
+import { evaluatePasswordStrength, validateEmail, validatePassword } from '../helpers/validation';
+import { initializeCurrentUserData } from '../api/firebaseUtils';
 import InteractButton from '../components/InteractButton';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
-    const [username, setUsername] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmationPassword, setConfirmationPassword] = useState("");
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
+    const [displayName, setDisplayName] = useState<string>("");
+    const [email, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+    const [confirmationPassword, setConfirmationPassword] = useState<string>("");
+    const [passwordStrengthColor, setPasswordStrengthColor] = useState<string>("text-[#f00]");
+    const [passwordStrengthText, setPasswordStrengthText] = useState<string>("INVALID\n- Minimum 4 characters\n- Valid characters: : A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~");
 
     const inputStyle = "bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1";
 
@@ -26,44 +27,73 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
     }, [navigation]);
 
     const registerUser = () => {
-        // TODO: Add checking of each value before user is created.
         if (password !== confirmationPassword) {
             alert("Original password and re-entered password do not match!");
             return;
         }
+        else if (!validateEmail(email)) {
+            alert("Invalid Email.")
+            return;
+        }
+        else if (!validatePassword(password)) {
+            alert("Password must meet specifications:\n- 4-64 characters\n- Spaces are allowed\n- Valid characters: A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~")
+            return;
+        }
 
-        const createdUser = new User({
-            email: email,
-            username: username,
-            photoURL: "",
-            firstName: firstName || "",
-            lastName: lastName || "",
-        });
+        createUserWithEmailAndPassword(auth, email, password)
+            .then(async (authUser: UserCredential) => {
+                await updateProfile(authUser.user, {
+                    displayName: displayName,
+                    photoURL: ""
+                });
 
-        auth.createUserWithEmailAndPassword(email, password)
-            .then((authUser: firebase.auth.UserCredential) => {
-                authUser.user?.updateProfile(createdUser);
+                await initializeCurrentUserData();
             })
-            .catch((error) => alert(error.message));
+            .catch((err) => { console.error(err.message); });
+    }
+
+    const handlePasswordStrengthIndicator = (text: string) => {
+        const passwordStrength = evaluatePasswordStrength(text);
+        const passwordStrengthValues = [
+            {
+                color: "text-[#f00]",
+                text: "INVALID\n- Minimum 4 characters\n- Valid characters: : A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~"
+            },
+            {
+                color: "text-[#f90]",
+                text: "Weak"
+            },
+            {
+                color: "text-[#ff0]",
+                text: "Average"
+            },
+            {
+                color: "text-[#0f0]",
+                text: "Strong"
+            },
+        ]
+
+        setPasswordStrengthText(passwordStrengthValues[passwordStrength]["text"]);
+        setPasswordStrengthColor(passwordStrengthValues[passwordStrength]["color"]);
     }
 
     return (
-        <SafeAreaView className="flex-1 items-center justify-between">
+        <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
             <KeyboardAvoidingView className="flex-col w-10/12">
                 <View className='mt-2'>
-                    <Text>Enter a unique username: <Text className='text-red-600'>*</Text></Text>
+                    <Text className='text-white'>Enter a unique username:</Text>
                     <TextInput
-                        placeholder="Username"
+                        placeholder="Display Name"
                         className={inputStyle}
-                        onChangeText={(text: string) => setUsername(text)}
+                        onChangeText={(text: string) => setDisplayName(text)}
                         autoFocus
-                        value={username}
+                        value={displayName}
                         inputMode="text"
                         keyboardType="default"
                     />
                 </View>
                 <View className='mt-2'>
-                    <Text>Enter your TAMU email address:<Text className='text-red-600'>*</Text></Text>
+                    <Text className='text-white'>Enter your TAMU email address:</Text>
                     <TextInput
                         placeholder="Email (eg. bob@tamu.edu)"
                         className={inputStyle}
@@ -74,20 +104,26 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                     />
                 </View>
                 <View className='mt-2'>
-                    <Text>Enter your password:<Text className='text-red-600'>*</Text></Text>
+                    <Text className='text-white'>Enter your password:</Text>
                     <TextInput
                         placeholder="Password"
                         className={inputStyle}
-                        onChangeText={(text: string) => setPassword(text)}
+                        onChangeText={(text: string) => {
+                            setPassword(text);
+                            handlePasswordStrengthIndicator(text);
+                        }}
                         secureTextEntry
                         value={password}
                         inputMode="text"
                         autoCorrect={false}
                         textContentType="password"
                     />
+                    <View className='bg-dark-navy'>
+                        <Text className='text-white'>Password Strength: <Text className={passwordStrengthColor}>{passwordStrengthText}</Text></Text>
+                    </View>
                 </View>
                 <View className='mt-2'>
-                    <Text>Re-enter your password:<Text className='text-red-600'>*</Text></Text>
+                    <Text className='text-white'>Re-enter your password:</Text>
                     <TextInput
                         placeholder="Confirm Password"
                         className={inputStyle}
@@ -99,41 +135,14 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                         textContentType="password"
                     />
                 </View>
-                <View className='mt-2'>
-                    <Text>Enter your first name:</Text>
-                    <TextInput
-                        placeholder="First Name"
-                        className={inputStyle}
-                        onChangeText={(text: string) => setFirstName(text)}
-                        value={firstName}
-                        inputMode="text"
-                        autoCorrect={false}
-                        textContentType="password"
-                    />
-                </View>
-                <View className='mt-2'>
-                    <Text>Enter your last name:</Text>
-                    <TextInput
-                        placeholder="Last Name"
-                        className={inputStyle}
-                        onChangeText={(text: string) => setLastName(text)}
-                        value={lastName}
-                        inputMode="text"
-                        autoCorrect={false}
-                        textContentType="password"
-                        onSubmitEditing={() => registerUser()}
-                    />
-                </View>
                 <InteractButton
                     pressFunction={() => registerUser()}
                     label="Register Account"
-                    buttonStyle="bg-blue-500 mt-5 rounded-md"
+                    buttonStyle="bg-red mt-5 rounded-xl"
                     textStyle="text-white font-bold"
                 />
             </KeyboardAvoidingView>
-            <View className="my-5 border-t-2 border-t-[#a8a8a8] w-11/12">
-                <Text className="text-center mt-2"><Text className='text-red-600'>*</Text> - required</Text>
-            </View>
+            <View className="my-10 border-t-2 border-t-[#a8a8a8] w-11/12" />
         </SafeAreaView>
     );
 };

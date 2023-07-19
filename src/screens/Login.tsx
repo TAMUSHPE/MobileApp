@@ -1,22 +1,29 @@
-import { View, Text, TextInput, KeyboardAvoidingView } from "react-native";
+import { View, Text, TextInput, KeyboardAvoidingView, Image } from "react-native";
 import React, { useState, useEffect } from "react";
 import { auth } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { LoginStackNavigatorParamList } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InteractButton from "../components/InteractButton";
-import firebase from 'firebase/compat/app';
-import { User } from '../types/User';
+import { Images } from "../../assets";
+import { initializeCurrentUserData } from "../api/firebaseUtils";
+import { signInWithEmailAndPassword, signInAnonymously, UserCredential, onAuthStateChanged, updateProfile } from "firebase/auth";
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+    const [email, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((authUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
             if (authUser) {
-                navigation.replace("HomeStack");
+                const currentUserData = await initializeCurrentUserData();
+                if (currentUserData.private?.privateInfo?.completedAccountSetup) {
+                    navigation.replace("HomeStack");
+                }
+                else {
+                    navigation.replace("ProfileSetup");
+                }
             }
         });
 
@@ -24,30 +31,30 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
     }, [navigation]);
 
     const signIn = () => {
-        auth.signInWithEmailAndPassword(email, password).catch(error => alert(error));
+        signInWithEmailAndPassword(auth, email, password).catch(err => console.error(err));
     }
 
     const guestSignIn = () => {
-        const tempUser = new User({
-            email: "",
-            username: "Guest Account",
-            photoURL: "",
-            firstName:  "Guest",
-            lastName: "Account",
-        });
-
-        auth.signInAnonymously()
-            .then((authUser: firebase.auth.UserCredential) => {
-                authUser.user?.updateProfile(tempUser);
+        signInAnonymously(auth)
+            .then((authUser: UserCredential) => {
+                updateProfile(authUser.user, {
+                    displayName: "Guest Account",
+                    photoURL: "",
+                });
+                alert("Login as guest will be depricated in the future.");
+                navigation.replace("HomeStack");
             })
-            .catch((error) => alert(error.message));
+            .catch((err) => console.error(err.message));
     }
 
     return (
-        <SafeAreaView className="flex-1 items-center justify-between">
-            <View>
-                <Text>Registering as a new user is currently a WIP.</Text>
-                <Text>Please select "Guest Log In"</Text>
+        <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
+            <View className="flex-col items-center my-8">
+                <Image
+                    className="flex-row h-20 w-20 mb-3"
+                    source={Images.SHPE_LOGO}
+                />
+                <Text className="text-white text-center text-3xl">Welcome to SHPE</Text>
             </View>
             <View className="flex-col w-4/5">
                 <KeyboardAvoidingView className="flex-col my-2">
@@ -55,7 +62,6 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                         placeholder="Email"
                         className="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1"
                         onChangeText={(text: string) => setEmail(text)}
-                        autoFocus
                         value={email}
                         inputMode="email"
                         keyboardType="email-address"
@@ -75,28 +81,34 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                     <InteractButton
                         pressFunction={() => signIn()}
                         label="Sign In"
-                        buttonStyle="bg-blue-500 mt-5 rounded-md"
+                        buttonStyle="bg-red mt-5 rounded-xl"
                         textStyle="text-white font-bold"
                     />
                     <View className="items-center my-4">
-                        <Text>Or</Text>
+                        <Text className="text-white">Or</Text>
                     </View>
                     <InteractButton
                         pressFunction={() => navigation.navigate("RegisterScreen")}
                         label="Register Account"
-                        buttonStyle="bg-[#ddd] rounded-md"
+                        buttonStyle="bg-[#ddd] rounded-xl"
                         textStyle="text-[#3b3b3b] font-bold"
                     />
                     <InteractButton
                         pressFunction={() => guestSignIn()}
                         label="Sign In As Guest"
-                        buttonStyle="bg-[#ddd] mt-2 rounded-md"
+                        buttonStyle="bg-[#ddd] mt-2 rounded-xl"
+                        textStyle="text-[#3b3b3b] font-bold"
+                    />
+                    <InteractButton
+                        pressFunction={() => alert("This feature is not implemented")}
+                        label="Sign In with TAMU Google Account"
+                        buttonStyle="bg-[#ddd] mt-2 rounded-xl"
                         textStyle="text-[#3b3b3b] font-bold"
                     />
                 </View>
             </View>
-            <View className="my-5 border-t-2 border-t-[#a8a8a8] w-11/12">
-                <Text className="text-center mt-2">This is the footer</Text>
+            <View className="my-5 w-11/12">
+                <Text className="text-right text-pale-orange mt-2">{"Society of Hispanic\nProfessional\nEngineers"}</Text>
             </View>
         </SafeAreaView>
     );
