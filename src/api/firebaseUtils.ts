@@ -28,7 +28,7 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
             }
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return undefined;
         });
 };
@@ -54,7 +54,7 @@ export const getPrivateUserData = async (uid: string): Promise<PrivateUserInfo |
             }
         })
         .catch(err => {
-            console.log(err);
+            console.error(err);
             return undefined;
         });
 };
@@ -101,7 +101,7 @@ export const setPublicUserData = async (data: PublicUserInfo) => {
 export const setPrivateUserData = async (data: PrivateUserInfo) => {
     //await db.collection("users").doc(auth.currentUser?.uid).collection("private").doc("privateInfo").set(data)
     await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), data)
-        .catch(err => console.log(err));
+        .catch(err => console.error(err));
 };
 
 /**

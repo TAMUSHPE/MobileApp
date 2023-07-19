@@ -35,8 +35,8 @@ export const queryGoogleSpreadsheet = async (sheetID: string, query: string = "s
             const data = JSON.parse(responseText.replace(headerPattern, ""));
             return data;
         })
-        .catch((error) => {
-            console.log("Error:", error);
+        .catch((err) => {
+            console.error(err);
             return null
         });
 };
@@ -65,8 +65,8 @@ export const memberPoints = async (email: string): Promise<number> => {
                 return typeof value === "number" ? value : 0;
             }
         })
-        .catch(err => {
-            alert(err);
+        .catch((error) => {
+            console.error(error);
             return 0;
         });
 };

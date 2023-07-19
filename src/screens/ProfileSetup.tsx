@@ -7,6 +7,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ProfileSetupStackNavigatorParamList } from '../types/Navigation';
 import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
 import { uploadFileToFirebase } from '../api/firebaseUtils';
+import * as ImagePicker from 'expo-image-picker';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8"
 
@@ -70,7 +71,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
 };
 
 const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
-    const [image, setImage] = useState<Blob>();
+    const [image, setImage] = useState<Blob | null>(null);
     const [uploadState, setUploadState] = useState<string>("None");
     const [uploadProgress, setUploadProgress] = useState<number>(0);
     const [downloadURL, setDownloadURL] = useState<string>("");

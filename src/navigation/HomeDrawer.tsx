@@ -21,7 +21,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                     routes: [{ name: "LoginStack" }],
                 })
             })
-            .catch((error) => alert(error));
+            .catch((err) => console.error(err));
     };
 
     return (
