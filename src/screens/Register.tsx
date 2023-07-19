@@ -49,7 +49,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
 
                 await initializeCurrentUserData();
             })
-            .catch((error) => { alert(error.message); });
+            .catch((err) => { console.error(err.message); });
     }
 
     const handlePasswordStrengthIndicator = (text: string) => {

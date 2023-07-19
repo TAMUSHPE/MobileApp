@@ -31,7 +31,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
     }, [navigation]);
 
     const signIn = () => {
-        signInWithEmailAndPassword(auth, email, password).catch(error => alert(error));
+        signInWithEmailAndPassword(auth, email, password).catch(err => console.error(err));
     }
 
     const guestSignIn = () => {
@@ -44,7 +44,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                 alert("Login as guest will be depricated in the future.");
                 navigation.replace("HomeStack");
             })
-            .catch((error) => alert(error.message));
+            .catch((err) => console.error(err.message));
     }
 
     return (
