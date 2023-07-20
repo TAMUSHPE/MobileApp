@@ -1,11 +1,36 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { ActivityIndicator, View, Image } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { MainStackNavigator } from './MainStack';
+import { UserContext } from '../context/UserContext';
+import HomeBottomTabs from './HomeBottomTabs';
+import { Images } from '../../assets';
 
 const RootNavigator = () => {
+    const userContext = useContext(UserContext);
+    if (!userContext) {
+        return null;
+    }
+    // Note: Change this to see if has completed profile setup
+    const { userInfo, userLoading } = userContext;
+
+    if (userLoading)
+        return (
+            <View
+                // style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+                className="flex items-center justify-center bg-dark-navy h-screen w-screen"
+            >
+                <Image
+                    source={Images.SHPE_LOGO}
+                    className="h-48 w-48"
+                />
+                <ActivityIndicator className='mt-4' size={"large"} />
+            </View>
+        );
+
     return (
         <NavigationContainer>
-            <MainStackNavigator />
+            {userInfo ? <HomeBottomTabs /> : <MainStackNavigator />}
         </NavigationContainer>
     );
 };

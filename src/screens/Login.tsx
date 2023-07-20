@@ -1,5 +1,5 @@
 import { View, Text, TextInput, KeyboardAvoidingView, Image } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { auth } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { LoginStackNavigatorParamList } from "../types/Navigation";
@@ -8,15 +8,30 @@ import InteractButton from "../components/InteractButton";
 import { Images } from "../../assets";
 import { initializeCurrentUserData } from "../api/firebaseUtils";
 import { signInWithEmailAndPassword, signInAnonymously, UserCredential, onAuthStateChanged, updateProfile } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { UserContext } from "../context/UserContext";
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
 
+    // User Context
+    const userContext = useContext(UserContext);
+    if (!userContext) {
+        return null;
+    }
+    const { userInfo, setUserInfo } = userContext;
+
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
             if (authUser) {
+                // Store User Data
+                await AsyncStorage.setItem("@user", JSON.stringify(authUser));
+                setUserInfo(authUser);
+
+                // Navigation
                 const currentUserData = await initializeCurrentUserData();
                 if (currentUserData.private?.privateInfo?.completedAccountSetup) {
                     navigation.replace("HomeStack");
