@@ -1,25 +1,39 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import { HomeDrawerNavigatorParamList } from '../types/Navigation';
 import { Image, TouchableOpacity, View } from 'react-native';
 import { auth } from '../config/firebaseConfig';
 import { signOut } from 'firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserContext } from '../context/UserContext';
 
 // Screens
 import HomeScreen from '../screens/Home';
 import { Images } from '../../assets';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
+    const userContext = useContext(UserContext);
+    if (!userContext) {
+        return null;
+    }
+
+    // Note: Change this to see if has completed profile setup
+    const { setUserInfo } = userContext;
+    const removeLocalUser = async () => {
+        try {
+            await AsyncStorage.removeItem('@user')
+        } catch (e) {
+            console.log(e);
+        }
+
+    }
     const signOutUser = () => {
         signOut(auth)
             .then(() => {
                 // Once signed out, forces user to login screen and resets navigation stack so that login is the only element.
-                props.navigation.navigate("LoginStack");
-                props.navigation.reset({
-                    index: 0,
-                    routes: [{ name: "LoginStack" }],
-                })
+                removeLocalUser();
+                setUserInfo(undefined);
             })
             .catch((err) => console.error(err));
     };
