@@ -15,9 +15,9 @@ const MainStackNavigator = () => {
                 headerShown: false,
             }}
         >
-            <MainStack.Screen name="ProfileSetup" component={ProfileSetupStackNavigator} />
             <MainStack.Screen name="LoginStack" component={LoginStackNavigator} />
             <MainStack.Screen name="HomeStack" component={HomeStackNavigator} />
+            <MainStack.Screen name="ProfileSetup" component={ProfileSetupStackNavigator} />
         </MainStack.Navigator>
     );
 };
