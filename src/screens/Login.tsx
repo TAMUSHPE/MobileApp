@@ -57,7 +57,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                     photoURL: "",
                 });
                 alert("Login as guest will be depricated in the future.");
-                navigation.replace("HomeStack");
+                setUserInfo(authUser.user) // navigates to home screen
             })
             .catch((err) => console.error(err.message));
     }
