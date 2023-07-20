@@ -1,6 +1,6 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
 
 /**
@@ -11,7 +11,6 @@ import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
  * Promise of data. An undefined return means that the file does not exist or the user does not have permissions to access the document.
  */
 export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | undefined> => {
-    //return await db.collection("users").doc(uid).get()
     return getDoc(doc(db, "users", uid))
         .then((res) => {
             const responseData = res.data()
@@ -39,7 +38,6 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
  * Promise of data. An undefined return means that the file does not exist or the user does not have permissions to access the document.
  */
 export const getPrivateUserData = async (uid: string): Promise<PrivateUserInfo | undefined> => {
-    //return await db.collection("users").doc(uid).collection("private").doc("privateInfo").get()
     return await getDoc(doc(db, `users/${uid}/private`, "privateInfo"))
         .then((res) => {
             const responseData = res.data()
@@ -85,22 +83,20 @@ export const getUser = async (uid: string): Promise<User | undefined> => {
 /**
  * Sets the public data of the currently logged in user. This data is readable by anyone.
  * @param data
- * Data to be stored as the public data. 
+ * Data to be stored as the public data. Any pre-existing fields in firestore will not be removed.
  */
 export const setPublicUserData = async (data: PublicUserInfo) => {
-    //await db.collection("users").doc(auth.currentUser?.uid).set(data)
-    await setDoc(doc(db, "users", auth.currentUser?.uid!), data)
+    await setDoc(doc(db, "users", auth.currentUser?.uid!), data, { merge: true })
         .catch(err => console.log(err));
 };
 
 /**
  * Sets the private data of the currently logged in user. This data is readable by only the user.
  * @param data 
- * Data to be stored as the private data. 
+ * Data to be stored as the private data. Any pre-existing fields in firestore will not be removed.
  */
 export const setPrivateUserData = async (data: PrivateUserInfo) => {
-    //await db.collection("users").doc(auth.currentUser?.uid).collection("private").doc("privateInfo").set(data)
-    await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), data)
+    await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), data, { merge: true })
         .catch(err => console.error(err));
 };
 
@@ -109,9 +105,9 @@ export const setPrivateUserData = async (data: PrivateUserInfo) => {
  */
 export const initializeCurrentUserData = async (): Promise<User> => {
     const defaultPublicInfo: PublicUserInfo = {
-        email: auth.currentUser?.email,
-        displayName: auth.currentUser?.displayName,
-        photoURL: auth.currentUser?.photoURL,
+        email: auth.currentUser?.email || "",
+        displayName: auth.currentUser?.displayName || "",
+        photoURL: auth.currentUser?.photoURL || "",
         roles: {
             reader: true,
         },

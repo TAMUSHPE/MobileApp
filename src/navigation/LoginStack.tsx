@@ -23,7 +23,7 @@ const LoginStackNavigator = () => {
                 options={{
                     title: 'Register Your Account',
                     headerStyle: {
-                        backgroundColor: 'navy-blue',
+                        backgroundColor: '#4957e6',
                     },
                     headerTintColor: '#fff',
                     headerTitleStyle: {
