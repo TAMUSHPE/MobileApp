@@ -414,7 +414,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     <View className='w-full h-full pb-28'>
                         {committees.map(({ name, color }: CommitteeToggleStyle) =>
                         (
-                            <CommitteeToggle name={name} color={color} />
+                            <CommitteeToggle name={name} color={color} key={name} />
                         )
                         )}
                     </View>
