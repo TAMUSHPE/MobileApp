@@ -14,10 +14,10 @@ export interface Roles {
  * Each argument must have a value, however some of these values may be "empty". For example, if a string's value is "", this means that there is no value in the data.
  */
 export interface PublicUserInfo {
-    email: string | null | undefined;
-    displayName: string | null | undefined;
-    photoURL: string | null | undefined;
-    roles: Roles;
+    email?: string;
+    displayName?: string;
+    photoURL?: string;
+    roles?: Roles;
     name?: string;
     bio?: string;
     major?: string;
@@ -36,8 +36,8 @@ export interface AppSettings {
  * This interface represents a user's private information as it is stored in firestore. This information should only be visible to the user that owns it.
  */
 export interface PrivateUserInfo {
-    completedAccountSetup: boolean;
-    settings: AppSettings;
+    completedAccountSetup?: boolean;
+    settings?: AppSettings;
 };
 
 /**
@@ -45,7 +45,7 @@ export interface PrivateUserInfo {
  * Private information is stored as a sub-collection which can only be accessed by the user that owns the information.
  */
 export interface User {
-    publicInfo: PublicUserInfo;
+    publicInfo?: PublicUserInfo;
     private?: {
         privateInfo?: PrivateUserInfo | undefined;
     }
