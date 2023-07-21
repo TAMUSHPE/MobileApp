@@ -10,8 +10,27 @@ const LoginStackNavigator = () => {
     const LoginStack = createNativeStackNavigator<LoginStackNavigatorParamList>();
     return (
         <LoginStack.Navigator>
-            <LoginStack.Screen name="LoginScreen" component={LoginScreen} />
-            <LoginStack.Screen name="RegisterScreen" component={RegisterScreen} />
+            <LoginStack.Group
+                screenOptions={{
+                    headerShown: false,
+                }}
+            >
+                <LoginStack.Screen name="LoginScreen" component={LoginScreen} />
+            </LoginStack.Group>
+            <LoginStack.Screen
+                name="RegisterScreen"
+                component={RegisterScreen}
+                options={{
+                    title: 'Register Your Account',
+                    headerStyle: {
+                        backgroundColor: '#4957e6',
+                    },
+                    headerTintColor: '#fff',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                    },
+                }}
+            />
         </LoginStack.Navigator>
     );
 };

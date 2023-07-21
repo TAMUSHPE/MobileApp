@@ -1,6 +1,6 @@
 import { View, Text, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { memberPoints } from '../api/FetchGoogleSheets';
+import { memberPoints } from '../api/fetchGoogleSheets';
 import { MembersProps, MembersScreenRouteProp } from '../types/Navigation';
 import { useRoute } from '@react-navigation/native';
 import { auth } from '../config/firebaseConfig';
