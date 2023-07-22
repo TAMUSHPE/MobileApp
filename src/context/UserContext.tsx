@@ -11,14 +11,15 @@ type UserContextType = {
   userInfo: Partial<PublicUserInfo> | undefined;
   setUserInfo: React.Dispatch<React.SetStateAction<Partial<PublicUserInfo> | undefined>>
   userLoading: boolean;
+  setUserLoading: React.Dispatch<React.SetStateAction<boolean>>
 };
 
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
+  const [userLoading, setUserLoading] = useState<boolean>(true);
   const [userInfo, setUserInfo] = useState<Partial<PublicUserInfo> | undefined>(undefined)
-  const [userLoading, setUserLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const getLocalUser = async () => {
@@ -41,7 +42,7 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ userInfo, setUserInfo, userLoading }}>
+    <UserContext.Provider value={{ userInfo, setUserInfo, userLoading, setUserLoading }}>
       {children}
     </UserContext.Provider>
   );
