@@ -24,7 +24,7 @@ const Splash = ({ setIsLoading }: SplashProps) => {
         >
             <LottieView
                 ref={ref}
-                source={require("../../assets/splash_shpe_animated.json")}
+                source={require("../../assets/splash_minimal_tamu.json")}
                 autoPlay
                 loop={false}
                 resizeMode="cover"
