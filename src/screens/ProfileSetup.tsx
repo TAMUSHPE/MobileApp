@@ -1,5 +1,5 @@
 import { SafeAreaView, Text, View, KeyboardAvoidingView, Image, Animated } from 'react-native';
-import React, { useRef, useState, useContext } from 'react';
+import React, { useEffect, useRef, useState, useContext } from 'react';
 import { auth } from '../config/firebaseConfig';
 import { getDownloadURL } from "firebase/storage";
 import InteractButton from '../components/InteractButton';
@@ -15,8 +15,11 @@ import { updateProfile } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../context/UserContext';
 
-const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8"
+const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
+/**
+ * In this screen, the user will set their name and bio. The screen only let the user continue if their name is not empty.
+ */
 const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
@@ -89,6 +92,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
 
 /**
  * SetupProfilePicture is a screen where the user chooses a profile picture for their account.
+ * This profile picture will be uploaded to firebase storage when the user hits the "Continue" button.
  */
 const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
     const [image, setImage] = useState<Blob | null>(null);
@@ -121,6 +125,10 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
         ])
     ).start();
 
+    /**
+     * This will launch the native image picker of the user's device and allow the user to crop it to an aspect ratio of 1:1.
+     * When the user selects an image, it will prepare the image to be uploaded. 
+     */
     const selectProfilePicture = async () => {
         const result = await selectImage({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -241,8 +249,9 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
     );
 };
 
+
 /**
- *
+ * This screen is where the user will enter their major and class-year. It will not let the user continue if either field is empty.
  */
 const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
     const [major, setMajor] = useState<string>("");
@@ -320,6 +329,11 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
     );
 };
 
+
+/**
+ * This screen is where the user will choose which committees they're in, if any. The user can select committees, choose to skip, or select "None For Now".
+ * Skipping and selecting "None For Now" will do the same thing and set their committees as ["None"]
+ */
 const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
     // User Context
     const userContext = useContext(UserContext);
@@ -328,86 +342,82 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     }
     const { userInfo, setUserInfo } = userContext;
 
-    let chosenCommittees: Array<string> = [];
-
-    /**
-     * This should be fixed.
-     * Currently, the button does not gray out when there are not committees chosen.
-     * This is because states cannot be used inside a child component without unpredictable behavior.
-     * A solution must be made to make it so the button can gray out (Set canContinue to false or true) if chosenCommittees.length > 0.
-     * This cannot be done with passing a function inside of the child component, as that also causes erronious behavior.
-     */
-    const [canContinue, setCanContinue] = useState<boolean>(true);
-
-
-    type CommitteeToggleStyle = {
+    // color will eventually get replaced with logo source
+    type CommitteeData = {
+        id: number,
         name: string,
-        color: string
+        color: string,
+        isChecked: boolean,
     }
 
-    // color will eventually get replaced with logo source
-    const committees: Array<CommitteeToggleStyle> = [
-        {
-            name: "Technical Affairs",
-            color: "bg-gray-500"
-        },
-        {
-            name: "MentorSHPE",
-            color: "bg-slate-500"
-        },
-        {
-            name: "Scholastic",
-            color: "bg-yellow-500"
-        },
-        {
-            name: "SHPEtinas",
-            color: "bg-green-500"
-        },
-        {
-            name: "Secretary",
-            color: "bg-indigo-500"
-        },
-        {
-            name: "Public Relations",
-            color: "bg-pink-500"
-        },
-        {
-            name: "Internal Affairs",
-            color: "bg-blue-500"
-        }
+    const committeesList: Array<CommitteeData> = [
+        { id: 1, name: "Technical Affairs", color: "bg-gray-500", isChecked: false, },
+        { id: 2, name: "MentorSHPE", color: "bg-slate-500", isChecked: false, },
+        { id: 3, name: "Scholastic", color: "bg-yellow-500", isChecked: false, },
+        { id: 4, name: "SHPEtinas", color: "bg-green-500", isChecked: false, },
+        { id: 5, name: "Secretary", color: "bg-indigo-500", isChecked: false, },
+        { id: 6, name: "Public Relations", color: "bg-pink-500", isChecked: false, },
+        { id: 7, name: "Internal Affairs", color: "bg-blue-500", isChecked: false, },
     ]
 
-    const CommitteeToggle = ({ name, color }: CommitteeToggleStyle) => {
-        const [isActive, setIsActive] = useState<boolean>(false);
+    const [canContinue, setCanContinue] = useState<boolean>(true);
+    const [committees, setCommittees] = useState<Array<CommitteeData>>(committeesList);
+    const [noneIsChecked, setNoneIsChecked] = useState<boolean>(false);
+    let selectedCommittees: Array<string> = committees.filter((element: CommitteeData) => element.isChecked).map((element: CommitteeData) => element.name);
 
+    const handleToggle = (id: number) => {
+        let modifiedCommittees = committees.map((element) => {
+            if (id === element.id) {
+                return { ...element, isChecked: !element.isChecked }
+            }
+            return element;
+        });
+        setCommittees(modifiedCommittees);
+        setNoneIsChecked(false);
+    }
+
+    const handleNonePressed = () => {
+        if (!noneIsChecked) {
+            let modifiedCommittees = committees.map((element) => {
+                return { ...element, isChecked: false }
+            });
+            setCommittees(modifiedCommittees);
+        }
+        setNoneIsChecked(!noneIsChecked);
+    }
+
+    /**
+     * Component used as a list item for each of the committees.
+     * @param committeeData
+     * Data containing information including the id, name, color, and whether or not the committee is checked.
+     * @param onPress
+     * Function that gets called when toggle is pressed. The id from committeeData will be passed to it
+     */
+    const CommitteeToggle = ({ committeeData, onPress }: { committeeData: CommitteeData, onPress: Function, }) => {
         return (
             <TouchableOpacity
-                className={`rounded-md w-full py-2 px-1 my-3 bg-white flex-row items-center justify-between shadow-md border-4 ${isActive ? "border-green-500" : "border-transparent"}`}
+                className={`rounded-md w-full py-2 px-1 my-3 bg-white flex-row items-center justify-between border-4 ${committeeData.isChecked ? "border-green-500 shadow-lg" : "border-transparent shadow-sm"}`}
                 activeOpacity={0.9}
-                onPress={() => {
-                    const index = chosenCommittees.indexOf(name)
-                    setIsActive(!isActive);
-
-                    if (isActive && index == -1)
-                        chosenCommittees.push(name);
-                    else if (index != -1)
-                        chosenCommittees.splice(index, 1)
-                }}
+                onPress={() => onPress(committeeData.id)}
             >
                 <View className='flex-row items-center'>
-                    <View className={`h-10 w-10 rounded-full mr-2 ${color}`} />
-                    <Text className={`font-bold text-center text-lg text-gray-600`}>{name}</Text>
+                    <View className={`h-10 w-10 rounded-full mr-2 ${committeeData.color}`} />
+                    <Text className={`font-bold text-center text-lg text-gray-600`}>{committeeData.name}</Text>
                 </View>
                 <Image
                     className='h-10 w-10'
                     source={Images.CHECKMARK}
                     style={{
-                        opacity: isActive ? 1 : 0
+                        opacity: committeeData.isChecked ? 1 : 0
                     }}
                 />
             </TouchableOpacity>
         );
     };
+
+    useEffect(() => {
+        setCanContinue(selectedCommittees.length > 0);
+    }, [committees]);
 
     return (
         <SafeAreaView className={safeAreaViewStyle}>
@@ -422,11 +432,12 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     scrollToOverflowEnabled
                 >
                     <View className='w-full h-full pb-28'>
-                        {committees.map(({ name, color }: CommitteeToggleStyle) =>
+                        {committees.map((committeeData: CommitteeData) =>
                         (
-                            <CommitteeToggle name={name} color={color} />
+                            <CommitteeToggle committeeData={committeeData} onPress={(id: number) => handleToggle(id)} key={committeeData.id} />
                         )
                         )}
+                        <CommitteeToggle committeeData={{ id: 0, name: "None Right Now", color: "bg-[#f55]", isChecked: noneIsChecked }} onPress={() => handleNonePressed()} key={0} />
                     </View>
                 </ScrollView>
                 <View className='flex-row w-10/12 justify-between mb-4'>
@@ -438,11 +449,18 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     />
                     <InteractButton
                         pressFunction={async () => {
-                            if (canContinue) {
+                            if (canContinue || noneIsChecked) {
                                 if (auth.currentUser) {
-                                    setPublicUserData({
-                                        committees: chosenCommittees,
-                                    });
+                                    if (noneIsChecked) {
+                                        setPublicUserData({
+                                            committees: ["None"],
+                                        });
+                                    }
+                                    else {
+                                        setPublicUserData({
+                                            committees: selectedCommittees,
+                                        });
+                                    }
                                     setPrivateUserData({
                                         completedAccountSetup: true,
                                     });
@@ -454,16 +472,16 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${canContinue ? "bg-red" : "bg-gray-500"} rounded-md w-1/2`}
-                        textStyle={`${canContinue ? "text-white" : "text-gray-700"} text-lg font-bold`}
-                        opacity={canContinue ? 1 : 0.8}
+                        buttonStyle={`${canContinue || noneIsChecked ? "bg-red" : "bg-gray-500"} rounded-md w-1/2`}
+                        textStyle={`${canContinue || noneIsChecked ? "text-white" : "text-gray-700"} text-lg font-bold`}
+                        opacity={canContinue || noneIsChecked ? 1 : 0.8}
                     />
                 </View>
                 <InteractButton
                     pressFunction={async () => {
                         if (auth.currentUser) {
                             setPublicUserData({
-                                committees: chosenCommittees,
+                                committees: ["None"],
                             });
                             setPrivateUserData({
                                 completedAccountSetup: true,

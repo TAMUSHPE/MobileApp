@@ -76,12 +76,14 @@ $ yarn
 Once finished, the application can be started using `yarn start` or one of the following:
 
 ```
-$ npx expo start                # Default method
-      or
-$ npx expo start --tunnel       # For Windows
-      or
-$ npx expo start --dev-client   # Hosts on development server
+$ npx expo start
 ```
+
+There are other flags that must be added depending on how you're testing it:
+- `--tunnel` This flag is for windows
+- `--go` This flag launches the server to be compatable with expo go
+- `--dev-client` This flag launches a development server
+
 
 There are also various macros in `package.json` under the "scripts" key which can be used via `yarn <script-name>`.
 
