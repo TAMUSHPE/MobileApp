@@ -1,17 +1,19 @@
 import { SafeAreaView, Text, View, KeyboardAvoidingView, Image, Animated } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState, useContext } from 'react';
 import { auth } from '../config/firebaseConfig';
 import { getDownloadURL } from "firebase/storage";
 import InteractButton from '../components/InteractButton';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ProfileSetupStackNavigatorParamList } from '../types/Navigation';
 import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
-import { setPrivateUserData, setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
+import { getUser, setPrivateUserData, setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
 import { getBlobFromURI, selectImage } from '../api/fileSelection';
 import * as ImagePicker from "expo-image-picker";
 import { Images } from '../../assets';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import { updateProfile } from 'firebase/auth';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserContext } from '../context/UserContext';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8"
 
@@ -319,6 +321,13 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
 };
 
 const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
+    // User Context
+    const userContext = useContext(UserContext);
+    if (!userContext) {
+        return null;
+    }
+    const { userInfo, setUserInfo } = userContext;
+
     let chosenCommittees: Array<string> = [];
 
     /**
@@ -329,6 +338,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
      * This cannot be done with passing a function inside of the child component, as that also causes erronious behavior.
      */
     const [canContinue, setCanContinue] = useState<boolean>(true);
+
 
     type CommitteeToggleStyle = {
         name: string,
@@ -427,7 +437,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         textStyle='text-[#3b3b3b] text-lg font-bold'
                     />
                     <InteractButton
-                        pressFunction={() => {
+                        pressFunction={async () => {
                             if (canContinue) {
                                 if (auth.currentUser) {
                                     setPublicUserData({
@@ -437,7 +447,10 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                                         completedAccountSetup: true,
                                     });
                                 }
-                                navigation.replace("HomeStack");
+                                // On Register, save user to local
+                                const authUser = await getUser(auth.currentUser?.uid!)
+                                await AsyncStorage.setItem("@user", JSON.stringify(authUser));
+                                setUserInfo(authUser); // Navigates to Home
                             }
                         }}
                         label='Continue'
@@ -447,7 +460,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     />
                 </View>
                 <InteractButton
-                    pressFunction={() => {
+                    pressFunction={async () => {
                         if (auth.currentUser) {
                             setPublicUserData({
                                 committees: chosenCommittees,
@@ -456,7 +469,11 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                                 completedAccountSetup: true,
                             });
                         }
-                        navigation.replace("HomeStack");
+                        // On Register, save user to local
+
+                        const authUser = await getUser(auth.currentUser?.uid!)
+                        await AsyncStorage.setItem("@user", JSON.stringify(authUser));
+                        setUserInfo(authUser); // Navigates to Home
                     }}
                     label='Skip For Now'
                     buttonStyle='bg-[#ddd] rounded-md w-10/12'

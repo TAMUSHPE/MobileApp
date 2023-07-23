@@ -30,13 +30,13 @@ const RootNavigator = () => {
                     <ActivityIndicator className='mt-4' size={"large"} />
                 </View>
             );
-
-        return (
-            <NavigationContainer>
-                {userInfo ? <HomeBottomTabs /> : <MainStackNavigator />}
-            </NavigationContainer>
-        );
     }
+
+    return (
+        <NavigationContainer>
+            {userInfo?.private?.privateInfo?.completedAccountSetup ? <HomeBottomTabs /> : <MainStackNavigator />}
+        </NavigationContainer>
+    );
 };
 
 export default RootNavigator;
