@@ -1,10 +1,9 @@
 import { initializeApp, FirebaseApp, getApp, getApps } from 'firebase/app';
-import { getAuth, setPersistence, inMemoryPersistence } from "firebase/auth";
+import { initializeAuth } from "firebase/auth";
+import { getReactNativePersistence } from "firebase/auth/react-native";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-// import {} from "firebase/database";
-// import {} from "firebase/functions";
-// import {} from "firebase/storage";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
     apiKey: "***REMOVED***",
@@ -16,17 +15,12 @@ const firebaseConfig = {
 };
 
 
-let app: FirebaseApp;
-
-if(getApps().length !== 0){
-    app = getApp();
-}
-else{
-    app = initializeApp(firebaseConfig);
-}
+let app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
 const db = getFirestore(app);
-const auth = getAuth(app);
+const auth = initializeAuth(app, {
+    persistence: getReactNativePersistence(AsyncStorage),
+});
 const storage = getStorage(app);
 
 export { db, auth, storage };
