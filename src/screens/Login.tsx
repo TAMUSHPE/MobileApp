@@ -34,7 +34,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                 setUserInfo(authUser);
 
                 if (!userInfo?.private?.privateInfo?.completedAccountSetup) {
-                    navigation.replace("ProfileSetup");
+                    navigation.replace("ProfileSetup")
                 }
             })
             .catch(err => {
