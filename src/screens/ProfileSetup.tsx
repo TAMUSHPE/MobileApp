@@ -13,8 +13,11 @@ import { Images } from '../../assets';
 import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import { updateProfile } from 'firebase/auth';
 
-const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8"
+const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
+/**
+ * In this screen, the user will set their name and bio. The screen only let the user continue if their name is not empty.
+ */
 const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
@@ -87,6 +90,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
 
 /**
  * SetupProfilePicture is a screen where the user chooses a profile picture for their account.
+ * This profile picture will be uploaded to firebase storage when the user hits the "Continue" button.
  */
 const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
     const [image, setImage] = useState<Blob | null>(null);
@@ -119,6 +123,10 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
         ])
     ).start();
 
+    /**
+     * This will launch the native image picker of the user's device and allow the user to crop it to an aspect ratio of 1:1.
+     * When the user selects an image, it will prepare the image to be uploaded. 
+     */
     const selectProfilePicture = async () => {
         const result = await selectImage({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -239,8 +247,9 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
     );
 };
 
+
 /**
- *
+ * This screen is where the user will enter their major and class-year. It will not let the user continue if either field is empty.
  */
 const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
     const [major, setMajor] = useState<string>("");
@@ -318,14 +327,12 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
     );
 };
 
+
+/**
+ * This screen is where the user will choose which committees they're in, if any. The user can select committees, choose to skip, or select "None For Now".
+ * Skipping and selecting "None For Now" will do the same thing and set their committees as ["None"]
+ */
 const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
-    /**
-     * This should be fixed.
-     * Currently, the button does not gray out when there are not committees chosen.
-     * This is because states cannot be used inside a child component without unpredictable behavior.
-     * A solution must be made to make it so the button can gray out (Set canContinue to false or true) if chosenCommittees.length > 0.
-     * This cannot be done with passing a function inside of the child component, as that also causes erronious behavior.
-     */
     // color will eventually get replaced with logo source
     type CommitteeData = {
         id: number,
@@ -370,6 +377,13 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
         setNoneIsChecked(!noneIsChecked);
     }
 
+    /**
+     * Component used as a list item for each of the committees.
+     * @param committeeData
+     * Data containing information including the id, name, color, and whether or not the committee is checked.
+     * @param onPress
+     * Function that gets called when toggle is pressed. The id from committeeData will be passed to it
+     */
     const CommitteeToggle = ({ committeeData, onPress }: { committeeData: CommitteeData, onPress: Function, }) => {
         return (
             <TouchableOpacity
