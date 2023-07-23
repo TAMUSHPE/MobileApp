@@ -21,7 +21,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
     if (!userContext) {
         return null;
     }
-    const { setUserInfo } = userContext;
+    const { userInfo, setUserInfo } = userContext;
 
 
     const signIn = async () => {
@@ -32,6 +32,10 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
             .then(async authUser => {
                 await AsyncStorage.setItem("@user", JSON.stringify(authUser));
                 setUserInfo(authUser);
+
+                if (!userInfo?.private?.privateInfo?.completedAccountSetup) {
+                    navigation.replace("ProfileSetup");
+                }
             })
             .catch(err => {
                 console.error(err);
