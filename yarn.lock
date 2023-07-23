@@ -227,6 +227,11 @@
   dependencies:
     "@babel/types" "^7.22.5"
 
+"@babel/helper-plugin-utils@7.21.4-esm.4":
+  version "7.21.4-esm.4"
+  resolved "https://registry.yarnpkg.com/@babel/helper-plugin-utils/-/helper-plugin-utils-7.21.4-esm.4.tgz#f2e88b65f723afa33c1269e1d58b529cffb0e701"
+  integrity sha512-sBuQrazjJ1uGdLN6UhoUnBcC71cP31ATgVUn+LXCFA8PThJJvs44o+rp3t+5kYwRuhOUvX0H45T+HSbcrsSg1g==
+
 "@babel/helper-plugin-utils@^7.0.0", "@babel/helper-plugin-utils@^7.10.4", "@babel/helper-plugin-utils@^7.12.13", "@babel/helper-plugin-utils@^7.14.5", "@babel/helper-plugin-utils@^7.16.7", "@babel/helper-plugin-utils@^7.18.6", "@babel/helper-plugin-utils@^7.18.9", "@babel/helper-plugin-utils@^7.20.2", "@babel/helper-plugin-utils@^7.22.5", "@babel/helper-plugin-utils@^7.8.0", "@babel/helper-plugin-utils@^7.8.3":
   version "7.22.5"
   resolved "https://registry.yarnpkg.com/@babel/helper-plugin-utils/-/helper-plugin-utils-7.22.5.tgz#dd7ee3735e8a313b9f7b05a773d892e88e6d7295"
@@ -261,6 +266,13 @@
   dependencies:
     "@babel/types" "^7.22.5"
 
+"@babel/helper-skip-transparent-expression-wrappers@7.21.4-esm.4":
+  version "7.21.4-esm.4"
+  resolved "https://registry.yarnpkg.com/@babel/helper-skip-transparent-expression-wrappers/-/helper-skip-transparent-expression-wrappers-7.21.4-esm.4.tgz#ffb95452e6619abae7348c1bead95d9b8a3a7a74"
+  integrity sha512-m10bRe3JWSBNCsprhIGpdj6BwqU5aTFdW1pnzUg8u7V9lRs6EIohdPFJIejUd81u5BcJC87cIUldnJ38fMKNjg==
+  dependencies:
+    "@babel/types" "7.21.4-esm.4"
+
 "@babel/helper-skip-transparent-expression-wrappers@^7.20.0", "@babel/helper-skip-transparent-expression-wrappers@^7.22.5":
   version "7.22.5"
   resolved "https://registry.yarnpkg.com/@babel/helper-skip-transparent-expression-wrappers/-/helper-skip-transparent-expression-wrappers-7.22.5.tgz#007f15240b5751c537c40e77abb4e89eeaaa8847"
@@ -282,10 +294,20 @@
   dependencies:
     "@babel/types" "^7.22.5"
 
+"@babel/helper-string-parser@7.21.4-esm.4":
+  version "7.21.4-esm.4"
+  resolved "https://registry.yarnpkg.com/@babel/helper-string-parser/-/helper-string-parser-7.21.4-esm.4.tgz#71c3acbd8d4e58be51f5cce62550a330dfeb2b2f"
+  integrity sha512-yqJZYyP/oxiZAuHqHKIKUVyIfEbGTg2BDBKqafuvQGX8d04qGHJ7Sc7ZchKfJhziXCIq4gQPe+WoOb98zIALmw==
+
 "@babel/helper-string-parser@^7.18.10", "@babel/helper-string-parser@^7.22.5":
   version "7.22.5"
   resolved "https://registry.yarnpkg.com/@babel/helper-string-parser/-/helper-string-parser-7.22.5.tgz#533f36457a25814cf1df6488523ad547d784a99f"
   integrity sha512-mM4COjgZox8U+JcXQwPijIZLElkgEpO5rsERVDJTc2qfCDfERyob6k5WegS14SX18IIjv+XD+GrqNumY5JRCDw==
+
+"@babel/helper-validator-identifier@7.21.4-esm.4":
+  version "7.21.4-esm.4"
+  resolved "https://registry.yarnpkg.com/@babel/helper-validator-identifier/-/helper-validator-identifier-7.21.4-esm.4.tgz#f377f7d5a6dbecf697d0b04304531a35dca9a3db"
+  integrity sha512-DP9RX/xVkBSK/fYzCDrgjtkx6cf2omQABZUDwlraoyFKnm7F8SiWsMH/AwXpzfieeLg1wqt6QWzNBOwlwiHr0Q==
 
 "@babel/helper-validator-identifier@^7.18.6", "@babel/helper-validator-identifier@^7.22.5":
   version "7.22.5"
@@ -399,6 +421,14 @@
     "@babel/helper-plugin-utils" "^7.18.6"
     "@babel/plugin-syntax-nullish-coalescing-operator" "^7.8.3"
 
+"@babel/plugin-proposal-nullish-coalescing-operator@^7.21.4-esm.4":
+  version "7.21.4-esm.4"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-nullish-coalescing-operator/-/plugin-proposal-nullish-coalescing-operator-7.21.4-esm.4.tgz#5c74b775e75f0cdd6d64c035c2cfc20b77c352c2"
+  integrity sha512-4bi9X2h8bmvSBWPGIlM6QxO4O2Gfufb6U045AVQQtcTxQvH5aBg7ivCAsxjN18S6EwZi+d5e2SCUAQNivv6yow==
+  dependencies:
+    "@babel/helper-plugin-utils" "7.21.4-esm.4"
+    "@babel/plugin-syntax-nullish-coalescing-operator" "^7.8.3"
+
 "@babel/plugin-proposal-numeric-separator@^7.0.0":
   version "7.18.6"
   resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-numeric-separator/-/plugin-proposal-numeric-separator-7.18.6.tgz#899b14fbafe87f053d2c5ff05b36029c62e13c75"
@@ -433,6 +463,15 @@
   dependencies:
     "@babel/helper-plugin-utils" "^7.20.2"
     "@babel/helper-skip-transparent-expression-wrappers" "^7.20.0"
+    "@babel/plugin-syntax-optional-chaining" "^7.8.3"
+
+"@babel/plugin-proposal-optional-chaining@^7.21.4-esm.4":
+  version "7.21.4-esm.4"
+  resolved "https://registry.yarnpkg.com/@babel/plugin-proposal-optional-chaining/-/plugin-proposal-optional-chaining-7.21.4-esm.4.tgz#e05a36f3789fa3510c50fc7f52ab051ce5fc663b"
+  integrity sha512-fwKOtLi1/lx3afxidxjXAkA4k6ufeOeNL6ka0EKblRVxpm5fKVXIvohAgMQrlFXKBn+T+qA9joyLlFlVPe91Mg==
+  dependencies:
+    "@babel/helper-plugin-utils" "7.21.4-esm.4"
+    "@babel/helper-skip-transparent-expression-wrappers" "7.21.4-esm.4"
     "@babel/plugin-syntax-optional-chaining" "^7.8.3"
 
 "@babel/plugin-proposal-private-property-in-object@7.21.0-placeholder-for-preset-env.2":
@@ -1359,6 +1398,15 @@
   dependencies:
     "@babel/helper-string-parser" "^7.18.10"
     "@babel/helper-validator-identifier" "^7.18.6"
+    to-fast-properties "^2.0.0"
+
+"@babel/types@7.21.4-esm.4":
+  version "7.21.4-esm.4"
+  resolved "https://registry.yarnpkg.com/@babel/types/-/types-7.21.4-esm.4.tgz#05082c96abf388144c4f09f032e4edcce1c7405f"
+  integrity sha512-nzTg4SP0cxsLC8gPXZ6bNRI3wTSoDczp02qt8vgbMiJuJndrwqB4sklAtMmDyJMTs/6JG6Y0Xsp8upUk5x58Tg==
+  dependencies:
+    "@babel/helper-string-parser" "7.21.4-esm.4"
+    "@babel/helper-validator-identifier" "7.21.4-esm.4"
     to-fast-properties "^2.0.0"
 
 "@babel/types@^7.18.6", "@babel/types@^7.20.0", "@babel/types@^7.22.5", "@babel/types@^7.4.4":
@@ -6100,6 +6148,11 @@ loose-envify@^1.0.0, loose-envify@^1.1.0, loose-envify@^1.4.0:
   integrity sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==
   dependencies:
     js-tokens "^3.0.0 || ^4.0.0"
+
+lottie-ios@3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/lottie-ios/-/lottie-ios-3.4.0.tgz#a23be299760aefb44298b9cb5f60df489030adbf"
+  integrity sha512-qnV8UrawwnBRf5V0no2yxlPUE69vzfFqpxEEXGTZhb1/WX1xewqVNYvtbguqwQkdu9IT9D5WC1U9CHZ1KbkGDw==
 
 lottie-react-native@5.1.6:
   version "5.1.6"
