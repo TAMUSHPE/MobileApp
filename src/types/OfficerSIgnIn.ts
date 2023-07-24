@@ -1,8 +1,6 @@
-import { User } from "./User";
+import { Timestamp, FieldValue } from 'firebase/firestore';
 
 export interface OfficerStatus {
-    uid?: string
-    officer: User
-    status: "signedIn" | "signedOut"
-    time: Date
-}
+    signedIn: boolean;
+    timestamp: Timestamp  | FieldValue
+  }

@@ -153,7 +153,3 @@ export const uploadFileToFirebase = (file: Blob, path: string, metadata?: Upload
     return uploadTask;
 };
 
-export const setOfficeHourLog = async (data: OfficerStatus) => {
-    await addDoc(collection(db, "events", "office-hour-log"), data)
-        .catch(err => console.log(err));
-};
