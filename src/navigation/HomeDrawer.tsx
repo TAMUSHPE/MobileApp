@@ -18,7 +18,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         return null;
     }
 
-    // Note: Change this to see if has completed profile setup
     const { setUserInfo } = userContext;
     const removeLocalUser = async () => {
         try {
