@@ -9,16 +9,16 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff",
-      "plugins": [
-        [
-          "expo-image-picker",
-          {
-            "photosPermission": "The app can access photos"
-          }
-        ]
-      ]
+      "backgroundColor": "#ffffff"
     },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app can access photos"
+        }
+      ]
+    ],
     "assetBundlePatterns": [
       "**/*"
     ],
