@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../config/firebaseConfig';
 import { OfficerStatus } from '../types/OfficerSIgnIn';
-import { addDoc, collection, doc, query, serverTimestamp, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { addDoc, collection, doc, serverTimestamp, setDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
 
 
 
@@ -11,27 +11,59 @@ const OfficeSignIn = () => {
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
 
     useEffect(() => {
-        const q = query(
-            collection(db, "events/office-hour-log", auth.currentUser?.uid!),
-            orderBy("timestamp", "desc"),
-            limit(1)
-        );
+        const getOfficerStatus = async () => {
+            const officerStatusRef = doc(db, 'office-status', 'officers-status');
 
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            querySnapshot.forEach((doc) => {
-                setIsSignedIn(doc.data().signedIn)
-            });
-        });
+            const docSnap = await getDoc(officerStatusRef);
 
-        return () => unsubscribe();
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                return data[auth?.currentUser?.uid!]?.signedIn;
+            }
+        }
+
+        getOfficerStatus().then((status: boolean | undefined) => {
+            setIsSignedIn(status)
+        })
     }, []);
 
     const addOfficeHourLog = async (data: OfficerStatus) => {
-        const userDocRef = doc(db, 'events', 'office-hour-log');
-        const userCollectionRef = collection(userDocRef, auth.currentUser?.uid!);
-        await addDoc(userCollectionRef, data)
+        const userDocCollection = collection(db, 'office-hour-log');
+        await addDoc(userDocCollection, data)
             .catch(err => console.log(err));
     };
+
+    const updateOfficerStatus = async (data: OfficerStatus) => {
+        const officerStatusRef = doc(db, 'office-status', 'officers-status');
+        await setDoc(officerStatusRef, { [data.uid]: { signedIn: data.signedIn } }, { merge: true })
+            .catch(err => console.log(err));
+    };
+
+    const incrementOfficeCount = async () => {
+        const officeCountRef = doc(db, 'office-status', 'officer-count');
+        await updateDoc(officeCountRef, {
+            "zachary-office": increment(1)
+        });
+    }
+
+    const decrementOfficeCount = async () => {
+        const officeCountRef = doc(db, 'office-status', 'officer-count');
+        await updateDoc(officeCountRef, {
+            "zachary-office": increment(-1)
+        });
+    }
+
+    const signInOut = async () => {
+        const data = {
+            uid: auth.currentUser?.uid!,
+            signedIn: !isSignedIn,
+            timestamp: serverTimestamp()
+        } as OfficerStatus;
+        addOfficeHourLog(data)
+        updateOfficerStatus(data)
+        isSignedIn ? decrementOfficeCount() : incrementOfficeCount()
+        setIsSignedIn(!isSignedIn)
+    }
 
     return (
         <View className='my-10 mx-7 py-8 bg-dark-navy rounded-md items-center justify-center text-center'>
@@ -41,7 +73,6 @@ const OfficeSignIn = () => {
 
             <TouchableOpacity
                 onPress={() => {
-                    // setIsSignedIn(!isSignedIn)
                     setConfirmVisible(!confirmVisible)
                 }
                 }
@@ -64,13 +95,7 @@ const OfficeSignIn = () => {
                         <TouchableOpacity
                             onPress={async () => {
                                 setConfirmVisible(false)
-                                console.log("before", isSignedIn)
-                                addOfficeHourLog({
-                                    signedIn: !isSignedIn,
-                                    timestamp: serverTimestamp()
-                                })
-                                setIsSignedIn(isSignedIn)
-                                console.log("after", isSignedIn)
+                                signInOut()
                             }
                             }
                         >

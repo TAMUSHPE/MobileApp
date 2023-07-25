@@ -1,7 +1,5 @@
-import { ScrollView, View } from 'react-native';
-import React, { useState, useEffect, useContext } from 'react';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { HomeStackNavigatorParamList } from '../types/Navigation';
+import { ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
 import HighlightSlider from '../components/HighlightSlider';
 import OfficeHours from '../components/OfficeHours';
 import HomeBanner from '../components/HomeBanner';
@@ -9,12 +7,17 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from '../types/User';
 import OfficeSignIn from '../components/OfficeSignIn';
 
-const HomeScreen = ({ route, navigation }: NativeStackScreenProps<HomeStackNavigatorParamList>) => {
+const HomeScreen = () => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
 
     useEffect(() => {
         const getLocalUser = async () => {
             try {
+                // Manually setting officer role in firebase for testing so must retrieve data
+                /*
+                const authUser = await getUser(auth.currentUser?.uid!)
+                await AsyncStorage.setItem("@user", JSON.stringify(authUser));
+                */
                 const userJSON = await AsyncStorage.getItem("@user");
                 const userData = userJSON ? JSON.parse(userJSON) : undefined;
                 setLocalUser(userData);
