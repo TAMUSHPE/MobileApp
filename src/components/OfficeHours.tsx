@@ -1,7 +1,23 @@
 import { View, Text, TouchableOpacity } from 'react-native';
-
-
+import React, { useState, useEffect } from 'react';
+import { onSnapshot, doc } from 'firebase/firestore';
+import { db } from '../config/firebaseConfig';
 const OfficeHours = () => {
+    const [officeCount, setOfficeCount] = useState<number>(0);
+
+    useEffect(() => {
+        const officeCountRef = doc(db, "office-status", "officer-count");
+
+        const unsubscribe = onSnapshot(officeCountRef, (doc) => {
+            if (doc.exists()) {
+                console.log(doc.data()["zachary-office"])
+                setOfficeCount(doc.data()["zachary-office"]);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [db]);
+
     return (
         <View className='my-10 py-6 mx-7 justify-center items-center bg-pale-blue rounded-md'>
             <Text className="text-2xl text-white">Office Hours</Text>
@@ -20,7 +36,7 @@ const OfficeHours = () => {
                 className="py-4 px-10 mt-10 border-white border-2 rounded-2xl"
                 activeOpacity={0.7}
             >
-                <Text className="text-2xl text-white font-extrabold">{true ? "Knock on Wall" : "Unavailable"}</Text>
+                <Text className="text-2xl text-white font-extrabold">{officeCount > 0 ? "Knock on Wall" : "Unavailable"}</Text>
             </TouchableOpacity>
 
         </View>
