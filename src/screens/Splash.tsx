@@ -1,6 +1,5 @@
-import { View, Text } from 'react-native'
 import React, { useEffect, useRef } from 'react'
-import LottieView from "lottie-react-native"
+import LottieView from "lottie-react-native";
 
 interface SplashProps {
     setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
@@ -8,30 +7,24 @@ interface SplashProps {
 
 const Splash = ({ setIsLoading }: SplashProps) => {
     // IOS bugged autoplay on lottie, so we need to use a ref to play the animation
-    const ref = useRef<LottieView>(null);
+    const animationRef = useRef<LottieView>(null);
     useEffect(() => {
-        const timeoutId = setTimeout(() => ref.current?.play());
+        const timeoutId = setTimeout(() => animationRef.current?.play());
 
         return () => {
             clearTimeout(timeoutId);
-            ref.current?.reset();
+            animationRef.current?.reset();
         }
     }, []);
 
     return (
-        <View
-            className="flex-1 align-center m-0"
-        >
-            <LottieView
-                ref={ref}
-                source={require("../../assets/splash_minimal_tamu.json")}
-                autoPlay
-                loop={false}
-                resizeMode="cover"
-                onAnimationFinish={() => setIsLoading(false)}
-            />
-
-        </View>
+        <LottieView
+            ref={animationRef}
+            source={require("../../assets/splash_minimal_tamu.json")}
+            loop={false}
+            resizeMode="cover"
+            onAnimationFinish={() => setIsLoading(false)}
+        />
     )
 }
 
