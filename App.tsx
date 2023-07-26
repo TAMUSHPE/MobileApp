@@ -1,11 +1,16 @@
-import { StatusBar } from 'expo-status-bar';
-import { Text, View } from 'react-native';
+import 'react-native-gesture-handler';
+import React from "react";
+import RootNavigator from './src/navigation';
+import { UserProvider } from './src/context/UserContext';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
+
   return (
-    <View className='flex-1 items-center justify-center bg-white'>
-      <Text>Howdy this is she</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <UserProvider>
+        <RootNavigator />
+      </UserProvider>
+    </SafeAreaProvider>
   );
-}
+};

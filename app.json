@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "SHPE-App",
-    "slug": "SHPE-App",
+    "name": "TAMU SHPE",
+    "slug": "TAMU-SHPE",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -11,20 +11,29 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app can access photos"
+        }
+      ]
+    ],
     "assetBundlePatterns": [
       "**/*"
     ],
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "scheme": "TAMUSHPE",
+    "android": {
+      "package": "com.tamu.shpe",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "ios": {
+      "bundleIdentifier": "com.tamu.shpe"
     }
   }
 }
