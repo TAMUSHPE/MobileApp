@@ -11,19 +11,15 @@ const HomeScreen = () => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
 
     useEffect(() => {
-        const getLocalUser = async () => {
-            try {
-                // Manually setting officer role in firebase for testing so must retrieve data
-                /*
-                const authUser = await getUser(auth.currentUser?.uid!)
-                await AsyncStorage.setItem("@user", JSON.stringify(authUser));
-                */
-                const userJSON = await AsyncStorage.getItem("@user");
-                const userData = userJSON ? JSON.parse(userJSON) : undefined;
-                setLocalUser(userData);
-            } catch (e) {
-                console.error(e);
-            }
+        const getLocalUser = () => {
+            AsyncStorage.getItem("@user")
+                .then(userJSON => {
+                    const userData = userJSON ? JSON.parse(userJSON) : undefined;
+                    setLocalUser(userData);
+                })
+                .catch(e => {
+                    console.error(e);
+                });
         };
         getLocalUser();
     }, []);
