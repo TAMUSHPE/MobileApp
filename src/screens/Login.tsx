@@ -6,7 +6,7 @@ import { LoginStackNavigatorParamList } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InteractButton from "../components/InteractButton";
 import { Images } from "../../assets";
-import { getUser } from "../api/firebaseUtils";
+import { getUser, initializeCurrentUserData } from "../api/firebaseUtils";
 import { signInWithEmailAndPassword, signInAnonymously, UserCredential, updateProfile } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserContext } from "../context/UserContext";
@@ -26,8 +26,8 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
 
     const signIn = async () => {
         signInWithEmailAndPassword(auth, email, password)
-            .then(() => {
-                return getUser(auth.currentUser?.uid!);
+            .then(async () => {
+                return await initializeCurrentUserData();
             })
             .then(async authUser => {
                 await AsyncStorage.setItem("@user", JSON.stringify(authUser));
