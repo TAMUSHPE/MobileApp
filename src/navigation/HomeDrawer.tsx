@@ -19,13 +19,11 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     }
 
     const { setUserInfo } = userContext;
-    const removeLocalUser = async () => {
-        try {
-            await AsyncStorage.removeItem('@user')
-        } catch (e) {
-            console.log(e);
-        }
-
+    const removeLocalUser = () => {
+        AsyncStorage.removeItem('@user')
+            .catch(e => {
+                console.log(e);
+            });
     }
     const signOutUser = () => {
         signOut(auth)
