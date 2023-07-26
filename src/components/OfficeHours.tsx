@@ -10,7 +10,6 @@ const OfficeHours = () => {
 
         const unsubscribe = onSnapshot(officeCountRef, (doc) => {
             if (doc.exists()) {
-                console.log(doc.data()["zachary-office"])
                 setOfficeCount(doc.data()["zachary-office"]);
             }
         });

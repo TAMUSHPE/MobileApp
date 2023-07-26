@@ -20,17 +20,19 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [userInfo, setUserInfo] = useState<User | undefined>(undefined)
 
   useEffect(() => {
-    const getLocalUser = async () => {
-      try {
-        setUserLoading(true);
-        const userJSON = await AsyncStorage.getItem("@user");
-        const userData = userJSON ? JSON.parse(userJSON) : undefined;
-        setUserInfo(userData);
-      } catch (e) {
-        console.log(e);
-      } finally {
-        setUserLoading(false);
-      }
+    const getLocalUser = () => {
+      setUserLoading(true);
+      AsyncStorage.getItem("@user")
+        .then(userJSON => {
+          const userData = userJSON ? JSON.parse(userJSON) : undefined;
+          setUserInfo(userData);
+        })
+        .catch(e => {
+          console.log(e);
+        })
+        .finally(() => {
+          setUserLoading(false);
+        });
     };
     getLocalUser()
   }, []);
