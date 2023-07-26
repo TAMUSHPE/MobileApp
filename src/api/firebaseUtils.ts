@@ -1,7 +1,8 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, addDoc, collection} from "firebase/firestore";
 import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
+import { OfficerStatus } from "../types/OfficerSIgnIn";
 
 /**
  * Obtains the public information of a user given their UID.
@@ -151,3 +152,4 @@ export const uploadFileToFirebase = (file: Blob, path: string, metadata?: Upload
     const uploadTask = uploadBytesResumable(storageRef, file);
     return uploadTask;
 };
+

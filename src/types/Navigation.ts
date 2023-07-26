@@ -41,6 +41,10 @@ export type ProfileSetupStackNavigatorParamList = {
     HomeStack: undefined;
 }
 
+export type CommitteesStackNavigatorParamList = {
+    CommitteesScreen: undefined;
+}
+
 // Drawers
 export type HomeDrawerNavigatorParamList = {
     HomeScreen: undefined;

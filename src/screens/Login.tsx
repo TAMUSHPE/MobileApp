@@ -1,37 +1,45 @@
 import { View, Text, TextInput, KeyboardAvoidingView, Image } from "react-native";
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { auth } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { LoginStackNavigatorParamList } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InteractButton from "../components/InteractButton";
 import { Images } from "../../assets";
-import { initializeCurrentUserData } from "../api/firebaseUtils";
-import { signInWithEmailAndPassword, signInAnonymously, UserCredential, onAuthStateChanged, updateProfile } from "firebase/auth";
+import { getUser, initializeCurrentUserData } from "../api/firebaseUtils";
+import { signInWithEmailAndPassword, signInAnonymously, UserCredential, updateProfile } from "firebase/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { UserContext } from "../context/UserContext";
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
     // Hooks
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
 
-    useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
-            if (authUser) {
-                const currentUserData = await initializeCurrentUserData();
-                if (currentUserData.private?.privateInfo?.completedAccountSetup) {
-                    navigation.replace("HomeStack");
-                }
-                else {
-                    navigation.replace("ProfileSetup");
-                }
-            }
-        });
+    // User Context
+    const userContext = useContext(UserContext);
+    if (!userContext) {
+        return null;
+    }
+    const { userInfo, setUserInfo } = userContext;
 
-        return unsubscribe;
-    }, [navigation]);
 
-    const signIn = () => {
-        signInWithEmailAndPassword(auth, email, password).catch(err => console.error(err));
+    const signIn = async () => {
+        signInWithEmailAndPassword(auth, email, password)
+            .then(async () => {
+                return await initializeCurrentUserData();
+            })
+            .then(async authUser => {
+                await AsyncStorage.setItem("@user", JSON.stringify(authUser));
+                setUserInfo(authUser);
+
+                if (!userInfo?.private?.privateInfo?.completedAccountSetup) {
+                    navigation.replace("ProfileSetup")
+                }
+            })
+            .catch(err => {
+                console.error(err);
+            });
     }
 
     const guestSignIn = () => {
@@ -42,7 +50,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                     photoURL: "",
                 });
                 alert("Login as guest will be depricated in the future.");
-                navigation.replace("HomeStack");
+                setUserInfo({}) // Guest Login will be depricated in the future. No need to Fix
             })
             .catch((err) => console.error(err.message));
     }

@@ -49,6 +49,9 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
 
                 await initializeCurrentUserData();
             })
+            .then(() => {
+                navigation.replace("ProfileSetup");
+            })
             .catch((err) => { console.error(err.message); });
     }
 
