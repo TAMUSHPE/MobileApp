@@ -17,7 +17,7 @@
 
 <p align="center">
   <a href="">
-    <img alt="Download on the App Store" title="App Store" src="https://assets.stickpng.com/images/5a902db97f96951c82922874.png" width="140" height="50">
+    <img alt="Download on the App Store" title="App Store" src="https://logos-world.net/wp-content/uploads/2021/02/App-Store-Symbol.png" width="140" height="50">
   </a>
   <a href="">
     <img alt="Download on the App Store" title="Play Store" src="https://cdn.freebiesupply.com/logos/large/2x/google-play-badge-logo-png-transparent.png" width="140" height="50">
@@ -35,8 +35,8 @@ We are excited to introduce our mobile app project for the Society of Hispanic P
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
-    - [Dependencies](#dependencies)
-    - [Setup](#setup)
+   - [Dependencies](#dependencies)
+   - [Setup](#setup)
 2. [Usage](#usage)
 3. [Contact](#contact)
 
@@ -51,19 +51,19 @@ Various dependencies are required in order to test and build the application. Th
 - [ngrok][ngrok-url]
 - [Java 11][Java-url] (Oracle JDK)
 - iOS/Android emulator
-    - The iOS emulator is only available on mac devices. The SDK can be   installed via Xcode.
-    - The Android emulator can be installed via [Android Studio]  [Android-Studio-url].
+  - The iOS emulator is only available on mac devices. The SDK can be installed via Xcode.
+  - The Android emulator can be installed via [Android Studio] [Android-Studio-url].
 
 Any extra information about environment setup can be found [here](https://reactnative.dev/docs/environment-setup).
 
 There are more dependencies that aren't necessarily required to run the application, but can be handy when testing:
 
 - [Expo Go][Expo-Go-url]
-    - App for testing on a physical mobile device. If you're running the app, make sure the device is connected to the same network as the development server device.
+  - App for testing on a physical mobile device. If you're running the app, make sure the device is connected to the same network as the development server device.
 - [React native snippets for VSCode][React-Native-Snippets-url]
-    - These can be handy for generating boilerplate code for things like screens or components which repetitive templates.
+  - These can be handy for generating boilerplate code for things like screens or components which repetitive templates.
 - [EAS][EAS-url]
-    - Used for building application utilizing EAS Build which can host app binaries on the cloud
+  - Used for building application utilizing EAS Build which can host app binaries on the cloud
 
 ### Setup
 
@@ -80,10 +80,10 @@ $ npx expo start
 ```
 
 There are other flags that must be added depending on how you're testing it:
+
 - `--tunnel` This flag is for windows
 - `--go` This flag launches the server to be compatable with expo go
 - `--dev-client` This flag launches a development server
-
 
 There are also various macros in `package.json` under the "scripts" key which can be used via `yarn <script-name>`.
 
