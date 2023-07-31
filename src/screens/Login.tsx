@@ -24,7 +24,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
     const { userInfo, setUserInfo } = userContext;
 
 
-    const signIn = async () => {
+    const emailSignIn = async () => {
         signInWithEmailAndPassword(auth, email, password)
             .then(async () => {
                 return await initializeCurrentUserData();
@@ -42,17 +42,8 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
             });
     }
 
-    const guestSignIn = () => {
-        signInAnonymously(auth)
-            .then((authUser: UserCredential) => {
-                updateProfile(authUser.user, {
-                    displayName: "Guest Account",
-                    photoURL: "",
-                });
-                alert("Login as guest will be depricated in the future.");
-                setUserInfo({}) // Guest Login will be depricated in the future. No need to Fix
-            })
-            .catch((err) => console.error(err.message));
+    const googleSignIn = async () => {
+        alert("unimplemented");
     }
 
     return (
@@ -81,13 +72,13 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                         onChangeText={(text) => setPassword(text)}
                         value={password}
                         inputMode="text"
-                        onSubmitEditing={() => signIn()}
+                        onSubmitEditing={() => emailSignIn()}
                         textContentType="password"
                     />
                 </KeyboardAvoidingView>
                 <View className="flex-col mt-2">
                     <InteractButton
-                        pressFunction={() => signIn()}
+                        pressFunction={() => emailSignIn()}
                         label="Sign In"
                         buttonStyle="bg-red mt-5 rounded-xl"
                         textStyle="text-white font-bold"
@@ -98,20 +89,15 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                     <InteractButton
                         pressFunction={() => navigation.navigate("RegisterScreen")}
                         label="Register Account"
-                        buttonStyle="bg-[#ddd] rounded-xl"
-                        textStyle="text-[#3b3b3b] font-bold"
-                    />
-                    <InteractButton
-                        pressFunction={() => guestSignIn()}
-                        label="Sign In As Guest"
-                        buttonStyle="bg-[#ddd] mt-2 rounded-xl"
+                        buttonStyle="bg-white rounded-xl"
                         textStyle="text-[#3b3b3b] font-bold"
                     />
                     <InteractButton
                         pressFunction={() => alert("This feature is not implemented")}
-                        label="Sign In with TAMU Google Account"
-                        buttonStyle="bg-[#ddd] mt-2 rounded-xl"
+                        label="Sign In with Google"
+                        buttonStyle="bg-white mt-2 rounded-xl"
                         textStyle="text-[#3b3b3b] font-bold"
+                        iconURI="https://developers.google.com/static/identity/images/g-logo.png"
                     />
                 </View>
             </View>
