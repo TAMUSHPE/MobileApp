@@ -1,6 +1,6 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, addDoc, collection} from "firebase/firestore";
+import { doc, setDoc, getDoc, addDoc, collection } from "firebase/firestore";
 import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
 import { OfficerStatus } from "../types/OfficerSIgnIn";
 
@@ -103,6 +103,8 @@ export const setPrivateUserData = async (data: PrivateUserInfo) => {
 
 /**
  * This function obtains information on the current user. If this information is undefined, creates a default user.
+ * @returns 
+ * User data formatted according to User interface defined in "./src/types/User.tsx".
  */
 export const initializeCurrentUserData = async (): Promise<User> => {
     const defaultPublicInfo: PublicUserInfo = {
