@@ -18,6 +18,7 @@ export type LoginStackNavigatorParamList = {
     RegisterScreen: undefined;
     HomeStack: undefined;
     ProfileSetup: undefined;
+    PushNotificationSetup: undefined;
 }
 
 export type MainStackNavigatorParamList = {

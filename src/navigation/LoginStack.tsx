@@ -5,6 +5,7 @@ import { LoginStackNavigatorParamList } from '../types/Navigation';
 // Screens  
 import LoginScreen from "../screens/Login";
 import RegisterScreen from "../screens/Register";
+import PushNotificationSetup from "../screens/PushNotificationSetup";
 
 const LoginStackNavigator = () => {
     const LoginStack = createNativeStackNavigator<LoginStackNavigatorParamList>();
@@ -31,6 +32,8 @@ const LoginStackNavigator = () => {
                     },
                 }}
             />
+
+            <LoginStack.Screen name="PushNotificationSetup" component={PushNotificationSetup} />
         </LoginStack.Navigator>
     );
 };
