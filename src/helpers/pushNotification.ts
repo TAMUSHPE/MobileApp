@@ -1,5 +1,7 @@
 import messaging from '@react-native-firebase/messaging';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { db } from '../config/firebaseConfig';
+import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 
 export async function requestUserPermission() {
   const authStatus = await messaging().requestPermission();
@@ -12,21 +14,30 @@ export async function requestUserPermission() {
   }
 }
 
-export async function getFCMToken() {
-    let fcmToken = await AsyncStorage.getItem('fcmToken');
-    console.log(fcmToken)
-    if (!fcmToken) {
-        try {
-            const fcmToken = await messaging().getToken();
-            if (fcmToken) {
-                console.log(fcmToken);
-                AsyncStorage.setItem('fcmToken', fcmToken);
-            }
-        } catch (error) {
-            console.log(error);
-        }
-    }
+export function getFCMToken(): Promise<string | null> {
+  return new Promise(async (resolve, reject) => {
+      let fcmToken = await AsyncStorage.getItem('fcmToken');
+      console.log(fcmToken);
+      if (!fcmToken) {
+          try {
+              fcmToken = await messaging().getToken();
+              if (fcmToken) {
+                  console.log(fcmToken);
+                  await AsyncStorage.setItem('fcmToken', fcmToken);
+                  resolve(fcmToken);
+              } else {
+                  resolve(null);
+              }
+          } catch (error) {
+              console.log(error);
+              reject(error);
+          }
+      } else {
+          resolve(fcmToken);
+      }
+  });
 }
+
 
 export const notificationListener = () => {
      messaging().onNotificationOpenedApp(remoteMessage => {
@@ -53,3 +64,17 @@ export const notificationListener = () => {
       })
   
 }
+
+export const getAvailableOfficersFCMToken = async () => {
+    const q = query(collection(db, 'office-hour/officers-status/officers'), where('signedIn', '==', true));
+    const querySnapshot = await getDocs(q);
+    let signedInOfficers:string[] = [];
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.signedIn) {
+            signedInOfficers.push(doc.id);
+        }
+    });
+    return signedInOfficers;
+};
+
