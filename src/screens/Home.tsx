@@ -1,20 +1,43 @@
 import { ScrollView } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import HighlightSlider from '../components/HighlightSlider';
 import OfficeHours from '../components/OfficeHours';
 import HomeBanner from '../components/HomeBanner';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from '../types/User';
 import OfficeSignIn from '../components/OfficeSignIn';
+import { getUser } from '../api/firebaseUtils';
+import { auth } from '../config/firebaseConfig';
+import { UserContext } from '../context/UserContext';
+import { getAvailableOfficersFCMToken } from '../helpers/pushNotification';
+
 
 const HomeScreen = () => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
-
+    const userContext = useContext(UserContext);
+    if (!userContext) {
+        return null;
+    }
+    const { setUserInfo } = userContext;
     useEffect(() => {
+
+        const printAvaiableOfficers = async () => {
+            console.log("testfcmd user", await getAvailableOfficersFCMToken())
+        }
+
+        // only for testing since I manually change officer status in firebase need to look into this later
+        const updateUser = async () => {
+            const authUser = await getUser(auth.currentUser?.uid!)
+            await AsyncStorage.setItem("@user", JSON.stringify(authUser));
+            setUserInfo(authUser);
+
+        }
         const getLocalUser = () => {
+            // updateUser();
             AsyncStorage.getItem("@user")
                 .then(userJSON => {
                     const userData = userJSON ? JSON.parse(userJSON) : undefined;
+                    console.log(userData)
                     setLocalUser(userData);
                 })
                 .catch(e => {
@@ -22,6 +45,7 @@ const HomeScreen = () => {
                 });
         };
         getLocalUser();
+        printAvaiableOfficers();
     }, []);
 
     return (
