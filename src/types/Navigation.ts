@@ -18,7 +18,6 @@ export type LoginStackNavigatorParamList = {
     RegisterScreen: undefined;
     HomeStack: undefined;
     ProfileSetup: undefined;
-    PushNotificationSetup: undefined;
 }
 
 export type MainStackNavigatorParamList = {
@@ -40,6 +39,7 @@ export type ProfileSetupStackNavigatorParamList = {
     SetupAcademicInformation: undefined;
     SetupCommittees: undefined;
     HomeStack: undefined;
+    SetupNotification: undefined;
 }
 
 export type CommitteesStackNavigatorParamList = {
