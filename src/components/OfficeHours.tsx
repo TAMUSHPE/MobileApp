@@ -1,12 +1,14 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { onSnapshot, doc } from 'firebase/firestore';
-import { db } from '../config/firebaseConfig';
+import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { auth, db } from '../config/firebaseConfig';
+import { MemberStatus } from '../types/OfficeSIgnIn';
+
 const OfficeHours = () => {
     const [officeCount, setOfficeCount] = useState<number>(0);
 
     useEffect(() => {
-        const officeCountRef = doc(db, "office-status", "officer-count");
+        const officeCountRef = doc(db, "office-hour/officer-count");
 
         const unsubscribe = onSnapshot(officeCountRef, (doc) => {
             if (doc.exists()) {
@@ -16,6 +18,12 @@ const OfficeHours = () => {
 
         return () => unsubscribe();
     }, [db]);
+
+    const knockOnWall = async (data: MemberStatus) => {
+        const userDocCollection = collection(db, 'office-hour/member-log/log');
+        await addDoc(userDocCollection, data)
+            .catch(err => console.log(err));
+    }
 
     return (
         <View className='my-10 py-6 mx-7 justify-center items-center bg-pale-blue rounded-md'>
@@ -31,9 +39,16 @@ const OfficeHours = () => {
             </View>
 
             <TouchableOpacity
-                onPress={() => { }}
+                onPress={() => {
+                    const data = {
+                        uid: auth.currentUser?.uid!,
+                        timestamp: serverTimestamp()
+                    } as MemberStatus;
+                    knockOnWall(data)
+                }}
                 className="py-4 px-10 mt-10 border-white border-2 rounded-2xl"
                 activeOpacity={0.7}
+                disabled={officeCount === 0}
             >
                 <Text className="text-2xl text-white font-extrabold">{officeCount > 0 ? "Knock on Wall" : "Unavailable"}</Text>
             </TouchableOpacity>

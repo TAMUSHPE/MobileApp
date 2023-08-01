@@ -312,7 +312,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                         classYear: classYear
                                     });
                                 }
-                                navigation.navigate("SetupCommittees")
+                                navigation.navigate("SetupNotification")
                             }
                         }}
                         label='Continue'

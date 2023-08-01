@@ -32,8 +32,6 @@ const LoginStackNavigator = () => {
                     },
                 }}
             />
-
-            <LoginStack.Screen name="PushNotificationSetup" component={PushNotificationSetup} />
         </LoginStack.Navigator>
     );
 };
