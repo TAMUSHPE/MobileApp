@@ -65,34 +65,6 @@ export const notificationListener = () => {
       
     }
 
-    
-// Dealing with private data so we need to utlize cloud function in Firebase
-export const getOfficerFCMToken = async (officerUId: string) => {
-  const privateInfoRef = doc(db, 'users', officerUId, 'private', 'privateInfo');
-  const docSnap = await getDoc(privateInfoRef);
-  if (docSnap.exists()) {
-    return docSnap.data().fcmTokens;
-  } else {
-    console.log("No user");
-    return null;
-  }
-};
-
-export const getAvailableOfficersFCMToken = async () => {
-    const q = query(collection(db, 'office-hour/officers-status/officers'), where('signedIn', '==', true));
-    const querySnapshot = await getDocs(q);
-    let signedInOfficers:string[] = [];
-    querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.signedIn) {
-            signedInOfficers.push(doc.id);
-        }
-    });
-
-
-
-    return signedInOfficers;
-};
 
 
 
