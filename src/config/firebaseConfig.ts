@@ -14,6 +14,8 @@ const firebaseConfig = {
     appId: "1:600060629240:web:1e97e43973746bcc266b0d"
 };
 
+// IOS OAuth: 600060629240-m7bu9ba9namtlmo9sii2s8qs2j9k5bt4.apps.googleusercontent.com
+// Android OAuth: 600060629240-bdfsdcfmbrjh5skdc9qufchrmcnm26fb.apps.googleusercontent.com
 
 let app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 

@@ -34,6 +34,11 @@
     },
     "ios": {
       "bundleIdentifier": "com.tamu.shpe"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "e6743575-bd46-48b9-8dac-3217e9e96030"
+      }
     }
   }
 }
