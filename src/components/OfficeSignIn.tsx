@@ -12,7 +12,7 @@ const OfficeSignIn = () => {
 
     useEffect(() => {
         const getOfficerStatus = async () => {
-            const officerStatusRef = doc(db, 'office-hour/officers-status/officers/${auth?.currentUser?.uid}');
+            const officerStatusRef = doc(db, `/office-hour/officers-status/officers/${auth?.currentUser?.uid}`);
 
             const docSnap = await getDoc(officerStatusRef);
 
