@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Only firebase should be able to read documents in the internal-data collection
+    match /internal-data/{document=**} {
+      allow read, create, write, update, delete: if false;
+    }
+    
+    match /users/{userId}{
+    	match /private/{document=**}{
+      	allow read, write, create, update, delete: if request.auth.uid != null && request.auth.uid == userId;
+      }
+      allow read: if request.auth.uid != null;
+      allow create, write, update, delete: if request.auth.uid != null && request.auth.uid == userId;
+    }
+    
+    match /office-hour {
+    	match /officer-log/{document=**} {
+      	allow read : if request.auth.uid != null
+      	allow write, create, update, delete: if request.auth.uid != null && request.auth.uid == request.resource.data.uid
+      }
+      match /member-log/{document=**} {
+      	allow read : if request.auth.uid != null
+      	allow write, create, update, delete: if request.auth.uid != null && request.auth.uid == request.resource.data.uid
+      }
+      match /officer-count {
+        allow read: if request.auth.uid != null;
+        allow write, create, update, delete: if request.auth.uid != null
+      }
+      match /officers-status/officers/{document=**} {
+      	allow read: if request.auth.uid != null;
+      	allow create, write, update, delete: if request.auth.uid != null
+      }
+    }
+    
+  }
+}

@@ -39,6 +39,7 @@ export type ProfileSetupStackNavigatorParamList = {
     SetupAcademicInformation: undefined;
     SetupCommittees: undefined;
     HomeStack: undefined;
+    SetupNotification: undefined;
 }
 
 export type CommitteesStackNavigatorParamList = {
