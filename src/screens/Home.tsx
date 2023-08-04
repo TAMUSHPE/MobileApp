@@ -9,7 +9,7 @@ import OfficeSignIn from '../components/OfficeSignIn';
 import { getUser } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
-// import { httpsCallable, getFunctions, connectFunctionsEmulator } from 'firebase/functions';
+import { httpsCallable, getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 const HomeScreen = () => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
@@ -20,20 +20,18 @@ const HomeScreen = () => {
     const { setUserInfo } = userContext;
     useEffect(() => {
         const fetchData = async () => {
-            const response = await fetch('http://127.0.0.1:5001/tamushpemobileapp/us-central1/helloWorld')
-            const data = await response.text();
-            console.log(data);
+            // const response = await fetch('http://10.0.2.2:5001/tamushpemobileapp/us-central1/helloWorld')
+            // const data = await response.text();
+            // console.log(data);
+            const functions = getFunctions();
+            // connectFunctionsEmulator(functions, "10.0.2.2", 5001); // for testing on emulator
+            const getAvailableOfficersFCMToken = httpsCallable(functions, 'getAvailableOfficersTest');
+
+            await getAvailableOfficersFCMToken().then(result => {
+                console.log(result.data);
+            });
         }
-
         fetchData();
-        // const functions = getFunctions();
-        // connectFunctionsEmulator(functions, "localhost", 5001);
-        // const getAvailableOfficersFCMToken = httpsCallable(functions, 'getAvailableOfficersFCMToken');
-
-        // getAvailableOfficersFCMToken().then(result => {
-        //     console.log(result.data);
-        // });
-
 
         // only for testing since I manually change officer status in firebase need to look into this later
         const updateUser = async () => {
@@ -47,7 +45,6 @@ const HomeScreen = () => {
             AsyncStorage.getItem("@user")
                 .then(userJSON => {
                     const userData = userJSON ? JSON.parse(userJSON) : undefined;
-                    console.log(userData)
                     setLocalUser(userData);
                 })
                 .catch(e => {
@@ -56,6 +53,7 @@ const HomeScreen = () => {
         };
         getLocalUser();
     }, []);
+
 
     return (
         <ScrollView className="flex flex-col bg-offwhite">

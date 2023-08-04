@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../config/firebaseConfig';
 import { MemberStatus } from '../types/OfficeSIgnIn';
+import { httpsCallable, getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 const OfficeHours = () => {
     const [officeCount, setOfficeCount] = useState<number>(0);
@@ -23,7 +24,14 @@ const OfficeHours = () => {
         const userDocCollection = collection(db, 'office-hour/member-log/log');
         await addDoc(userDocCollection, data)
             .catch(err => console.log(err));
+        const functions = getFunctions();
+        console.log(auth.currentUser?.uid!)
+        const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
+        await sendNotificationOfficeHours({ title: "Knock on Wall Notification", body: "Someone at the front" })
     }
+
+
+
 
     return (
         <View className='my-10 py-6 mx-7 justify-center items-center bg-pale-blue rounded-md'>
