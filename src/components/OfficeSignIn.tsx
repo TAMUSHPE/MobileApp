@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../config/firebaseConfig';
-import { OfficerStatus } from '../types/OfficerSIgnIn';
+import { OfficerStatus } from '../types/OfficeSIgnIn';
 import { addDoc, collection, doc, serverTimestamp, setDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
 
 
@@ -12,13 +12,13 @@ const OfficeSignIn = () => {
 
     useEffect(() => {
         const getOfficerStatus = async () => {
-            const officerStatusRef = doc(db, 'office-status', 'officers-status');
+            const officerStatusRef = doc(db, `/office-hour/officers-status/officers/${auth?.currentUser?.uid}`);
 
             const docSnap = await getDoc(officerStatusRef);
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                return data[auth?.currentUser?.uid!]?.signedIn;
+                return data?.signedIn;
             }
         }
 
@@ -27,27 +27,27 @@ const OfficeSignIn = () => {
         })
     }, []);
 
+
     const addOfficeHourLog = async (data: OfficerStatus) => {
-        const userDocCollection = collection(db, 'office-hour-log');
+        const userDocCollection = collection(db, 'office-hour/officer-log/log');
         await addDoc(userDocCollection, data)
             .catch(err => console.log(err));
     };
 
     const updateOfficerStatus = async (data: OfficerStatus) => {
-        const officerStatusRef = doc(db, 'office-status', 'officers-status');
-        await setDoc(officerStatusRef, { [data.uid]: { signedIn: data.signedIn } }, { merge: true })
-            .catch(err => console.log(err));
+        const officerDoc = doc(db, `office-hour/officers-status/officers/${data.uid}`);
+        return setDoc(officerDoc, { signedIn: data.signedIn }, { merge: true });
     };
 
     const incrementOfficeCount = async () => {
-        const officeCountRef = doc(db, 'office-status', 'officer-count');
+        const officeCountRef = doc(db, 'office-hour/officer-count');
         await updateDoc(officeCountRef, {
             "zachary-office": increment(1)
         });
     }
 
     const decrementOfficeCount = async () => {
-        const officeCountRef = doc(db, 'office-status', 'officer-count');
+        const officeCountRef = doc(db, 'office-hour/officer-count');
         await updateDoc(officeCountRef, {
             "zachary-office": increment(-1)
         });
