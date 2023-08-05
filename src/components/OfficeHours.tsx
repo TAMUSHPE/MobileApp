@@ -21,11 +21,13 @@ const OfficeHours = () => {
     }, [db]);
 
     const knockOnWall = async (data: MemberStatus) => {
+        // Log Member Knock
         const userDocCollection = collection(db, 'office-hour/member-log/log');
         await addDoc(userDocCollection, data)
             .catch(err => console.log(err));
         const functions = getFunctions();
-        console.log(auth.currentUser?.uid!)
+
+        // Send Notifcation to Officer
         const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
         await sendNotificationOfficeHours({ title: "Knock on Wall Notification", body: "Someone at the front" })
     }

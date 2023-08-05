@@ -2,15 +2,17 @@ import React, { useContext } from 'react';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import { HomeDrawerNavigatorParamList } from '../types/Navigation';
 import { Image, TouchableOpacity, View } from 'react-native';
-import { auth } from '../config/firebaseConfig';
+import { auth, db } from '../config/firebaseConfig';
 import { signOut } from 'firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../context/UserContext';
+import { arrayRemove } from "firebase/firestore";
 
 // Screens
 import HomeScreen from '../screens/Home';
 import { Images } from '../../assets';
+import { doc, setDoc } from 'firebase/firestore';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
@@ -25,7 +27,17 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                 console.log(e);
             });
     }
-    const signOutUser = () => {
+    const removeFCMToken = async () => {
+        console.log(auth.currentUser?.uid)
+        const fcmToken = await AsyncStorage.getItem('fcmToken');
+        const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
+        await setDoc(userDoc, { fcmTokens: arrayRemove(fcmToken) }, { merge: true })
+            .catch(err => console.error(err));
+        await AsyncStorage.removeItem('fcmToken');
+    }
+
+    const signOutUser = async () => {
+        await removeFCMToken();
         signOut(auth)
             .then(() => {
                 // Once signed out, forces user to login screen and resets navigation stack so that login is the only element.
