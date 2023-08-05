@@ -19,20 +19,6 @@ const HomeScreen = () => {
     }
     const { setUserInfo } = userContext;
     useEffect(() => {
-        const fetchData = async () => {
-            // const response = await fetch('http://10.0.2.2:5001/tamushpemobileapp/us-central1/helloWorld')
-            // const data = await response.text();
-            // console.log(data);
-            const functions = getFunctions();
-            // connectFunctionsEmulator(functions, "10.0.2.2", 5001); // for testing on emulator
-            const getAvailableOfficersFCMToken = httpsCallable(functions, 'getAvailableOfficersTest');
-
-            await getAvailableOfficersFCMToken().then(result => {
-                console.log(result.data);
-            });
-        }
-        fetchData();
-
         // only for testing since I manually change officer status in firebase need to look into this later
         const updateUser = async () => {
             const authUser = await getUser(auth.currentUser?.uid!)

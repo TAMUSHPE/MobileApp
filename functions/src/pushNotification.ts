@@ -31,41 +31,36 @@ const getAvailableOfficersFCMToken = async (): Promise<string[]> => {
     return signedInOfficersFCM;
 };
 
-// This is for testing only
-export const getAvailableOfficersTest = functions.https.onCall(async (data, context) => {
-    const signedInOfficersFCM: string[] = [];
-    const snapshot = await db.collection('office-hour/officers-status/officers').where('signedIn', '==', true).get();
-    for(const doc of snapshot.docs){
-        const data = doc.data();
-        if (data.signedIn) {
-            const token = await getOfficerFCMToken(doc.id);
-            if(token) {
-                signedInOfficersFCM.push(token);
-            }
-        }
-    }
-    return signedInOfficersFCM;
-});
-
 export const sendNotificationOfficeHours = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('failed-precondition', 'The function must be called while authenticated.');
+    try {
+        const officerFCMTokenLists = await getAvailableOfficersFCMToken();
+        const officerFCMTokens = officerFCMTokenLists.flat();
+        console.log(officerFCMTokens);
+
+        const response = await admin.messaging().sendMulticast({
+            tokens: officerFCMTokens,
+            notification: {
+                title: data.title,
+                body: data.body,
+            },
+        });
+
+        const failedTokens:string[] = [];
+        response.responses.forEach((resp, idx) => {
+            if (!resp.success) {
+                failedTokens.push(officerFCMTokens[idx]);
+            }
+        });
+
+        if (failedTokens.length === 0) {
+            console.log("Notification sent successfully to all tokens.");
+            return { success: true, failedTokens: [] };
+        } else {
+            console.log("Notification failed for some tokens.");
+            return { success: false, failedTokens: failedTokens };
+        }
+    } catch (error) {
+        console.error("Error sending notification:", error);
+        throw new functions.https.HttpsError("internal", "Failed to send the notification.");
     }
-
-    const officerFCMTokenLists = await getAvailableOfficersFCMToken();
-    const officerFCMTokens = officerFCMTokenLists.flat();
-
-    const notificationContent = {
-      notification: {
-        title: data.title,
-        body: data.body,
-      },
-      token: officerFCMTokens
-    };
-
-    admin.messaging().sendEachForMulticast({
-        tokens: officerFCMTokens,
-        notification: notificationContent.notification,
-    })
-    console.log("Notification sent")
-  });
+});
