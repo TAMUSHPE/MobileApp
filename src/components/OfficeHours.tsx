@@ -27,11 +27,9 @@ const OfficeHours = () => {
             .catch(err => console.log(err));
         const functions = getFunctions();
 
-        console.log('sending notification')
         // Send Notifcation to Officer
         const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
         await sendNotificationOfficeHours({ title: "Knock on Wall Notification", body: "Someone at the front" })
-        console.log('done')
     }
 
 
