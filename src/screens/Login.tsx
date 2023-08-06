@@ -104,13 +104,6 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
             <View className="my-5 w-11/12">
                 <Text className="text-right text-pale-orange mt-2">{"Society of Hispanic\nProfessional\nEngineers"}</Text>
             </View>
-            {/* move this later to profile setup and also add this to private user data  */}
-            <InteractButton
-                pressFunction={() => navigation.navigate("PushNotificationSetup")}
-                label="Notification Setup"
-                buttonStyle="bg-white rounded-xl"
-                textStyle="text-[#3b3b3b] font-bold"
-            />
         </SafeAreaView>
     );
 };
