@@ -12,11 +12,12 @@
       "backgroundColor": "#ffffff"
     },
     "plugins": [
+      "@react-native-firebase/app",
       [
         "expo-image-picker",
         {
           "photosPermission": "The app can access photos"
-        }
+        }    
       ]
     ],
     "assetBundlePatterns": [
@@ -27,12 +28,14 @@
     },
     "scheme": "TAMUSHPE",
     "android": {
+      "googleServicesFile": "./google-services.json",
       "package": "com.tamu.shpe",
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ]
     },
     "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.tamu.shpe"
     }
   }
