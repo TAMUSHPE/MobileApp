@@ -1,6 +1,6 @@
 {
   "name": "shpe-app",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "scripts": {
     "start": "npx expo start --dev-client",
     "android": "npx expo run:android",
