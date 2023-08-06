@@ -1,33 +1,38 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native'
 import React, { useEffect } from 'react'
-import { requestUserPermission, notificationListener, getFCMToken, getAvailableOfficersFCMToken } from '../helpers/pushNotification'
+import { requestUserPermission, notificationListener, getFCMToken } from '../helpers/pushNotification'
 import { appendFcmToken } from '../api/firebaseUtils'
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { ProfileSetupStackNavigatorParamList } from '../types/Navigation';
+import Constants from 'expo-constants'
+
 
 const PushNotificationSetup = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
     useEffect(() => {
-        getFCMToken().then(token => {
-            if (token) {
-                appendFcmToken(token)
-            }
-        }).catch(error => {
-            console.error("Failed to get FCM token: ", error);
-        });
+        const isRunningInExpoGo = Constants.appOwnership === 'expo'
+        if (!isRunningInExpoGo) {
 
-        requestUserPermission()
-        notificationListener()
+            requestUserPermission()
+            getFCMToken().then(token => {
+                if (token) {
+                    appendFcmToken(token)
+                }
+            }).catch(error => {
+                console.error("Failed to get FCM token: ", error);
+            });
 
+            notificationListener()
+        }
     }, [])
     return (
-        <View>
+        <SafeAreaView className='flex-1 justify-center items-center'>
             <TouchableOpacity
                 onPress={() => navigation.navigate("SetupCommittees")}
                 className='flex justify-center items-center bg-blue-300'
             >
                 <Text>To Committees Page</Text>
             </TouchableOpacity>
-        </View>
+        </SafeAreaView>
     )
 }
 
