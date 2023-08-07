@@ -1,7 +1,7 @@
 import React, { useContext, useState } from 'react'
 import { ActivityIndicator, View, Image } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
-import { MainStackNavigator } from './MainStack';
+import { AuthStackNavigator } from './AuthStack';
 import { UserContext } from '../context/UserContext';
 import HomeBottomTabs from './HomeBottomTabs';
 import { Images } from '../../assets';
@@ -34,7 +34,7 @@ const RootNavigator = () => {
 
     return (
         <NavigationContainer>
-            {userInfo?.private?.privateInfo?.completedAccountSetup ? <HomeBottomTabs /> : <MainStackNavigator />}
+            {userInfo?.private?.privateInfo?.completedAccountSetup ? <HomeBottomTabs /> : <AuthStackNavigator />}
         </NavigationContainer>
     );
 };

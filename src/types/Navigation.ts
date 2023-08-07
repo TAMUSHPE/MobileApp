@@ -20,7 +20,7 @@ export type LoginStackNavigatorParamList = {
     ProfileSetup: undefined;
 }
 
-export type MainStackNavigatorParamList = {
+export type AuthStackNavigatorParamList = {
     LoginStack: undefined;
     HomeStack: undefined;
     ProfileSetup: undefined;
