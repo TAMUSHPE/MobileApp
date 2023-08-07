@@ -6,8 +6,8 @@ import { LoginStackNavigatorParamList } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InteractButton from "../components/InteractButton";
 import { Images } from "../../assets";
-import { getUser, initializeCurrentUserData } from "../api/firebaseUtils";
-import { signInWithEmailAndPassword, signInAnonymously, UserCredential, updateProfile } from "firebase/auth";
+import { initializeCurrentUserData } from "../api/firebaseUtils";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserContext } from "../context/UserContext";
 
