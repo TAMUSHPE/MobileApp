@@ -18,7 +18,7 @@ const getOfficerFCMToken = async (officerUId: string) => {
 
 const getAvailableOfficersFCMToken = async (): Promise<string[]> => {
     const signedInOfficersFCM: string[] = [];
-    const snapshot = await db.collection('office-hour/officers-status/officers').where('signedIn', '==', true).get();
+    const snapshot = await db.collection('office-hours/officers-status/officers').where('signedIn', '==', true).get();
     for(const doc of snapshot.docs){
         const data = doc.data();
         if (data.signedIn) {
