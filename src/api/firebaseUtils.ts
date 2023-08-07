@@ -88,7 +88,7 @@ export const getUser = async (uid: string): Promise<User | undefined> => {
  */
 export const setPublicUserData = async (data: PublicUserInfo) => {
     await setDoc(doc(db, "users", auth.currentUser?.uid!), data, { merge: true })
-        .catch(err => console.log(err));
+        .catch(err => console.error(err));
 };
 
 /**

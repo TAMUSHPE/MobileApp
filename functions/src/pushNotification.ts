@@ -56,7 +56,7 @@ export const sendNotificationOfficeHours = functions.https.onCall(async (data, c
             console.log("Notification sent successfully to all tokens.");
             return { success: true, failedTokens: [] };
         } else {
-            console.log("Notification failed for some tokens.");
+            console.error("Notification failed for some tokens.");
             return { success: false, failedTokens: failedTokens };
         }
     } catch (error) {
