@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native'
+import { Text, TouchableOpacity, SafeAreaView } from 'react-native'
 import React, { useEffect } from 'react'
 import { requestUserPermission, notificationListener, getFCMToken } from '../helpers/pushNotification'
 import { appendFcmToken } from '../api/firebaseUtils'
