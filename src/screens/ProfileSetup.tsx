@@ -15,7 +15,7 @@ import { updateProfile } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../context/UserContext';
 
-const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
+const safeAreaViewStyle = "flex-1 justify-between bg-primary-bg-dark py-10 px-8";
 
 /**
  * In this screen, the user will set their name and bio. The screen only let the user continue if their name is not empty.
@@ -77,7 +77,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${name === "" ? "bg-gray-500" : "bg-red"} rounded-md`}
+                        buttonStyle={`${name === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md`}
                         textStyle={`${name === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={name === "" ? 1 : 0.8}
                     />
@@ -230,7 +230,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${localImageURI === "" ? "bg-gray-500" : "bg-red"} rounded-md w-1/2`}
+                        buttonStyle={`${localImageURI === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
                         textStyle={`${localImageURI === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={localImageURI === "" ? 1 : 0.8}
                     />
@@ -312,11 +312,11 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                         classYear: classYear
                                     });
                                 }
-                                navigation.navigate("SetupNotification")
+                                navigation.navigate("SetupCommittees")
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${(major === "" || classYear === "") ? "bg-gray-500" : "bg-red"} rounded-md w-1/2`}
+                        buttonStyle={`${(major === "" || classYear === "") ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
                         textStyle={`${(major === "" || classYear === "") ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={(major === "" || classYear === "") ? 1 : 0.8}
                     />
@@ -472,7 +472,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${canContinue || noneIsChecked ? "bg-red" : "bg-gray-500"} rounded-md w-1/2`}
+                        buttonStyle={`${canContinue || noneIsChecked ? "bg-continue-dark" : "bg-gray-500"} rounded-md w-1/2`}
                         textStyle={`${canContinue || noneIsChecked ? "text-white" : "text-gray-700"} text-lg font-bold`}
                         opacity={canContinue || noneIsChecked ? 1 : 0.8}
                     />

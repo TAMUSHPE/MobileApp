@@ -47,7 +47,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
     }
 
     return (
-        <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
+        <SafeAreaView className="flex-1 items-center justify-between bg-primary-bg-dark">
             <View className="flex-col items-center my-8">
                 <Image
                     className="flex-row h-20 w-20 mb-3"
@@ -80,7 +80,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                     <InteractButton
                         pressFunction={() => emailSignIn()}
                         label="Sign In"
-                        buttonStyle="bg-red mt-5 rounded-xl"
+                        buttonStyle="bg-continue-dark mt-5 rounded-xl"
                         textStyle="text-white font-bold"
                     />
                     <View className="items-center my-4">

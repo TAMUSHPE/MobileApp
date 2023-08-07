@@ -21,7 +21,7 @@ const RootNavigator = () => {
         if (userLoading)
             return (
                 <View
-                    className="flex items-center justify-center bg-dark-navy h-screen w-screen"
+                    className="flex items-center justify-center bg-primary-bg-dark h-screen w-screen"
                 >
                     <Image
                         source={Images.SHPE_LOGO}
