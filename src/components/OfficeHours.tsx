@@ -24,7 +24,7 @@ const OfficeHours = () => {
         // Log Member Knock
         const userDocCollection = collection(db, 'office-hours/member-log/log');
         await addDoc(userDocCollection, data)
-            .catch(err => console.log(err));
+            .catch(err => console.error(err));
         const functions = getFunctions();
 
         // Send Notifcation to Officer

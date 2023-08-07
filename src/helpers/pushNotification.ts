@@ -28,9 +28,9 @@ export function getFCMToken(): Promise<string | null> {
                 } else {
                     resolve(null);
                 }
-            } catch (error) {
-                console.log(error);
-                reject(error);
+            } catch (err) {
+                console.error(err);
+                reject(err);
             }
         } else {
             resolve(fcmToken);
