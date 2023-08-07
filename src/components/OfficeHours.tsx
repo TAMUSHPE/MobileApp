@@ -9,7 +9,7 @@ const OfficeHours = () => {
     const [officeCount, setOfficeCount] = useState<number>(0);
 
     useEffect(() => {
-        const officeCountRef = doc(db, "office-hour/officer-count");
+        const officeCountRef = doc(db, "office-hours/officer-count");
 
         const unsubscribe = onSnapshot(officeCountRef, (doc) => {
             if (doc.exists()) {
@@ -22,7 +22,7 @@ const OfficeHours = () => {
 
     const knockOnWall = async (data: MemberStatus) => {
         // Log Member Knock
-        const userDocCollection = collection(db, 'office-hour/member-log/log');
+        const userDocCollection = collection(db, 'office-hours/member-log/log');
         await addDoc(userDocCollection, data)
             .catch(err => console.log(err));
         const functions = getFunctions();

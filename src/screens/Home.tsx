@@ -9,7 +9,6 @@ import OfficeSignIn from '../components/OfficeSignIn';
 import { getUser } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
-import { httpsCallable, getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 const HomeScreen = () => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
