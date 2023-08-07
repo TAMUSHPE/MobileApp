@@ -12,7 +12,7 @@ const OfficeSignIn = () => {
 
     useEffect(() => {
         const getOfficerStatus = async () => {
-            const officerStatusRef = doc(db, `/office-hour/officers-status/officers/${auth?.currentUser?.uid}`);
+            const officerStatusRef = doc(db, `/office-hours/officers-status/officers/${auth?.currentUser?.uid}`);
 
             const docSnap = await getDoc(officerStatusRef);
 
@@ -29,25 +29,25 @@ const OfficeSignIn = () => {
 
 
     const addOfficeHourLog = async (data: OfficerStatus) => {
-        const userDocCollection = collection(db, 'office-hour/officer-log/log');
+        const userDocCollection = collection(db, 'office-hours/officer-log/log');
         await addDoc(userDocCollection, data)
             .catch(err => console.log(err));
     };
 
     const updateOfficerStatus = async (data: OfficerStatus) => {
-        const officerDoc = doc(db, `office-hour/officers-status/officers/${data.uid}`);
+        const officerDoc = doc(db, `office-hours/officers-status/officers/${data.uid}`);
         return setDoc(officerDoc, { signedIn: data.signedIn }, { merge: true });
     };
 
     const incrementOfficeCount = async () => {
-        const officeCountRef = doc(db, 'office-hour/officer-count');
+        const officeCountRef = doc(db, 'office-hours/officer-count');
         await updateDoc(officeCountRef, {
             "zachary-office": increment(1)
         });
     }
 
     const decrementOfficeCount = async () => {
-        const officeCountRef = doc(db, 'office-hour/officer-count');
+        const officeCountRef = doc(db, 'office-hours/officer-count');
         await updateDoc(officeCountRef, {
             "zachary-office": increment(-1)
         });
