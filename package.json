@@ -8,7 +8,9 @@
     "web": "npx expo start --web",
     "prebuild": "npx expo prebuild",
     "build-android": "npx expo prebuild && npx expo run:android",
-    "build-ios": "npx expo prebuild && npx expo run:ios"
+    "build-ios": "npx expo prebuild && npx expo run:ios",
+    "go-windows": "npx expo start --tunnel --go",
+    "go-mac": "npx expo start --go"
   },
   "dependencies": {
     "@babel/preset-env": "^7.22.9",
