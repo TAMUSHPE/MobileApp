@@ -7,6 +7,14 @@ export const validateEmail = (email: string): boolean => {
 };
 
 /**
+ * Matches TAMU email pattern. {name}@tamu.edu
+ */
+export const validateTamuEmail = (email: string): boolean => {
+    const emailRegex: RegExp = /^[A-Z0-9._%+-]+@(tamu.edu)$/i;
+    return typeof email == 'string' && emailRegex.test(email);
+};
+
+/**
  * Matches passwords with 4-64 characters with characters being alphanumeric or any special characters on a standard qwerty keyboard
  */
 export const validatePassword = (password: string): boolean => {
