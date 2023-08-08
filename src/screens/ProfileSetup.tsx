@@ -4,7 +4,7 @@ import { auth } from '../config/firebaseConfig';
 import { getDownloadURL } from "firebase/storage";
 import InteractButton from '../components/InteractButton';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ProfileSetupStackNavigatorParamList } from '../types/Navigation';
+import { ProfileSetupStackNavigatorParams } from '../types/Navigation';
 import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
 import { getUser, setPrivateUserData, setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
 import { getBlobFromURI, selectImage } from '../api/fileSelection';
@@ -20,7 +20,7 @@ const safeAreaViewStyle = "flex-1 justify-between bg-primary-bg-dark py-10 px-8"
 /**
  * In this screen, the user will set their name and bio. The screen only let the user continue if their name is not empty.
  */
-const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
+const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParams>) => {
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
 
@@ -94,7 +94,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
  * SetupProfilePicture is a screen where the user chooses a profile picture for their account.
  * This profile picture will be uploaded to firebase storage when the user hits the "Continue" button.
  */
-const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
+const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParams>) => {
     const [image, setImage] = useState<Blob | null>(null);
     const [imageName, setImageName] = useState<string | null | undefined>();
     const [localImageURI, setLocalImageURI] = useState<string>("");
@@ -253,7 +253,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
 /**
  * This screen is where the user will enter their major and class-year. It will not let the user continue if either field is empty.
  */
-const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
+const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParams>) => {
     const [major, setMajor] = useState<string>("");
     const [classYear, setClassYear] = useState<string>("");
 
@@ -334,7 +334,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
  * This screen is where the user will choose which committees they're in, if any. The user can select committees, choose to skip, or select "None For Now".
  * Skipping and selecting "None For Now" will do the same thing and set their committees as ["None"]
  */
-const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
+const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParams>) => {
     // User Context
     const userContext = useContext(UserContext);
     if (!userContext) {

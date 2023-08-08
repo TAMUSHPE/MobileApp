@@ -1,13 +1,13 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { AuthStackNavigatorParamList } from '../types/Navigation';
+import { AuthStackNavigatorParams } from '../types/Navigation';
 import { ProfileSetupStackNavigator } from "./ProfileSetupStack";
 import LoginScreen from "../screens/Login";
 import RegisterScreen from "../screens/Register";
 
 
 const AuthStackNavigator = () => {
-    const AuthStack = createNativeStackNavigator<AuthStackNavigatorParamList>();
+    const AuthStack = createNativeStackNavigator<AuthStackNavigatorParams>();
     return (
         <AuthStack.Navigator>
             <AuthStack.Group

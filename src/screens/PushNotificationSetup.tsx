@@ -3,11 +3,11 @@ import React, { useEffect } from 'react'
 import { requestUserPermission, notificationListener, getFCMToken } from '../helpers/pushNotification'
 import { appendFcmToken } from '../api/firebaseUtils'
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ProfileSetupStackNavigatorParamList } from '../types/Navigation';
+import { ProfileSetupStackNavigatorParams } from '../types/Navigation';
 import Constants from 'expo-constants'
 
 
-const PushNotificationSetup = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
+const PushNotificationSetup = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParams>) => {
     useEffect(() => {
         const isRunningInExpoGo = Constants.appOwnership === 'expo'
         if (!isRunningInExpoGo) {

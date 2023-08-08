@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
-import { HomeDrawerNavigatorParamList } from '../types/Navigation';
+import { HomeDrawerNavigatorParams } from '../types/Navigation';
 import { Image, TouchableOpacity, View } from 'react-native';
 import { auth, db } from '../config/firebaseConfig';
 import { signOut } from 'firebase/auth';
@@ -80,7 +80,7 @@ const HomeDrawerHeader = (props: DrawerHeaderProps) => {
 }
 
 const HomeDrawer = () => {
-    const HomeDrawer = createDrawerNavigator<HomeDrawerNavigatorParamList>();
+    const HomeDrawer = createDrawerNavigator<HomeDrawerNavigatorParams>();
     return (
         <HomeDrawer.Navigator
             initialRouteName="HomeScreen"
