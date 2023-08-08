@@ -2,7 +2,7 @@ import { View, Text, TextInput, KeyboardAvoidingView, Image } from "react-native
 import React, { useState, useContext } from "react";
 import { auth } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { LoginStackNavigatorParamList } from "../types/Navigation";
+import { AuthStackNavigatorParamList } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InteractButton from "../components/InteractButton";
 import { Images } from "../../assets";
@@ -11,7 +11,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserContext } from "../context/UserContext";
 
-const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
+const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavigatorParamList>) => {
     // Hooks
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");

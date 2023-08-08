@@ -3,9 +3,9 @@ import { ActivityIndicator, View, Image } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { AuthStackNavigator } from './AuthStack';
 import { UserContext } from '../context/UserContext';
-import HomeBottomTabs from './HomeBottomTabs';
 import { Images } from '../../assets';
 import Splash from '../screens/Splash';
+import { MainStackNavigator } from './MainStack';
 
 const RootNavigator = () => {
     const userContext = useContext(UserContext);
@@ -34,7 +34,7 @@ const RootNavigator = () => {
 
     return (
         <NavigationContainer>
-            {userInfo?.private?.privateInfo?.completedAccountSetup ? <HomeBottomTabs /> : <AuthStackNavigator />}
+            {userInfo?.private?.privateInfo?.completedAccountSetup ? <MainStackNavigator /> : <AuthStackNavigator />}
         </NavigationContainer>
     );
 };
