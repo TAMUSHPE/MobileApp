@@ -1,12 +1,12 @@
 import React from "react";
 import { createStackNavigator } from '@react-navigation/stack';
-import { ProfileSetupStackNavigatorParamList } from "../types/Navigation";
+import { ProfileSetupStackNavigatorParams } from "../types/Navigation";
 import { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupCommittees } from "../screens/ProfileSetup";
 import PushNotificationSetup from "../screens/PushNotificationSetup";
 
 
 const ProfileSetupStackNavigator = () => {
-    const ProfileSetupTabs = createStackNavigator<ProfileSetupStackNavigatorParamList>();
+    const ProfileSetupTabs = createStackNavigator<ProfileSetupStackNavigatorParams>();
     return (
         <ProfileSetupTabs.Navigator
             screenOptions={{

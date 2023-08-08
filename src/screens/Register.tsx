@@ -2,14 +2,14 @@ import { View, Text, TextInput, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AuthStackNavigatorParamList } from '../types/Navigation';
+import { AuthStackNavigatorParams } from '../types/Navigation';
 import React, { useLayoutEffect, useState } from 'react';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
 import { evaluatePasswordStrength, validateEmail, validatePassword } from '../helpers/validation';
 import { initializeCurrentUserData } from '../api/firebaseUtils';
 import InteractButton from '../components/InteractButton';
 
-const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackNavigatorParamList>) => {
+const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackNavigatorParams>) => {
     // Hooks
     const [displayName, setDisplayName] = useState<string>("");
     const [email, setEmail] = useState<string>("");
