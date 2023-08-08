@@ -4,7 +4,7 @@ import type {RouteProp} from '@react-navigation/native';
 
 
 // Stacks
-export type HomeStackNavigatorParamList = {
+export type MainStackNavigatorParamList = {
     HomeDrawer: HomeDrawerNavigatorParamList;
     MemberOfTheMonth: undefined;
     HomeBottomTabs: undefined;
@@ -16,13 +16,13 @@ export type HomeStackNavigatorParamList = {
 export type LoginStackNavigatorParamList = {
     LoginScreen: undefined;
     RegisterScreen: undefined;
-    HomeStack: undefined;
+    MainStack: undefined;
     ProfileSetup: undefined;
 }
 
 export type AuthStackNavigatorParamList = {
     LoginStack: undefined;
-    HomeStack: undefined;
+    MainStack: undefined;
     ProfileSetup: undefined;
 };
 
@@ -38,7 +38,7 @@ export type ProfileSetupStackNavigatorParamList = {
     SetupProfilePicture: undefined;
     SetupAcademicInformation: undefined;
     SetupCommittees: undefined;
-    HomeStack: undefined;
+    MainStack: undefined;
     SetupNotification: undefined;
 }
 
@@ -63,8 +63,8 @@ export type HomeBottomTabNavigatorParamList = {
 };
 
 
-export type SettingsScreenRouteProp = RouteProp<HomeStackNavigatorParamList, "SettingsScreen">;
-export type SettingsProps = NativeStackScreenProps<HomeStackNavigatorParamList, "SettingsScreen">;
+export type SettingsScreenRouteProp = RouteProp<MainStackNavigatorParamList, "SettingsScreen">;
+export type SettingsProps = NativeStackScreenProps<MainStackNavigatorParamList, "SettingsScreen">;
 
 export type MembersScreenRouteProp = RouteProp<MembersStackNavigatorParamList, "PublicProfile">;
 export type MembersProps = NativeStackScreenProps<MembersStackNavigatorParamList, "PublicProfile">;
