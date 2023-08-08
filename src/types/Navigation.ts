@@ -14,13 +14,6 @@ export type MainStackNavigatorParamList = {
     };
 };
 
-export type LoginStackNavigatorParamList = {
-    LoginScreen: undefined;
-    RegisterScreen: undefined;
-    MainStack: undefined;
-    ProfileSetup: undefined;
-}
-
 export type AuthStackNavigatorParamList = {
     LoginScreen: undefined;
     RegisterScreen: undefined;
