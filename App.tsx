@@ -5,25 +5,25 @@ import { UserProvider } from './src/context/UserContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Alert } from 'react-native';
 import messaging from '@react-native-firebase/messaging';
-import Constants from 'expo-constants'
+import Constants from 'expo-constants';
 
 export default function App() {
-  useEffect(() => {
-    const isRunningInExpoGo = Constants.appOwnership === 'expo'
-    if (!isRunningInExpoGo) {
-      const unsubscribe = messaging().onMessage(async remoteMessage => {
-        Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
-      });
+    useEffect(() => {
+        const isRunningInExpoGo = Constants.appOwnership === 'expo'
+        if (!isRunningInExpoGo) {
+            const unsubscribe = messaging().onMessage(async remoteMessage => {
+                Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+            });
 
-      return unsubscribe;
-    }
-  }, []);
+            return unsubscribe;
+        }
+    }, []);
 
-  return (
-    <SafeAreaProvider>
-      <UserProvider>
-        <RootNavigator />
-      </UserProvider>
-    </SafeAreaProvider>
-  );
+    return (
+        <SafeAreaProvider>
+            <UserProvider>
+                <RootNavigator />
+            </UserProvider>
+        </SafeAreaProvider>
+    );
 };
