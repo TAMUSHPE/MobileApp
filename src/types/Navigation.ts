@@ -8,6 +8,7 @@ export type MainStackNavigatorParamList = {
     HomeDrawer: HomeDrawerNavigatorParamList;
     MemberOfTheMonth: undefined;
     HomeBottomTabs: undefined;
+    ProfileSetup: undefined;
     SettingsScreen: {
         userId: number;
     };
@@ -21,9 +22,10 @@ export type LoginStackNavigatorParamList = {
 }
 
 export type AuthStackNavigatorParamList = {
-    LoginStack: undefined;
-    MainStack: undefined;
+    LoginScreen: undefined;
+    RegisterScreen: undefined;
     ProfileSetup: undefined;
+    MainStack: undefined;
 };
 
 export type MembersStackNavigatorParamList = {

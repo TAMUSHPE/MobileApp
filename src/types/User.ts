@@ -15,6 +15,7 @@ export interface Roles {
  */
 export interface PublicUserInfo {
     email?: string;
+    tamuEmail?: string;
     displayName?: string;
     photoURL?: string;
     roles?: Roles;
