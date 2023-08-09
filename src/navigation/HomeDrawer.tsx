@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import { HomeDrawerNavigatorParams } from '../types/Navigation';
-import { Image, TouchableOpacity, View } from 'react-native';
+import { Image, TouchableOpacity, View, Text } from 'react-native';
 import { auth, db } from '../config/firebaseConfig';
 import { signOut } from 'firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import { arrayRemove } from "firebase/firestore";
 import HomeScreen from '../screens/Home';
 import { Images } from '../../assets';
 import { doc, setDoc } from 'firebase/firestore';
+import ProfileBadge from '../components/ProfileBadge';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
@@ -47,6 +48,21 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
 
     return (
         <DrawerContentScrollView {...props}>
+            <View className='flex-col bg-dark-navy w-full p-4'>
+                <View>
+                    <Image
+                        className="flex w-16 h-16 rounded-full"
+                        defaultSource={Images.DEFAULT_USER_PICTURE}
+                        source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
+                    />
+                </View>
+                <View className="flex-row">
+                    <ProfileBadge
+                        text="Test"
+                    />
+                    <ProfileBadge />
+                </View>
+            </View>
             <DrawerItem label="Settings" onPress={() => props.navigation.navigate("SettingsScreen", { userId: 1234 })} />
             <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
         </DrawerContentScrollView>
@@ -70,7 +86,7 @@ const HomeDrawerHeader = (props: DrawerHeaderProps) => {
                 onPress={() => props.navigation.openDrawer()}
             >
                 <Image
-                    className="flex w-10 h-10 rounded-full"
+                    className="flex w-12 h-12 rounded-full"
                     defaultSource={Images.DEFAULT_USER_PICTURE}
                     source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL as string } : Images.DEFAULT_USER_PICTURE}
                 />
