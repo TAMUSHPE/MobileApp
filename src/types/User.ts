@@ -1,3 +1,19 @@
+export type CommitteeData = {
+    id: number,
+    name: string,
+    color: string,
+};
+
+export const committeesList: Array<CommitteeData> = [
+    { id: 1, name: "Technical Affairs", color: "bg-gray-500", },
+    { id: 2, name: "MentorSHPE", color: "bg-slate-500", },
+    { id: 3, name: "Scholastic", color: "bg-yellow-500", },
+    { id: 4, name: "SHPEtinas", color: "bg-green-500", },
+    { id: 5, name: "Secretary", color: "bg-indigo-500", },
+    { id: 6, name: "Public Relations", color: "bg-pink-500", },
+    { id: 7, name: "Internal Affairs", color: "bg-blue-500", },
+];
+
 /**
  * This interface represents the roles a user has. These values will only determine what the app looks like and **not** firebase read/write/edit/delete permissions.
  */

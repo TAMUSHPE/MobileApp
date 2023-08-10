@@ -14,6 +14,7 @@ import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import { updateProfile } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../context/UserContext';
+import { committeesList } from '../types/User';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-primary-bg-dark py-10 px-8";
 
@@ -343,27 +344,19 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     const { userInfo, setUserInfo } = userContext;
 
     // color will eventually get replaced with logo source
-    type CommitteeData = {
+    type CommitteeListItemData = {
         id: number,
         name: string,
         color: string,
         isChecked: boolean,
     }
 
-    const committeesList: Array<CommitteeData> = [
-        { id: 1, name: "Technical Affairs", color: "bg-gray-500", isChecked: false, },
-        { id: 2, name: "MentorSHPE", color: "bg-slate-500", isChecked: false, },
-        { id: 3, name: "Scholastic", color: "bg-yellow-500", isChecked: false, },
-        { id: 4, name: "SHPEtinas", color: "bg-green-500", isChecked: false, },
-        { id: 5, name: "Secretary", color: "bg-indigo-500", isChecked: false, },
-        { id: 6, name: "Public Relations", color: "bg-pink-500", isChecked: false, },
-        { id: 7, name: "Internal Affairs", color: "bg-blue-500", isChecked: false, },
-    ]
+    const committeesListItems: Array<CommitteeListItemData> = committeesList.map((element) => { return { ...element, isChecked: false } })
 
     const [canContinue, setCanContinue] = useState<boolean>(true);
-    const [committees, setCommittees] = useState<Array<CommitteeData>>(committeesList);
+    const [committees, setCommittees] = useState<Array<CommitteeListItemData>>(committeesListItems);
     const [noneIsChecked, setNoneIsChecked] = useState<boolean>(false);
-    let selectedCommittees: Array<string> = committees.filter((element: CommitteeData) => element.isChecked).map((element: CommitteeData) => element.name);
+    let selectedCommittees: Array<string> = committees.filter((element: CommitteeListItemData) => element.isChecked).map((element: CommitteeListItemData) => element.name);
 
     const handleToggle = (id: number) => {
         let modifiedCommittees = committees.map((element) => {
@@ -374,7 +367,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
         });
         setCommittees(modifiedCommittees);
         setNoneIsChecked(false);
-    }
+    };
 
     const handleNonePressed = () => {
         if (!noneIsChecked) {
@@ -384,7 +377,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
             setCommittees(modifiedCommittees);
         }
         setNoneIsChecked(!noneIsChecked);
-    }
+    };
 
     /**
      * Component used as a list item for each of the committees.
@@ -393,7 +386,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
      * @param onPress
      * Function that gets called when toggle is pressed. The id from committeeData will be passed to it
      */
-    const CommitteeToggle = ({ committeeData, onPress }: { committeeData: CommitteeData, onPress: Function, }) => {
+    const CommitteeToggle = ({ committeeData, onPress }: { committeeData: CommitteeListItemData, onPress: Function, }) => {
         return (
             <TouchableOpacity
                 className={`rounded-md w-full py-2 px-1 my-3 bg-white flex-row items-center justify-between border-4 ${committeeData.isChecked ? "border-green-500 shadow-lg" : "border-transparent shadow-sm"}`}
@@ -432,7 +425,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     scrollToOverflowEnabled
                 >
                     <View className='w-full h-full pb-28'>
-                        {committees.map((committeeData: CommitteeData) =>
+                        {committees.map((committeeData: CommitteeListItemData) =>
                         (
                             <CommitteeToggle committeeData={committeeData} onPress={(id: number) => handleToggle(id)} key={committeeData.id} />
                         )
