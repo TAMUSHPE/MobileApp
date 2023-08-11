@@ -1,8 +1,7 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, addDoc, collection, arrayUnion } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion } from "firebase/firestore";
 import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
-import { OfficerStatus } from "../types/OfficeSIgnIn";
 
 /**
  * Obtains the public information of a user given their UID.
@@ -101,10 +100,10 @@ export const setPrivateUserData = async (data: PrivateUserInfo) => {
         .catch(err => console.error(err));
 };
 
-export const appendFcmToken = async (newToken: string) => {
+export const appendExpoPushToken = async (expoPushToken: string) => {
     await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), 
     {
-        fcmTokens: arrayUnion(newToken)
+        expoPushTokens: arrayUnion(expoPushToken)
     }, 
     { merge: true })
     .catch(err => console.error(err));

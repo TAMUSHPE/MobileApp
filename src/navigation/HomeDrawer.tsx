@@ -8,12 +8,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../context/UserContext';
 import { arrayRemove } from "firebase/firestore";
-
-// Screens
 import HomeScreen from '../screens/Home';
 import { Images } from '../../assets';
 import { doc, setDoc } from 'firebase/firestore';
 import ProfileBadge from '../components/ProfileBadge';
+import PushNotificationSetup from '../screens/PushNotificationSetup';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
@@ -26,17 +25,17 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         AsyncStorage.removeItem('@user')
             .catch((err) => console.error(err));
     }
-    const removeFCMToken = async () => {
+    const removeExpoPushToken = async () => {
         console.log(auth.currentUser?.uid)
-        const fcmToken = await AsyncStorage.getItem('fcmToken');
+        const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
         const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
-        await setDoc(userDoc, { fcmTokens: arrayRemove(fcmToken) }, { merge: true })
+        await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true })
             .catch(err => console.error(err));
-        await AsyncStorage.removeItem('fcmToken');
+        await AsyncStorage.removeItem('@expoPushToken');
     }
 
     const signOutUser = async () => {
-        await removeFCMToken();
+        await removeExpoPushToken();
         signOut(auth)
             .then(() => {
                 // Once signed out, forces user to login screen and resets navigation stack so that login is the only element.

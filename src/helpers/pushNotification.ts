@@ -1,70 +1,46 @@
-import messaging from '@react-native-firebase/messaging';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { db } from '../config/firebaseConfig';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { Platform} from 'react-native';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Notifications from 'expo-notifications';
+import Constants from "expo-constants";
+import { appendExpoPushToken } from '../api/firebaseUtils';
 
-export async function requestUserPermission() {
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+const persistToken = async () => {
+  try {
+    const token = await Notifications.getExpoPushTokenAsync({
+        projectId: Constants.expoConfig?.extra?.eas?.projectId
 
-    if (enabled) {
-        console.log('Authorization status:', authStatus);
+    });
+    console.log(token);
+    appendExpoPushToken(JSON.stringify(token));
+    await AsyncStorage.setItem("@expoPushToken", JSON.stringify(token));
+  } catch (err) {
+    throw err;
+  }
+};
+
+const notification = async () => {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
     }
-}
-
-export function getFCMToken(): Promise<string | null> {
-    return new Promise(async (resolve, reject) => {
-        let fcmToken = await AsyncStorage.getItem('fcmToken');
-        console.log(fcmToken);
-        if (!fcmToken) {
-            try {
-                fcmToken = await messaging().getToken();
-                if (fcmToken) {
-                    console.log(fcmToken);
-                    await AsyncStorage.setItem('fcmToken', fcmToken);
-                    resolve(fcmToken);
-                } else {
-                    resolve(null);
-                }
-            } catch (err) {
-                console.error(err);
-                reject(err);
-            }
-        } else {
-            resolve(fcmToken);
-        }
-    });
-}
-
-
-export const notificationListener = () => {
-    messaging().onNotificationOpenedApp(remoteMessage => {
-        console.log(
-            'Notification caused app to open from background state:',
-            remoteMessage.notification,
-        );
-
-    });
-
-    messaging()
-        .getInitialNotification()
-        .then(remoteMessage => {
-            if (remoteMessage) {
-                console.log(
-                    'Notification caused app to open from quit state:',
-                    remoteMessage.notification,
-                );
-            }
+    if (finalStatus !== 'granted') {
+      alert('Failed to get push token for push notification!');
+      return;
+    }
+    
+    if (Platform.OS === 'android') {
+        Notifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#FF231F7C',
         });
+      }
 
-    messaging().onMessage(async remoteMessage => {
-        console.log("notifciation on foreground state", remoteMessage)
-    })
+    
+  await persistToken();
+};
 
-}
-
-
-
-
+export default notification;
