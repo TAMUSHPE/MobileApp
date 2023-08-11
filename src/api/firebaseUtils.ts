@@ -20,6 +20,11 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
                     displayName: responseData?.displayName,
                     photoURL: responseData?.photoURL,
                     roles: responseData?.roles,
+                    name: responseData?.name,
+                    bio: responseData?.bio,
+                    major: responseData?.major,
+                    classYear: responseData?.classYear,
+                    committees: responseData?.committees,
                 }
             }
             else {
@@ -45,6 +50,7 @@ export const getPrivateUserData = async (uid: string): Promise<PrivateUserInfo |
                 return {
                     completedAccountSetup: responseData?.completedAccountSetup,
                     settings: responseData?.settings,
+                    expoPushTokens: responseData?.expoPushTokens,
                 }
             }
             else {
@@ -101,12 +107,12 @@ export const setPrivateUserData = async (data: PrivateUserInfo) => {
 };
 
 export const appendExpoPushToken = async (expoPushToken: string) => {
-    await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), 
-    {
-        expoPushTokens: arrayUnion(expoPushToken)
-    }, 
-    { merge: true })
-    .catch(err => console.error(err));
+    await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"),
+        {
+            expoPushTokens: arrayUnion(expoPushToken)
+        },
+        { merge: true })
+        .catch(err => console.error(err));
 };
 
 

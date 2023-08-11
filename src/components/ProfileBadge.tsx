@@ -8,7 +8,7 @@ import React from 'react';
  * @param badgeStyle
  * Style of the badge surrounding text.
  * 
- * Default: "px-2 py-1 bg-slate-600 rounded-full inline-block mr-1"
+ * Default: "px-2 py-1 bg-slate-600 rounded-full inline-block mr-1 mb-1"
  * @param textStyle
  * Style of the text element in the badge.
  * 
@@ -17,7 +17,7 @@ import React from 'react';
  */
 const ProfileBadge = ({ text, badgeStyle, textStyle }: { text?: string, badgeStyle?: string, textStyle?: string }) => {
     return (
-        <View className={badgeStyle ?? "px-2 py-1 bg-slate-600 rounded-full inline-block mr-1"}>
+        <View className={badgeStyle ?? "px-2 py-1 bg-slate-600 rounded-full inline-block mr-1 mb-1"}>
             <Text className={textStyle ?? "text-white text-center"}>{text ?? "Default Text"}</Text>
         </View>
     );

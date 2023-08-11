@@ -29,7 +29,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavi
             .then(async () => {
                 return await initializeCurrentUserData();
             })
-            .then(async authUser => {
+            .then(async (authUser) => {
                 await AsyncStorage.setItem("@user", JSON.stringify(authUser));
                 setUserInfo(authUser);
 
@@ -93,7 +93,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavi
                         textStyle="text-[#3b3b3b] font-bold"
                     />
                     <InteractButton
-                        pressFunction={() => alert("This feature is not implemented")}
+                        pressFunction={() => googleSignIn()}
                         label="Sign In with Google"
                         buttonStyle="bg-white mt-2 rounded-xl"
                         textStyle="text-[#3b3b3b] font-bold"
