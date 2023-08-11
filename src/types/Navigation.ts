@@ -1,5 +1,5 @@
 
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type {RouteProp} from '@react-navigation/native';
 
 
@@ -37,6 +37,14 @@ export type ProfileSetupStackNavigatorParams = {
     SetupNotification: undefined;
 }
 
+export type ResourcesStackNavigatorParams = {
+    Resources: undefined;
+    PointsLeaderboard: undefined;
+    TestBank: undefined;
+    ResumeBank: undefined;
+}
+
+
 export type CommitteesStackNavigatorParams = {
     CommitteesScreen: undefined;
 }
@@ -57,6 +65,12 @@ export type HomeBottomTabNavigatorParams = {
     };
 };
 
+export type ResourcesProps = {
+    title:string;
+    screen: keyof ResourcesStackNavigatorParams;
+    image: number;
+    navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams>
+}
 
 export type SettingsScreenRouteProp = RouteProp<MainStackNavigatorParams, "SettingsScreen">;
 export type SettingsProps = NativeStackScreenProps<MainStackNavigatorParams, "SettingsScreen">;
