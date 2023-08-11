@@ -26,7 +26,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             .catch((err) => console.error(err));
     }
     const removeExpoPushToken = async () => {
-        console.log(auth.currentUser?.uid)
         const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
         const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
         await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true })
