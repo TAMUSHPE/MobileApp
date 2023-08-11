@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../config/firebaseConfig';
-import { MemberStatus } from '../types/OfficeSIgnIn';
+import { MemberStatus } from '../types/OfficeSignIn';
 import { httpsCallable, getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
 
