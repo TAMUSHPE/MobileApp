@@ -20,7 +20,8 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         return null;
     }
 
-    const { setUserInfo } = userContext;
+    const { userInfo, setUserInfo } = userContext;
+
     const removeLocalUser = () => {
         AsyncStorage.removeItem('@user')
             .catch((err) => console.error(err));
@@ -38,13 +39,13 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         await removeExpoPushToken();
         signOut(auth)
             .then(() => {
-                // Once signed out, forces user to login screen and resets navigation stack so that login is the only element.
+                // Once signed out, forces user to login screen by setting the current user info to "undefined"
                 removeLocalUser();
                 setUserInfo(undefined);
             })
             .catch((err) => console.error(err));
     };
-
+    console.log(userInfo?.publicInfo);
     return (
         <DrawerContentScrollView {...props}>
             <View className='flex-col bg-dark-navy w-full p-4'>
@@ -60,6 +61,9 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                         text="Test"
                     />
                     <ProfileBadge />
+                    {userInfo?.publicInfo?.committees?.map((committeeName: string) => (
+                        <ProfileBadge />
+                    ))}
                 </View>
             </View>
             <DrawerItem label="Settings" onPress={() => props.navigation.navigate("SettingsScreen", { userId: 1234 })} />
