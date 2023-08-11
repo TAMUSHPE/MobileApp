@@ -35,12 +35,14 @@
     },
     "scheme": "TAMUSHPE",
     "android": {
+      "googleServicesFile": "./google-services.json",
       "package": "com.tamu.shpe",
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ]
     },
     "ios": {
+      "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.tamu.shpe"
     }
   }

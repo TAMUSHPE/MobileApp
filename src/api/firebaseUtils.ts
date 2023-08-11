@@ -1,8 +1,7 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, addDoc, collection } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion } from "firebase/firestore";
 import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
-import { OfficerStatus } from "../types/OfficerSIgnIn";
 
 /**
  * Obtains the public information of a user given their UID.
@@ -88,7 +87,7 @@ export const getUser = async (uid: string): Promise<User | undefined> => {
  */
 export const setPublicUserData = async (data: PublicUserInfo) => {
     await setDoc(doc(db, "users", auth.currentUser?.uid!), data, { merge: true })
-        .catch(err => console.log(err));
+        .catch(err => console.error(err));
 };
 
 /**
@@ -100,6 +99,16 @@ export const setPrivateUserData = async (data: PrivateUserInfo) => {
     await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), data, { merge: true })
         .catch(err => console.error(err));
 };
+
+export const appendExpoPushToken = async (expoPushToken: string) => {
+    await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), 
+    {
+        expoPushTokens: arrayUnion(expoPushToken)
+    }, 
+    { merge: true })
+    .catch(err => console.error(err));
+};
+
 
 /**
  * This function obtains information on the current user. If this information is undefined, creates a default user.

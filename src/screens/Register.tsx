@@ -2,14 +2,14 @@ import { View, Text, TextInput, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { auth } from '../config/firebaseConfig';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { LoginStackNavigatorParamList } from '../types/Navigation';
+import { AuthStackNavigatorParams } from '../types/Navigation';
 import React, { useLayoutEffect, useState } from 'react';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
 import { evaluatePasswordStrength, validateEmail, validatePassword } from '../helpers/validation';
 import { initializeCurrentUserData } from '../api/firebaseUtils';
 import InteractButton from '../components/InteractButton';
 
-const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
+const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackNavigatorParams>) => {
     // Hooks
     const [displayName, setDisplayName] = useState<string>("");
     const [email, setEmail] = useState<string>("");
@@ -81,7 +81,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
     }
 
     return (
-        <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
+        <SafeAreaView className="flex-1 items-center justify-between bg-primary-bg-dark">
             <KeyboardAvoidingView className="flex-col w-10/12">
                 <View className='mt-2'>
                     <Text className='text-white'>Enter a unique username:</Text>
@@ -121,7 +121,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                         autoCorrect={false}
                         textContentType="password"
                     />
-                    <View className='bg-dark-navy'>
+                    <View className='bg-primary-bg-dark'>
                         <Text className='text-white'>Password Strength: <Text className={passwordStrengthColor}>{passwordStrengthText}</Text></Text>
                     </View>
                 </View>
@@ -141,7 +141,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                 <InteractButton
                     pressFunction={() => registerUser()}
                     label="Register Account"
-                    buttonStyle="bg-red mt-5 rounded-xl"
+                    buttonStyle="bg-continue-dark mt-5 rounded-xl"
                     textStyle="text-white font-bold"
                 />
             </KeyboardAvoidingView>

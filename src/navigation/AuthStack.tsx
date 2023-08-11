@@ -1,23 +1,24 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { LoginStackNavigatorParamList } from '../types/Navigation';
-
-// Screens  
+import { AuthStackNavigatorParams } from '../types/Navigation';
+import { ProfileSetupStackNavigator } from "./ProfileSetupStack";
 import LoginScreen from "../screens/Login";
 import RegisterScreen from "../screens/Register";
 
-const LoginStackNavigator = () => {
-    const LoginStack = createNativeStackNavigator<LoginStackNavigatorParamList>();
+
+const AuthStackNavigator = () => {
+    const AuthStack = createNativeStackNavigator<AuthStackNavigatorParams>();
     return (
-        <LoginStack.Navigator>
-            <LoginStack.Group
+        <AuthStack.Navigator>
+            <AuthStack.Group
                 screenOptions={{
                     headerShown: false,
                 }}
             >
-                <LoginStack.Screen name="LoginScreen" component={LoginScreen} />
-            </LoginStack.Group>
-            <LoginStack.Screen
+                <AuthStack.Screen name="LoginScreen" component={LoginScreen} />
+                <AuthStack.Screen name="ProfileSetup" component={ProfileSetupStackNavigator} />
+            </AuthStack.Group>
+            <AuthStack.Screen
                 name="RegisterScreen"
                 component={RegisterScreen}
                 options={{
@@ -31,8 +32,8 @@ const LoginStackNavigator = () => {
                     },
                 }}
             />
-        </LoginStack.Navigator>
+        </AuthStack.Navigator>
     );
 };
 
-export { LoginStackNavigator };
+export { AuthStackNavigator };

@@ -1,6 +1,7 @@
 node_modules/
 .expo/
 dist/
+functions/node_modules/
 npm-debug.*
 *.jks
 *.p8
@@ -10,7 +11,7 @@ npm-debug.*
 *.orig.*
 web-build/
 .vscode/
-yarn-error.log
+*.log
 
 # macOS
 .DS_Store
