@@ -9,6 +9,8 @@ import OfficeSignIn from '../components/OfficeSignIn';
 import { getUser } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
+import askPermissionNotification from '../helpers/pushNotification';
+
 
 const HomeScreen = () => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
@@ -37,6 +39,8 @@ const HomeScreen = () => {
                 });
         };
         getLocalUser();
+
+        askPermissionNotification();
     }, []);
 
 
