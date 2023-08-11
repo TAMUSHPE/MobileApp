@@ -18,9 +18,8 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     if (!userContext) {
         return null;
     }
-
     const { userInfo, setUserInfo } = userContext;
-
+    
     const removeLocalUser = () => {
         AsyncStorage.removeItem('@user')
             .catch((err) => console.error(err));
@@ -30,10 +29,11 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
         const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
         await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true })
-            .catch(err => console.error(err));
+        .catch(err => console.error(err));
         await AsyncStorage.removeItem('@expoPushToken');
     }
-
+    
+    console.log(userInfo)
     const signOutUser = async () => {
         await removeExpoPushToken();
         signOut(auth)
@@ -44,7 +44,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             })
             .catch((err) => console.error(err));
     };
-    console.log(userInfo?.publicInfo);
     return (
         <DrawerContentScrollView {...props}>
             <View className='flex-col bg-dark-navy w-full p-4'>
@@ -55,13 +54,15 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                         source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
                     />
                 </View>
-                <View className="flex-row">
+                <View className="flex-row flex-wrap">
                     <ProfileBadge
                         text="Test"
                     />
                     <ProfileBadge />
                     {userInfo?.publicInfo?.committees?.map((committeeName: string) => (
-                        <ProfileBadge />
+                        <ProfileBadge
+                            text={committeeName}
+                        />
                     ))}
                 </View>
             </View>
