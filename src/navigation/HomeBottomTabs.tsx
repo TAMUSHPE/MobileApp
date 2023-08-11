@@ -5,9 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Octicons } from '@expo/vector-icons';
 import { MembersStackNavigator } from './MembersStack';
 import { CommitteesStackNavigator } from './CommitteesStack';
-
-// Screens
-import ResourcesScreen from '../screens/Resources';
+import { ResourcesStackNavigator } from './ResourcesStack';
 import HomeDrawer from './HomeDrawer';
 
 
@@ -56,7 +54,7 @@ const HomeBottomTabs = () => {
                 })}
             >
                 <HomeBottomTabs.Screen name="Home" component={HomeDrawer} />
-                <HomeBottomTabs.Screen name="Resources" component={ResourcesScreen} />
+                <HomeBottomTabs.Screen name="Resources" component={ResourcesStackNavigator} />
                 <HomeBottomTabs.Screen name="Committees" component={CommitteesStackNavigator} />
                 <HomeBottomTabs.Screen name="Members" component={MembersStackNavigator} />
             </HomeBottomTabs.Navigator >
