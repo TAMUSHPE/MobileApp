@@ -68,11 +68,8 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavi
                 .catch(err => {
                     console.error(err);
                 });;
-            console.log("google sign in");
-            console.log(auth.currentUser?.uid)
         }
     }, [response]);
-    console.log(auth.currentUser?.uid)
     const googleSignIn = async () => {
         promptAsync();
     }
