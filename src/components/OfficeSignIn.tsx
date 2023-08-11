@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../config/firebaseConfig';
-import { OfficerStatus } from '../types/OfficeSIgnIn';
+import { OfficerStatus } from '../types/OfficeSignIn';
 import { addDoc, collection, doc, serverTimestamp, setDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
 
 
