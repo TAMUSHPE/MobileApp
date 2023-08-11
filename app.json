@@ -12,12 +12,11 @@
       "backgroundColor": "#ffffff"
     },
     "plugins": [
-      "@react-native-firebase/app",
       [
         "expo-image-picker",
         {
           "photosPermission": "The app can access photos"
-        }    
+        }
       ]
     ],
     "assetBundlePatterns": [
