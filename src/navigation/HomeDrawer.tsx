@@ -1,16 +1,17 @@
 import React, { useContext } from 'react';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
-import { HomeDrawerNavigatorParamList } from '../types/Navigation';
-import { Image, TouchableOpacity, View } from 'react-native';
-import { auth } from '../config/firebaseConfig';
+import { HomeDrawerNavigatorParams } from '../types/Navigation';
+import { Image, TouchableOpacity, View, Text } from 'react-native';
+import { auth, db } from '../config/firebaseConfig';
 import { signOut } from 'firebase/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../context/UserContext';
-
-// Screens
+import { arrayRemove } from "firebase/firestore";
 import HomeScreen from '../screens/Home';
 import { Images } from '../../assets';
+import { doc, setDoc } from 'firebase/firestore';
+import ProfileBadge from '../components/ProfileBadge';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
@@ -18,25 +19,52 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         return null;
     }
 
-    const { setUserInfo } = userContext;
+    const { userInfo, setUserInfo } = userContext;
+
     const removeLocalUser = () => {
         AsyncStorage.removeItem('@user')
-            .catch(e => {
-                console.log(e);
-            });
+            .catch((err) => console.error(err));
     }
-    const signOutUser = () => {
+    const removeExpoPushToken = async () => {
+        console.log(auth.currentUser?.uid)
+        const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
+        const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
+        await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true })
+            .catch(err => console.error(err));
+        await AsyncStorage.removeItem('@expoPushToken');
+    }
+
+    const signOutUser = async () => {
+        await removeExpoPushToken();
         signOut(auth)
             .then(() => {
-                // Once signed out, forces user to login screen and resets navigation stack so that login is the only element.
+                // Once signed out, forces user to login screen by setting the current user info to "undefined"
                 removeLocalUser();
                 setUserInfo(undefined);
             })
             .catch((err) => console.error(err));
     };
-
+    console.log(userInfo?.publicInfo);
     return (
         <DrawerContentScrollView {...props}>
+            <View className='flex-col bg-dark-navy w-full p-4'>
+                <View>
+                    <Image
+                        className="flex w-16 h-16 rounded-full"
+                        defaultSource={Images.DEFAULT_USER_PICTURE}
+                        source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
+                    />
+                </View>
+                <View className="flex-row">
+                    <ProfileBadge
+                        text="Test"
+                    />
+                    <ProfileBadge />
+                    {userInfo?.publicInfo?.committees?.map((committeeName: string) => (
+                        <ProfileBadge />
+                    ))}
+                </View>
+            </View>
             <DrawerItem label="Settings" onPress={() => props.navigation.navigate("SettingsScreen", { userId: 1234 })} />
             <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
         </DrawerContentScrollView>
@@ -60,7 +88,7 @@ const HomeDrawerHeader = (props: DrawerHeaderProps) => {
                 onPress={() => props.navigation.openDrawer()}
             >
                 <Image
-                    className="flex w-10 h-10 rounded-full"
+                    className="flex w-12 h-12 rounded-full"
                     defaultSource={Images.DEFAULT_USER_PICTURE}
                     source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL as string } : Images.DEFAULT_USER_PICTURE}
                 />
@@ -70,7 +98,7 @@ const HomeDrawerHeader = (props: DrawerHeaderProps) => {
 }
 
 const HomeDrawer = () => {
-    const HomeDrawer = createDrawerNavigator<HomeDrawerNavigatorParamList>();
+    const HomeDrawer = createDrawerNavigator<HomeDrawerNavigatorParams>();
     return (
         <HomeDrawer.Navigator
             initialRouteName="HomeScreen"

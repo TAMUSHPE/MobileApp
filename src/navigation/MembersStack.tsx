@@ -1,13 +1,13 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { MembersStackNavigatorParamList } from '../types/Navigation';
+import { MembersStackNavigatorParams } from '../types/Navigation';
 
 // Screens  
 import PublicProfileScreen from "../screens/PublicProfile";
 import MembersScreen from "../screens/Members";
 
 const MembersStackNavigator = () => {
-    const MembersStack = createNativeStackNavigator<MembersStackNavigatorParamList>();
+    const MembersStack = createNativeStackNavigator<MembersStackNavigatorParams>();
     return (
         <MembersStack.Navigator
             screenOptions={{

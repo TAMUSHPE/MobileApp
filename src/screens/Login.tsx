@@ -2,16 +2,16 @@ import { View, Text, TextInput, KeyboardAvoidingView, Image } from "react-native
 import React, { useState, useContext } from "react";
 import { auth } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { LoginStackNavigatorParamList } from "../types/Navigation";
+import { AuthStackNavigatorParams } from "../types/Navigation";
 import { SafeAreaView } from "react-native-safe-area-context";
 import InteractButton from "../components/InteractButton";
 import { Images } from "../../assets";
-import { getUser, initializeCurrentUserData } from "../api/firebaseUtils";
-import { signInWithEmailAndPassword, signInAnonymously, UserCredential, updateProfile } from "firebase/auth";
+import { initializeCurrentUserData } from "../api/firebaseUtils";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserContext } from "../context/UserContext";
 
-const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
+const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavigatorParams>) => {
     // Hooks
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -47,7 +47,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
     }
 
     return (
-        <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
+        <SafeAreaView className="flex-1 items-center justify-between bg-primary-bg-dark">
             <View className="flex-col items-center my-8">
                 <Image
                     className="flex-row h-20 w-20 mb-3"
@@ -80,7 +80,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                     <InteractButton
                         pressFunction={() => emailSignIn()}
                         label="Sign In"
-                        buttonStyle="bg-red mt-5 rounded-xl"
+                        buttonStyle="bg-continue-dark mt-5 rounded-xl"
                         textStyle="text-white font-bold"
                     />
                     <View className="items-center my-4">

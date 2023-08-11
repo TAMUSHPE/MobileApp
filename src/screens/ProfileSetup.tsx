@@ -4,7 +4,7 @@ import { auth } from '../config/firebaseConfig';
 import { getDownloadURL } from "firebase/storage";
 import InteractButton from '../components/InteractButton';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { ProfileSetupStackNavigatorParamList } from '../types/Navigation';
+import { ProfileSetupStackNavigatorParams } from '../types/Navigation';
 import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
 import { getUser, setPrivateUserData, setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
 import { getBlobFromURI, selectImage } from '../api/fileSelection';
@@ -14,13 +14,14 @@ import { ScrollView, TouchableOpacity } from 'react-native-gesture-handler';
 import { updateProfile } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../context/UserContext';
+import { committeesList } from '../types/User';
 
-const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
+const safeAreaViewStyle = "flex-1 justify-between bg-primary-bg-dark py-10 px-8";
 
 /**
  * In this screen, the user will set their name and bio. The screen only let the user continue if their name is not empty.
  */
-const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
+const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParams>) => {
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
 
@@ -77,7 +78,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${name === "" ? "bg-gray-500" : "bg-red"} rounded-md`}
+                        buttonStyle={`${name === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md`}
                         textStyle={`${name === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={name === "" ? 1 : 0.8}
                     />
@@ -94,7 +95,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
  * SetupProfilePicture is a screen where the user chooses a profile picture for their account.
  * This profile picture will be uploaded to firebase storage when the user hits the "Continue" button.
  */
-const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
+const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParams>) => {
     const [image, setImage] = useState<Blob | null>(null);
     const [imageName, setImageName] = useState<string | null | undefined>();
     const [localImageURI, setLocalImageURI] = useState<string>("");
@@ -230,7 +231,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${localImageURI === "" ? "bg-gray-500" : "bg-red"} rounded-md w-1/2`}
+                        buttonStyle={`${localImageURI === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
                         textStyle={`${localImageURI === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={localImageURI === "" ? 1 : 0.8}
                     />
@@ -253,7 +254,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
 /**
  * This screen is where the user will enter their major and class-year. It will not let the user continue if either field is empty.
  */
-const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
+const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParams>) => {
     const [major, setMajor] = useState<string>("");
     const [classYear, setClassYear] = useState<string>("");
 
@@ -316,7 +317,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${(major === "" || classYear === "") ? "bg-gray-500" : "bg-red"} rounded-md w-1/2`}
+                        buttonStyle={`${(major === "" || classYear === "") ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
                         textStyle={`${(major === "" || classYear === "") ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={(major === "" || classYear === "") ? 1 : 0.8}
                     />
@@ -334,7 +335,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
  * This screen is where the user will choose which committees they're in, if any. The user can select committees, choose to skip, or select "None For Now".
  * Skipping and selecting "None For Now" will do the same thing and set their committees as ["None"]
  */
-const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParamList>) => {
+const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStackNavigatorParams>) => {
     // User Context
     const userContext = useContext(UserContext);
     if (!userContext) {
@@ -343,27 +344,19 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     const { userInfo, setUserInfo } = userContext;
 
     // color will eventually get replaced with logo source
-    type CommitteeData = {
+    type CommitteeListItemData = {
         id: number,
         name: string,
         color: string,
         isChecked: boolean,
     }
 
-    const committeesList: Array<CommitteeData> = [
-        { id: 1, name: "Technical Affairs", color: "bg-gray-500", isChecked: false, },
-        { id: 2, name: "MentorSHPE", color: "bg-slate-500", isChecked: false, },
-        { id: 3, name: "Scholastic", color: "bg-yellow-500", isChecked: false, },
-        { id: 4, name: "SHPEtinas", color: "bg-green-500", isChecked: false, },
-        { id: 5, name: "Secretary", color: "bg-indigo-500", isChecked: false, },
-        { id: 6, name: "Public Relations", color: "bg-pink-500", isChecked: false, },
-        { id: 7, name: "Internal Affairs", color: "bg-blue-500", isChecked: false, },
-    ]
+    const committeesListItems: Array<CommitteeListItemData> = committeesList.map((element) => { return { ...element, isChecked: false } })
 
     const [canContinue, setCanContinue] = useState<boolean>(true);
-    const [committees, setCommittees] = useState<Array<CommitteeData>>(committeesList);
+    const [committees, setCommittees] = useState<Array<CommitteeListItemData>>(committeesListItems);
     const [noneIsChecked, setNoneIsChecked] = useState<boolean>(false);
-    let selectedCommittees: Array<string> = committees.filter((element: CommitteeData) => element.isChecked).map((element: CommitteeData) => element.name);
+    let selectedCommittees: Array<string> = committees.filter((element: CommitteeListItemData) => element.isChecked).map((element: CommitteeListItemData) => element.name);
 
     const handleToggle = (id: number) => {
         let modifiedCommittees = committees.map((element) => {
@@ -374,7 +367,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
         });
         setCommittees(modifiedCommittees);
         setNoneIsChecked(false);
-    }
+    };
 
     const handleNonePressed = () => {
         if (!noneIsChecked) {
@@ -384,7 +377,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
             setCommittees(modifiedCommittees);
         }
         setNoneIsChecked(!noneIsChecked);
-    }
+    };
 
     /**
      * Component used as a list item for each of the committees.
@@ -393,7 +386,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
      * @param onPress
      * Function that gets called when toggle is pressed. The id from committeeData will be passed to it
      */
-    const CommitteeToggle = ({ committeeData, onPress }: { committeeData: CommitteeData, onPress: Function, }) => {
+    const CommitteeToggle = ({ committeeData, onPress }: { committeeData: CommitteeListItemData, onPress: Function, }) => {
         return (
             <TouchableOpacity
                 className={`rounded-md w-full py-2 px-1 my-3 bg-white flex-row items-center justify-between border-4 ${committeeData.isChecked ? "border-green-500 shadow-lg" : "border-transparent shadow-sm"}`}
@@ -432,7 +425,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     scrollToOverflowEnabled
                 >
                     <View className='w-full h-full pb-28'>
-                        {committees.map((committeeData: CommitteeData) =>
+                        {committees.map((committeeData: CommitteeListItemData) =>
                         (
                             <CommitteeToggle committeeData={committeeData} onPress={(id: number) => handleToggle(id)} key={committeeData.id} />
                         )
@@ -472,7 +465,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${canContinue || noneIsChecked ? "bg-red" : "bg-gray-500"} rounded-md w-1/2`}
+                        buttonStyle={`${canContinue || noneIsChecked ? "bg-continue-dark" : "bg-gray-500"} rounded-md w-1/2`}
                         textStyle={`${canContinue || noneIsChecked ? "text-white" : "text-gray-700"} text-lg font-bold`}
                         opacity={canContinue || noneIsChecked ? 1 : 0.8}
                     />

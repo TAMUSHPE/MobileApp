@@ -27,9 +27,7 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
           const userData = userJSON ? JSON.parse(userJSON) : undefined;
           setUserInfo(userData);
         })
-        .catch(e => {
-          console.log(e);
-        })
+        .catch((err) => console.error(err))
         .finally(() => {
           setUserLoading(false);
         });

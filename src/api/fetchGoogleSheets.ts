@@ -1,3 +1,4 @@
+import { validateTamuEmail } from "../helpers/validation";
 import { GoogleSheetsResponse, PointsColumnVals } from "../types/GoogleSheetsTypes";
 
 /**
@@ -49,6 +50,10 @@ export const queryGoogleSpreadsheet = async (sheetID: string, query: string = "s
  * A promise for the point value given an email address. If no points are found or an error occurs, defaults to 0.
  */
 export const memberPoints = async (email: string): Promise<number> => {
+    if (!validateTamuEmail(email)) {
+        return 0;
+    }
+
     return await queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, `where C contains "${email}"`, "Master")
         .then((data) => {
             if (!data || data["table"]["rows"].length < 1 || !email) {
@@ -65,8 +70,8 @@ export const memberPoints = async (email: string): Promise<number> => {
                 return typeof value === "number" ? value : 0;
             }
         })
-        .catch((error) => {
-            console.error(error);
+        .catch((err) => {
+            console.error(err);
             return 0;
         });
 };

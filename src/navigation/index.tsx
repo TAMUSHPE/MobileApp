@@ -1,11 +1,11 @@
 import React, { useContext, useState } from 'react'
 import { ActivityIndicator, View, Image } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
-import { MainStackNavigator } from './MainStack';
+import { AuthStackNavigator } from './AuthStack';
 import { UserContext } from '../context/UserContext';
-import HomeBottomTabs from './HomeBottomTabs';
 import { Images } from '../../assets';
 import Splash from '../screens/Splash';
+import { MainStackNavigator } from './MainStack';
 
 const RootNavigator = () => {
     const userContext = useContext(UserContext);
@@ -21,7 +21,7 @@ const RootNavigator = () => {
         if (userLoading)
             return (
                 <View
-                    className="flex items-center justify-center bg-dark-navy h-screen w-screen"
+                    className="flex items-center justify-center bg-primary-bg-dark h-screen w-screen"
                 >
                     <Image
                         source={Images.SHPE_LOGO}
@@ -34,7 +34,7 @@ const RootNavigator = () => {
 
     return (
         <NavigationContainer>
-            {userInfo?.private?.privateInfo?.completedAccountSetup ? <HomeBottomTabs /> : <MainStackNavigator />}
+            {userInfo?.private?.privateInfo?.completedAccountSetup ? <MainStackNavigator /> : <AuthStackNavigator />}
         </NavigationContainer>
     );
 };

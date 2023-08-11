@@ -1,23 +1,21 @@
-import React, { useContext, useEffect, useState } from "react";
+import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { MainStackNavigatorParamList } from '../types/Navigation';
-import { LoginStackNavigator } from "./LoginStack";
-import { HomeStackNavigator } from "./HomeStack";
-import { ProfileSetupStackNavigator } from "./ProfileSetupStack";
-import { UserContext } from "../context/UserContext";
+import { MainStackNavigatorParams } from '../types/Navigation';
 
 // Screens  
+import HomeBottomTabs from "./HomeBottomTabs";
+import SettingsScreen from "../screens/Settings";
 
 const MainStackNavigator = () => {
-    const MainStack = createNativeStackNavigator<MainStackNavigatorParamList>();
+    const MainStack = createNativeStackNavigator<MainStackNavigatorParams>();
     return (
         <MainStack.Navigator
             screenOptions={{
                 headerShown: false,
             }}
         >
-            <MainStack.Screen name="LoginStack" component={LoginStackNavigator} />
-            <MainStack.Screen name="ProfileSetup" component={ProfileSetupStackNavigator} />
+            <MainStack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
+            <MainStack.Screen name="SettingsScreen" component={SettingsScreen} />
         </MainStack.Navigator>
     );
 };
