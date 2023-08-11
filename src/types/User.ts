@@ -39,7 +39,7 @@ export interface AppSettings {
 export interface PrivateUserInfo {
     completedAccountSetup?: boolean;
     settings?: AppSettings;
-    fcmTokens?: string[];
+    expoPushTokens?: string[];
 };
 
 /**

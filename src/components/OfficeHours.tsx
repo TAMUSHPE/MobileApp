@@ -5,31 +5,33 @@ import { auth, db } from '../config/firebaseConfig';
 import { MemberStatus } from '../types/OfficeSIgnIn';
 import { httpsCallable, getFunctions, connectFunctionsEmulator } from 'firebase/functions';
 
+
 const OfficeHours = () => {
     const [officeCount, setOfficeCount] = useState<number>(0);
 
     useEffect(() => {
         const officeCountRef = doc(db, "office-hours/officer-count");
-
         const unsubscribe = onSnapshot(officeCountRef, (doc) => {
             if (doc.exists()) {
                 setOfficeCount(doc.data()["zachary-office"]);
+
             }
         });
 
         return () => unsubscribe();
     }, [db]);
 
+
     const knockOnWall = async (data: MemberStatus) => {
         // Log Member Knock
         const userDocCollection = collection(db, 'office-hours/member-log/log');
         await addDoc(userDocCollection, data)
             .catch(err => console.error(err));
-        const functions = getFunctions();
 
-        // Send Notifcation to Officer
+        // Send Notification to Officers
+        const functions = getFunctions();
         const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
-        await sendNotificationOfficeHours({ title: "Knock on Wall Notification", body: "Someone at the front" })
+        await sendNotificationOfficeHours()
     }
 
 

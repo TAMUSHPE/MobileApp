@@ -1,66 +1,69 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
+import { Expo,  ExpoPushMessage } from 'expo-server-sdk';
 
 admin.initializeApp();
 
 const db = admin.firestore();
 
-const getOfficerFCMToken = async (officerUId: string) => {
+const getOfficerTokens = async (officerUId: string) => {
     const privateInfoRef = db.doc(`users/${officerUId}/private/privateInfo`);
     const docSnap = await privateInfoRef.get();
     if (docSnap.exists) {
-      return docSnap.data()?.fcmTokens ?? null;
+        return docSnap.data()?.expoPushTokens;
     } else {
-      console.log("No user");
+      console.error("User does not exist");
       return null;
     }
 };
 
-const getAvailableOfficersFCMToken = async (): Promise<string[]> => {
-    const signedInOfficersFCM: string[] = [];
+const getAvailableOfficersTokens = async (): Promise<string[]> => {
+    const signedInOfficersFCM: string[][] = [];
     const snapshot = await db.collection('office-hours/officers-status/officers').where('signedIn', '==', true).get();
     for(const doc of snapshot.docs){
         const data = doc.data();
         if (data.signedIn) {
-            const token = await getOfficerFCMToken(doc.id);
+            const token = await getOfficerTokens(doc.id);
             if(token) {
                 signedInOfficersFCM.push(token);
             }
         }
     }
-    return signedInOfficersFCM;
+    return signedInOfficersFCM.flat();
 };
 
+const isExpoPushToken = (token: any): boolean => {
+    return token && typeof token.data === 'string' && typeof token.type === 'string';
+}
+
 export const sendNotificationOfficeHours = functions.https.onCall(async (data, context) => {
-    try {
-        const officerFCMTokenLists = await getAvailableOfficersFCMToken();
-        const officerFCMTokens = officerFCMTokenLists.flat();
-        console.log(officerFCMTokens);
-
-        const response = await admin.messaging().sendMulticast({
-            tokens: officerFCMTokens,
-            notification: {
-                title: data.title,
-                body: data.body,
-            },
-        });
-
-        const failedTokens:string[] = [];
-        response.responses.forEach((resp, idx) => {
-            if (!resp.success) {
-                failedTokens.push(officerFCMTokens[idx]);
-            }
-        });
-
-        if (failedTokens.length === 0) {
-            console.log("Notification sent successfully to all tokens.");
-            return { success: true, failedTokens: [] };
-        } else {
-            console.error("Notification failed for some tokens.");
-            return { success: false, failedTokens: failedTokens };
+    const expo = new Expo();
+    const officerTokens = await getAvailableOfficersTokens();
+    console.log(officerTokens);
+    
+    let messages: ExpoPushMessage[] = [];
+    for (const pushToken of officerTokens) {
+        if (!isExpoPushToken) {
+            console.error("Token is not an ExpoPushToken");
         }
-    } catch (error) {
-        console.error("Error sending notification:", error);
-        throw new functions.https.HttpsError("internal", "Failed to send the notification.");
+        // Token is stored as a stringified JSON object
+        const parsedToken = JSON.parse(pushToken);
+        messages.push({
+          to:  parsedToken.data,
+          sound: 'default',
+          body: 'Someone at the door',
+          data: { withSome: 'data' },
+        });
     }
+    let chunks = expo.chunkPushNotifications(messages);
+    (async () => {
+    for (let chunk of chunks) {
+        try {
+        let ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+        console.log(ticketChunk);
+        } catch (error) {
+        console.error('Sent chunk error', error);
+        }
+    }
+})();
 });
