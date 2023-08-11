@@ -44,11 +44,6 @@
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.tamu.shpe"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "5b75342a-5739-4b5b-838f-89ff1fe3979d"
-      }
     }
   }
 }
