@@ -4,6 +4,15 @@ import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
 import { appendExpoPushToken } from '../api/firebaseUtils';
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+      shouldShowAlert: false,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+  }),
+});
+
+
 const persistToken = async () => {
   try {
     const token = await Notifications.getExpoPushTokenAsync({
