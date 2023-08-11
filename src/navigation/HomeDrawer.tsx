@@ -12,7 +12,6 @@ import HomeScreen from '../screens/Home';
 import { Images } from '../../assets';
 import { doc, setDoc } from 'firebase/firestore';
 import ProfileBadge from '../components/ProfileBadge';
-import PushNotificationSetup from '../screens/PushNotificationSetup';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
