@@ -27,7 +27,7 @@ const HomeBottomTabs = () => {
                             case 'Home':
                                 iconName = 'home';
                                 break;
-                            case 'Resources':
+                            case 'ResourcesStack':
                                 iconName = 'repo';
                                 break;
                             case 'Committees':
@@ -54,7 +54,7 @@ const HomeBottomTabs = () => {
                 })}
             >
                 <HomeBottomTabs.Screen name="Home" component={HomeDrawer} />
-                <HomeBottomTabs.Screen name="Resources" component={ResourcesStackNavigator} />
+                <HomeBottomTabs.Screen name="ResourcesStack" component={ResourcesStackNavigator} />
                 <HomeBottomTabs.Screen name="Committees" component={CommitteesStackNavigator} />
                 <HomeBottomTabs.Screen name="Members" component={MembersStackNavigator} />
             </HomeBottomTabs.Navigator >

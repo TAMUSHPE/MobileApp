@@ -66,9 +66,13 @@ export type HomeBottomTabNavigatorParams = {
 };
 
 export type ResourcesProps = {
-    title:string;
-    screen: keyof ResourcesStackNavigatorParams;
-    image: number;
+    items:{
+        title:string;
+        screen: keyof ResourcesStackNavigatorParams;
+        image: number;
+        "bg-color": string;
+        "text-color": string;
+    }
     navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams>
 }
 
