@@ -7,4 +7,7 @@ export const Images =  {
     CAROUSEL_1: require("./carousel_1.jpg"),
     CAROUSEL_2: require("./carousel_2.jpg"),
     CAROUSEL_3: require("./carousel_3.jpg"),
+    EBOARD: require("./e-board20.jpg"),
+    LDMAIN: require("./LDMain.jpg"),
+    MEMBERSHPE: require("./memberSHPEPic2.jpg")
 };
