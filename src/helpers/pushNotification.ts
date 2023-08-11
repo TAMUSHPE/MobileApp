@@ -19,7 +19,6 @@ const persistToken = async () => {
         projectId: Constants.expoConfig?.extra?.eas?.projectId
 
     });
-    console.log(token);
     appendExpoPushToken(JSON.stringify(token));
     await AsyncStorage.setItem("@expoPushToken", JSON.stringify(token));
   } catch (err) {
