@@ -41,6 +41,7 @@ export type ResourcesStackNavigatorParams = {
     PointsLeaderboard: undefined;
     TestBank: undefined;
     ResumeBank: undefined;
+    PointsInfo: undefined;
 }
 
 
