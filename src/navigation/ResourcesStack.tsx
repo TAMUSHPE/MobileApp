@@ -5,6 +5,8 @@ import Resources from "../screens/Resources";
 import PointsLeaderboard from "../screens/PointsLeaderboard";
 import TestBank from "../screens/TestBank";
 import ResumeBank from "../screens/ResumeBank";
+import PointsInfo from "../screens/PointsInfo";
+
 const ResourcesStackNavigator = () => {
     const ResourcesStack = createNativeStackNavigator<ResourcesStackNavigatorParams>();
     return (
@@ -15,6 +17,7 @@ const ResourcesStackNavigator = () => {
         >
             <ResourcesStack.Screen name="Resources" component={Resources} />
             <ResourcesStack.Screen name="PointsLeaderboard" component={PointsLeaderboard} />
+            <ResourcesStack.Screen name="PointsInfo" component={PointsInfo} />
             <ResourcesStack.Screen name="TestBank" component={TestBank} />
             <ResourcesStack.Screen name="ResumeBank" component={ResumeBank} />
 
