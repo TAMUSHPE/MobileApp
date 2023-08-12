@@ -6,9 +6,8 @@ import type {RouteProp} from '@react-navigation/native';
 // Stacks
 export type MainStackNavigatorParams = {
     HomeDrawer: HomeDrawerNavigatorParams;
-    MemberOfTheMonth: undefined;
     HomeBottomTabs: undefined;
-    ProfileSetup: undefined;
+    AdminDashboard: undefined;
     SettingsScreen: {
         userId: number;
     };
