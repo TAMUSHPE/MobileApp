@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, Image } from 'react-native';
+import { View, SafeAreaView, Image, ScrollView, Linking } from 'react-native';
 import React from 'react';
 import { Images } from '../../assets';
 import ResourceButton from '../components/ResourceButton';
@@ -8,13 +8,13 @@ import { ResourcesStackNavigatorParams } from '../types/Navigation';
 
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams> }) => {
-    const items = [
+    const buttonItems = [
         {
             title: "Points Leaderboard",
             screen: "PointsLeaderboard" as keyof ResourcesStackNavigatorParams,
             image: Images.MEMBERSHPE,
             "bg-color": "#EF9260",
-            "text-color": "black"
+            "text-color": "black"   // Text Colors will only accept preset name
         },
         {
             title: "Test Bank",
@@ -31,25 +31,53 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
             "text-color": "white"
         }
     ]
+
+    const smallButtonItems = [
+        {
+            title: "TAMU SHPE Website",
+            url: "https://www.tamushpe.org/",
+            image: Images.TAMU_WHITE,
+            "bg-color": "#500000",
+            "text-color": "white"
+        },
+        {
+            title: "Geneva Group",
+            url: "https://www.geneva.com/",
+            image: Images.GENEVA,
+            "bg-color": "#A1CEFE",
+            "text-color": "white"
+        },
+        {
+            title: "Test",
+            url: "https://shpe.org/",
+            image: Images.SHPE_LOGO,
+            "bg-color": "#191740",
+            "text-color": "white"
+        }
+    ]
     return (
         <SafeAreaView className="bg-offwhite">
-            <View
-                className='justify-center items-start h-18 px-5 pb-2 pt-3'
-            >
-                <Image
-                    className="h-10 w-52"
-                    source={Images.LOGO_LIGHT}
-                />
-            </View>
+            <ScrollView className='w-screen'>
+                <View
+                    className='justify-center items-start h-18 px-5 pb-2 pt-3'
+                >
+                    <Image
+                        className="h-10 w-52"
+                        source={Images.LOGO_LIGHT}
+                    />
+                </View>
 
-            <View className='mt-4'>
-                <ResourceButton items={items[0]} navigation={navigation} />
-                <ResourceButton items={items[1]} navigation={navigation} />
-                <ResourceButton items={items[2]} navigation={navigation} />
-            </View>
-            <View>
-                <ResourcesSmallButton />
-            </View>
+                <View className='mt-4'>
+                    <ResourceButton items={buttonItems[0]} navigation={navigation} />
+                    <ResourceButton items={buttonItems[1]} navigation={navigation} />
+                    <ResourceButton items={buttonItems[2]} navigation={navigation} />
+                </View>
+                <View className='mb-12 flex-row flex-wrap'>
+                    <ResourcesSmallButton items={smallButtonItems[0]} />
+                    <ResourcesSmallButton items={smallButtonItems[1]} />
+                    <ResourcesSmallButton items={smallButtonItems[2]} />
+                </View>
+            </ScrollView>
         </SafeAreaView >
 
     )

@@ -9,5 +9,7 @@ export const Images =  {
     CAROUSEL_3: require("./carousel_3.jpg"),
     EBOARD: require("./e-board20.jpg"),
     LDMAIN: require("./LDMain.jpg"),
-    MEMBERSHPE: require("./memberSHPEPic2.jpg")
+    MEMBERSHPE: require("./memberSHPEPic2.jpg"),
+    TAMU_WHITE: require("./TAM-Logo-white.png"),
+    GENEVA: require("./geneva.png"),
 };
