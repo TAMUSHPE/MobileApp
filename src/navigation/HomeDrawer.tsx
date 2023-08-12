@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import { HomeDrawerNavigatorParams } from '../types/Navigation';
 import { Image, TouchableOpacity, View, Text } from 'react-native';
@@ -12,8 +12,10 @@ import HomeScreen from '../screens/Home';
 import { Images } from '../../assets';
 import { doc, setDoc } from 'firebase/firestore';
 import ProfileBadge from '../components/ProfileBadge';
+import { User } from '../types/User';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
+    const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const userContext = useContext(UserContext);
     if (!userContext) {
         return null;
@@ -43,7 +45,21 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             })
             .catch((err) => console.error(err));
     };
-    console.log(userInfo?.publicInfo);
+
+    useEffect(() => {
+        const getLocalUser = () => {
+            AsyncStorage.getItem("@user")
+                .then(userJSON => {
+                    const userData = userJSON ? JSON.parse(userJSON) : undefined;
+                    setLocalUser(userData);
+                })
+                .catch(e => {
+                    console.error(e);
+                });
+        };
+        getLocalUser();
+    })
+
     return (
         <DrawerContentScrollView {...props}>
             <View className='flex-col bg-dark-navy w-full p-4'>
@@ -65,7 +81,12 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                 </View>
             </View>
             <DrawerItem label="Settings" onPress={() => props.navigation.navigate("SettingsScreen", { userId: 1234 })} />
+            {localUser?.publicInfo?.roles?.officer?.valueOf()
+                && <DrawerItem label="Admin Dashboard" onPress={() => props.navigation.navigate("AdminDashboard")} />}
+
             <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
+
+
         </DrawerContentScrollView>
     );
 };
