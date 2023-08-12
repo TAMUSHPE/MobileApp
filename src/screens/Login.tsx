@@ -1,4 +1,4 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Image } from "react-native";
+import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator } from "react-native";
 import React, { useEffect, useState, useContext } from "react";
 import { auth } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -13,17 +13,17 @@ import { UserContext } from "../context/UserContext";
 import * as Google from "expo-auth-session/providers/google";
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavigatorParams>) => {
-    // Hooks
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
+    const [loading, setLoading] = useState(false);
 
-
-    // User Context
     const userContext = useContext(UserContext);
     if (!userContext) {
         return null;
     }
     const { userInfo, setUserInfo } = userContext;
+    console.log(auth.currentUser?.uid)
+    console.log(loading)
 
     const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
         iosClientId: "600060629240-m7bu9ba9namtlmo9sii2s8qs2j9k5bt4.apps.googleusercontent.com",
@@ -34,6 +34,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavi
     const emailSignIn = async () => {
         signInWithEmailAndPassword(auth, email, password)
             .then(async () => {
+                setLoading(true);
                 return await initializeCurrentUserData();
             })
             .then(async authUser => {
@@ -46,6 +47,9 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavi
             })
             .catch(err => {
                 console.error(err);
+            })
+            .finally(() => {
+                setLoading(false);
             });
     }
 
@@ -55,6 +59,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavi
             const credential = GoogleAuthProvider.credential(id_token);
             signInWithCredential(auth, credential)
                 .then(async () => {
+                    setLoading(true);
                     return await initializeCurrentUserData();
                 })
                 .then(async authUser => {
@@ -67,12 +72,17 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavi
                 })
                 .catch(err => {
                     console.error(err);
-                });;
+                })
+                .finally(() => {
+                    setLoading(false);
+                })
+                ;
         }
     }, [response]);
     const googleSignIn = async () => {
         promptAsync();
     }
+
 
     return (
         <SafeAreaView className="flex-1 items-center justify-between bg-primary-bg-dark">
@@ -103,6 +113,9 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavi
                         onSubmitEditing={() => emailSignIn()}
                         textContentType="password"
                     />
+                    {loading && (
+                        <ActivityIndicator className="mt-4" size={"large"} />
+                    )}
                 </KeyboardAvoidingView>
                 <View className="flex-col mt-2">
                     <InteractButton
