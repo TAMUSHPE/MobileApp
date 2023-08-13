@@ -24,7 +24,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
         return `select A, B, C, D LIMIT ${limit} OFFSET ${offset}`;
     }
 
-    const getProfileUrlByEmail = async (email: string): Promise<string | null> => {
+    const getPhotoByEmail = async (email: string): Promise<string | null> => {
         const userRef = collection(db, 'users');
         const q = query(userRef, where("email", "==", email));
         const querySnapshot = await getDocs(q);
@@ -42,7 +42,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
     const prepUserData = async (data: any[], offset: number): Promise<userData[]> => {
         const usersDataPromises = data.map(async (entry, index) => {
             const email = entry.c[2].v;
-            const profileURL = await getProfileUrlByEmail(email);
+            const profileURL = await getPhotoByEmail(email);
             return {
                 name: `${entry.c[0].v} ${entry.c[1].v}`,
                 email: email,
@@ -154,10 +154,10 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                         </View>
                         <View className='flex-row'>
                             <Text className='text-xl font-medium mr-4'>5</Text>
-                            <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
-                                {/* <Octicons name="chevron-down" size={24} color="#FF0000" /> */}
+                            {/* <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
+                                <Octicons name="chevron-down" size={24} color="#FF0000" />
                                 <Octicons name="chevron-up" size={24} color="#AEF359" />
-                            </View>
+                            </View> */}
                         </View>
                     </View>
                     {/* Leaderboard */}
