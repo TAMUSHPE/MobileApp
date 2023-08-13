@@ -41,9 +41,9 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
                 </View>
                 <View className='flex-row'>
                     <Text className='text-xl font-medium mr-4'>{userData.rank}</Text>
-                    <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
+                    {/* <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
                         <RenderIcon />
-                    </View>
+                    </View> */}
                 </View>
             </View>
         </TouchableOpacity>
