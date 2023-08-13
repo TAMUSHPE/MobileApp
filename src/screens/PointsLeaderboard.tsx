@@ -34,8 +34,9 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
         }
 
         const userData = querySnapshot.docs[0].data();
+        console.log(userData.photoURL)
 
-        return userData.profileURL;
+        return userData.photoURL;
     }
 
     const prepUserData = async (data: any[], offset: number): Promise<userData[]> => {
