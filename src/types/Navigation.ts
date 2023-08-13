@@ -1,6 +1,7 @@
 
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type {RouteProp} from '@react-navigation/native';
+import { ImageSourcePropType } from "react-native";
 
 
 // Stacks
@@ -42,6 +43,9 @@ export type ResourcesStackNavigatorParams = {
     TestBank: undefined;
     ResumeBank: undefined;
     PointsInfo: undefined;
+    PublicProfile: {
+        email: string;
+    };
 }
 
 
@@ -69,9 +73,21 @@ export type ResourcesProps = {
     items:{
         title:string;
         screen: keyof ResourcesStackNavigatorParams;
-        image: number;
+        image: ImageSourcePropType;
         "bg-color": string;
         "text-color": string;
+    },
+    navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams>
+}
+
+export type RankChange = "up" | "down" | "none";
+export type PointsProps = {
+    userData: {
+        name: string;
+        points: number;
+        rank: number;
+        image: ImageSourcePropType | null;
+        rankChange: RankChange;
     }
     navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams>
 }

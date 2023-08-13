@@ -3,10 +3,16 @@ import React from 'react'
 import { ResourcesProps } from '../types/Navigation'
 
 const ResourceButton: React.FC<ResourcesProps> = ({ items, navigation }) => {
+    const { screen } = items
     return (
         <TouchableOpacity
             className='h-36 w-screen items-center justify-center my-4'
-            onPress={() => navigation.navigate(items.screen)}
+            onPress={() => {
+                // typescript was complaining about "Public Profile" needing parameters
+                if (screen !== "PublicProfile") {
+                    navigation.navigate(screen);
+                }
+            }}
         >
             <View className='w-[90%] items-center justifty-center rounded-xl'>
                 <Image
