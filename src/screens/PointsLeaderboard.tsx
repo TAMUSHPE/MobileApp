@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, TouchableHighlight, ScrollView, ImageSourcePropType, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator } from 'react-native'
+import { View, Text, SafeAreaView, TouchableHighlight, ScrollView, ImageSourcePropType, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, Image } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -6,6 +6,7 @@ import { RankChange, ResourcesStackNavigatorParams } from '../types/Navigation';
 import RankCard from '../components/RankCard';
 import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../api/fetchGoogleSheets'
 import { getPhotoByEmail } from '../api/firebaseUtils'
+import { Images } from '../../assets';
 
 type userData = {
     name: string;
@@ -18,11 +19,28 @@ type userData = {
 const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams> }) => {
     const [rankCards, setRankCards] = useState<userData[]>([])
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    const buildQuery = (limit: number, offset: number) => {
-        return `select A, B, C, D LIMIT ${limit} OFFSET ${offset}`;
+
+
+    const QueryAndSetRanks = (limit: number, offset: number) => {
+        const query = `select A, B, C, D LIMIT ${limit} OFFSET ${offset}`;
+        queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, query)
+            .then(response => {
+                setLoading(true);
+                return prepUserData(response?.table.rows as any[], offset)
+            }).then(data => {
+                setRankCards([...rankCards, ...data]);
+            })
+            .catch(error => {
+                console.error("Failed to fetch data:", error);
+            }).finally(() => {
+                setLoading(false);
+            })
+
     }
+
+
 
     const prepUserData = async (data: any[], offset: number): Promise<userData[]> => {
         const usersDataPromises = data.map(async (entry, index) => {
@@ -32,7 +50,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                 name: `${entry.c[0].v} ${entry.c[1].v}`,
                 email: email,
                 points: entry.c[3].f,
-                rank: offset + index + 4, // starts as Rank 4
+                rank: index + offset + 1,
                 image: profileURL ? { uri: profileURL } : null,
                 rankChange: 'same' as RankChange
             };
@@ -41,40 +59,10 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
         return await Promise.all(usersDataPromises);
     }
 
-    useEffect(() => {
-        const initialRankings = buildQuery(10, 3); // starts as Rank 4
-        queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, initialRankings)
-            .then(response => {
-                setLoading(true);
-                return prepUserData(response?.table.rows as any[], 0)
-            }).then(data => {
-                setRankCards(data);
-            })
-            .catch(error => {
-                console.error("Failed to fetch data:", error);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    }, [])
 
-    const appendRankings = () => {
-        setLoading(true);
-        const offset = rankCards.length;
-        const nextRankings = buildQuery(10, offset);
-        queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, nextRankings)
-            .then(response => {
-                return prepUserData(response?.table.rows as any[], offset)
-            }).then(data => {
-                setRankCards([...rankCards, ...data]);
-            })
-            .catch(error => {
-                console.error("Failed to fetch data:", error);
-            })
-            .finally(() => {
-                setLoading(false);
-            });
-    }
+    useEffect(() => {
+        QueryAndSetRanks(13, 0);
+    }, [])
 
     const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
         const paddingToBottom = 20;
@@ -88,11 +76,13 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                 clearTimeout(debounceTimer.current);
             }
             debounceTimer.current = setTimeout(() => {
-                appendRankings();
+                const offset = rankCards.length;
+                QueryAndSetRanks(13, offset);
                 debounceTimer.current = null;
             }, 500);
         }
     };
+    console.log(rankCards[1])
 
     return (
         <SafeAreaView className="bg-pale-orange h-full">
@@ -119,17 +109,73 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                 bounces={false}
             >
                 {/* Top 3 */}
-                <View className='h-44 flex-row justify-between pt-5'>
-                    <View className='bg-gray-400 justify-end rounded-full h-20 w-20 mt-9 ml-16'>
-                        <Text className='text-2xl text-white text-center '>2</Text>
+                <View className='h-64 flex-row justify-between pt-5 mx-10'>
+                    <View>
+                        <View className='border-gray-400 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'>
+                            <View className='justify-center items-center h-full'>
+                                <Image
+                                    className="w-20 h-20 rounded-full justify-center"
+                                    defaultSource={Images.DEFAULT_USER_PICTURE}
+                                    source={rankCards[1]?.image || Images.DEFAULT_USER_PICTURE}
+                                />
+                            </View>
+                            <View className='absolute w-full items-center'>
+                                <View className='w-8 h-8 bg-gray-400 items-center justify-center rounded-full translate-y-3'>
+                                    <Text className='text-xl text-white'>2</Text>
+                                </View>
+                            </View>
+                        </View>
+                        <View className='flex items-center justify-center mt-4 w-[92px]'>
+                            <Text className='text-center text-xl font-bold'>{rankCards[1]?.name}</Text>
+                        </View>
                     </View>
-                    <View className='bg-yellow-300 justify-end  rounded-full h-20 w-20'>
-                        <Text className='text-2xl text-white text-center'>1</Text>
+                    <View>
+
+                        <View className='border-yellow-400 border-8 justify-end rounded-full h-[92px] w-[92px]'>
+                            <View className='justify-center items-center h-full'>
+                                <Image
+                                    className="w-20 h-20 rounded-full justify-center"
+                                    defaultSource={Images.DEFAULT_USER_PICTURE}
+                                    source={rankCards[0]?.image || Images.DEFAULT_USER_PICTURE}
+                                />
+                            </View>
+
+                            <View className='absolute w-full items-center'>
+                                <View className='w-8 h-8 bg-yellow-400 items-center justify-center rounded-full translate-y-3'>
+                                    <Text className='text-xl text-white'>1</Text>
+                                </View>
+                            </View>
+                        </View>
+                        <View className='flex items-center justify-center mt-4 w-[92px]'>
+                            <Text className='text-center text-xl font-bold'>{rankCards[0]?.name}</Text>
+                        </View>
                     </View>
-                    <View className='bg-amber-800 justify-end rounded-full h-20 w-20 mt-9 mr-16'>
-                        <Text className='text-2xl text-white text-center'>3</Text>
+
+                    <View>
+                        <View className='border-amber-700 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'>
+                            <View className='justify-center items-center h-full'>
+                                <Image
+                                    className="w-20 h-20 rounded-full justify-center"
+                                    defaultSource={Images.DEFAULT_USER_PICTURE}
+                                    source={rankCards[2]?.image || Images.DEFAULT_USER_PICTURE}
+                                />
+                            </View>
+
+                            <View className='absolute w-full items-center'>
+                                <View className='w-8 h-8 bg-amber-700 items-center justify-center rounded-full translate-y-3'>
+                                    <Text className='text-xl text-white'>3</Text>
+                                </View>
+                            </View>
+                        </View>
+                        <View className='flex items-center justify-center mt-4 w-[92px]'>
+                            <Text className='text-center text-xl font-bold'>{rankCards[2]?.name}</Text>
+                        </View>
                     </View>
+
                 </View>
+
+
+
 
                 <View className={`bg-white rounded-t-2xl flex-1 ${rankCards.length === 0 ? 'pb-96' : 'pb-20'}`}>
                     {/* User Ranking */}
@@ -146,15 +192,15 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                         </View>
                     </View>
                     {/* Leaderboard */}
-                    {rankCards.map((userData, index) => (
-                        <RankCard key={index} userData={userData} navigation={navigation} />
+                    {rankCards.slice(3).map((userData, index) => (
+                        <RankCard key={index + 3} userData={userData} navigation={navigation} />
                     ))}
                     {loading && (
                         <ActivityIndicator className="mt-4" size={"large"} />
                     )}
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </SafeAreaView >
     )
 }
 
