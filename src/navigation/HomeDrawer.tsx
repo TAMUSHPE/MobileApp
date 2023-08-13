@@ -75,8 +75,9 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                         text="Test"
                     />
                     <ProfileBadge />
-                    {userInfo?.publicInfo?.committees?.map((committeeName: string) => (
+                    {userInfo?.publicInfo?.committees?.map((committeeName: string, index) => (
                         <ProfileBadge
+                            key={index}
                             text={committeeName}
                         />
                     ))}
