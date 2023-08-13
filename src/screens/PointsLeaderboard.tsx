@@ -5,8 +5,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RankChange, ResourcesStackNavigatorParams } from '../types/Navigation';
 import RankCard from '../components/RankCard';
 import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../api/fetchGoogleSheets'
-import { db } from '../config/firebaseConfig';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { getPhotoByEmail } from '../api/firebaseUtils'
+
 type userData = {
     name: string;
     points: number;
@@ -22,21 +22,6 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
 
     const buildQuery = (limit: number, offset: number) => {
         return `select A, B, C, D LIMIT ${limit} OFFSET ${offset}`;
-    }
-
-    const getPhotoByEmail = async (email: string): Promise<string | null> => {
-        const userRef = collection(db, 'users');
-        const q = query(userRef, where("email", "==", email));
-        const querySnapshot = await getDocs(q);
-
-        if (querySnapshot.empty) {
-            return null;
-        }
-
-        const userData = querySnapshot.docs[0].data();
-        console.log(userData.photoURL)
-
-        return userData.photoURL;
     }
 
     const prepUserData = async (data: any[], offset: number): Promise<userData[]> => {

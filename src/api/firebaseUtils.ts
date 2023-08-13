@@ -1,6 +1,6 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs } from "firebase/firestore";
 import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
 
 /**
@@ -85,6 +85,19 @@ export const getUser = async (uid: string): Promise<User | undefined> => {
         };
     }
 };
+
+export const getPhotoByEmail = async (email: string): Promise<string | null> => {
+    const userRef = collection(db, 'users');
+    const q = query(userRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+        return null;
+    }
+    const userData = querySnapshot.docs[0].data();
+    return userData.photoURL;
+}
+
 
 /**
  * Sets the public data of the currently logged in user. This data is readable by anyone.
