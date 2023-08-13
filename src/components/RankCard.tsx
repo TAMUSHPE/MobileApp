@@ -2,18 +2,9 @@ import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React from 'react'
 import { PointsProps } from '../types/Navigation'
 import { Octicons } from '@expo/vector-icons';
-import { RankChange } from '../types/Navigation';
 import { Images } from '../../assets';
 
 const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
-    // const colors: Record<RankChange, string> = {
-    //     up: "#AEF359",
-    //     down: "#FF0000",
-    //     none: "#28282B"
-    // };
-
-    // const color: string = colors[userData.rankChange] || "#000000";
-    // console.log(color)
 
     const RenderIcon = () => {
         switch (userData.rankChange) {
@@ -21,7 +12,7 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
                 return <Octicons name="chevron-up" size={24} color="#AEF359" />;
             case "down":
                 return <Octicons name="chevron-down" size={24} color="#FF0000" />;
-            case "none":
+            case "same":
                 return <Octicons name="dash" size={22} color="gray" />
             default:
                 return null;
@@ -39,7 +30,7 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
                         defaultSource={Images.DEFAULT_USER_PICTURE}
                         source={userData.image ? userData.image : Images.DEFAULT_USER_PICTURE}
                     />
-                    <View>
+                    <View className='w-[65%]'>
                         <Text className='text-xl font-medium'>{userData.name}</Text>
                         <View className='flex-row items-center'>
                             <Octicons name="star-fill" size={24} color="black" />

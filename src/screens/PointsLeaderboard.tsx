@@ -1,19 +1,113 @@
-import { View, Text, SafeAreaView, TouchableHighlight, ScrollView } from 'react-native'
-import React from 'react'
+import { View, Text, SafeAreaView, TouchableHighlight, ScrollView, ImageSourcePropType, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator } from 'react-native'
+import React, { useState, useEffect, useRef } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RankChange, ResourcesStackNavigatorParams } from '../types/Navigation';
 import RankCard from '../components/RankCard';
-
-
+import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../api/fetchGoogleSheets'
+import { db } from '../config/firebaseConfig';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+type userData = {
+    name: string;
+    points: number;
+    rank: number;
+    email: string;
+    image: ImageSourcePropType | null;
+    rankChange: RankChange;
+}
 const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams> }) => {
-    const rankCardSample = [{
-        name: "Jason Le",
-        points: 100,
-        rank: 5,
-        image: null,
-        rankChange: "up" as RankChange
-    }]
+    const [rankCards, setRankCards] = useState<userData[]>([])
+    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const [loading, setLoading] = useState(false);
+
+    const buildQuery = (limit: number, offset: number) => {
+        return `select A, B, C, D LIMIT ${limit} OFFSET ${offset}`;
+    }
+
+    const getProfileUrlByEmail = async (email: string): Promise<string | null> => {
+        const userRef = collection(db, 'users');
+        const q = query(userRef, where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            return null;
+        }
+
+        const userData = querySnapshot.docs[0].data();
+
+        return userData.profileURL;
+    }
+
+    const prepUserData = async (data: any[], offset: number): Promise<userData[]> => {
+        const usersDataPromises = data.map(async (entry, index) => {
+            const email = entry.c[2].v;
+            const profileURL = await getProfileUrlByEmail(email);
+            return {
+                name: `${entry.c[0].v} ${entry.c[1].v}`,
+                email: email,
+                points: entry.c[3].f,
+                rank: offset + index + 4, // starts as Rank 4
+                image: profileURL ? { uri: profileURL } : null,
+                rankChange: 'same' as RankChange
+            };
+        });
+
+        return await Promise.all(usersDataPromises);
+    }
+
+    useEffect(() => {
+        const initialRankings = buildQuery(10, 3); // starts as Rank 4
+        queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, initialRankings)
+            .then(response => {
+                setLoading(true);
+                return prepUserData(response?.table.rows as any[], 0)
+            }).then(data => {
+                setRankCards(data);
+            })
+            .catch(error => {
+                console.error("Failed to fetch data:", error);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }, [])
+
+    const appendRankings = () => {
+        setLoading(true);
+        const offset = rankCards.length;
+        const nextRankings = buildQuery(10, offset);
+        queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, nextRankings)
+            .then(response => {
+                return prepUserData(response?.table.rows as any[], offset)
+            }).then(data => {
+                setRankCards([...rankCards, ...data]);
+            })
+            .catch(error => {
+                console.error("Failed to fetch data:", error);
+            })
+            .finally(() => {
+                setLoading(false);
+            });
+    }
+
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
+        const paddingToBottom = 20;
+        return layoutMeasurement.height + contentOffset.y >=
+            contentSize.height - paddingToBottom;
+    };
+
+    const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+        if (isCloseToBottom(nativeEvent)) {
+            if (debounceTimer.current) {
+                clearTimeout(debounceTimer.current);
+            }
+            debounceTimer.current = setTimeout(() => {
+                appendRankings();
+                debounceTimer.current = null;
+            }, 500);
+        }
+    };
+
     return (
         <SafeAreaView className="bg-pale-orange h-full">
             {/* Header */}
@@ -33,7 +127,11 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                 </View>
             </View>
 
-            <ScrollView bounces={false}>
+            <ScrollView
+                onScroll={handleScroll}
+                scrollEventThrottle={400}
+                bounces={false}
+            >
                 {/* Top 3 */}
                 <View className='h-44 flex-row justify-between pt-5'>
                     <View className='bg-gray-400 justify-end rounded-full h-20 w-20 mt-9 ml-16'>
@@ -47,7 +145,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                     </View>
                 </View>
 
-                <View className='bg-white rounded-t-2xl flex-1 pb-20'>
+                <View className={`bg-white rounded-t-2xl flex-1 ${rankCards.length === 0 ? 'pb-96' : 'pb-20'}`}>
                     {/* User Ranking */}
                     <View className='flex-row bg-[#AEF359] h-14 mx-4 px-4 mt-8 rounded-xl items-center '>
                         <View className='flex-1'>
@@ -62,12 +160,12 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                         </View>
                     </View>
                     {/* Leaderboard */}
-                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
-                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
-                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
-                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
-                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
-                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
+                    {rankCards.map((userData, index) => (
+                        <RankCard key={index} userData={userData} navigation={navigation} />
+                    ))}
+                    {loading && (
+                        <ActivityIndicator className="mt-4" size={"large"} />
+                    )}
                 </View>
             </ScrollView>
         </SafeAreaView>
