@@ -2,10 +2,18 @@ import { View, Text, SafeAreaView, TouchableHighlight, ScrollView } from 'react-
 import React from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ResourcesStackNavigatorParams } from '../types/Navigation';
+import { RankChange, ResourcesStackNavigatorParams } from '../types/Navigation';
 import RankCard from '../components/RankCard';
 
+
 const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams> }) => {
+    const rankCardSample = [{
+        name: "Jason Le",
+        points: 100,
+        rank: 5,
+        image: null,
+        rankChange: "up" as RankChange
+    }]
     return (
         <SafeAreaView className="bg-pale-orange h-full">
             {/* Header */}
@@ -39,7 +47,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                     </View>
                 </View>
 
-                <View className='bg-white rounded-t-2xl flex-1 pb-40'>
+                <View className='bg-white rounded-t-2xl flex-1 pb-20'>
                     {/* User Ranking */}
                     <View className='flex-row bg-[#AEF359] h-14 mx-4 px-4 mt-8 rounded-xl items-center '>
                         <View className='flex-1'>
@@ -54,8 +62,12 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                         </View>
                     </View>
                     {/* Leaderboard */}
-                    <RankCard />
-
+                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
+                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
+                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
+                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
+                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
+                    <RankCard userData={rankCardSample[0]} navigation={navigation} />
                 </View>
             </ScrollView>
         </SafeAreaView>
