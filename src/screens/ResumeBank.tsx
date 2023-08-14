@@ -3,8 +3,12 @@ import React from 'react'
 
 const ResumeBank = () => {
     return (
-        <View>
-            <Text>ResumeBank</Text>
+        <View className="flex flex-1 flex-col justify-center items-center">
+            <View>
+                <Text>
+                    Resume Bank
+                </Text>
+            </View>
         </View>
     )
 }

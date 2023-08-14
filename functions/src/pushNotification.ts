@@ -36,7 +36,6 @@ const isExpoPushToken = (token: any): boolean => {
 export const sendNotificationOfficeHours = functions.https.onCall(async (data, context) => {
     const expo = new Expo();
     const officerTokens = await getAvailableOfficersTokens();
-    console.log(officerTokens);
     
     const messages: ExpoPushMessage[] = [];
     for (const pushToken of officerTokens) {

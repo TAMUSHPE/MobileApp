@@ -6,7 +6,11 @@ import { MembersStackNavigatorParams } from '../types/Navigation';
 const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackNavigatorParams>) => {
     return (
         <View className="flex flex-1 flex-col justify-center items-center">
-            <View>Member Screen</View>
+            <View>
+                <Text>
+                    Member Screen
+                </Text>
+            </View>
         </View>
     )
 }
