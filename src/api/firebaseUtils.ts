@@ -90,7 +90,7 @@ export const getUser = async (uid: string): Promise<User | undefined> => {
     }
 };
 
-export const getPhotoByEmail = async (email: string): Promise<string | null> => {
+export const getUserByEmail = async (email: string) => {
     const userRef = collection(db, 'users');
     const q = query(userRef, where("email", "==", email));
     const querySnapshot = await getDocs(q);
@@ -99,7 +99,7 @@ export const getPhotoByEmail = async (email: string): Promise<string | null> => 
         return null;
     }
     const userData = querySnapshot.docs[0].data();
-    return userData.photoURL;
+    return userData;
 }
 
 
