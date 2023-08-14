@@ -40,6 +40,8 @@ export interface PublicUserInfo {
     major?: string;
     classYear?: string;
     committees?: Array<string>;
+    points?: number;
+    pointsRank?: number;
 };
 
 /**
