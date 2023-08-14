@@ -15,7 +15,7 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
     return getDoc(doc(db, "users", uid))
         .then(async (res) => {
             const responseData = res.data()
-            const points = await memberPoints(responseData?.email);
+            const points = await memberPoints(responseData?.email); // Queries google sheets for points data
             if (responseData) {
                 return {
                     email: responseData?.email,
