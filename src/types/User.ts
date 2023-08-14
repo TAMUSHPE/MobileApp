@@ -42,6 +42,7 @@ export interface PublicUserInfo {
     classYear?: string;
     committees?: Array<string>;
     pointsRank?: number;
+    rankChange?: "decreased" | "same" | "increased";
     // Google Sheets parameters
     points?: number;
 };
