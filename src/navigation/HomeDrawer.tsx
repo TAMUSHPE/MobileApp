@@ -34,7 +34,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         await AsyncStorage.removeItem('@expoPushToken');
     }
 
-    // console.log(userInfo)
     const signOutUser = async () => {
         await removeExpoPushToken();
         signOut(auth)

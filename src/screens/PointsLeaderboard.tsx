@@ -37,7 +37,6 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
             const userUID = fetchUser?.userUID;
             const profileURL = userData?.photoURL;
             const rankChange = userData?.rankChange;
-            console.log(userUID)
             return {
                 name: `${entry.c[0].v} ${entry.c[1].v}`,
                 email: email,
