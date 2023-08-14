@@ -1,10 +1,7 @@
 import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
-import { Expo,  ExpoPushMessage } from 'expo-server-sdk';
+import { Expo, ExpoPushMessage } from 'expo-server-sdk';
+import {db} from './firebaseConfig';
 
-admin.initializeApp();
-
-const db = admin.firestore();
 
 const getOfficerTokens = async (officerUId: string) => {
     const privateInfoRef = db.doc(`users/${officerUId}/private/privateInfo`);
@@ -20,11 +17,11 @@ const getOfficerTokens = async (officerUId: string) => {
 const getAvailableOfficersTokens = async (): Promise<string[]> => {
     const signedInOfficersFCM: string[][] = [];
     const snapshot = await db.collection('office-hours/officers-status/officers').where('signedIn', '==', true).get();
-    for(const doc of snapshot.docs){
+    for (const doc of snapshot.docs) {
         const data = doc.data();
         if (data.signedIn) {
             const token = await getOfficerTokens(doc.id);
-            if(token) {
+            if (token) {
                 signedInOfficersFCM.push(token);
             }
         }
@@ -41,7 +38,7 @@ export const sendNotificationOfficeHours = functions.https.onCall(async (data, c
     const officerTokens = await getAvailableOfficersTokens();
     console.log(officerTokens);
     
-    let messages: ExpoPushMessage[] = [];
+    const messages: ExpoPushMessage[] = [];
     for (const pushToken of officerTokens) {
         if (!isExpoPushToken) {
             console.error("Token is not an ExpoPushToken");
@@ -49,17 +46,17 @@ export const sendNotificationOfficeHours = functions.https.onCall(async (data, c
         // Token is stored as a stringified JSON object
         const parsedToken = JSON.parse(pushToken);
         messages.push({
-          to:  parsedToken.data,
+          to: parsedToken.data,
           sound: 'default',
           body: 'Someone at the door',
           data: { withSome: 'data' },
         });
     }
-    let chunks = expo.chunkPushNotifications(messages);
+    const chunks = expo.chunkPushNotifications(messages);
     (async () => {
-    for (let chunk of chunks) {
+    for (const chunk of chunks) {
         try {
-        let ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+        const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
         console.log(ticketChunk);
         } catch (error) {
         console.error('Sent chunk error', error);
