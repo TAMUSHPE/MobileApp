@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions';
 import {queryGoogleSpreadsheet, GoogleSheetsIDs} from "../../src/api/fetchGoogleSheets"
 import { db, auth } from "./firebaseConfig"
+import { RankChange } from "../../src/types/User";
 
 async function getUIDbyEmail(email: string): Promise<string | null> {
     try {
@@ -27,21 +28,21 @@ const updateRanks = async () => {
                         if (userDoc.exists) {
                             const userData = userDoc.data();
                             if (userData) {
-                                let rankChange: "decreased" | "same" | "increased";
+                                let rankChange: RankChange;
                                 const newRank = i + 1;                             
                                 switch (true) {
                                     case (userData.rank < newRank):
                                         rankChange = "increased";
                                         break;
-                                        case (userData.rank > newRank):
-                                            rankChange = "decreased";
-                                            break;
-                                            default:
-                                                rankChange = "same";
-                                            }        
+                                    case (userData.rank > newRank):
+                                        rankChange = "decreased";
+                                        break;
+                                    default:
+                                        rankChange = "same";
+                                }        
                                             
-                                            await userDocRef.set({
-                                    rank: newRank, 
+                                await userDocRef.set({
+                                    pointsRank: newRank, 
                                     rankChange: rankChange,
                                 }, { merge: true });
                             }
