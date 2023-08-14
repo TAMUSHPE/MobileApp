@@ -8,14 +8,12 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
 
     const RenderIcon = () => {
         switch (userData.rankChange) {
-            case "up":
+            case "increased":
                 return <Octicons name="chevron-up" size={24} color="#AEF359" />;
-            case "down":
+            case "decreased":
                 return <Octicons name="chevron-down" size={24} color="#FF0000" />;
-            case "same":
-                return <Octicons name="dash" size={22} color="gray" />
             default:
-                return null;
+                return <Octicons name="dash" size={22} color="gray" />
         }
     };
 
@@ -41,9 +39,9 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
                 </View>
                 <View className='flex-row'>
                     <Text className='text-xl font-medium mr-4'>{userData.rank}</Text>
-                    {/* <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
+                    <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
                         <RenderIcon />
-                    </View> */}
+                    </View>
                 </View>
             </View>
         </TouchableOpacity>

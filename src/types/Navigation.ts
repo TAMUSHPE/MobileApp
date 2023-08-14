@@ -80,7 +80,7 @@ export type ResourcesProps = {
     navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams>
 }
 
-export type RankChange = "up" | "down" | "same";
+export type RankChange = "decreased" | "same" | "increased"
 export type PointsProps = {
     userData: {
         name: string;
