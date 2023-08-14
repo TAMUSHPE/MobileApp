@@ -12,7 +12,7 @@ const AdminDashboard = () => {
     }
 
     return (
-        <View>
+        <View className='items-center justify-center h-screen'>
             <Text>AdminDashboard</Text>
             <TouchableOpacity
                 onPress={() => updateRanks()}
