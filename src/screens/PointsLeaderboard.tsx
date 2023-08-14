@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, TouchableHighlight, ScrollView, ImageSourcePropType, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, Image } from 'react-native'
+import { View, Text, SafeAreaView, TouchableHighlight, ScrollView, ImageSourcePropType, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, Image, TouchableOpacity } from 'react-native'
 import React, { useState, useEffect, useRef } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,6 +7,7 @@ import RankCard from '../components/RankCard';
 import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../api/fetchGoogleSheets'
 import { getPhotoByEmail } from '../api/firebaseUtils'
 import { Images } from '../../assets';
+import { auth } from '../config/firebaseConfig';
 
 type userData = {
     name: string;
@@ -23,7 +24,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
 
 
 
-    const QueryAndSetRanks = (limit: number, offset: number) => {
+    const queryAndSetRanks = (limit: number, offset: number) => {
         const query = `select A, B, C, D LIMIT ${limit} OFFSET ${offset}`;
         queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, query)
             .then(response => {
@@ -61,7 +62,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
 
 
     useEffect(() => {
-        QueryAndSetRanks(13, 0);
+        queryAndSetRanks(13, 0);
     }, [])
 
     const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
@@ -77,12 +78,11 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
             }
             debounceTimer.current = setTimeout(() => {
                 const offset = rankCards.length;
-                QueryAndSetRanks(13, offset);
+                queryAndSetRanks(13, offset);
                 debounceTimer.current = null;
             }, 500);
         }
     };
-    console.log(rankCards[1])
 
     return (
         <SafeAreaView className="bg-pale-orange h-full">
@@ -111,7 +111,10 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                 {/* Top 3 */}
                 <View className='h-64 flex-row justify-between pt-5 mx-10'>
                     <View>
-                        <View className='border-gray-400 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'>
+                        <TouchableOpacity
+                            className='border-gray-400 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'
+                            onPress={() => { navigation.navigate("PublicProfile", { email: "jhernandez18@tamu.edu" }) }}
+                        >
                             <View className='justify-center items-center h-full'>
                                 <Image
                                     className="w-20 h-20 rounded-full justify-center"
@@ -124,14 +127,17 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                                     <Text className='text-xl text-white'>2</Text>
                                 </View>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                         <View className='flex items-center justify-center mt-4 w-[92px]'>
                             <Text className='text-center text-xl font-bold'>{rankCards[1]?.name}</Text>
                         </View>
                     </View>
-                    <View>
 
-                        <View className='border-yellow-400 border-8 justify-end rounded-full h-[92px] w-[92px]'>
+                    <View>
+                        <TouchableOpacity
+                            className='border-yellow-400 border-8 justify-end rounded-full h-[92px] w-[92px]'
+                            onPress={() => { navigation.navigate("PublicProfile", { email: "jhernandez18@tamu.edu" }) }}
+                        >
                             <View className='justify-center items-center h-full'>
                                 <Image
                                     className="w-20 h-20 rounded-full justify-center"
@@ -145,14 +151,17 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                                     <Text className='text-xl text-white'>1</Text>
                                 </View>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                         <View className='flex items-center justify-center mt-4 w-[92px]'>
                             <Text className='text-center text-xl font-bold'>{rankCards[0]?.name}</Text>
                         </View>
                     </View>
 
                     <View>
-                        <View className='border-amber-700 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'>
+                        <TouchableOpacity
+                            className='border-amber-700 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'
+                            onPress={() => { navigation.navigate("PublicProfile", { email: "jhernandez18@tamu.edu" }) }}
+                        >
                             <View className='justify-center items-center h-full'>
                                 <Image
                                     className="w-20 h-20 rounded-full justify-center"
@@ -166,7 +175,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                                     <Text className='text-xl text-white'>3</Text>
                                 </View>
                             </View>
-                        </View>
+                        </TouchableOpacity>
                         <View className='flex items-center justify-center mt-4 w-[92px]'>
                             <Text className='text-center text-xl font-bold'>{rankCards[2]?.name}</Text>
                         </View>
