@@ -26,7 +26,7 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
                     <Image
                         className="flex w-14 h-14 rounded-full mr-4"
                         defaultSource={Images.DEFAULT_USER_PICTURE}
-                        source={userData.image ? userData.image : Images.DEFAULT_USER_PICTURE}
+                        source={userData.photoURL ? { uri: userData.photoURL } : Images.DEFAULT_USER_PICTURE}
                     />
                     <View className='w-[65%]'>
                         <Text className='text-xl font-medium'>{userData.name}</Text>
@@ -38,7 +38,7 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
                     </View>
                 </View>
                 <View className='flex-row'>
-                    <Text className='text-xl font-medium mr-4'>{userData.rank}</Text>
+                    <Text className='text-xl font-medium mr-4'>{userData.pointsRank}</Text>
                     <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
                         <RenderIcon />
                     </View>
