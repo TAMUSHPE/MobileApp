@@ -2,6 +2,7 @@ import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs } from "firebase/firestore";
 import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
+import { memberPoints } from "./fetchGoogleSheets";
 
 /**
  * Obtains the public information of a user given their UID.
@@ -12,8 +13,9 @@ import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
  */
 export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | undefined> => {
     return getDoc(doc(db, "users", uid))
-        .then((res) => {
+        .then(async (res) => {
             const responseData = res.data()
+            const points = await memberPoints(responseData?.email); // Queries google sheets for points data
             if (responseData) {
                 return {
                     email: responseData?.email,
@@ -25,6 +27,8 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
                     major: responseData?.major,
                     classYear: responseData?.classYear,
                     committees: responseData?.committees,
+                    points: points,
+                    pointsRank: responseData?.pointsRank,
                 }
             }
             else {
