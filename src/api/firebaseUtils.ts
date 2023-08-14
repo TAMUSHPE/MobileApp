@@ -100,7 +100,8 @@ export const getUserByEmail = async (email: string) => {
         return null;
     }
     const userData = querySnapshot.docs[0].data();
-    return userData;
+    const userUID = querySnapshot.docs[0].id;
+    return {userData, userUID}
 }
 
 

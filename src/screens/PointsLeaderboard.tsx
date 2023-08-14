@@ -8,11 +8,12 @@ import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../api/fetchGoogleSheet
 import { getUserByEmail, getPublicUserData } from '../api/firebaseUtils'
 import { Images } from '../../assets';
 import { auth } from "../config/firebaseConfig"
-import { PublicUserInfo, RankChange } from '../types/User';
+import { RankChange, PublicUserInfoUID } from '../types/User';
 import { GoogleSheetsResponse } from '../types/GoogleSheetsTypes';
 
+
 const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams> }) => {
-    const [rankCards, setRankCards] = useState<PublicUserInfo[]>([])
+    const [rankCards, setRankCards] = useState<PublicUserInfoUID[]>([])
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [initLoading, setInitLoading] = useState(true);
     const [loading, setLoading] = useState(true);
@@ -27,13 +28,16 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
     const [userRank, setUserRank] = useState(-1);
     const [userRankChange, setUserRankChange] = useState<RankChange>('same');
 
-    const prepUserData = async (data: GoogleSheetsResponse, offset: number): Promise<PublicUserInfo[]> => {
+    const prepUserData = async (data: GoogleSheetsResponse, offset: number): Promise<PublicUserInfoUID[]> => {
         const dataRow = data.table.rows;
         const usersDataPromises = dataRow.map(async (entry, index) => {
             const email = entry.c[2].v as string;
             const fetchUser = await getUserByEmail(email);
-            const profileURL = fetchUser?.photoURL;
-            const rankChange = fetchUser?.rankChange;
+            const userData = fetchUser?.userData;
+            const userUID = fetchUser?.userUID;
+            const profileURL = userData?.photoURL;
+            const rankChange = userData?.rankChange;
+            console.log(userUID)
             return {
                 name: `${entry.c[0].v} ${entry.c[1].v}`,
                 email: email,
@@ -41,6 +45,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                 pointsRank: index + offset + 1,
                 photoURL: profileURL,
                 rankChange: rankChange as RankChange,
+                uid: userUID
             };
         });
 
@@ -145,7 +150,8 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                     <View>
                         <TouchableOpacity
                             className='border-gray-400 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'
-                            onPress={() => { navigation.navigate("PublicProfile", { email: "jhernandez18@tamu.edu" }) }}
+                            disabled={rankCards[1]?.uid === undefined}
+                            onPress={() => { navigation.navigate("PublicProfile", { uid: rankCards[1]?.uid! }) }}
                         >
                             <View className='justify-center items-center h-full'>
                                 <Image
@@ -168,7 +174,8 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                     <View>
                         <TouchableOpacity
                             className='border-yellow-400 border-8 justify-end rounded-full h-[92px] w-[92px]'
-                            onPress={() => { navigation.navigate("PublicProfile", { email: "jhernandez18@tamu.edu" }) }}
+                            disabled={rankCards[0]?.uid === undefined}
+                            onPress={() => { navigation.navigate("PublicProfile", { uid: rankCards[0]?.uid! }) }}
                         >
                             <View className='justify-center items-center h-full'>
                                 <Image
@@ -192,7 +199,8 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                     <View>
                         <TouchableOpacity
                             className='border-amber-700 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'
-                            onPress={() => { navigation.navigate("PublicProfile", { email: "jhernandez18@tamu.edu" }) }}
+                            disabled={rankCards[2]?.uid === undefined}
+                            onPress={() => { navigation.navigate("PublicProfile", { uid: rankCards[2]?.uid! }) }}
                         >
                             <View className='justify-center items-center h-full'>
                                 <Image

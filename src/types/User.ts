@@ -67,6 +67,14 @@ export interface PrivateUserInfo {
 };
 
 /**
+ * This is seperate from PublicUserInfo because the UID is not stored in the document.
+ * This is used when the UID is needed that is not the currently logged in user.
+ */
+export interface PublicUserInfoUID extends PublicUserInfo {
+    uid?: string
+}
+
+/**
  * This interface represents a user as it is stored in firebase-auth.
  * Private information is stored as a sub-collection which can only be accessed by the user that owns the information.
  */
@@ -76,3 +84,4 @@ export interface User {
         privateInfo?: PrivateUserInfo | undefined;
     }
 };
+

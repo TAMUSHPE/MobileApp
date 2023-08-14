@@ -4,16 +4,20 @@ import { memberPoints } from '../api/fetchGoogleSheets';
 import { MembersProps, MembersScreenRouteProp } from '../types/Navigation';
 import { useRoute } from '@react-navigation/native';
 import { auth } from '../config/firebaseConfig';
+import { getPublicUserData } from '../api/firebaseUtils';
 
 const PublicProfileScreen = ({ navigation }: MembersProps) => {
     const route = useRoute<MembersScreenRouteProp>();
-    const { email } = route.params;
+    const { uid } = route.params;
     // In the future, this will be part of the auth object
     const [points, setPoints] = useState<number>();
+    const [name, setName] = useState<string>();
 
     useEffect(() => {
         let fetchData = async () => {
-            setPoints(await memberPoints(email));
+            const publicUserData = await getPublicUserData(uid);
+            setPoints(publicUserData?.points);
+            setName(publicUserData?.name);
         };
         fetchData();
     }, [auth]);
@@ -29,9 +33,9 @@ const PublicProfileScreen = ({ navigation }: MembersProps) => {
     }
 
     return (
-        <View>
+        <View className="items-center justify-center flex-1">
             <Text>
-                {`${email} - Points: ${points.toFixed(2)}`}
+                {`${name} - Points: ${points.toFixed(2)}`}
             </Text>
         </View>
     )
