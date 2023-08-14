@@ -68,6 +68,19 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
             })
     }
 
+    useEffect(() => {
+        const fetchData = async () => {
+            getPublicUserData(auth?.currentUser?.uid!).then(user => {
+                setUserRank(user?.pointsRank ? user?.pointsRank : -1);
+                setUserRankChange(user?.rankChange ? user?.rankChange as RankChange : "same" as RankChange);
+                setUserPoints(user?.points ? user?.points : -1)
+            }).then(() => {
+                queryAndSetRanks(13, 0);
+            })
+        }
+        fetchData();
+    }, [])
+
     const colorMapping: Record<RankChange, string> = {
         "increased": "#AEF359",
         "same": "#7F7F7F",
@@ -84,21 +97,6 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                 return <Octicons name="dash" size={22} color="gray" />
         }
     };
-
-
-    useEffect(() => {
-        const fetchData = async () => {
-            getPublicUserData(auth?.currentUser?.uid!).then(user => {
-                setUserRank(user?.pointsRank ? user?.pointsRank : -1);
-                setUserRankChange(user?.rankChange ? user?.rankChange as RankChange : "same" as RankChange);
-                setUserPoints(user?.points ? user?.points : -1)
-            }).then(() => {
-                queryAndSetRanks(13, 0);
-            })
-        }
-        fetchData();
-    }, [])
-
 
     const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
         const paddingToBottom = 20;
@@ -165,8 +163,8 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                                 </View>
                             </View>
                         </TouchableOpacity>
-                        <View className='flex items-center justify-center mt-4 w-[92px]'>
-                            <Text className='text-center text-xl font-bold'>{rankCards[1]?.name}</Text>
+                        <View className='mt-4 w-[100px]'>
+                            <Text className='text-center text-xl font-bold '>{rankCards[1]?.name}</Text>
                         </View>
                     </View>
 
@@ -190,7 +188,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                                 </View>
                             </View>
                         </TouchableOpacity>
-                        <View className='flex items-center justify-center mt-4 w-[92px]'>
+                        <View className='mt-4 w-[100px]'>
                             <Text className='text-center text-xl font-bold'>{rankCards[0]?.name}</Text>
                         </View>
                     </View>
@@ -215,7 +213,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                                 </View>
                             </View>
                         </TouchableOpacity>
-                        <View className='flex items-center justify-center mt-4 w-[92px]'>
+                        <View className='mt-4 w-[100px]'>
                             <Text className='text-center text-xl font-bold'>{rankCards[2]?.name}</Text>
                         </View>
                     </View>
