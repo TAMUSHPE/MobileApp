@@ -29,6 +29,7 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
                     committees: responseData?.committees,
                     points: points,
                     pointsRank: responseData?.pointsRank,
+                    rankChange: responseData?.rankChange,
                 }
             }
             else {

@@ -29,6 +29,7 @@ export interface Roles {
  * This information is accessible by anyone in the app.
  * Each argument must have a value, however some of these values may be "empty". For example, if a string's value is "", this means that there is no value in the data.
  */
+export type RankChange = "decreased" | "same" | "increased";
 export interface PublicUserInfo {
     // Firestore parameters
     email?: string;
@@ -42,7 +43,7 @@ export interface PublicUserInfo {
     classYear?: string;
     committees?: Array<string>;
     pointsRank?: number;
-    rankChange?: "decreased" | "same" | "increased";
+    rankChange?: RankChange;
     // Google Sheets parameters
     points?: number;
 };
