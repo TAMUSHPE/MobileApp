@@ -5,17 +5,17 @@ import { httpsCallable, getFunctions } from 'firebase/functions';
 
 
 const AdminDashboard = () => {
-    const updatePoints = async () => {
+    const updateRanks = async () => {
         const functions = getFunctions();
-        const updateMemberRanks = httpsCallable(functions, 'updateMemberRanksOnCall');
-        await updateMemberRanks()
+        const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
+        await updateRanksOnCall()
     }
 
     return (
         <View>
             <Text>AdminDashboard</Text>
             <TouchableOpacity
-                onPress={() => updatePoints()}
+                onPress={() => updateRanks()}
                 className='bg-blue-500 rounded-md p-2'
             >
                 <Text>Update Points and Rank for all Users</Text>

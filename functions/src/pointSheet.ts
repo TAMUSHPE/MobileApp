@@ -11,7 +11,7 @@ async function getUIDbyEmail(email: string): Promise<string | null> {
     }
 }
 
-const updatePointStats = async () => {
+const updateRanks = async () => {
     try {
         const response = await queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID);
         const rows = response?.table.rows;
@@ -43,7 +43,6 @@ const updatePointStats = async () => {
                                             await userDocRef.set({
                                     rank: newRank, 
                                     rankChange: rankChange,
-                                    points: rows[i].c[3]?.f,
                                 }, { merge: true });
                             }
                         }
@@ -59,13 +58,13 @@ const updatePointStats = async () => {
 }
 
 
-export const updatePointStatsScheduled = functions.pubsub.schedule('0 5 * * *').timeZone('America/Chicago').onRun(async (context) => {
-    await updatePointStats()
+export const updateRanksScheduled = functions.pubsub.schedule('0 5 * * *').timeZone('America/Chicago').onRun(async (context) => {
+    await updateRanks()
 });
 
-export const updateMemberRanksOnCall = functions.https.onCall(async (data, context) => {
+export const updateRanksOnCall = functions.https.onCall(async (data, context) => {
     try {
-      const result = await updatePointStats();
+      const result = await updateRanks();
       return {
         status: 'success',
         message: result,
