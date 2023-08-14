@@ -57,7 +57,7 @@ const updateRanks = async () => {
     }
 }
 
-
+// runs at 5AM CST daily 
 export const updateRanksScheduled = functions.pubsub.schedule('0 5 * * *').timeZone('America/Chicago').onRun(async (context) => {
     await updateRanks()
 });
