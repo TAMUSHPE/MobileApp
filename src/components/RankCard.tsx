@@ -18,9 +18,10 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
     };
 
     return (
-        <TouchableOpacity onPress={() => {
-            navigation.navigate("PublicProfile", { email: "jhernandez18@tamu.edu" });
-        }}>
+        <TouchableOpacity
+            disabled={userData.uid === undefined}
+            onPress={() => { navigation.navigate("PublicProfile", { uid: userData.uid! }) }}
+        >
             <View className={`flex-row bg-[#D4D4D4] h-20 mx-4 px-4 mt-8 rounded-xl items-center`}>
                 <View className='flex-1 flex-row items-center'>
                     <Image

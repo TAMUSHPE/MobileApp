@@ -15,7 +15,7 @@ const MembersStackNavigator = () => {
             }}
         >
             <MembersStack.Screen name="MembersScreen" component={MembersScreen} />
-            <MembersStack.Screen name="PublicProfile" component={PublicProfileScreen} initialParams={{ email: '' }} />
+            <MembersStack.Screen name="PublicProfile" component={PublicProfileScreen} />
         </MembersStack.Navigator>
     );
 };

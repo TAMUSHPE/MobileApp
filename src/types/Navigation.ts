@@ -2,7 +2,7 @@
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type {RouteProp} from '@react-navigation/native';
 import { ImageSourcePropType } from "react-native";
-import { PublicUserInfo } from "./User";
+import { PublicUserInfoUID } from "./User";
 
 
 // Stacks
@@ -25,7 +25,7 @@ export type AuthStackNavigatorParams = {
 export type MembersStackNavigatorParams = {
     MembersScreen: undefined;
     PublicProfile: {
-        email: string;
+        uid: string;
     }
 };
 
@@ -45,7 +45,7 @@ export type ResourcesStackNavigatorParams = {
     ResumeBank: undefined;
     PointsInfo: undefined;
     PublicProfile: {
-        email: string;
+        uid: string;
     };
 }
 
@@ -83,7 +83,7 @@ export type ResourcesProps = {
 
 export type RankChange = "decreased" | "same" | "increased"
 export type PointsProps = {
-    userData: PublicUserInfo
+    userData: PublicUserInfoUID
     navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams>
 }
 
