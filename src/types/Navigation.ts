@@ -2,6 +2,7 @@
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type {RouteProp} from '@react-navigation/native';
 import { ImageSourcePropType } from "react-native";
+import { PublicUserInfo } from "./User";
 
 
 // Stacks
@@ -82,13 +83,7 @@ export type ResourcesProps = {
 
 export type RankChange = "decreased" | "same" | "increased"
 export type PointsProps = {
-    userData: {
-        name: string;
-        points: number;
-        rank: number;
-        image: ImageSourcePropType | null;
-        rankChange: RankChange;
-    }
+    userData: PublicUserInfo
     navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams>
 }
 
