@@ -12,52 +12,52 @@ async function getUIDbyEmail(email: string): Promise<string | null> {
     }
 }
 
+const getRankChange = (userData: any, newRank: number): RankChange => {
+    if (userData.rank < newRank) return "increased";
+    if (userData.rank > newRank) return "decreased";
+    return "same";
+}
+
+const updateUserRank = async (email: string, newRank: number) => {
+    if (!email) return;
+
+    const uid = await getUIDbyEmail(email);
+    if (!uid) return;
+
+    const userDocRef = db.collection('users').doc(uid);
+    const userDoc = await userDocRef.get();
+    if (!userDoc.exists) return;
+
+    const userData = userDoc.data();
+    if (!userData) return;
+
+    const rankChange = getRankChange(userData, newRank);
+
+    await userDocRef.set({
+        pointsRank: newRank,
+        rankChange: rankChange,
+    }, { merge: true });
+}
+
+
 const updateRanks = async () => {
     try {
         const response = await queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID);
         const rows = response?.table.rows;
-        if (rows) {
-            for (let i = 0; i < rows.length; i++) {
-                const email = rows[i].c[2]?.v;
-                console.log(email)
-                if (email) {
-                    const uid = await getUIDbyEmail(email);
-                    if (uid) {
-                        const userDocRef = db.collection('users').doc(uid);
-                        const userDoc = await userDocRef.get();                        
-                        if (userDoc.exists) {
-                            const userData = userDoc.data();
-                            if (userData) {
-                                let rankChange: RankChange;
-                                const newRank = i + 1;                             
-                                switch (true) {
-                                    case (userData.rank < newRank):
-                                        rankChange = "increased";
-                                        break;
-                                    case (userData.rank > newRank):
-                                        rankChange = "decreased";
-                                        break;
-                                    default:
-                                        rankChange = "same";
-                                }        
-                                            
-                                await userDocRef.set({
-                                    pointsRank: newRank, 
-                                    rankChange: rankChange,
-                                }, { merge: true });
-                            }
-                        }
-                    }
-                }     
-            }
-        }      
+
+        if (!rows) return "No rows to update.";
+
+        for (let i = 0; i < rows.length; i++) {
+            const email = rows[i].c[2]?.v;
+            await updateUserRank(email, i + 1);
+        }
+
         return "Successfully updated ranks!";
     } catch (error) {
         console.error("Error in updateRanksLogic:", error);
         throw new Error("Internal Server Error.");
     }
 }
-
 // runs at 5AM CST daily 
 export const updateRanksScheduled = functions.pubsub.schedule('0 5 * * *').timeZone('America/Chicago').onRun(async (context) => {
     await updateRanks()
