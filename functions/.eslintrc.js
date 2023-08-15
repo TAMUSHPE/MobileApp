@@ -35,5 +35,6 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": 0,
     "@typescript-eslint/no-explicit-any": 0,
     "require-jsdoc": 0,
+    "valid-jsdoc": 0,
   },
 };
