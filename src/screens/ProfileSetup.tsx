@@ -1,5 +1,6 @@
-import { SafeAreaView, Text, View, KeyboardAvoidingView, Image, Animated, TouchableOpacity, ScrollView } from 'react-native';
+import { Text, View, KeyboardAvoidingView, Image, Animated, TouchableOpacity, ScrollView } from 'react-native';
 import React, { useEffect, useRef, useState, useContext } from 'react';
+import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';

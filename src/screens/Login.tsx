@@ -1,5 +1,6 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator, SafeAreaView } from "react-native";
+import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator } from "react-native";
 import React, { useEffect, useState, useContext } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Google from "expo-auth-session/providers/google";

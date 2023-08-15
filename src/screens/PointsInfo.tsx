@@ -1,5 +1,6 @@
-import { View, Text, SafeAreaView, TouchableHighlight } from 'react-native'
+import { View, Text, TouchableHighlight } from 'react-native'
 import React from 'react'
+import { SafeAreaView } from "react-native-safe-area-context";
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ResourcesStackParams } from '../types/Navigation';

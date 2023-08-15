@@ -1,5 +1,6 @@
-import { View, SafeAreaView, Image, ScrollView, Linking } from 'react-native';
+import { View, Image, ScrollView } from 'react-native';
 import React from 'react';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ResourceButton from '../components/ResourceButton';
 import ResourcesSmallButton from '../components/ResourceSmallButton';
