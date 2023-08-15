@@ -1,29 +1,25 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ResourcesStackNavigatorParams } from '../types/Navigation';
 import Resources from "../screens/Resources";
 import PointsLeaderboard from "../screens/PointsLeaderboard";
 import TestBank from "../screens/TestBank";
 import ResumeBank from "../screens/ResumeBank";
 import PointsInfo from "../screens/PointsInfo";
 import PublicProfileScreen from "../screens/PublicProfile";
+import { ResourcesStackParams } from '../types/Navigation';
 
-const ResourcesStackNavigator = () => {
-    const ResourcesStack = createNativeStackNavigator<ResourcesStackNavigatorParams>();
+const ResourcesStack = () => {
+    const Stack = createNativeStackNavigator<ResourcesStackParams>();
     return (
-        <ResourcesStack.Navigator
-            screenOptions={{
-                headerShown: false,
-            }}
-        >
-            <ResourcesStack.Screen name="Resources" component={Resources} />
-            <ResourcesStack.Screen name="PointsLeaderboard" component={PointsLeaderboard} />
-            <ResourcesStack.Screen name="PointsInfo" component={PointsInfo} />
-            <ResourcesStack.Screen name="TestBank" component={TestBank} />
-            <ResourcesStack.Screen name="ResumeBank" component={ResumeBank} />
-            <ResourcesStack.Screen name="PublicProfile" component={PublicProfileScreen} />
-        </ResourcesStack.Navigator>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="Resources" component={Resources} />
+            <Stack.Screen name="PointsLeaderboard" component={PointsLeaderboard} />
+            <Stack.Screen name="PointsInfo" component={PointsInfo} />
+            <Stack.Screen name="TestBank" component={TestBank} />
+            <Stack.Screen name="ResumeBank" component={ResumeBank} />
+            <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
+        </Stack.Navigator>
     );
 };
 
-export { ResourcesStackNavigator };
+export { ResourcesStack };

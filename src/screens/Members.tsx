@@ -1,9 +1,9 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text } from 'react-native';
 import React from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { MembersStackNavigatorParams } from '../types/Navigation';
+import { MembersStackParams } from '../types/Navigation';
 
-const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackNavigatorParams>) => {
+const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
     return (
         <View className="flex flex-1 flex-col justify-center items-center">
             <View>

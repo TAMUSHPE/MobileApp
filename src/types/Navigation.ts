@@ -1,13 +1,13 @@
 
+import { ImageSourcePropType } from "react-native";
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type {RouteProp} from '@react-navigation/native';
-import { ImageSourcePropType } from "react-native";
 import { PublicUserInfoUID } from "./User";
 
 
 // Stacks
-export type MainStackNavigatorParams = {
-    HomeDrawer: HomeDrawerNavigatorParams;
+export type MainStackParams = {
+    HomeDrawer: HomeDrawerParams;
     HomeBottomTabs: undefined;
     AdminDashboard: undefined;
     SettingsScreen: {
@@ -15,21 +15,21 @@ export type MainStackNavigatorParams = {
     };
 };
 
-export type AuthStackNavigatorParams = {
+export type AuthStackParams = {
     LoginScreen: undefined;
     RegisterScreen: undefined;
     ProfileSetup: undefined;
     MainStack: undefined;
 };
 
-export type MembersStackNavigatorParams = {
+export type MembersStackParams = {
     MembersScreen: undefined;
     PublicProfile: {
         uid: string;
     }
 };
 
-export type ProfileSetupStackNavigatorParams = {
+export type ProfileSetupStackParams = {
     SetupNameAndBio: undefined;
     SetupProfilePicture: undefined;
     SetupAcademicInformation: undefined;
@@ -38,7 +38,7 @@ export type ProfileSetupStackNavigatorParams = {
     SetupNotification: undefined;
 }
 
-export type ResourcesStackNavigatorParams = {
+export type ResourcesStackParams = {
     Resources: undefined;
     PointsLeaderboard: undefined;
     TestBank: undefined;
@@ -50,12 +50,12 @@ export type ResourcesStackNavigatorParams = {
 }
 
 
-export type CommitteesStackNavigatorParams = {
+export type CommitteesStackParams = {
     CommitteesScreen: undefined;
 }
 
 // Drawers
-export type HomeDrawerNavigatorParams = {
+export type HomeDrawerParams = {
     HomeScreen: undefined;
     Resources: undefined;
     Logout: undefined;
@@ -63,7 +63,7 @@ export type HomeDrawerNavigatorParams = {
 
 
 // Bottom Tabs
-export type HomeBottomTabNavigatorParams = {
+export type HomeBottomTabParams = {
     Home: undefined;
     Profile: {
         email: string;
@@ -73,22 +73,21 @@ export type HomeBottomTabNavigatorParams = {
 export type ResourcesProps = {
     items:{
         title:string;
-        screen: keyof ResourcesStackNavigatorParams;
+        screen: keyof ResourcesStackParams;
         image: ImageSourcePropType;
         "bg-color": string;
         "text-color": string;
     },
-    navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams>
+    navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 
-export type RankChange = "decreased" | "same" | "increased"
 export type PointsProps = {
     userData: PublicUserInfoUID
-    navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams>
+    navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 
-export type SettingsScreenRouteProp = RouteProp<MainStackNavigatorParams, "SettingsScreen">;
-export type SettingsProps = NativeStackScreenProps<MainStackNavigatorParams, "SettingsScreen">;
+export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
+export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScreen">;
 
-export type MembersScreenRouteProp = RouteProp<MembersStackNavigatorParams, "PublicProfile">;
-export type MembersProps = NativeStackScreenProps<MembersStackNavigatorParams, "PublicProfile">;
+export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
+export type MembersProps = NativeStackScreenProps<MembersStackParams, "PublicProfile">;

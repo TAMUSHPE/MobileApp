@@ -2,8 +2,6 @@ import { View, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { httpsCallable, getFunctions } from 'firebase/functions';
 
-
-
 const AdminDashboard = () => {
     const updateRanks = async () => {
         const functions = getFunctions();

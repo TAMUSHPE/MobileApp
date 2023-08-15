@@ -1,23 +1,27 @@
 import * as functions from 'firebase-functions';
-import {queryGoogleSpreadsheet, GoogleSheetsIDs} from "../../src/api/fetchGoogleSheets"
 import { db, auth } from "./firebaseConfig"
+import {queryGoogleSpreadsheet, GoogleSheetsIDs} from "../../src/api/fetchGoogleSheets"
 import { RankChange } from "../../src/types/User";
 
-async function getUIDbyEmail(email: string): Promise<string | null> {
+/** Fetches UID associated with an email from Firebase Authentication */
+const getUIDbyEmail = async (email: string): Promise<string | null> => {
     try {
         const usersSnapshot = await auth.getUserByEmail(email);
         return usersSnapshot ? usersSnapshot.uid : null;
     } catch (error) {
+        console.error("Error fetching UID by email:", error);
         return null;
     }
 }
 
+/** Determines rank change based on current and new ranks. */
 const getRankChange = (userData: any, newRank: number): RankChange => {
     if (userData.rank < newRank) return "increased";
     if (userData.rank > newRank) return "decreased";
     return "same";
 }
 
+/** Updates the rank and rank change status of a user in Firestore database */
 const updateUserRank = async (email: string, newRank: number) => {
     if (!email) return;
 
@@ -39,7 +43,7 @@ const updateUserRank = async (email: string, newRank: number) => {
     }, { merge: true });
 }
 
-
+/** Fetches data from Google Spreadsheet and updates users' ranks in Firestore */
 const updateRanks = async () => {
     try {
         const response = await queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID);
@@ -58,11 +62,13 @@ const updateRanks = async () => {
         throw new Error("Internal Server Error.");
     }
 }
-// runs at 5AM CST daily 
+
+/** Scheduled function to update ranks daily at 5AM CST */
 export const updateRanksScheduled = functions.pubsub.schedule('0 5 * * *').timeZone('America/Chicago').onRun(async (context) => {
     await updateRanks()
 });
 
+/** Callable function to manually update ranks */
 export const updateRanksOnCall = functions.https.onCall(async (data, context) => {
     try {
       const result = await updateRanks();
