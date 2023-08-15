@@ -1,5 +1,6 @@
-import { View, Text, TextInput, KeyboardAvoidingView, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, KeyboardAvoidingView } from 'react-native';
 import React, { useLayoutEffect, useState } from 'react';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
 import { initializeCurrentUserData } from '../api/firebaseUtils';

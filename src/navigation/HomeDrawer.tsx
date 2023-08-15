@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Image, TouchableOpacity, View, SafeAreaView } from 'react-native';
+import { Image, TouchableOpacity, View } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { signOut } from 'firebase/auth';
 import { doc, setDoc, arrayRemove } from 'firebase/firestore';
 import { auth, db } from '../config/firebaseConfig';
@@ -19,7 +20,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     if (!setUserInfo) {
         return null;
     }
-
 
     const removeExpoPushToken = async () => {
         const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
