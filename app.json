@@ -3,6 +3,7 @@
     "name": "TAMU SHPE",
     "slug": "TAMU-SHPE",
     "version": "0.1.0",
+    "owner": "tamu-shpe",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -43,7 +44,13 @@
     },
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
-      "bundleIdentifier": "com.tamu.shpe"
+      "bundleIdentifier": "com.tamu.shpe",
+      "buildNumber": "9"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5b75342a-5739-4b5b-838f-89ff1fe3979d"
+      }
     }
   }
 }
