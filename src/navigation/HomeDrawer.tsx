@@ -9,7 +9,7 @@ import { auth, db } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import ProfileBadge from '../components/ProfileBadge';
 import HomeScreen from '../screens/Home';
-import { User } from '../types/User';
+import { User, committeesList } from '../types/User';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
 
@@ -53,10 +53,11 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         getLocalUser();
     }, [])
 
+    // "dark-navy" is #191740. 
     return (
-        <DrawerContentScrollView {...props}>
-            <View className='flex-col bg-dark-navy w-full p-4'>
-                <View>
+        <DrawerContentScrollView {...props} contentContainerStyle={{ backgroundColor: "#191740", height: "100%" }}>
+            <View className="flex-col bg-dark-navy w-full p-4">
+                <View className='mb-2'>
                     <Image
                         className="flex w-16 h-16 rounded-full"
                         defaultSource={Images.DEFAULT_USER_PICTURE}
@@ -65,22 +66,31 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                 </View>
                 <View className="flex-row flex-wrap">
                     <ProfileBadge
-                        text="Test"
+                        text={userInfo?.publicInfo?.classYear}
+                        badgeStyle='px-2 py-1 bg-maroon rounded-full inline-block mr-1 mb-1'
                     />
-                    <ProfileBadge />
-                    {userInfo?.publicInfo?.committees?.map((committeeName: string, index) => (
-                        <ProfileBadge
-                            key={committeeName}
-                            text={committeeName}
-                        />
-                    ))}
+                    <ProfileBadge
+                        text={userInfo?.publicInfo?.major}
+                        badgeStyle='px-2 py-1 bg-pale-blue rounded-full inline-block mr-1 mb-1'
+                    />
+                    {userInfo?.publicInfo?.committees?.map((committeeName: string) => {
+                        const committeeInfo = committeesList.find(element => element.name == committeeName);
+                        return (
+                            <ProfileBadge
+                                key={committeeName}
+                                text={committeeName}
+                                badgeStyle={`${committeeInfo ? committeeInfo.color : "bg-slate-600"} px-2 py-1 rounded-full inline-block mr-1 mb-1`}
+                            />
+                        );
+                    })}
                 </View>
             </View>
-            <DrawerItem label="Settings" onPress={() => props.navigation.navigate("SettingsScreen", { userId: 1234 })} />
-            {localUser?.publicInfo?.roles?.officer?.valueOf()
-                && <DrawerItem label="Admin Dashboard" onPress={() => props.navigation.navigate("AdminDashboard")} />}
-
-            <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
+            <View className={`${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} flex-grow`}>
+                <DrawerItem label="Settings" onPress={() => props.navigation.navigate("SettingsScreen", { userId: 1234 })} />
+                {localUser?.publicInfo?.roles?.officer?.valueOf()
+                    && <DrawerItem label="Admin Dashboard" onPress={() => props.navigation.navigate("AdminDashboard")} />}
+                <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
+            </View>
         </DrawerContentScrollView>
     );
 };
