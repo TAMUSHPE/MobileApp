@@ -1,31 +1,30 @@
 import { View, SafeAreaView, Image, ScrollView, Linking } from 'react-native';
 import React from 'react';
-import { Images } from '../../assets';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import ResourceButton from '../components/ResourceButton';
 import ResourcesSmallButton from '../components/ResourceSmallButton';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ResourcesStackNavigatorParams } from '../types/Navigation';
+import { ResourcesStackParams } from '../types/Navigation';
+import { Images } from '../../assets';
 
-
-const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams> }) => {
+const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
     const buttonItems = [
         {
             title: "Points Leaderboard",
-            screen: "PointsLeaderboard" as keyof ResourcesStackNavigatorParams,
+            screen: "PointsLeaderboard" as keyof ResourcesStackParams,
             image: Images.MEMBERSHPE,
             "bg-color": "#EF9260",
             "text-color": "black"   // Text Colors will only accept preset name
         },
         {
             title: "Test Bank",
-            screen: "TestBank" as keyof ResourcesStackNavigatorParams,
+            screen: "TestBank" as keyof ResourcesStackParams,
             image: Images.LDMAIN,
             "bg-color": "#C24E3A",
             "text-color": "white"
         },
         {
             title: "Resume Bank",
-            screen: "ResumeBank" as keyof ResourcesStackNavigatorParams,
+            screen: "ResumeBank" as keyof ResourcesStackParams,
             image: Images.EBOARD,
             "bg-color": "#001F5B",
             "text-color": "white"

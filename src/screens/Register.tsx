@@ -1,16 +1,14 @@
-import { View, Text, TextInput, KeyboardAvoidingView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { auth } from '../config/firebaseConfig';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AuthStackNavigatorParams } from '../types/Navigation';
+import { View, Text, TextInput, KeyboardAvoidingView, SafeAreaView } from 'react-native';
 import React, { useLayoutEffect, useState } from 'react';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
-import { evaluatePasswordStrength, validateEmail, validatePassword } from '../helpers/validation';
 import { initializeCurrentUserData } from '../api/firebaseUtils';
+import { auth } from '../config/firebaseConfig';
+import { evaluatePasswordStrength, validateEmail, validatePassword } from '../helpers/validation';
 import InteractButton from '../components/InteractButton';
+import { AuthStackParams } from '../types/Navigation';
 
-const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackNavigatorParams>) => {
-    // Hooks
+const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [displayName, setDisplayName] = useState<string>("");
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -50,7 +48,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackNavigato
                 await initializeCurrentUserData();
             })
             .then(() => {
-                navigation.replace("ProfileSetup");
+                navigation.navigate("ProfileSetup");
             })
             .catch((err) => { console.error(err.message); });
     }

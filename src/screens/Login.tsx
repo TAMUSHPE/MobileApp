@@ -1,54 +1,74 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator, SafeAreaView } from "react-native";
 import React, { useEffect, useState, useContext } from "react";
-import { auth } from "../config/firebaseConfig";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { AuthStackNavigatorParams } from "../types/Navigation";
-import { SafeAreaView } from "react-native-safe-area-context";
-import InteractButton from "../components/InteractButton";
-import { Images } from "../../assets";
-import { initializeCurrentUserData } from "../api/firebaseUtils";
-import { signInWithEmailAndPassword, signInWithCredential, GoogleAuthProvider } from "firebase/auth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { UserContext } from "../context/UserContext";
 import * as Google from "expo-auth-session/providers/google";
+import { auth } from "../config/firebaseConfig";
+import { signInWithEmailAndPassword, signInWithCredential, GoogleAuthProvider } from "firebase/auth";
+import { initializeCurrentUserData } from "../api/firebaseUtils";
+import { UserContext } from "../context/UserContext";
+import InteractButton from "../components/InteractButton";
+import { AuthStackParams } from "../types/Navigation";
+import { Images } from "../../assets";
 
-const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavigatorParams>) => {
+const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [loading, setLoading] = useState(false);
 
     const userContext = useContext(UserContext);
-    if (!userContext) {
+    const { userInfo, setUserInfo } = userContext ?? {};
+    if (!setUserInfo) {
         return null;
     }
-    const { userInfo, setUserInfo } = userContext;
 
     const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
         iosClientId: "600060629240-m7bu9ba9namtlmo9sii2s8qs2j9k5bt4.apps.googleusercontent.com",
         androidClientId: "600060629240-bdfsdcfmbrjh5skdc9qufchrmcnm26fb.apps.googleusercontent.com",
     });
 
-
-    const emailSignIn = async () => {
-        signInWithEmailAndPassword(auth, email, password)
-            .then(async () => {
-                setLoading(true);
-                return await initializeCurrentUserData();
+    /**
+     * Due to asynchronous problem, the value of completedAccountSetup may
+     * initially be undefined. This function will check the value when userInfo
+     * is changed until it's either true or false.
+     */
+    useEffect(() => {
+        if (userInfo?.private?.privateInfo?.completedAccountSetup === false) {
+            navigation.navigate("ProfileSetup");
+        }
+    }, [userInfo]);
+    const handleUserAuth = () => {
+        setLoading(true);
+        initializeCurrentUserData()
+            .then(userFromFirebase => {
+                AsyncStorage.setItem("@user", JSON.stringify(userFromFirebase))
+                    .then(() => {
+                        setUserInfo(userFromFirebase);
+                    })
+                    .catch(error => {
+                        console.error("Error storing user in AsyncStorage:", error);
+                    });
             })
-            .then(async (authUser) => {
-                await AsyncStorage.setItem("@user", JSON.stringify(authUser));
-                setUserInfo(authUser);
-
-                if (!userInfo?.private?.privateInfo?.completedAccountSetup) {
-                    navigation.replace("ProfileSetup")
-                }
-            })
-            .catch(err => {
-                console.error(err);
+            .catch(error => {
+                console.error("Error during user authentication:", error);
             })
             .finally(() => {
                 setLoading(false);
             });
+    };
+
+    useEffect(() => {
+        if (userInfo?.private?.privateInfo?.completedAccountSetup === false) {
+            navigation.navigate("ProfileSetup");
+        }
+    }, [userInfo]);
+
+    const emailSignIn = async () => {
+        signInWithEmailAndPassword(auth, email, password)
+            .then(handleUserAuth)
+            .catch(error => {
+                console.error("Error during email sign-in:", error);
+            })
     }
 
     useEffect(() => {
@@ -56,31 +76,16 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackNavi
             const { id_token } = response.params;
             const credential = GoogleAuthProvider.credential(id_token);
             signInWithCredential(auth, credential)
-                .then(async () => {
-                    setLoading(true);
-                    return await initializeCurrentUserData();
-                })
-                .then(async authUser => {
-                    await AsyncStorage.setItem("@user", JSON.stringify(authUser));
-                    setUserInfo(authUser);
-
-                    if (!userInfo?.private?.privateInfo?.completedAccountSetup) {
-                        navigation.replace("ProfileSetup")
-                    }
-                })
-                .catch(err => {
-                    console.error(err);
-                })
-                .finally(() => {
-                    setLoading(false);
-                })
-                ;
+                .then(handleUserAuth)
+                .catch(error => {
+                    console.error("Error during Google sign-in:", error);
+                });
         }
     }, [response]);
+
     const googleSignIn = async () => {
         promptAsync();
     }
-
 
     return (
         <SafeAreaView className="flex-1 items-center justify-between bg-primary-bg-dark">

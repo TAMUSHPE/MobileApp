@@ -2,17 +2,16 @@ import { View, Text, SafeAreaView, TouchableHighlight, ScrollView, ImageSourcePr
 import React, { useState, useEffect, useRef } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ResourcesStackNavigatorParams } from '../types/Navigation';
-import RankCard from '../components/RankCard';
+import { auth } from "../config/firebaseConfig"
 import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../api/fetchGoogleSheets'
 import { getUserByEmail, getPublicUserData } from '../api/firebaseUtils'
-import { Images } from '../../assets';
-import { auth } from "../config/firebaseConfig"
+import RankCard from '../components/RankCard';
 import { RankChange, PublicUserInfoUID } from '../types/User';
 import { GoogleSheetsResponse } from '../types/GoogleSheetsTypes';
+import { ResourcesStackParams } from '../types/Navigation';
+import { Images } from '../../assets';
 
-
-const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams> }) => {
+const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
     const [rankCards, setRankCards] = useState<PublicUserInfoUID[]>([])
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [initLoading, setInitLoading] = useState(true);
@@ -220,15 +219,11 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
 
                 </View>
 
-
-
-
                 <View className={`bg-white rounded-t-2xl flex-1 ${rankCards.length === 0 ? 'pb-96' : 'pb-20'}`}>
                     {/* User Ranking */}
                     {!initLoading && (
                         <View>
                             {userRank === -1 ? (
-
                                 <View className='flex-col h-20 mx-4 px-4 mt-8 rounded-xl items-center'
                                     style={{ backgroundColor: colorMapping[userRankChange] }}>
                                     <Text className='text-xl font-medium'>You are unranked</Text>
@@ -257,7 +252,6 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                             )}
                         </View>
                     )}
-
 
                     {/* Leaderboard */}
                     {rankCards.slice(3).map((userData, index) => (

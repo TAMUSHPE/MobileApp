@@ -4,6 +4,8 @@ import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
 import { appendExpoPushToken } from '../api/firebaseUtils';
 
+// Sets a default notification handler. It specifies how to handle the notification
+// when it is received while the app is in the foreground.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
       shouldShowAlert: false,
@@ -12,7 +14,11 @@ Notifications.setNotificationHandler({
   }),
 });
 
-
+/**
+ * Retrieves the push token, store in user document and in AsyncStorage.
+ * 
+ * @throws Any error encountered during token retrieval or persistence.
+ */
 const persistToken = async () => {
   try {
     const token = await Notifications.getExpoPushTokenAsync({
@@ -21,34 +27,43 @@ const persistToken = async () => {
     });
     appendExpoPushToken(JSON.stringify(token));
     await AsyncStorage.setItem("@expoPushToken", JSON.stringify(token));
-  } catch (err) {
-    throw err;
+  } catch (error) {
+    throw error;
   }
 };
 
-const notification = async () => {
+/**
+ * Manages notification permissions. This function checks existing permissions,
+ * requests permissions if needed, and sets up notification channels for Android.
+ */
+const manageNotificationPermissions  = async () => {
+  try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
+
     if (existingStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
+
     if (finalStatus !== 'granted') {
       alert('Failed to get push token for push notification!');
       return;
     }
-    
-    if (Platform.OS === 'android') {
-        Notifications.setNotificationChannelAsync('default', {
-          name: 'default',
-          importance: Notifications.AndroidImportance.MAX,
-          vibrationPattern: [0, 250, 250, 250],
-          lightColor: '#FF231F7C',
-        });
-      }
 
-    
-  await persistToken();
+    if (Platform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+      });
+    }
+
+    await persistToken();
+  } catch (error) {
+    console.error('Notification permission error:', error);
+  }
 };
 
-export default notification;
+export default manageNotificationPermissions ;

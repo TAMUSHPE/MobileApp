@@ -1,12 +1,9 @@
 import 'react-native-gesture-handler';
 import React, { useEffect, useRef } from "react";
-import RootNavigator from './src/navigation';
-import { UserProvider } from './src/context/UserContext';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import * as Notifications from 'expo-notifications';
 import { Alert } from 'react-native';
-
-type Subscription = { remove: () => void };
+import * as Notifications from 'expo-notifications';
+import { UserProvider } from './src/context/UserContext';
+import RootNavigator from './src/navigation';
 
 export default function App() {
     const notificationListener = useRef<Subscription | null>();
@@ -31,10 +28,10 @@ export default function App() {
     }, []);
 
     return (
-        <SafeAreaProvider>
-            <UserProvider>
-                <RootNavigator />
-            </UserProvider>
-        </SafeAreaProvider>
+        <UserProvider>
+            <RootNavigator />
+        </UserProvider>
     );
 };
+
+type Subscription = { remove: () => void };

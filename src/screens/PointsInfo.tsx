@@ -2,9 +2,9 @@ import { View, Text, SafeAreaView, TouchableHighlight } from 'react-native'
 import React from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ResourcesStackNavigatorParams } from '../types/Navigation';
+import { ResourcesStackParams } from '../types/Navigation';
 
-const PointsInfo = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackNavigatorParams> }) => {
+const PointsInfo = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
     return (
         <SafeAreaView className='bg-pale-orange h-full'>
             <View className='flex-row justify-end mr-6 mt-2'>
