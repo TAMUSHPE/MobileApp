@@ -28,7 +28,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
     const [userRank, setUserRank] = useState(-1);
     const [userRankChange, setUserRankChange] = useState<RankChange>('same');
 
-    const prepUserData = async (data: GoogleSheetsResponse, offset: number): Promise<PublicUserInfoUID[]> => {
+    const prepPointSheet = async (data: GoogleSheetsResponse, offset: number): Promise<PublicUserInfoUID[]> => {
         const dataRow = data.table.rows;
         const usersDataPromises = dataRow.map(async (entry, index) => {
             const email = entry.c[2].v as string;
@@ -56,7 +56,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
         queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, query)
             .then(response => {
                 setLoading(true);
-                return prepUserData(response!, offset)
+                return prepPointSheet(response!, offset)
             }).then(data => {
                 setRankCards([...rankCards, ...data]);
             })
@@ -75,7 +75,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                 setUserRankChange(user?.rankChange ? user?.rankChange as RankChange : "same" as RankChange);
                 setUserPoints(user?.points ? user?.points : -1)
             }).then(() => {
-                queryAndSetRanks(13, 0);
+                queryAndSetRanks(23, 0);
             })
         }
         fetchData();
@@ -112,7 +112,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
             }
             debounceTimer.current = setTimeout(() => {
                 const offset = rankCards.length;
-                queryAndSetRanks(13, offset);
+                queryAndSetRanks(15, offset);
                 debounceTimer.current = null;
             }, 300);
         }
@@ -223,7 +223,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
 
                 </View>
 
-                <View className={`bg-white rounded-t-2xl flex-1 ${rankCards.length === 0 ? 'pb-96' : 'pb-20'}`}>
+                <View className={`bg-white rounded-t-2xl flex-1 ${rankCards.length === 0 && "h-screen"}`}>
                     {/* User Ranking */}
                     {!initLoading && (
                         <View>
@@ -261,9 +261,11 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                     {rankCards.slice(3).map((userData, index) => (
                         <RankCard key={index + 3} userData={userData} navigation={navigation} />
                     ))}
-                    {loading && (
-                        <ActivityIndicator className="mt-4" size={"large"} />
-                    )}
+                    <View className={`justify-center h-20 items-center ${rankCards.length === 0 && "h-[50%]"}`}>
+                        {loading && (
+                            <ActivityIndicator size={"large"} />
+                        )}
+                    </View>
                 </View>
             </ScrollView>
         </SafeAreaView >
