@@ -119,7 +119,10 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
     };
 
     return (
-        <SafeAreaView className="bg-pale-orange h-full">
+        <SafeAreaView
+            className="bg-pale-orange h-full"
+            edges={["top"]}
+        >
             {/* Header */}
             <View className='flex-row items-center h-10'>
                 <View className='pl-6'>
