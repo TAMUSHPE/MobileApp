@@ -37,7 +37,7 @@ export const hexToRGBA = (hexColor: string): ColorValues | undefined => {
         hexColor = hexColor.replace(quadrupletRegex, (m, r, g, b, a): string => {
             return "#" + r + r + g + g + b + b + a + a;
         });
-        const result = /^#?([\dA-Fa-f]{2})([\dA-Fa-f]{2})([\dA-Fa-f]{2})/i.exec(hexColor);
+        const result = /^#?([\dA-Fa-f]{2})([\dA-Fa-f]{2})([\dA-Fa-f]{2})([\dA-Fa-f]{2})/i.exec(hexColor);
         return result ? {
             r: parseInt(result[1], 16),
             g: parseInt(result[2], 16),
