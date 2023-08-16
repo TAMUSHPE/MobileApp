@@ -46,7 +46,16 @@ export const hexToRGBA = (hexColor: string): ColorValues | undefined => {
     }
 };
 
-/** Calculates a generally accepted perceived luminosity for a given set of rgb values according to Digital UTI BT.601. */
+/** Calculates a generally accepted perceived luminosity for a given set of RGB values according to Digital UTI BT.601. */
 export const calculateRGBLuminosity = (color: ColorValues): number => {
     return 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
+};
+
+/** Calculates a generally accepted perceived luminosity for a given hex value according to Digital UTI BT.601.
+ * @argument color - hex code of color being used in calculation
+ * @returns perceived luminosity. returns 256 if color is not valid
+ */
+export const calculateHexLuminosity = (color: string): number => {
+    const colorRGBAVals = hexToRGBA(color);
+    return colorRGBAVals ? calculateRGBLuminosity(colorRGBAVals) : 256;
 };

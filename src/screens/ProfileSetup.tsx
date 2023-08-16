@@ -390,7 +390,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                 onPress={() => onPress(committeeData.id)}
             >
                 <View className='flex-row items-center'>
-                    <View className={`h-10 w-10 rounded-full mr-2 ${committeeData.color}`} />
+                    <View className={`h-10 w-10 rounded-full mr-2`} style={{ backgroundColor: committeeData.color ?? "#000"}} />
                     <Text className={`font-bold text-center text-lg text-gray-600`}>{committeeData.name}</Text>
                 </View>
                 <Image
@@ -426,7 +426,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                             <CommitteeToggle committeeData={committeeData} onPress={(id: number) => handleToggle(id)} key={committeeData.id} />
                         )
                         )}
-                        <CommitteeToggle committeeData={{ id: 0, name: "None Right Now", color: "bg-[#f55]", isChecked: noneIsChecked }} onPress={() => handleNonePressed()} key={0} />
+                        <CommitteeToggle committeeData={{ id: 0, name: "None Right Now", color: "#f55", isChecked: noneIsChecked }} onPress={() => handleNonePressed()} key={0} />
                     </View>
                 </ScrollView>
                 <View className='flex-row w-10/12 justify-between mb-4'>

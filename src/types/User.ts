@@ -2,17 +2,16 @@ export type CommitteeData = {
     id: number,
     name: string,
     color: string,
-    textColor: string,
 };
 
 export const committeesList: Array<CommitteeData> = [
-    { id: 1, name: "Technical Affairs", color: "bg-gray-500", textColor: "text-white", },
-    { id: 2, name: "MentorSHPE", color: "bg-slate-500", textColor: "text-white", },
-    { id: 3, name: "Scholastic", color: "bg-yellow-500", textColor: "text-black", },
-    { id: 4, name: "SHPEtinas", color: "bg-green-500", textColor: "text-white", },
-    { id: 5, name: "Secretary", color: "bg-indigo-500", textColor: "text-white", },
-    { id: 6, name: "Public Relations", color: "bg-pink-500", textColor: "text-white", },
-    { id: 7, name: "Internal Affairs", color: "bg-blue-500", textColor: "text-white", },
+    { id: 1, name: "Technical Affairs", color: "#777", },
+    { id: 2, name: "MentorSHPE", color: "#404e5a", },
+    { id: 3, name: "Scholastic", color: "#F2CC10", },
+    { id: 4, name: "SHPEtinas", color: "#1EFF42", },
+    { id: 5, name: "Secretary", color: "#FFA0D5", },
+    { id: 6, name: "Public Relations", color: "#9337FF", },
+    { id: 7, name: "Internal Affairs", color: "#051DDB", },
 ];
 
 /**
