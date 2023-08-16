@@ -34,13 +34,14 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "TAMUSHPE",
+    "scheme": "tamu-shpe",
     "android": {
       "googleServicesFile": "./google-services.json",
       "package": "com.tamu.shpe",
       "permissions": [
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "versionCode": 2
     },
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",
@@ -51,6 +52,12 @@
       "eas": {
         "projectId": "5b75342a-5739-4b5b-838f-89ff1fe3979d"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/5b75342a-5739-4b5b-838f-89ff1fe3979d"
     }
   }
 }
