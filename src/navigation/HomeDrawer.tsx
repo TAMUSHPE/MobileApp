@@ -72,12 +72,14 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                     <ProfileBadge
                         text={userInfo?.publicInfo?.classYear}
                         badgeStyle='px-2 py-1 bg-maroon rounded-full inline-block mr-1 mb-1'
-                        textStyle='text-white text-center text-xs'
+                        badgeColor='#500000'
+                        textStyle='text-center text-xs'
                     />
                     <ProfileBadge
                         text={userInfo?.publicInfo?.major}
                         badgeStyle='px-2 py-1 bg-pale-blue rounded-full inline-block mr-1 mb-1'
-                        textStyle='text-black text-center text-xs'
+                        badgeColor='#72A9EF'
+                        textStyle='text-center text-xs'
                     />
                     {userInfo?.publicInfo?.committees?.map((committeeName: string) => {
                         const committeeInfo = committeesList.find(element => element.name == committeeName);
@@ -85,8 +87,8 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                             <ProfileBadge
                                 key={committeeName}
                                 text={committeeName}
-                                badgeStyle={`${committeeInfo?.color ?? "bg-slate-600"} px-2 py-1 rounded-full inline-block mr-1 mb-1`}
-                                textStyle={`${committeeInfo?.textColor ?? "text-white"} text-center text-xs`}
+                                badgeColor={committeeInfo ? committeeInfo?.color : ""}
+                                textStyle='text-black text-center text-xs'
                             />
                         );
                     })}
