@@ -3,7 +3,7 @@ import { ImageSourcePropType } from "react-native";
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type {RouteProp} from '@react-navigation/native';
 import { PublicUserInfoUID } from "./User";
-
+import { Test } from '../types/GoogleSheetsTypes';
 
 // Stacks
 export type MainStackParams = {
@@ -83,6 +83,11 @@ export type ResourcesProps = {
 
 export type PointsProps = {
     userData: PublicUserInfoUID
+    navigation: NativeStackNavigationProp<ResourcesStackParams>
+}
+
+export type TestBankProps = {
+    testData: Test;
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 

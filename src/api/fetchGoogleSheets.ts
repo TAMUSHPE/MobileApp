@@ -6,8 +6,7 @@ import { GoogleSheetsResponse, PointsColumnVals } from "../types/GoogleSheetsTyp
  */
 export const GoogleSheetsIDs = {
     POINTS_ID: "1gKGAPlJLJL4yqYwt9mo4YeiS9KKuQzPvsyY1zuj4ZsU",
-    TEST_BANK_ID: "",
-    RESUMES_ID: "",
+    TEST_BANK_ID: "1aPolyNLDlj6XqzIghBVQ97704hCVk-lEaMBsMtKlF7g",
 }
 
 /**
@@ -25,7 +24,7 @@ export const queryGoogleSpreadsheet = async (sheetID: string, query: string = "s
     This function queries a google spreadsheet for data given certain parameters
     */
     const spreadsheetURI = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tq=${encodeURIComponent(query)}&sheet=${sheetName}`;
-
+    
     return await fetch(spreadsheetURI)
         .then(async (res) => {
             const responseText = await res.text()
