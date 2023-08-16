@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { Image, TouchableOpacity, View } from 'react-native';
+import { Image, TouchableOpacity, View, Text } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -57,21 +57,27 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     return (
         <DrawerContentScrollView {...props} contentContainerStyle={{ backgroundColor: "#191740", height: "100%" }}>
             <View className="flex-col bg-dark-navy w-full p-4">
-                <View className='mb-2'>
+                <View className='flex-row mb-2'>
                     <Image
-                        className="flex w-16 h-16 rounded-full"
+                        className="flex w-16 h-16 rounded-full mr-2"
                         defaultSource={Images.DEFAULT_USER_PICTURE}
                         source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
                     />
+                    <View>
+                        <Text className='text-white text-xl'>{userInfo?.publicInfo?.displayName ?? "Username"}</Text>
+                        <Text className='text-white text-sm'>{userInfo?.publicInfo?.name ?? "Name"}</Text>
+                    </View>
                 </View>
                 <View className="flex-row flex-wrap">
                     <ProfileBadge
                         text={userInfo?.publicInfo?.classYear}
                         badgeStyle='px-2 py-1 bg-maroon rounded-full inline-block mr-1 mb-1'
+                        textStyle='text-white text-center text-xs'
                     />
                     <ProfileBadge
                         text={userInfo?.publicInfo?.major}
                         badgeStyle='px-2 py-1 bg-pale-blue rounded-full inline-block mr-1 mb-1'
+                        textStyle='text-black text-center text-xs'
                     />
                     {userInfo?.publicInfo?.committees?.map((committeeName: string) => {
                         const committeeInfo = committeesList.find(element => element.name == committeeName);
@@ -79,7 +85,8 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                             <ProfileBadge
                                 key={committeeName}
                                 text={committeeName}
-                                badgeStyle={`${committeeInfo ? committeeInfo.color : "bg-slate-600"} px-2 py-1 rounded-full inline-block mr-1 mb-1`}
+                                badgeStyle={`${committeeInfo?.color ?? "bg-slate-600"} px-2 py-1 rounded-full inline-block mr-1 mb-1`}
+                                textStyle={`${committeeInfo?.textColor ?? "text-white"} text-center text-xs`}
                             />
                         );
                     })}
