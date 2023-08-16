@@ -58,7 +58,7 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
     return (
         <SafeAreaView
             className={`bg-offwhite`}
-            edges={["top"]}
+            edges={["top", "left", "right"]}
         >
             <ScrollView className='w-screen'>
                 <View
