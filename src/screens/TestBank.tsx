@@ -1,5 +1,5 @@
 import { View, Text, TouchableHighlight, ActivityIndicator, ScrollView, NativeSyntheticEvent, NativeScrollEvent, TextInput, TouchableOpacity } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -150,7 +150,13 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
         setQuery(initialQuery)
     }
 
-    const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
+            const paddingToBottom = 20;
+            return layoutMeasurement.height + contentOffset.y >=
+                contentSize.height - paddingToBottom;
+        }
+
         if (!isCloseToBottom(nativeEvent)) return;
         if (filter || endOfData) return;
         setLoading(true);
@@ -164,13 +170,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
             setQuery(loadMoreTestsQuery);
             debounceTimer.current = null;
         }, 300);
-    };
-
-    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
-        const paddingToBottom = 20;
-        return layoutMeasurement.height + contentOffset.y >=
-            contentSize.height - paddingToBottom;
-    };
+    }, [filter, endOfData, testCards.length, setQuery]);
 
     return (
         <SafeAreaView
@@ -236,7 +236,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                         </View>
                     </View>
                 )}
-                {/* Exam List */}
+                {/* Test List */}
 
                 <ScrollView
                     onScroll={handleScroll}

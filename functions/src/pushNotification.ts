@@ -26,20 +26,20 @@ const getOfficerTokens = async (officerUId: string) => {
  * @returns A promise that resolves with an array of push tokens for signed-in officers.
  */
 const getAvailableOfficersTokens = async (): Promise<string[]> => {
-    const signedInOfficersFCM: string[][] = [];
+    const signedInOfficersTokens: string[] = [];   
     const snapshot = await db.collection('office-hours/officers-status/officers').where('signedIn', '==', true).get();
 
     for (const doc of snapshot.docs) {
         const data = doc.data();
         if (data.signedIn) {
-            const token = await getOfficerTokens(doc.id);
-            if (token) {
-                signedInOfficersFCM.push(token);
+            const tokens = await getOfficerTokens(doc.id);
+            if (tokens) {
+                signedInOfficersTokens.push(...tokens);
             }
         }
     }
 
-    return signedInOfficersFCM.flat();
+    return signedInOfficersTokens;
 };
 
 /**
@@ -63,7 +63,6 @@ export const sendNotificationOfficeHours = functions.https.onCall(async (data, c
             console.error("Token is not an ExpoPushToken");
             continue;
         }
-        // Token is stored as a stringified JSON object
         const parsedToken = JSON.parse(pushToken);
         messages.push({
             to: parsedToken.data,

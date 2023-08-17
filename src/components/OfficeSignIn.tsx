@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../config/firebaseConfig';
 import { addDoc, collection, doc, serverTimestamp, setDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
-import { OfficerStatus } from '../types/OfficeSignIn';
+import { OfficerStatus } from '../types/User';
 
 
 /**
@@ -63,9 +63,13 @@ const OfficeSignIn = () => {
             signedIn: !isSignedIn,
             timestamp: serverTimestamp()
         } as OfficerStatus;
-        addOfficeHourLog(data)
-        updateOfficerStatus(data)
-        isSignedIn ? decrementOfficeCount() : incrementOfficeCount()
+
+        await Promise.all([
+            addOfficeHourLog(data),
+            updateOfficerStatus(data),
+            isSignedIn ? decrementOfficeCount() : incrementOfficeCount()
+        ]);
+
         setIsSignedIn(!isSignedIn)
     }
 

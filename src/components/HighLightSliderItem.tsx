@@ -1,6 +1,6 @@
 import { View, Text, Image } from 'react-native'
 import React from 'react'
-import { Slide } from '../types/Slide'
+import { Slide } from './slides'
 
 /**
  * This component renders a slider item based on the provided item prop.

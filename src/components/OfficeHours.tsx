@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { auth, db } from '../config/firebaseConfig';
-import { MemberStatus } from '../types/OfficeSignIn';
+import { MemberStatus } from '../types/User';
 
 /**
  * This component displays the office hours information and provides an interface 
