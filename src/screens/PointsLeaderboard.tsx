@@ -17,7 +17,8 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [initLoading, setInitLoading] = useState(true);
     const [loading, setLoading] = useState(true);
-
+    const [endOfData, setEndOfData] = useState(false);
+    const [nullDataOffset, setNullDataOffset] = useState(0);
     /**
      * userPoints obtained from google sheets
      * userRank and rankChange are directly obtain from firebase
@@ -29,8 +30,16 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
     const [userRankChange, setUserRankChange] = useState<RankChange>('same');
 
     const prepPointSheet = async (data: GoogleSheetsResponse, offset: number): Promise<PublicUserInfoUID[]> => {
-        const dataRow = data.table.rows;
+        const dataRow = data.table?.rows;
+        if (!dataRow || dataRow.length === 0) {
+            setEndOfData(true);
+            return []
+        }
         const usersDataPromises = dataRow.map(async (entry, index) => {
+            if (!entry.c[0] || !entry.c[2] || !entry.c[3]) {
+                setNullDataOffset(prevNullDataOffset => prevNullDataOffset + 1);
+                return null;
+            }
             const email = entry.c[2].v as string;
             const fetchUser = await getUserByEmail(email);
             const userData = fetchUser?.userData;
@@ -38,7 +47,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
             const profileURL = userData?.photoURL;
             const rankChange = userData?.rankChange;
             return {
-                name: `${entry.c[0].v} ${entry.c[1].v}`,
+                name: `${entry.c[0].v} ${entry.c[1].v || ""}`,
                 email: email,
                 points: +entry.c[3].f,
                 pointsRank: index + offset + 1,
@@ -48,7 +57,8 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
             };
         });
 
-        return await Promise.all(usersDataPromises);
+        const usersData = await Promise.all(usersDataPromises);
+        return usersData.filter(user => user !== null) as PublicUserInfoUID[];
     }
 
     const queryAndSetRanks = async (limit: number, offset: number) => {
@@ -75,7 +85,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                 setUserRankChange(user?.rankChange ? user?.rankChange as RankChange : "same" as RankChange);
                 setUserPoints(user?.points ? user?.points : -1)
             }).then(() => {
-                queryAndSetRanks(23, 0);
+                queryAndSetRanks(100, 0);
             })
         }
         fetchData();
@@ -105,17 +115,20 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
     };
 
     const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
-        if (isCloseToBottom(nativeEvent)) {
-            setLoading(true);
-            if (debounceTimer.current) {
-                clearTimeout(debounceTimer.current);
-            }
-            debounceTimer.current = setTimeout(() => {
-                const offset = rankCards.length;
-                queryAndSetRanks(15, offset);
-                debounceTimer.current = null;
-            }, 300);
+        if (!isCloseToBottom(nativeEvent)) return;
+        if (endOfData) return;
+
+        setLoading(true);
+
+        if (debounceTimer.current) {
+            clearTimeout(debounceTimer.current);
         }
+
+        debounceTimer.current = setTimeout(() => {
+            const offset = rankCards.length;
+            queryAndSetRanks(50, offset + nullDataOffset);
+            debounceTimer.current = null;
+        }, 300);
     };
 
     return (
@@ -264,6 +277,13 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                     <View className={`justify-center h-20 items-center ${rankCards.length === 0 && "h-[50%]"}`}>
                         {loading && (
                             <ActivityIndicator size={"large"} />
+                        )}
+                        {endOfData && (
+                            <View className='pb-6 items-center justify-center'>
+                                <Text>
+                                    End of Leaderboard
+                                </Text>
+                            </View>
                         )}
                     </View>
                 </View>
