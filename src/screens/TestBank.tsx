@@ -3,11 +3,17 @@ import React, { useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { GoogleSheetsIDs, queryGoogleSpreadsheet } from '../api/fetchGoogleSheets';
 import TestCard from '../components/TestCard';
 import { ResourcesStackParams } from '../types/Navigation';
 import { Test, GoogleSheetsResponse } from '../types/GoogleSheetsTypes';
-import { GoogleSheetsIDs, queryGoogleSpreadsheet } from '../api/fetchGoogleSheets';
 
+/**
+ * Test Bank component.
+ * Allows users to browse and filter tests.
+ * 
+ * @param props - React navigation properties.
+ */
 const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
     const [testCards, setTestCards] = useState<Test[]>([])
     const [loading, setLoading] = useState(true);
@@ -17,46 +23,63 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [endOfData, setEndOfData] = useState(false);
 
+    /** On mount, load attempt to load the first 50 tests */
     useEffect(() => {
         const initialQuery = createQuery(50, 0, filter);
         setQuery(initialQuery)
     }, [])
 
+    /**
+    * Creates a query to fetch test data from a Google Sheet.
+    * 
+    * @param limit - The maximum number of tests to fetch. If null, no limit is applied.
+    * @param offset - The position to start fetching tests from.
+    * @param filter - An object containing filter criteria. If null, no filtering is applied.
+    * @returns The constructed query.
+    */
     const createQuery = (limit: number | null, offset: number, filter: Test | null) => {
-        const limitClause = limit !== null ? `LIMIT ${limit}` : "";
-        if (filter) {
-            let conditions = [];
-            if (filter.subject) {
-                const subjectWithoutSpaces = filter.subject.replace(/\s+/g, '');
-                conditions.push(`LOWER(A) CONTAINS '${subjectWithoutSpaces.toLowerCase()}'`)
-            }
-            if (filter.course) {
-                const courseWithoutSpaces = filter.course.replace(/\s+/g, '');
-                conditions.push(`LOWER(B) CONTAINS '${courseWithoutSpaces.toLowerCase()}'`)
-            }
-            if (filter.professor) {
-                conditions.push(`LOWER(G) CONTAINS '${filter.professor.toLowerCase()}'`)
-            }
-            if (filter.student) {
-                conditions.push(`LOWER(H) CONTAINS '${filter.student.toLowerCase()}'`)
-            }
+        let query = `SELECT A, B, C, D, E, F, G, H, J, K`;
 
-            let query = `SELECT A, B, C, D, E, F, G, H, J, K`;
-            query += ` WHERE ${conditions.join(' AND ')}`;
-            query += ` ${limitClause} OFFSET ${offset}`;
-            return query;
-        } else {
-            return `SELECT A, B, C, D, E, F, G, H, J, K ${limitClause} OFFSET ${offset}`;
+        let conditions = [];
+        if (filter?.subject) {
+            const subjectWithoutSpaces = filter?.subject.replace(/\s+/g, '');
+            conditions.push(`LOWER(A) CONTAINS '${subjectWithoutSpaces.toLowerCase()}'`)
         }
+        if (filter?.course) {
+            const courseWithoutSpaces = filter?.course.replace(/\s+/g, '');
+            conditions.push(`LOWER(B) CONTAINS '${courseWithoutSpaces.toLowerCase()}'`)
+        }
+        if (filter?.professor) {
+            conditions.push(`LOWER(G) CONTAINS '${filter?.professor.toLowerCase()}'`)
+        }
+        if (filter?.student) {
+            conditions.push(`LOWER(H) CONTAINS '${filter?.student.toLowerCase()}'`)
+        }
+
+        if (conditions.length > 0) {
+            query += ` WHERE ${conditions.join(' AND ')}`;
+        }
+
+        const limitClause = limit !== null ? `LIMIT ${limit}` : "";
+        query += ` ${limitClause} OFFSET ${offset}`;
+
+        return query;
+
     }
 
+    /**
+     * Prepares the test data by transforming the Google Sheets response into a more usable format.
+     * 
+     * @param data - The Google Sheets response data.
+     * @returns A promise that resolves to an array of tests.
+     */
     const prepTestSheet = async (data: GoogleSheetsResponse): Promise<Test[]> => {
         const dataRow = data.table?.rows;
-        if (dataRow === undefined || dataRow?.length === 0) {
+        if (!dataRow || dataRow?.length === 0) {
             setEndOfData(true);
             return [];
         }
-        const examsDataPromises = dataRow
+        const testsDataPromises = dataRow
             .filter(entry => entry.c[0] && entry.c[1])
             .map(async (entry, index) => {
                 return {
@@ -73,81 +96,80 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                 };
             });
 
-        return await Promise.all(examsDataPromises);
+        return await Promise.all(testsDataPromises);
     }
 
-    useEffect(() => {
-        const queryAndSetTests = async (query: string) => {
-            if (query === undefined) {
-                return;
-            }
-            queryGoogleSpreadsheet(GoogleSheetsIDs.TEST_BANK_ID, query, "Database")
-                .then(response => {
-                    setLoading(true);
-                    return prepTestSheet(response!)
-                }).then(data => {
-                    setTestCards([...testCards, ...data]);
+    const queryAndSetTests = async (query: string) => {
+        queryGoogleSpreadsheet(GoogleSheetsIDs.TEST_BANK_ID, query, "Database")
+            .then(response => {
+                setLoading(true);
+                return prepTestSheet(response!)
+            }).then(data => {
+                setTestCards([...testCards, ...data]);
+            })
+            .catch(error => {
+                console.error("Failed to fetch data:", error);
+            }).finally(() => {
+                setLoading(false);
 
-                })
-                .catch(error => {
-                    console.error("Failed to fetch data:", error);
-                }).finally(() => {
-                    setLoading(false);
-                })
-        }
+                // Reset the query and filter
+                setQuery(undefined);
+                setFilter(null);
+
+            })
+    }
+
+    /** When the query changes, fetch the data from the Google Spreadsheet. */
+    useEffect(() => {
         if (query) {
             queryAndSetTests(query);
         }
-
     }, [query])
 
-    const handleApplyFilter = async () => {
-        setShowFilterMenu(!showFilterMenu)
+    const handleApplyFilter = async (): Promise<void> => {
+        // Reset the test bank
+        setShowFilterMenu(false)
+        setLoading(true);
         setTestCards([])
-        setQuery(undefined)
-        let filterQuery: string;
-        if (filter === null) {
-            const emptyFilter = {}
-            filterQuery = createQuery(50, 0, emptyFilter);
-        } else {
-            filterQuery = createQuery(null, 0, filter);
-        }
-        if (filterQuery) {
-            setEndOfData(true);
-            setQuery(filterQuery);
-        }
+
+        // If no filter is applied, rest the query to fetch the first 50 tests
+        // If filter is applied, fetch all tests that match the filter
+        const filterQuery = filter === null ? createQuery(50, 0, {}) : createQuery(null, 0, filter);
+        setEndOfData(true);
+        setQuery(filterQuery);
     }
 
-    const handleCLearFilter = async () => {
-        const nullFilter = null;
-        setFilter(nullFilter)
-        const emptyTestCards: Test[] = [];
-        setTestCards(emptyTestCards);
-        const initialQuery = createQuery(50, emptyTestCards.length, nullFilter);
+    const handleCLearFilter = async (): Promise<void> => {
+        // Reset the test bank
+        setShowFilterMenu(false)
+        setLoading(true);
+        setTestCards([])
+        setFilter(null)
+
+        const initialQuery = createQuery(50, 0, null);
         setQuery(initialQuery)
     }
+
+    const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+        if (!isCloseToBottom(nativeEvent)) return;
+        if (filter || endOfData) return;
+        setLoading(true);
+
+        if (debounceTimer.current) {
+            clearTimeout(debounceTimer.current);
+        }
+
+        debounceTimer.current = setTimeout(() => {
+            const loadMoreTestsQuery = createQuery(20, testCards.length, filter);
+            setQuery(loadMoreTestsQuery);
+            debounceTimer.current = null;
+        }, 300);
+    };
 
     const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
         const paddingToBottom = 20;
         return layoutMeasurement.height + contentOffset.y >=
             contentSize.height - paddingToBottom;
-    };
-
-    const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
-        if (isCloseToBottom(nativeEvent)) {
-            if (filter || endOfData) {
-                return
-            }
-            setLoading(true);
-            if (debounceTimer.current) {
-                clearTimeout(debounceTimer.current);
-            }
-            debounceTimer.current = setTimeout(() => {
-                const loadMoreTestsQuery = createQuery(20, testCards.length, filter);
-                setQuery(loadMoreTestsQuery)
-                debounceTimer.current = null;
-            }, 300);
-        }
     };
 
     return (
@@ -244,10 +266,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                             )}
                         </View>
                     </View>
-
                 </ScrollView>
-
-
             </View >
         </SafeAreaView >
     )
