@@ -5,6 +5,7 @@ import { TestBankProps } from '../types/Navigation'
 import * as WebBrowser from 'expo-web-browser'
 
 const TestCard: React.FC<TestBankProps> = ({ testData, navigation }) => {
+    // Data is retrieved as all uppercase. This formats the data so only first letter of  each word is capitalized
     const capitalizeFirstLetter = (string: string) => {
         return string
             .split(' ')

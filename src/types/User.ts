@@ -1,3 +1,5 @@
+import { Timestamp, FieldValue } from 'firebase/firestore';
+
 export type CommitteeData = {
     id: number,
     name: string,
@@ -84,4 +86,14 @@ export interface User {
         privateInfo?: PrivateUserInfo | undefined;
     }
 };
+
+
+export interface MemberStatus {
+    uid: string;
+    timestamp: Timestamp | FieldValue;
+}
+
+export interface OfficerStatus extends MemberStatus {
+    signedIn: boolean;
+}
 

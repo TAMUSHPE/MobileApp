@@ -1,5 +1,5 @@
 import { View, Text, TouchableHighlight, ScrollView, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, Image, TouchableOpacity } from 'react-native'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -91,13 +91,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
         fetchData();
     }, [])
 
-    const colorMapping: Record<RankChange, string> = {
-        "increased": "#AEF359",
-        "same": "#7F7F7F",
-        "decreased": "#B22222"
-    };
-
-    const RenderUserRankChange = () => {
+    const renderRankChangeIcon = () => {
         switch (userRankChange) {
             case "increased":
                 return <Octicons name="chevron-up" size={24} color="#AEF359" />;
@@ -108,13 +102,14 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
         }
     };
 
-    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
-        const paddingToBottom = 20;
-        return layoutMeasurement.height + contentOffset.y >=
-            contentSize.height - paddingToBottom;
-    };
 
-    const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
+            const paddingToBottom = 20;
+            return layoutMeasurement.height + contentOffset.y >=
+                contentSize.height - paddingToBottom;
+        };
+
         if (!isCloseToBottom(nativeEvent)) return;
         if (endOfData) return;
 
@@ -129,7 +124,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
             queryAndSetRanks(50, offset + nullDataOffset);
             debounceTimer.current = null;
         }, 300);
-    };
+    }, [rankCards, nullDataOffset, endOfData]);
 
     return (
         <SafeAreaView
@@ -262,7 +257,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                                     <View className='flex-row'>
                                         <Text className='text-xl font-medium mr-4'>{userRank}</Text>
                                         <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
-                                            <RenderUserRankChange />
+                                            {renderRankChangeIcon()}
                                         </View>
                                     </View>
                                 </View>
@@ -291,5 +286,11 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
         </SafeAreaView >
     )
 }
+
+const colorMapping: Record<RankChange, string> = {
+    "increased": "#AEF359",
+    "same": "#7F7F7F",
+    "decreased": "#B22222"
+};
 
 export default PointsLeaderboard
