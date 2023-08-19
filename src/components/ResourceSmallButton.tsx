@@ -5,7 +5,8 @@ import React, { useCallback } from 'react'
  * The ResourceSmallButton component provides an interactive button to open specified URLs.
  * Displays the button with a provided image and can open the URL in the browser.
  *
- * @param props - Contains details about the URL, image, and styles.
+ * @param props - Contains details about the URL, image, and styles. Note that this component
+ * is designed for tranparent images
  */
 const ResourceSmallButton: React.FC<ResourceSmallButtonProps> = ({ items }) => {
     const { url, image, 'bg-color': bgColor } = items;

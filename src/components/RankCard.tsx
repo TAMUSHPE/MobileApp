@@ -31,6 +31,7 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
             onPress={() => { navigation.navigate("PublicProfile", { uid: uid! }) }}
         >
             <View className="flex-row bg-[#D4D4D4] py-3 mx-4 px-4 mt-8 rounded-xl items-center">
+                {/* Profile image and points*/}
                 <View className='flex-1 flex-row items-center'>
                     <Image
                         className="flex w-14 h-14 rounded-full mr-4"
@@ -45,6 +46,7 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
                     </View>
                 </View>
 
+                {/* Rank and rank change icon */}
                 <View className='flex-row'>
                     <Text className='text-xl font-medium mr-4'>{pointsRank}</Text>
                     <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
