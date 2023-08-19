@@ -10,9 +10,7 @@ export type MainStackParams = {
     HomeDrawer: HomeDrawerParams;
     HomeBottomTabs: undefined;
     AdminDashboard: undefined;
-    SettingsScreen: {
-        userId: number;
-    };
+    Settings: undefined;
 };
 
 export type AuthStackParams = {
@@ -54,6 +52,10 @@ export type CommitteesStackParams = {
     CommitteesScreen: undefined;
 }
 
+export type SettingsStackParams = {
+    SettingsScreen: undefined;
+}
+
 // Drawers
 export type HomeDrawerParams = {
     HomeScreen: undefined;
@@ -90,9 +92,6 @@ export type TestBankProps = {
     testData: Test;
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
-
-export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
-export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScreen">;
 
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
 export type MembersProps = NativeStackScreenProps<MembersStackParams, "PublicProfile">;
