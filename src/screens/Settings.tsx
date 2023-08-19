@@ -1,20 +1,37 @@
-import { View, Text } from 'react-native';
-import React from 'react';
-import { useRoute } from '@react-navigation/native';
-import { SettingsScreenRouteProp } from '../types/Navigation';
-import { SettingsProps } from '../types/Navigation';
+import { View, Text, SafeAreaView, Image } from 'react-native';
+import React, { useContext } from 'react';
+import { SettingsStackParams } from '../types/Navigation';
+import { Images } from '../../assets';
+import { auth } from '../config/firebaseConfig';
+import { UserContext } from '../context/UserContext';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
+    const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
+    if (!setUserInfo) {
+        return null;
+    }
 
-const SettingsScreen = ({ navigation }: SettingsProps) => {
-    const route = useRoute<SettingsScreenRouteProp>();
-    const { userId } = route.params;
+    const updateUserInfo = () => {
+        /** Stubbed */
+    }
 
     return (
-        <View className='flex-1 justify-center items-center'>
+        <SafeAreaView className='flex-1 items-center py-10'>
+            <Image
+                className='w-32 h-32 rounded-full'
+                defaultSource={Images.DEFAULT_USER_PICTURE}
+                source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
+            />
+            <View className={`w-10/12 h-auto rounded-md border ${""}`}>
+                <View>
+                    <Text className='text-xl'>1234</Text>
+                </View>
+            </View>
             <Text className="text-4xl font-bold text-center">Settings Page w/ Param</Text>
-            <Text className='mt-4 text-2xl font-bold text-center text-green-700'>UserID: {userId}</Text>
-        </View>
+        </SafeAreaView>
     )
 }
 
 export default SettingsScreen;
+
