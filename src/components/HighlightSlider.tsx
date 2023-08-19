@@ -2,9 +2,9 @@ import { View, FlatList, Animated, ViewToken } from 'react-native';
 import React, { useState, useRef, RefObject } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import HighLightSliderItem from './HighLightSliderItem';
-import { slides } from './slides'
 import Paginator from './Paginator';
-import { Slide } from '../types/Slide';
+import { slides } from './slides'
+import { Slide } from './slides'
 
 /**
  * This component renders a horizontal list of slides with pagination.
@@ -15,11 +15,13 @@ import { Slide } from '../types/Slide';
  */
 const HighlightSlider = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
-    const slidesRef: RefObject<FlatList<Slide>> = useRef(null);
+    const slideListRef: RefObject<FlatList<Slide>> = useRef(null);
     const scrollX = useRef(new Animated.Value(0)).current;
 
     const viewableItemsChanged = useRef(({ viewableItems }: { viewableItems: Array<ViewToken> }) => {
-        setCurrentIndex(viewableItems[0].index ?? 0);
+        if (viewableItems.length > 0) {
+            setCurrentIndex(viewableItems[0].index ?? 0);
+        }
     }).current;
 
     const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
@@ -40,7 +42,7 @@ const HighlightSlider = () => {
                     })}
                     onViewableItemsChanged={viewableItemsChanged}
                     viewabilityConfig={viewConfig}
-                    ref={slidesRef}
+                    ref={slideListRef}
                 />
             </View>
             <Paginator data={slides} scrollX={scrollX} />

@@ -1,12 +1,13 @@
 import { View, Animated, useWindowDimensions } from 'react-native'
 import React from 'react'
-import { Slide } from '../types/Slide'
+import { Slide } from './slides'
 
 /**
  * This component displays a horizontal row of dots, corresponding to each slide in the slideshow.
  * The dot corresponding to the currently-viewed slide has increased opacity, making it appear "active".
  * 
- * @param props
+ * @param data An array of slides to be displayed.
+ * @param scrollX An animated value representing the horizontal scroll position of the slide list.
  * @returns Returns the rendered Paginator component.
  */
 const Paginator: React.FC<PaginatorProps> = ({ data, scrollX }) => {

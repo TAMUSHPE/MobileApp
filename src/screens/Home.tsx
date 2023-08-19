@@ -25,7 +25,8 @@ const HomeScreen = () => {
     }
 
     useEffect(() => {
-        // only for testing since I manually change officer status in firebase need to look into this later
+        // only for testing since manually change user in firebase need to look into this later
+        // This will be remove when user settings and admin page is done
         const updateUser = async () => {
             try {
                 const uid = auth.currentUser?.uid;
@@ -50,7 +51,12 @@ const HomeScreen = () => {
         };
 
         getLocalUser();
-        manageNotificationPermissions();
+
+        try {
+            manageNotificationPermissions();
+        } catch (error) {
+            console.error("Error managing notification permissions:", error);
+        }
     }, []);
 
     return (

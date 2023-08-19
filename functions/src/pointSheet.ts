@@ -1,14 +1,15 @@
 import * as functions from 'firebase-functions';
 import { db, auth } from "./firebaseConfig"
-import {queryGoogleSpreadsheet, GoogleSheetsIDs} from "../../src/api/fetchGoogleSheets"
+import { queryGoogleSpreadsheet, GoogleSheetsIDs } from "../../src/api/fetchGoogleSheets"
 import { RankChange } from "../../src/types/User";
+
 
 /** Fetches UID associated with an email from Firebase Authentication */
 const getUIDbyEmail = async (email: string): Promise<string | null> => {
     try {
         const usersSnapshot = await auth.getUserByEmail(email);
-        return usersSnapshot ? usersSnapshot.uid : null;
-    } catch (error) {
+        return usersSnapshot?.uid ?? null;
+    } catch (error) {   
         console.error("Error fetching UID by email:", error);
         return null;
     }
@@ -51,10 +52,8 @@ const updateRanks = async () => {
 
         if (!rows) return "No rows to update.";
 
-        for (let i = 0; i < rows.length; i++) {
-            const email = rows[i].c[2]?.v;
-            await updateUserRank(email, i + 1);
-        }
+        const updatePromises = rows.map((row, i) => updateUserRank(row.c[2]?.v, i + 1));
+        await Promise.all(updatePromises);
 
         return "Successfully updated ranks!";
     } catch (error) {
@@ -71,13 +70,13 @@ export const updateRanksScheduled = functions.pubsub.schedule('0 5 * * *').timeZ
 /** Callable function to manually update ranks */
 export const updateRanksOnCall = functions.https.onCall(async (data, context) => {
     try {
-      const result = await updateRanks();
-      return {
-        status: 'success',
-        message: result,
-      };
+        const result = await updateRanks();
+        return {
+            status: 'success',
+            message: result,
+        };
     } catch (error) {
-      console.error("Error in updatePointStats:", error);
-      throw new functions.https.HttpsError('internal', 'Internal Server Error.');
+        console.error("Error in updatePointStats:", error);
+        throw new functions.https.HttpsError('internal', 'Internal Server Error.');
     }
-  });
+});

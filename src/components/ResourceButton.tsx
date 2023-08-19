@@ -5,8 +5,9 @@ import { ResourcesProps } from '../types/Navigation'
 /**
  * The ResourceButton component displays a clickable button with an image and title.
  * The button navigates to the specified screen upon being pressed.
- *
- * @param props - Contains navigation details and items to be rendered.
+ * 
+ * @param items Contains items to be rendered, including screen, image, and title.
+ * @param navigation Contains navigation functions.
  */
 const ResourceButton: React.FC<ResourcesProps> = ({ items, navigation }) => {
     const { screen, image, title } = items
@@ -15,7 +16,7 @@ const ResourceButton: React.FC<ResourcesProps> = ({ items, navigation }) => {
         <TouchableOpacity
             className='h-36 w-screen items-center justify-center my-4'
             onPress={() => {
-                // to avoid TypeScript complaints about missing parameters
+                // Navigate to screen unless it's "PublicProfile" to avoid TypeScript complaints
                 if (screen !== "PublicProfile") {
                     navigation.navigate(screen);
                 }

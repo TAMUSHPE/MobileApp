@@ -28,14 +28,14 @@ export interface GoogleSheetsResponse {
 };
 
 export type Test = {
-    subject: string;
-    course: string;
-    semester: string;
-    year: string;
-    testType: string;
-    typeNumber: string;
-    professor: string;
-    student: string;
-    grade: string; 
-    testURL: string;
+    subject?: string;
+    course?: string;
+    semester?: string;
+    year?: string;
+    testType?: string;
+    typeNumber?: string;
+    professor?: string;
+    student?: string;
+    grade?: string; 
+    testURL?: string;
 }

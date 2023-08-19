@@ -38,6 +38,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
             navigation.navigate("ProfileSetup");
         }
     }, [userInfo]);
+
     const handleUserAuth = () => {
         setLoading(true);
         initializeCurrentUserData()
@@ -58,12 +59,6 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
             });
     };
 
-    useEffect(() => {
-        if (userInfo?.private?.privateInfo?.completedAccountSetup === false) {
-            navigation.navigate("ProfileSetup");
-        }
-    }, [userInfo]);
-
     const emailSignIn = async () => {
         signInWithEmailAndPassword(auth, email, password)
             .then(handleUserAuth)
@@ -72,6 +67,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
             })
     }
 
+    // Handle Google Sign-In
     useEffect(() => {
         if (response?.type === "success") {
             const { id_token } = response.params;

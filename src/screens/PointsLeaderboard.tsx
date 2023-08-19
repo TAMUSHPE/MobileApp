@@ -1,5 +1,5 @@
 import { View, Text, TouchableHighlight, ScrollView, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, Image, TouchableOpacity } from 'react-native'
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,7 +17,8 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [initLoading, setInitLoading] = useState(true);
     const [loading, setLoading] = useState(true);
-
+    const [endOfData, setEndOfData] = useState(false);
+    const [nullDataOffset, setNullDataOffset] = useState(0);
     /**
      * userPoints obtained from google sheets
      * userRank and rankChange are directly obtain from firebase
@@ -29,8 +30,16 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
     const [userRankChange, setUserRankChange] = useState<RankChange>('same');
 
     const prepPointSheet = async (data: GoogleSheetsResponse, offset: number): Promise<PublicUserInfoUID[]> => {
-        const dataRow = data.table.rows;
+        const dataRow = data.table?.rows;
+        if (!dataRow || dataRow.length === 0) {
+            setEndOfData(true);
+            return []
+        }
         const usersDataPromises = dataRow.map(async (entry, index) => {
+            if (!entry.c[0] || !entry.c[2] || !entry.c[3]) {
+                setNullDataOffset(prevNullDataOffset => prevNullDataOffset + 1);
+                return null;
+            }
             const email = entry.c[2].v as string;
             const fetchUser = await getUserByEmail(email);
             const userData = fetchUser?.userData;
@@ -38,7 +47,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
             const profileURL = userData?.photoURL;
             const rankChange = userData?.rankChange;
             return {
-                name: `${entry.c[0].v} ${entry.c[1].v}`,
+                name: `${entry.c[0].v} ${entry.c[1].v || ""}`,
                 email: email,
                 points: +entry.c[3].f,
                 pointsRank: index + offset + 1,
@@ -48,7 +57,8 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
             };
         });
 
-        return await Promise.all(usersDataPromises);
+        const usersData = await Promise.all(usersDataPromises);
+        return usersData.filter(user => user !== null) as PublicUserInfoUID[];
     }
 
     const queryAndSetRanks = async (limit: number, offset: number) => {
@@ -75,19 +85,13 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                 setUserRankChange(user?.rankChange ? user?.rankChange as RankChange : "same" as RankChange);
                 setUserPoints(user?.points ? user?.points : -1)
             }).then(() => {
-                queryAndSetRanks(23, 0);
+                queryAndSetRanks(100, 0);
             })
         }
         fetchData();
     }, [])
 
-    const colorMapping: Record<RankChange, string> = {
-        "increased": "#AEF359",
-        "same": "#7F7F7F",
-        "decreased": "#B22222"
-    };
-
-    const RenderUserRankChange = () => {
+    const renderRankChangeIcon = () => {
         switch (userRankChange) {
             case "increased":
                 return <Octicons name="chevron-up" size={24} color="#AEF359" />;
@@ -98,25 +102,29 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
         }
     };
 
-    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
-        const paddingToBottom = 20;
-        return layoutMeasurement.height + contentOffset.y >=
-            contentSize.height - paddingToBottom;
-    };
 
-    const handleScroll = ({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
-        if (isCloseToBottom(nativeEvent)) {
-            setLoading(true);
-            if (debounceTimer.current) {
-                clearTimeout(debounceTimer.current);
-            }
-            debounceTimer.current = setTimeout(() => {
-                const offset = rankCards.length;
-                queryAndSetRanks(15, offset);
-                debounceTimer.current = null;
-            }, 300);
+    const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
+            const paddingToBottom = 20;
+            return layoutMeasurement.height + contentOffset.y >=
+                contentSize.height - paddingToBottom;
+        };
+
+        if (!isCloseToBottom(nativeEvent)) return;
+        if (endOfData) return;
+
+        setLoading(true);
+
+        if (debounceTimer.current) {
+            clearTimeout(debounceTimer.current);
         }
-    };
+
+        debounceTimer.current = setTimeout(() => {
+            const offset = rankCards.length;
+            queryAndSetRanks(50, offset + nullDataOffset);
+            debounceTimer.current = null;
+        }, 300);
+    }, [rankCards, nullDataOffset, endOfData]);
 
     return (
         <SafeAreaView
@@ -249,7 +257,7 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                                     <View className='flex-row'>
                                         <Text className='text-xl font-medium mr-4'>{userRank}</Text>
                                         <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
-                                            <RenderUserRankChange />
+                                            {renderRankChangeIcon()}
                                         </View>
                                     </View>
                                 </View>
@@ -265,11 +273,24 @@ const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationPr
                         {loading && (
                             <ActivityIndicator size={"large"} />
                         )}
+                        {endOfData && (
+                            <View className='pb-6 items-center justify-center'>
+                                <Text>
+                                    End of Leaderboard
+                                </Text>
+                            </View>
+                        )}
                     </View>
                 </View>
             </ScrollView>
         </SafeAreaView >
     )
 }
+
+const colorMapping: Record<RankChange, string> = {
+    "increased": "#AEF359",
+    "same": "#7F7F7F",
+    "decreased": "#B22222"
+};
 
 export default PointsLeaderboard
