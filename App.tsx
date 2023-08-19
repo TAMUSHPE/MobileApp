@@ -4,6 +4,7 @@ import { Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { UserProvider } from './src/context/UserContext';
 import RootNavigator from './src/navigation';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
     const notificationListener = useRef<Subscription | null>();
@@ -28,9 +29,11 @@ export default function App() {
     }, []);
 
     return (
-        <UserProvider>
-            <RootNavigator />
-        </UserProvider>
+        <SafeAreaProvider>
+            <UserProvider>
+                <RootNavigator />
+            </UserProvider>
+        </SafeAreaProvider>
     );
 };
 
