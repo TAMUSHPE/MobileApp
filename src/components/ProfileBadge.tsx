@@ -17,7 +17,7 @@ const ProfileBadge = ({ text, badgeStyle, badgeColor, textStyle, textColor }: { 
     const badgeLuminosity = calculateHexLuminosity(badgeColor ?? defaultBadgeColor);
     return (
         <View className={badgeStyle ?? "px-2 py-1 rounded-full inline-block mr-1 mb-1"} style={{ backgroundColor: validateHexColor(badgeColor ?? "") ? badgeColor : defaultBadgeColor }}>
-            <Text className={textStyle ?? "text-center"} style={{ color: textColor ? textColor : (badgeLuminosity > 120 ? "#000" : "#FFF") }}>{text ?? "Default Text"}</Text>
+            <Text className={textStyle ?? "text-center"} style={{ color: textColor ? textColor : (badgeLuminosity > 180 ? "#000" : "#FFF") }}>{text ?? "Default Text"}</Text>
         </View>
     );
 };
