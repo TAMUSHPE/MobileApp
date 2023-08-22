@@ -1,7 +1,14 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import React from 'react';
 
-const InteractButton = ({ pressFunction, label, buttonStyle, textStyle, iconStyle, opacity, iconURI }: { pressFunction: Function, label?: string, buttonStyle?: string, textStyle?: string, iconStyle?: string, opacity?: number, iconURI?: string }) => {
+/**
+ * Template for a button that 
+ * @param onPress - Function to be called when button is pressed
+ * @param label - Text to be displayed on the button
+ * @param buttonClassName - Text to be displayed on the button
+ * @returns Component which 
+ */
+const InteractButton = ({ onPress, label, buttonClassName, textClassName, iconStyle, opacity, iconURI }: { onPress: Function, label?: string, buttonClassName?: string, textClassName?: string, iconStyle?: string, opacity?: number, iconURI?: string }) => {
     let content;
     if (iconURI) {
         content = (
@@ -12,18 +19,18 @@ const InteractButton = ({ pressFunction, label, buttonStyle, textStyle, iconStyl
                         uri: iconURI
                     }}
                 />
-                <Text className={`p-2 ${textStyle ?? "text-black"}`}>{label ?? "Interact Button"}</Text>
+                <Text className={`p-2 ${textClassName ?? "text-black"}`}>{label ?? "Interact Button"}</Text>
             </View>
         );
     }
     else {
-        content = (<Text className={`p-2 ${textStyle ?? "text-black"}`}>{label ?? "Interact Button"}</Text>);
+        content = (<Text className={`p-2 ${textClassName ?? "text-black"}`}>{label ?? "Interact Button"}</Text>);
     }
 
     return (
         <TouchableOpacity
-            onPress={() => pressFunction()}
-            className={`flex justify-center items-center ${buttonStyle ?? "bg-blue-300"}`}
+            onPress={() => onPress()}
+            className={`flex justify-center items-center ${buttonClassName ?? "bg-blue-300"}`}
             activeOpacity={opacity ?? 0.7}
         >
             {content}

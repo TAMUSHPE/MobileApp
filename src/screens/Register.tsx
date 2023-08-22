@@ -138,10 +138,10 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                     />
                 </View>
                 <InteractButton
-                    pressFunction={() => registerUser()}
+                    onPress={() => registerUser()}
                     label="Register Account"
-                    buttonStyle="bg-continue-dark mt-5 rounded-xl"
-                    textStyle="text-white font-bold"
+                    buttonClassName="bg-continue-dark mt-5 rounded-xl"
+                    textClassName="text-white font-bold"
                 />
             </KeyboardAvoidingView>
             <View className="my-10 border-t-2 border-t-[#a8a8a8] w-11/12" />

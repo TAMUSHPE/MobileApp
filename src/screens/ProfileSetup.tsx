@@ -64,7 +64,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         textInputStyle="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mb-3"
                     />
                     <InteractButton
-                        pressFunction={async () => {
+                        onPress={async () => {
                             if (name !== "") {
                                 if (auth.currentUser) {
                                     await setPublicUserData({
@@ -76,8 +76,8 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${name === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md`}
-                        textStyle={`${name === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
+                        buttonClassName={`${name === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md`}
+                        textClassName={`${name === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={name === "" ? 1 : 0.8}
                     />
                 </KeyboardAvoidingView>
@@ -217,28 +217,28 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
                 </TouchableOpacity>
                 <View className='flex-row w-10/12 justify-between mb-4'>
                     <InteractButton
-                        pressFunction={() => navigation.goBack()}
+                        onPress={() => navigation.goBack()}
                         label='Back'
-                        buttonStyle='bg-[#ddd] rounded-md w-1/2'
-                        textStyle='text-[#3b3b3b] text-lg font-bold'
+                        buttonClassName='bg-[#ddd] rounded-md w-1/2'
+                        textClassName='text-[#3b3b3b] text-lg font-bold'
                     />
                     <InteractButton
-                        pressFunction={() => {
+                        onPress={() => {
                             if (localImageURI !== "") {
                                 uploadProfilePicture();
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${localImageURI === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
-                        textStyle={`${localImageURI === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
+                        buttonClassName={`${localImageURI === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
+                        textClassName={`${localImageURI === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={localImageURI === "" ? 1 : 0.8}
                     />
                 </View>
                 <InteractButton
-                    pressFunction={() => navigation.navigate("SetupAcademicInformation")}
+                    onPress={() => navigation.navigate("SetupAcademicInformation")}
                     label='Skip For Now'
-                    buttonStyle='bg-[#ddd] rounded-md w-10/12'
-                    textStyle='text-[#3b3b3b] text-lg font-bold'
+                    buttonClassName='bg-[#ddd] rounded-md w-10/12'
+                    textClassName='text-[#3b3b3b] text-lg font-bold'
                 />
             </View>
             <View>
@@ -295,13 +295,13 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                 </KeyboardAvoidingView>
                 <View className='flex-row'>
                     <InteractButton
-                        pressFunction={() => navigation.goBack()}
+                        onPress={() => navigation.goBack()}
                         label='Back'
-                        buttonStyle='bg-[#ddd] rounded-md w-1/2'
-                        textStyle='text-[#3b3b3b] text-lg font-bold'
+                        buttonClassName='bg-[#ddd] rounded-md w-1/2'
+                        textClassName='text-[#3b3b3b] text-lg font-bold'
                     />
                     <InteractButton
-                        pressFunction={() => {
+                        onPress={() => {
                             if (!(major === "" || classYear === "")) {
                                 if (auth.currentUser) {
                                     setPublicUserData({
@@ -313,8 +313,8 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${(major === "" || classYear === "") ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
-                        textStyle={`${(major === "" || classYear === "") ? "text-gray-700" : "text-white"} text-lg font-bold`}
+                        buttonClassName={`${(major === "" || classYear === "") ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
+                        textClassName={`${(major === "" || classYear === "") ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={(major === "" || classYear === "") ? 1 : 0.8}
                     />
                 </View>
@@ -431,13 +431,13 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                 </ScrollView>
                 <View className='flex-row w-10/12 justify-between mb-4'>
                     <InteractButton
-                        pressFunction={() => navigation.goBack()}
+                        onPress={() => navigation.goBack()}
                         label='Back'
-                        buttonStyle='bg-[#ddd] rounded-md w-1/2'
-                        textStyle='text-[#3b3b3b] text-lg font-bold'
+                        buttonClassName='bg-[#ddd] rounded-md w-1/2'
+                        textClassName='text-[#3b3b3b] text-lg font-bold'
                     />
                     <InteractButton
-                        pressFunction={async () => {
+                        onPress={async () => {
                             if (canContinue || noneIsChecked) {
                                 if (auth.currentUser) {
                                     if (noneIsChecked) {
@@ -461,13 +461,13 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                             }
                         }}
                         label='Continue'
-                        buttonStyle={`${canContinue || noneIsChecked ? "bg-continue-dark" : "bg-gray-500"} rounded-md w-1/2`}
-                        textStyle={`${canContinue || noneIsChecked ? "text-white" : "text-gray-700"} text-lg font-bold`}
+                        buttonClassName={`${canContinue || noneIsChecked ? "bg-continue-dark" : "bg-gray-500"} rounded-md w-1/2`}
+                        textClassName={`${canContinue || noneIsChecked ? "text-white" : "text-gray-700"} text-lg font-bold`}
                         opacity={canContinue || noneIsChecked ? 1 : 0.8}
                     />
                 </View>
                 <InteractButton
-                    pressFunction={async () => {
+                    onPress={async () => {
                         if (auth.currentUser) {
                             setPublicUserData({
                                 committees: ["None"],
@@ -483,8 +483,8 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         setUserInfo(authUser); // Navigates to Home
                     }}
                     label='Skip For Now'
-                    buttonStyle='bg-[#ddd] rounded-md w-10/12'
-                    textStyle='text-[#3b3b3b] text-lg font-bold'
+                    buttonClassName='bg-[#ddd] rounded-md w-10/12'
+                    textClassName='text-[#3b3b3b] text-lg font-bold'
                 />
             </View>
         </SafeAreaView>
