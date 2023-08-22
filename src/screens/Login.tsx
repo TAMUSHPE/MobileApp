@@ -15,7 +15,7 @@ import { Images } from "../../assets";
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext ?? {};
@@ -62,8 +62,9 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
     const emailSignIn = async () => {
         signInWithEmailAndPassword(auth, email, password)
             .then(handleUserAuth)
-            .catch(error => {
+            .catch((error: Error) => {
                 console.error("Error during email sign-in:", error);
+                alert(error.message);
             })
     }
 
@@ -119,25 +120,25 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
                 </KeyboardAvoidingView>
                 <View className="flex-col mt-2">
                     <InteractButton
-                        pressFunction={() => emailSignIn()}
+                        onPress={() => emailSignIn()}
                         label="Sign In"
-                        buttonStyle="bg-continue-dark mt-5 rounded-xl"
-                        textStyle="text-white font-bold"
+                        buttonClassName="bg-continue-dark mt-5 rounded-xl"
+                        textClassName="text-white font-bold"
                     />
                     <View className="items-center my-4">
                         <Text className="text-white">Or</Text>
                     </View>
                     <InteractButton
-                        pressFunction={() => navigation.navigate("RegisterScreen")}
+                        onPress={() => navigation.navigate("RegisterScreen")}
                         label="Register Account"
-                        buttonStyle="bg-white rounded-xl"
-                        textStyle="text-[#3b3b3b] font-bold"
+                        buttonClassName="bg-white rounded-xl"
+                        textClassName="text-[#3b3b3b] font-bold"
                     />
                     <InteractButton
-                        pressFunction={() => googleSignIn()}
+                        onPress={() => googleSignIn()}
                         label="Sign In with Google"
-                        buttonStyle="bg-white mt-2 rounded-xl"
-                        textStyle="text-[#3b3b3b] font-bold"
+                        buttonClassName="bg-white mt-2 rounded-xl"
+                        textClassName="text-[#3b3b3b] font-bold"
                         iconURI="https://developers.google.com/static/identity/images/g-logo.png"
                     />
                 </View>

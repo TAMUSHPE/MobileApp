@@ -71,15 +71,15 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                 <View className="flex-row flex-wrap">
                     <ProfileBadge
                         text={userInfo?.publicInfo?.classYear}
-                        badgeStyle='px-2 py-1 bg-maroon rounded-full inline-block mr-1 mb-1'
+                        badgeClassName='px-2 py-1 bg-maroon rounded-full inline-block mr-1 mb-1'
                         badgeColor='#500000'
-                        textStyle='text-center text-xs'
+                        textClassName='text-center text-xs'
                     />
                     <ProfileBadge
                         text={userInfo?.publicInfo?.major}
-                        badgeStyle='px-2 py-1 bg-pale-blue rounded-full inline-block mr-1 mb-1'
+                        badgeClassName='px-2 py-1 bg-pale-blue rounded-full inline-block mr-1 mb-1'
                         badgeColor='#72A9EF'
-                        textStyle='text-center text-xs'
+                        textClassName='text-center text-xs'
                     />
                     {userInfo?.publicInfo?.committees?.map((committeeName: string) => {
                         const committeeInfo = committeesList.find(element => element.name == committeeName);
@@ -88,14 +88,14 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                                 key={committeeName}
                                 text={committeeName}
                                 badgeColor={committeeInfo ? committeeInfo?.color : ""}
-                                textStyle='text-black text-center text-xs'
+                                textClassName='text-black text-center text-xs'
                             />
                         );
                     })}
                 </View>
             </View>
             <View className={`${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} flex-grow`}>
-                <DrawerItem label="Settings" onPress={() => props.navigation.navigate("Settings", { userId: 1234 })} />
+                <DrawerItem label="Settings" onPress={() => props.navigation.navigate("Settings")} />
                 {localUser?.publicInfo?.roles?.officer?.valueOf()
                     && <DrawerItem label="Admin Dashboard" onPress={() => props.navigation.navigate("AdminDashboard")} />}
                 <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />

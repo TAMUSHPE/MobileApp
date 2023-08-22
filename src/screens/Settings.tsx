@@ -1,10 +1,11 @@
-import { View, Text, SafeAreaView, Image } from 'react-native';
+import { View, Text, Image, ScrollView } from 'react-native';
 import React, { useContext } from 'react';
 import { SettingsStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import { auth } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import InteractButton from '../components/InteractButton';
 
 const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
@@ -12,24 +13,27 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackPara
         return null;
     }
 
-    const updateUserInfo = () => {
-        /** Stubbed */
-    }
 
     return (
-        <SafeAreaView className='flex-1 items-center py-10'>
+        <ScrollView
+            className={`flex-col py-10 ${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
+            contentContainerStyle={{
+                alignItems: 'center'
+            }}
+        >
             <Image
-                className='w-32 h-32 rounded-full'
+                className='w-32 h-32 rounded-full mb-10'
                 defaultSource={Images.DEFAULT_USER_PICTURE}
                 source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
             />
-            <View className={`w-10/12 h-auto rounded-md border ${""}`}>
-                <View>
-                    <Text className='text-xl'>1234</Text>
-                </View>
+            <View className={`w-full h-auto border ${""}`}>
+                <InteractButton
+                    onPress={() => alert("Button Pressed")}
+                    buttonClassName=''
+                    textClassName=''
+                />
             </View>
-            <Text className="text-4xl font-bold text-center">Settings Page w/ Param</Text>
-        </SafeAreaView>
+        </ScrollView>
     )
 }
 

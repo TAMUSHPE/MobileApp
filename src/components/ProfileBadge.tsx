@@ -12,12 +12,12 @@ import { validateHexColor, calculateHexLuminosity } from '../helpers/colorUtils'
  * @param textColor - Hex code for color of badge text.
  * @returns The rendered badge component.
  */
-const ProfileBadge = ({ text, badgeStyle, badgeColor, textStyle, textColor }: { text?: string, badgeStyle?: string, badgeColor?: string, textStyle?: string, textColor?: string }) => {
+const ProfileBadge = ({ text, badgeClassName, badgeColor, textClassName, textColor }: { text?: string, badgeClassName?: string, badgeColor?: string, textClassName?: string, textColor?: string }) => {
     const defaultBadgeColor = "#7777AA";
     const badgeLuminosity = calculateHexLuminosity(badgeColor ?? defaultBadgeColor);
     return (
-        <View className={badgeStyle ?? "px-2 py-1 rounded-full inline-block mr-1 mb-1"} style={{ backgroundColor: validateHexColor(badgeColor ?? "") ? badgeColor : defaultBadgeColor }}>
-            <Text className={textStyle ?? "text-center"} style={{ color: textColor ? textColor : (badgeLuminosity > 180 ? "#000" : "#FFF") }}>{text ?? "Default Text"}</Text>
+        <View className={badgeClassName ?? "px-2 py-1 rounded-full inline-block mr-1 mb-1"} style={{ backgroundColor: validateHexColor(badgeColor ?? "") ? badgeColor : defaultBadgeColor }}>
+            <Text className={textClassName ?? "text-center"} style={{ color: textColor ? textColor : (badgeLuminosity > 180 ? "#000" : "#FFF") }}>{text ?? "Default Text"}</Text>
         </View>
     );
 };
