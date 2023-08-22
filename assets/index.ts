@@ -12,4 +12,5 @@ export const Images =  {
     MEMBERSHPE: require("./memberSHPEPic2.jpg"),
     TAMU_WHITE: require("./TAM-Logo-white.png"),
     GENEVA: require("./geneva.png"),
+    SHPE_LOGO_VERT:require("./SHPE_Logo_Vert.png")
 };
