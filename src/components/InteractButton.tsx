@@ -8,9 +8,12 @@ import React from 'react';
  * @param buttonClassName - Text to be displayed on the button
  * @returns Component which 
  */
-const InteractButton = ({ onPress, label, buttonClassName, textClassName, iconStyle, opacity, iconURI, underlayColor }: { onPress: Function, label?: string, buttonClassName?: string, textClassName?: string, iconStyle?: string, opacity?: number, iconURI?: string, underlayColor?: string }) => {
+const InteractButton = ({ onPress, label, buttonClassName, textClassName, iconStyle, opacity, iconURI, underlayColor, customContent }: { onPress: Function, label?: string, buttonClassName?: string, textClassName?: string, iconStyle?: string, opacity?: number, iconURI?: string, underlayColor?: string, customContent?: React.JSX.Element }) => {
     let content;
-    if (iconURI) {
+    if (customContent) {
+        content = customContent
+    }
+    else if (iconURI) {
         content = (
             <View className='flex-row justify-center items-center'>
                 <Image
