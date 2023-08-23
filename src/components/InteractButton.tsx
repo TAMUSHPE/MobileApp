@@ -30,7 +30,7 @@ const InteractButton = ({ onPress, label, buttonClassName, textClassName, iconSt
     return (
         <TouchableHighlight
             onPress={() => onPress()}
-            className={`flex justify-center items-center ${buttonClassName ?? "bg-blue-300"}`}
+            className={`flex ${buttonClassName ?? "justify-center items-center bg-blue-300"}`}
             activeOpacity={opacity ?? 0.7}
             underlayColor={underlayColor ?? "#DDD"}
         >

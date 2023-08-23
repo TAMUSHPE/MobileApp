@@ -140,7 +140,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                 <InteractButton
                     onPress={() => registerUser()}
                     label="Register Account"
-                    buttonClassName="bg-continue-dark mt-5 rounded-xl"
+                    buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
                     textClassName="text-white font-bold"
                     underlayColor='#A22E2B'
                 />

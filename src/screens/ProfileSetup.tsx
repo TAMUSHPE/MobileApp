@@ -76,7 +76,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                             }
                         }}
                         label='Continue'
-                        buttonClassName={`${name === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md`}
+                        buttonClassName={`${name === "" ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
                         textClassName={`${name === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={name === "" ? 1 : 0.8}
                         underlayColor={`${name === "" ? "" : "#A22E2B"}`}
@@ -220,7 +220,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
                     <InteractButton
                         onPress={() => navigation.goBack()}
                         label='Back'
-                        buttonClassName='bg-[#ddd] rounded-md w-1/2'
+                        buttonClassName='justify-center items-center bg-[#ddd] rounded-md w-1/2'
                         textClassName='text-[#3b3b3b] text-lg font-bold'
                     />
                     <InteractButton
@@ -230,7 +230,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
                             }
                         }}
                         label='Continue'
-                        buttonClassName={`${localImageURI === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
+                        buttonClassName={`${localImageURI === "" ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md w-1/2`}
                         textClassName={`${localImageURI === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={localImageURI === "" ? 1 : 0.8}
                         underlayColor={`${localImageURI === "" ? "" : "#A22E2B"}`}
@@ -239,7 +239,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
                 <InteractButton
                     onPress={() => navigation.navigate("SetupAcademicInformation")}
                     label='Skip For Now'
-                    buttonClassName='bg-[#ddd] rounded-md w-10/12'
+                    buttonClassName='justify-center items-center bg-[#ddd] rounded-md w-10/12'
                     textClassName='text-[#3b3b3b] text-lg font-bold'
                 />
             </View>
@@ -299,7 +299,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                     <InteractButton
                         onPress={() => navigation.goBack()}
                         label='Back'
-                        buttonClassName='bg-[#ddd] rounded-md w-1/2'
+                        buttonClassName='justify-center items-center bg-[#ddd] rounded-md w-1/2'
                         textClassName='text-[#3b3b3b] text-lg font-bold'
                     />
                     <InteractButton
@@ -315,7 +315,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                             }
                         }}
                         label='Continue'
-                        buttonClassName={`${(major === "" || classYear === "") ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
+                        buttonClassName={`${(major === "" || classYear === "") ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md w-1/2`}
                         textClassName={`${(major === "" || classYear === "") ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={(major === "" || classYear === "") ? 1 : 0.8}
                         underlayColor={`${(major === "" || classYear === "") ? "" : "#A22E2B"}`}
@@ -436,7 +436,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     <InteractButton
                         onPress={() => navigation.goBack()}
                         label='Back'
-                        buttonClassName='bg-[#ddd] rounded-md w-1/2'
+                        buttonClassName='justify-center items-center bg-[#ddd] rounded-md w-1/2'
                         textClassName='text-[#3b3b3b] text-lg font-bold'
                     />
                     <InteractButton
@@ -464,7 +464,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                             }
                         }}
                         label='Continue'
-                        buttonClassName={`${canContinue || noneIsChecked ? "bg-continue-dark" : "bg-gray-500"} rounded-md w-1/2`}
+                        buttonClassName={`${canContinue || noneIsChecked ? "bg-continue-dark" : "bg-gray-500"} justify-center items-center rounded-md w-1/2`}
                         textClassName={`${canContinue || noneIsChecked ? "text-white" : "text-gray-700"} text-lg font-bold`}
                         opacity={canContinue || noneIsChecked ? 1 : 0.8}
                         underlayColor={`${canContinue || noneIsChecked ? "#A22E2B" : ""}`}
@@ -487,7 +487,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         setUserInfo(authUser); // Navigates to Home
                     }}
                     label='Skip For Now'
-                    buttonClassName='bg-[#ddd] rounded-md w-10/12'
+                    buttonClassName='justify-center items-center bg-[#ddd] rounded-md w-10/12'
                     textClassName='text-[#3b3b3b] text-lg font-bold'
                 />
             </View>

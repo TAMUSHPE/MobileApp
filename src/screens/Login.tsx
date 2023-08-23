@@ -122,7 +122,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
                     <InteractButton
                         onPress={() => emailSignIn()}
                         label="Sign In"
-                        buttonClassName="bg-continue-dark mt-5 rounded-xl"
+                        buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
                         textClassName="text-white font-bold"
                         underlayColor="#A22E2B"
                     />
@@ -132,13 +132,13 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
                     <InteractButton
                         onPress={() => navigation.navigate("RegisterScreen")}
                         label="Register Account"
-                        buttonClassName="bg-white rounded-xl"
+                        buttonClassName="justify-center items-center bg-white rounded-xl"
                         textClassName="text-[#3b3b3b] font-bold"
                     />
                     <InteractButton
                         onPress={() => googleSignIn()}
                         label="Sign In with Google"
-                        buttonClassName="bg-white mt-2 rounded-xl"
+                        buttonClassName="justify-center items-center bg-white mt-2 rounded-xl"
                         textClassName="text-[#3b3b3b] font-bold"
                         iconURI="https://developers.google.com/static/identity/images/g-logo.png"
                     />
