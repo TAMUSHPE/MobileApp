@@ -80,7 +80,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     }
 
     return (
-        <SafeAreaView className="flex-1 items-center justify-between bg-primary-bg-dark">
+        <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
             <KeyboardAvoidingView className="flex-col w-10/12">
                 <View className='mt-2'>
                     <Text className='text-white'>Enter a unique username:</Text>
@@ -120,7 +120,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                         autoCorrect={false}
                         textContentType="password"
                     />
-                    <View className='bg-primary-bg-dark'>
+                    <View className='bg-dark-navy'>
                         <Text className='text-white'>Password Strength: <Text className={passwordStrengthColor}>{passwordStrengthText}</Text></Text>
                     </View>
                 </View>
