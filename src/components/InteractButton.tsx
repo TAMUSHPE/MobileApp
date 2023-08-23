@@ -1,4 +1,4 @@
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Text, TouchableHighlight, View } from 'react-native';
 import React from 'react';
 
 /**
@@ -8,7 +8,7 @@ import React from 'react';
  * @param buttonClassName - Text to be displayed on the button
  * @returns Component which 
  */
-const InteractButton = ({ onPress, label, buttonClassName, textClassName, iconStyle, opacity, iconURI }: { onPress: Function, label?: string, buttonClassName?: string, textClassName?: string, iconStyle?: string, opacity?: number, iconURI?: string }) => {
+const InteractButton = ({ onPress, label, buttonClassName, textClassName, iconStyle, opacity, iconURI, underlayColor }: { onPress: Function, label?: string, buttonClassName?: string, textClassName?: string, iconStyle?: string, opacity?: number, iconURI?: string, underlayColor?: string }) => {
     let content;
     if (iconURI) {
         content = (
@@ -28,13 +28,14 @@ const InteractButton = ({ onPress, label, buttonClassName, textClassName, iconSt
     }
 
     return (
-        <TouchableOpacity
+        <TouchableHighlight
             onPress={() => onPress()}
             className={`flex justify-center items-center ${buttonClassName ?? "bg-blue-300"}`}
             activeOpacity={opacity ?? 0.7}
+            underlayColor={underlayColor ?? "#DDD"}
         >
             {content}
-        </TouchableOpacity>
+        </TouchableHighlight>
     );
 };
 

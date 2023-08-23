@@ -79,6 +79,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         buttonClassName={`${name === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md`}
                         textClassName={`${name === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={name === "" ? 1 : 0.8}
+                        underlayColor={`${name === "" ? "" : "#A22E2B"}`}
                     />
                 </KeyboardAvoidingView>
             </View>
@@ -232,6 +233,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
                         buttonClassName={`${localImageURI === "" ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
                         textClassName={`${localImageURI === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={localImageURI === "" ? 1 : 0.8}
+                        underlayColor={`${localImageURI === "" ? "" : "#A22E2B"}`}
                     />
                 </View>
                 <InteractButton
@@ -316,6 +318,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                         buttonClassName={`${(major === "" || classYear === "") ? "bg-gray-500" : "bg-continue-dark"} rounded-md w-1/2`}
                         textClassName={`${(major === "" || classYear === "") ? "text-gray-700" : "text-white"} text-lg font-bold`}
                         opacity={(major === "" || classYear === "") ? 1 : 0.8}
+                        underlayColor={`${(major === "" || classYear === "") ? "" : "#A22E2B"}`}
                     />
                 </View>
             </View>
@@ -390,7 +393,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                 onPress={() => onPress(committeeData.id)}
             >
                 <View className='flex-row items-center'>
-                    <View className={`h-10 w-10 rounded-full mr-2`} style={{ backgroundColor: committeeData.color ?? "#000"}} />
+                    <View className={`h-10 w-10 rounded-full mr-2`} style={{ backgroundColor: committeeData.color ?? "#000" }} />
                     <Text className={`font-bold text-center text-lg text-gray-600`}>{committeeData.name}</Text>
                 </View>
                 <Image
@@ -464,6 +467,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         buttonClassName={`${canContinue || noneIsChecked ? "bg-continue-dark" : "bg-gray-500"} rounded-md w-1/2`}
                         textClassName={`${canContinue || noneIsChecked ? "text-white" : "text-gray-700"} text-lg font-bold`}
                         opacity={canContinue || noneIsChecked ? 1 : 0.8}
+                        underlayColor={`${canContinue || noneIsChecked ? "#A22E2B" : ""}`}
                     />
                 </View>
                 <InteractButton
