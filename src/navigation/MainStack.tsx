@@ -15,13 +15,7 @@ const MainStack = () => {
         >
             <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
             <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
-            <Stack.Group
-                screenOptions={{
-                    headerShown: true
-                }}
-            >
-                <Stack.Screen name="Settings" component={SettingsStack} />
-            </Stack.Group>
+            <Stack.Screen name="Settings" component={SettingsStack} />
         </Stack.Navigator>
     );
 };
