@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView } from 'react-native';
+import { View, Text, Image, ScrollView, Button } from 'react-native';
 import React, { useContext } from 'react';
 import { SettingsStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
@@ -26,11 +26,12 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackPara
                 defaultSource={Images.DEFAULT_USER_PICTURE}
                 source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
             />
-            <View className={`w-full h-auto border ${""}`}>
+            <View className={`w-full h-auto border ${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
                 <InteractButton
-                    onPress={() => alert("Button Pressed")}
-                    buttonClassName=''
-                    textClassName=''
+                    onPress={() => console.log("Button Pressed")}
+                    label="Profile Settings"
+                    buttonClassName={``}
+                    textClassName={`text-2xl ${userInfo?.private?.privateInfo?.settings?.darkMode ? "text-white" : "text-black"}`}
                 />
             </View>
         </ScrollView>

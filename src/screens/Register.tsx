@@ -142,6 +142,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                     label="Register Account"
                     buttonClassName="bg-continue-dark mt-5 rounded-xl"
                     textClassName="text-white font-bold"
+                    underlayColor='#A22E2B'
                 />
             </KeyboardAvoidingView>
             <View className="my-10 border-t-2 border-t-[#a8a8a8] w-11/12" />

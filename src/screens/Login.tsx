@@ -124,6 +124,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
                         label="Sign In"
                         buttonClassName="bg-continue-dark mt-5 rounded-xl"
                         textClassName="text-white font-bold"
+                        underlayColor="#A22E2B"
                     />
                     <View className="items-center my-4">
                         <Text className="text-white">Or</Text>
