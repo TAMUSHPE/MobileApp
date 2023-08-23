@@ -16,7 +16,7 @@ module.exports = {
                 "continue-light": "#C24E3A",
                 "primary-bg-dark": "#191740",
                 "primary-bg-light": "#FAF9F6",
-                "secondary-bg-dark": "#191740",
+                "secondary-bg-dark": "#353182",
                 "secondary-bg-light": "#FFFFFF",
             },
         },
