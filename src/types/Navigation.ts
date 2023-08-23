@@ -54,6 +54,11 @@ export type CommitteesStackParams = {
 
 export type SettingsStackParams = {
     SettingsScreen: undefined;
+    SearchSettingsScreen: undefined;
+    ProfileSettingsScreen: undefined;
+    DisplaySettingsScreen: undefined;
+    AccountSettingsScreen: undefined;
+    AboutScreen: undefined;
 }
 
 // Drawers
