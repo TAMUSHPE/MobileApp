@@ -140,7 +140,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
                         label="Sign In with Google"
                         buttonClassName="justify-center items-center bg-white mt-2 rounded-xl"
                         textClassName="text-[#3b3b3b] font-bold"
-                        iconURI="https://developers.google.com/static/identity/images/g-logo.png"
+                        iconSource={{ uri: "https://developers.google.com/static/identity/images/g-logo.png" }}
                     />
                 </View>
             </View>

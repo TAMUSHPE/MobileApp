@@ -1,4 +1,4 @@
-import { Image, Text, TouchableHighlight, View } from 'react-native';
+import { Image, ImageSourcePropType, Text, TouchableHighlight, View } from 'react-native';
 import React from 'react';
 
 /**
@@ -8,19 +8,17 @@ import React from 'react';
  * @param buttonClassName - Text to be displayed on the button
  * @returns Component which 
  */
-const InteractButton = ({ onPress, label, buttonClassName, textClassName, iconStyle, opacity, iconURI, underlayColor, customContent }: { onPress: Function, label?: string, buttonClassName?: string, textClassName?: string, iconStyle?: string, opacity?: number, iconURI?: string, underlayColor?: string, customContent?: React.JSX.Element }) => {
+const InteractButton = ({ onPress, label, buttonClassName, textClassName, iconStyle, opacity, iconSource, underlayColor, customContent }: { onPress: Function, label?: string, buttonClassName?: string, textClassName?: string, iconStyle?: string, opacity?: number, iconSource?: ImageSourcePropType, underlayColor?: string, customContent?: React.JSX.Element }) => {
     let content;
     if (customContent) {
         content = customContent
     }
-    else if (iconURI) {
+    else if (iconSource) {
         content = (
             <View className='flex-row justify-center items-center'>
                 <Image
                     className={`${iconStyle ?? "w-6 h-6"}`}
-                    source={{
-                        uri: iconURI
-                    }}
+                    source={iconSource}
                 />
                 <Text className={`p-2 ${textClassName ?? "text-black"}`}>{label ?? "Interact Button"}</Text>
             </View>
