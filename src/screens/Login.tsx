@@ -86,7 +86,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
     }
 
     return (
-        <SafeAreaView className="flex-1 items-center justify-between bg-primary-bg-dark">
+        <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
             <View className="flex-col items-center my-8">
                 <Image
                     className="flex-row h-20 w-20 mb-3"

@@ -16,7 +16,7 @@ import { ProfileSetupStackParams } from '../types/Navigation';
 import { committeesList } from '../types/User';
 import { Images } from '../../assets';
 
-const safeAreaViewStyle = "flex-1 justify-between bg-primary-bg-dark py-10 px-8";
+const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
 /** In this screen, the user will set their name and bio. The screen only let the user continue if their name is not empty. */
 const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
