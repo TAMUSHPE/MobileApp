@@ -1,14 +1,22 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SettingsScreen, SearchSettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutScreen } from "../screens/Settings";
 import { SettingsStackParams } from '../types/Navigation';
+import { UserContext } from "../context/UserContext";
 
 const SettingsStack = () => {
     const Stack = createNativeStackNavigator<SettingsStackParams>();
+    const { userInfo } = useContext(UserContext) ?? {};
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
     return (
         <Stack.Navigator
             screenOptions={{
-                headerShown: true
+                headerShown: true,
+                headerStyle: {
+                    backgroundColor: darkMode ? "#2a2a2a" : "#FFF",
+                },
+                headerTintColor: darkMode ? "#F2F2F2" : "#000",
             }}
         >
             <Stack.Screen name="SettingsScreen" component={SettingsScreen} options={{ title: "Settings" }} />
