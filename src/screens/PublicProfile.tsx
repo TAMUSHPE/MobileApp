@@ -1,24 +1,34 @@
 import { View, Text, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { memberPoints } from '../api/fetchGoogleSheets';
-import { MembersProps, MembersScreenRouteProp } from '../types/Navigation';
 import { useRoute } from '@react-navigation/native';
 import { auth } from '../config/firebaseConfig';
+import { getPublicUserData } from '../api/firebaseUtils';
+import { MembersProps, MembersScreenRouteProp } from '../types/Navigation';
 
 const PublicProfileScreen = ({ navigation }: MembersProps) => {
     const route = useRoute<MembersScreenRouteProp>();
-    const { email } = route.params;
+    const { uid } = route.params;
     // In the future, this will be part of the auth object
     const [points, setPoints] = useState<number>();
+    const [name, setName] = useState<string>();
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        let fetchData = async () => {
-            setPoints(await memberPoints(email));
+        const fetchPublicUserData = async () => {
+            try {
+                const publicUserData = await getPublicUserData(uid);
+                setPoints(publicUserData?.points);
+                setName(publicUserData?.name);
+            } catch (error) {
+                console.error("Failed to fetch public user data:", error);
+            } finally {
+                setLoading(false);
+            }
         };
-        fetchData();
+        fetchPublicUserData();
     }, [auth]);
 
-    if (!points && points != 0) {
+    if (loading) {
         return (
             <ActivityIndicator
                 size="large"
@@ -29,9 +39,9 @@ const PublicProfileScreen = ({ navigation }: MembersProps) => {
     }
 
     return (
-        <View>
+        <View className="items-center justify-center flex-1">
             <Text>
-                {`${email} - Points: ${points.toFixed(2)}`}
+                {`${name} - Points: ${points?.toFixed(2)}`}
             </Text>
         </View>
     )

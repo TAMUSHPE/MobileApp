@@ -1,6 +1,14 @@
 import { Images } from '../../assets';
-import { Slide } from '../types/Slide';
 
+export interface Slide {
+    id: string;
+    title: string;
+    image: number;
+    type: string;
+    description: string;
+}
+
+// This is tempory data for the highlight slider  until we get the data from firebase
 export const slides: Slide[] = [
     {
         id: "1",

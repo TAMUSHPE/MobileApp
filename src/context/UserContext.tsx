@@ -1,37 +1,46 @@
-import React, { useEffect, useState, createContext } from 'react'
-import { User } from "../types/User"
+/**
+ * IMPORTATN NOTE
+ * When a change is made to a user then the following 
+ * changes to our data management system must be made:
+ * 
+ * 1. **Firebase**: All persistent changes to user document are made here. (setDoc)
+ * 2. **AsyncStorage**: Used for quick access to user data.                (setItem("@user", JSON.stringify(user:User)))
+ * 3. **useContext**: Real-time state management across components.        (setUserInfo(user:User))
+ */
+
+import React, { useEffect, useState, createContext, ReactNode } from 'react'
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-type UserProviderProps = {
-  children: React.ReactNode;
-}
-type UserContextType = {
-  userInfo: User | undefined;
-  setUserInfo: React.Dispatch<React.SetStateAction<User | undefined>>
-  userLoading: boolean;
-  setUserLoading: React.Dispatch<React.SetStateAction<boolean>>
-};
-
+import { User } from "../types/User"
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+/**
+ * This component serves as a global state manager for user-related data across the app.
+ * 
+ * It retrieves user data from AsyncStorage and provides real-time state management
+ * for user-related information that needs to using the useContext hook.
+ * 
+ * @param props - The props for the UserProvider component.
+ * @returns The UserProvider component wrapping its children.
+ */
 const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [userLoading, setUserLoading] = useState<boolean>(true);
   const [userInfo, setUserInfo] = useState<User | undefined>(undefined)
 
   useEffect(() => {
-    const getLocalUser = () => {
-      setUserLoading(true);
-      AsyncStorage.getItem("@user")
-        .then(userJSON => {
-          const userData = userJSON ? JSON.parse(userJSON) : undefined;
-          setUserInfo(userData);
-        })
-        .catch((err) => console.error(err))
-        .finally(() => {
-          setUserLoading(false);
-        });
+    const getLocalUser = async () => {
+      try {
+        setUserLoading(true);
+        const userJSON = await AsyncStorage.getItem("@user");
+        const userData = userJSON ? JSON.parse(userJSON) : undefined;
+        setUserInfo(userData);
+      } catch (error) {
+        console.error('Error while fetching user data:', error);
+      } finally {
+        setUserLoading(false);
+      }
     };
+
     getLocalUser()
   }, []);
 
@@ -41,5 +50,16 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     </UserContext.Provider>
   );
 }
+
+type UserProviderProps = {
+  children: ReactNode;
+};
+
+type UserContextType = {
+  userInfo: User | undefined;
+  setUserInfo: React.Dispatch<React.SetStateAction<User | undefined>>
+  userLoading: boolean;
+  setUserLoading: React.Dispatch<React.SetStateAction<boolean>>
+};
 
 export { UserContext, UserProvider };

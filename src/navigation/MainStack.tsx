@@ -1,23 +1,19 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { MainStackNavigatorParams } from '../types/Navigation';
-
-// Screens  
 import HomeBottomTabs from "./HomeBottomTabs";
 import SettingsScreen from "../screens/Settings";
+import AdminDashboard from "../screens/AdminDashboard";
+import { MainStackParams } from '../types/Navigation';
 
-const MainStackNavigator = () => {
-    const MainStack = createNativeStackNavigator<MainStackNavigatorParams>();
+const MainStack = () => {
+    const Stack = createNativeStackNavigator<MainStackParams>();
     return (
-        <MainStack.Navigator
-            screenOptions={{
-                headerShown: false,
-            }}
-        >
-            <MainStack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
-            <MainStack.Screen name="SettingsScreen" component={SettingsScreen} />
-        </MainStack.Navigator>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
+            <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+            <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+        </Stack.Navigator>
     );
 };
 
-export { MainStackNavigator };
+export { MainStack };
