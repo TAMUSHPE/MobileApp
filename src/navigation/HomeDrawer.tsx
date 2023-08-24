@@ -17,9 +17,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext ?? {};
-    if (!setUserInfo) {
-        return null;
-    }
 
     const removeExpoPushToken = async () => {
         const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
@@ -34,7 +31,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             .then(() => {
                 // Once signed out, forces user to login screen by setting the current user info to "undefined"
                 AsyncStorage.removeItem('@user')
-                setUserInfo(undefined);
+                setUserInfo ? setUserInfo(undefined) : console.warn("setUserInfo is undefined.");
             })
             .catch((error) => console.error(error));
     };
@@ -52,6 +49,10 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         };
         getLocalUser();
     }, [])
+
+    const drawerItemLabelStyle = {
+        color: userInfo?.private?.privateInfo?.settings?.darkMode ? "#EEE" : "#000"
+    }
 
     // "dark-navy" is #191740. 
     return (
@@ -95,9 +96,11 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                 </View>
             </View>
             <View className={`${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} flex-grow`}>
-                <DrawerItem label="Settings" onPress={() => props.navigation.navigate("Settings")} />
-                {localUser?.publicInfo?.roles?.officer?.valueOf()
-                    && <DrawerItem label="Admin Dashboard" onPress={() => props.navigation.navigate("AdminDashboard")} />}
+                <DrawerItem label="Settings" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("Settings")} />
+                {
+                    localUser?.publicInfo?.roles?.officer?.valueOf() &&
+                    <DrawerItem label="Admin Dashboard" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("AdminDashboard")} />
+                }
                 <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
             </View>
         </DrawerContentScrollView>

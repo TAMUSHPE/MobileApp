@@ -6,7 +6,11 @@ import { auth } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { setPublicUserData, setPrivateUserData, getUser } from '../api/firebaseUtils';
+import { setPublicUserData, setPrivateUserData, getUser, uploadFileToFirebase } from '../api/firebaseUtils';
+import { getDownloadURL } from 'firebase/storage';
+import { updateProfile } from 'firebase/auth';
+import * as ImagePicker from "expo-image-picker";
+import { getBlobFromURI, selectImage } from '../api/fileSelection';
 
 /**
  * 
@@ -16,18 +20,18 @@ import { setPublicUserData, setPrivateUserData, getUser } from '../api/firebaseU
  * @param darkMode - Whether or not the button should display in dark mode. Will default to false
  * @param onPress - Function that is called when button is pressed. Defaults to logging "Button Pressed"
  */
-const SettingsNavigationButton = ({ iconName, mainText, subText, darkMode, onPress }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText: string, subText?: string, darkMode?: boolean, onPress?: Function }) => {
+const SettingsButton = ({ iconName, mainText, subText, darkMode, onPress }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string, subText?: string, darkMode?: boolean, onPress?: Function }) => {
     return (
         <TouchableHighlight
-            onPress={() => onPress ? onPress() : console.log("Button Pressed")}
-            underlayColor="#DDD"
+            onPress={() => onPress ? onPress() : console.log(`${mainText} Button Pressed`)}
+            underlayColor={darkMode ? "#444" : "#DDD"}
             className='w-full h-24 justify-center px-3'
         >
             <View className='flex-row my-2 items-center'>
                 {iconName && <MaterialCommunityIcons name={iconName} size={46} color={darkMode ? "white" : "black"} />}
                 <View className="ml-3 flex-col">
-                    <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>{mainText}</Text>
-                    {subText && <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{subText}</Text>}
+                    <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>{mainText ?? "Default Text"}</Text>
+                    {subText && <Text className={`text-lg ${darkMode ? "text-[#BBB]" : "text-[#444]"}`}>{subText}</Text>}
                 </View>
             </View>
         </TouchableHighlight>
@@ -43,7 +47,7 @@ const SettingsNavigationButton = ({ iconName, mainText, subText, darkMode, onPre
  * @param onPress - Function that is called when button is pressed. Defaults to logging "Button Pressed"
  * @param isInitiallyToggled - Sets whether or not the button is toggled on/off on render. This is useful when a user is modifying a boolean value
  */
-const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, isInitiallyToggled }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText: string, subText?: string, darkMode?: boolean, onPress?: Function, isInitiallyToggled?: boolean }) => {
+const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, isInitiallyToggled }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string, subText?: string, darkMode?: boolean, onPress?: Function, isInitiallyToggled?: boolean }) => {
     const [isToggled, setIsToggled] = useState<boolean>(isInitiallyToggled ?? false);
 
     const handleToggle = () => {
@@ -54,15 +58,15 @@ const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, 
     return (
         <TouchableHighlight
             onPress={() => handleToggle()}
-            underlayColor="#DDD"
+            underlayColor={darkMode ? "#444" : "#DDD"}
             className='w-full h-24 justify-center px-3'
         >
             <View className='flex-row justify-between'>
                 <View className='flex-row my-2 items-center'>
                     {iconName && <MaterialCommunityIcons name={iconName} size={46} color={darkMode ? "white" : "black"} />}
                     <View className="ml-3 flex-col">
-                        <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>{mainText}</Text>
-                        {subText && <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{subText}</Text>}
+                        <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>{mainText ?? "Default Text"}</Text>
+                        {subText && <Text className={`text-lg ${darkMode ? "text-[#BBB]" : "text-[#444]"}`}>{subText}</Text>}
                     </View>
                 </View>
                 <Switch
@@ -76,18 +80,19 @@ const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, 
 
 const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     const { userInfo } = useContext(UserContext) ?? {};
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
         <ScrollView
-            className={`flex-col ${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
+            className={`flex-col ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
             contentContainerStyle={{
                 alignItems: 'center'
             }}
         >
             <View className='w-full py-8 px-4 flex-row items-center justify-between'>
                 <View>
-                    <Text className={`text-4xl ${userInfo?.private?.privateInfo?.settings?.darkMode ? "text-white" : "text-black"}`}>{userInfo?.publicInfo?.displayName}</Text>
-                    <Text className={`text-xl ${userInfo?.private?.privateInfo?.settings?.darkMode ? "text-white" : "text-black"}`}>{userInfo?.publicInfo?.name}</Text>
+                    <Text className={`text-4xl ${darkMode ? "text-white" : "text-black"}`}>{userInfo?.publicInfo?.displayName}</Text>
+                    <Text className={`text-xl ${darkMode ? "text-white" : "text-black"}`}>{userInfo?.publicInfo?.name}</Text>
                 </View>
                 <TouchableOpacity onPress={() => navigation.navigate("ProfileSettingsScreen")}>
                     <Image
@@ -107,32 +112,32 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackPara
                     <Text className='text-xl ml-4 text-[#78818a]'>Search settings...</Text>
                 </View>
             </TouchableHighlight>
-            <SettingsNavigationButton
+            <SettingsButton
                 iconName='pencil-circle'
                 mainText='Profile'
                 subText='Photo, Display Name, etc..'
-                darkMode={userInfo?.private?.privateInfo?.settings?.darkMode}
+                darkMode={darkMode}
                 onPress={() => navigation.navigate("ProfileSettingsScreen")}
             />
-            <SettingsNavigationButton
+            <SettingsButton
                 iconName='brightness-6'
                 mainText='Display'
                 subText='Dark/Light theme'
-                darkMode={userInfo?.private?.privateInfo?.settings?.darkMode}
+                darkMode={darkMode}
                 onPress={() => navigation.navigate("DisplaySettingsScreen")}
             />
-            <SettingsNavigationButton
+            <SettingsButton
                 iconName='account-box'
                 mainText='Account'
                 subText='Email, Password..'
-                darkMode={userInfo?.private?.privateInfo?.settings?.darkMode}
+                darkMode={darkMode}
                 onPress={() => navigation.navigate("AccountSettingsScreen")}
             />
-            <SettingsNavigationButton
+            <SettingsButton
                 iconName='information-outline'
                 mainText='About'
                 subText='Information about the app'
-                darkMode={userInfo?.private?.privateInfo?.settings?.darkMode}
+                darkMode={darkMode}
                 onPress={() => navigation.navigate("AboutScreen")}
             />
         </ScrollView>
@@ -149,20 +154,150 @@ const SearchSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSta
 };
 
 const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
-    return (
-        <ScrollView>
+    const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
+    const [loading, setLoading] = useState<boolean>(false);
+    const [image, setImage] = useState<Blob | null>(null);
+    const [imageName, setImageName] = useState<string | null | undefined>(null);
 
+    // Hooks used to save state of modified fields before user hits "save"
+    const [displayName, setDisplayName] = useState<string>(userInfo?.publicInfo?.displayName ?? "DISPLAY NAME");
+    const [name, setName] = useState<string>(userInfo?.publicInfo?.name ?? "NAME");
+    const [bio, setBio] = useState<string>(userInfo?.publicInfo?.bio ?? "BIO");
+    const [photoURL, setPhotoURL] = useState<string>(userInfo?.publicInfo?.photoURL ?? "PHOTO URL");
+
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    const selectProfilePicture = async () => {
+        const result = await selectImage({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (result) {
+            const imageBlob = await getBlobFromURI(result.assets![0].uri);
+            setPhotoURL(result.assets![0].uri);
+            setImage(imageBlob);
+            setImageName(result.assets![0].fileName);
+        }
+    }
+
+    const uploadProfilePicture = () => {
+        if (image) {
+            const uploadTask = uploadFileToFirebase(image, `profile-pictures/${auth.currentUser?.uid}/${imageName ?? "user-profile-picture"}`);
+
+            uploadTask.on("state_changed",
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                },
+                (error) => {
+                    switch (error.code) {
+                        case "storage/unauthorized":
+                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            break;
+                        case "storage/canceled":
+                            alert("File upload cancelled");
+                            break;
+                        default:
+                            alert("An unknown error has occured")
+                            break;
+                    }
+                },
+                async () => {
+                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
+                        console.log("File available at", URL);
+                        if (auth.currentUser) {
+                            await updateProfile(auth.currentUser, {
+                                photoURL: URL
+                            });
+                            await setPublicUserData({
+                                photoURL: URL
+                            });
+                        }
+                    });
+                });
+        }
+    }
+
+    const saveChanges = async () => {
+        setLoading(true)
+        uploadProfilePicture();
+        await setPublicUserData({
+            displayName: displayName,
+            name: name,
+            bio: bio,
+            photoURL: photoURL,
+        })
+            .then(async () => {
+                if (auth.currentUser)
+                    await updateProfile(auth.currentUser, {
+                        displayName: displayName,
+                        photoURL: photoURL,
+                    })
+
+                if (auth.currentUser?.uid) {
+                    const firebaseUser = await getUser(auth.currentUser.uid);
+                    setUserInfo ? setUserInfo(firebaseUser) : console.warn("setUserInfo() is undefined");
+                }
+            })
+            .catch(err => console.error("Error attempting to save changes: ", err))
+            .finally(() => setLoading(false));
+    }
+
+    return (
+        <ScrollView
+            className={`flex-col ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
+            contentContainerStyle={{
+                alignItems: 'center'
+            }}
+        >
+            <View className='py-10 w-full items-center'>
+                <TouchableOpacity activeOpacity={0.7} onPress={async () => await selectProfilePicture()}>
+                    <Image
+                        className='w-32 h-32 rounded-full'
+                        defaultSource={Images.DEFAULT_USER_PICTURE}
+                        source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
+                    />
+                    <View className='absolute bg-[#D4D4D4] p-0.5 right-0 bottom-0 rounded-full'>
+                        <MaterialCommunityIcons name="file-edit-outline" size={40} color="#747474" />
+                    </View>
+                </TouchableOpacity>
+            </View>
+            <SettingsButton
+                mainText='Display Name'
+                subText={displayName}
+                darkMode={darkMode}
+            />
+            <SettingsButton
+                mainText='Name'
+                subText={name}
+                darkMode={darkMode}
+            />
+            <SettingsButton
+                mainText='Bio'
+                subText={bio.length < 20 ? bio : bio.slice(0, 19) + "..."}
+                darkMode={darkMode}
+            />
+            <SettingsButton
+                darkMode={darkMode}
+            />
+            {loading && <ActivityIndicator className='absolute top-0 bottom-0' size={100} />}
         </ScrollView>
     );
 };
 
 const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
-    const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
+    const userContext = useContext(UserContext)
+    const { userInfo, setUserInfo } = userContext ?? {};
     const [loading, setLoading] = useState<boolean>(false);
+
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
         <ScrollView
-            className={`flex-col ${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
+            className={`flex-col ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
             contentContainerStyle={{
                 alignItems: 'center',
                 minHeight: '100%',
@@ -171,19 +306,22 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
             <SettingsToggleButton
                 mainText='Dark theme'
                 subText='Changes display of entire app'
-                isInitiallyToggled={userInfo?.private?.privateInfo?.settings?.darkMode}
-                darkMode={userInfo?.private?.privateInfo?.settings?.darkMode}
+                isInitiallyToggled={darkMode}
+                darkMode={darkMode}
                 onPress={async () => {
                     setLoading(true)
                     await setPrivateUserData({
                         settings: {
-                            darkMode: !userInfo?.private?.privateInfo?.settings?.darkMode
+                            darkMode: !darkMode
                         }
                     })
                         .then(async () => {
                             if (auth.currentUser?.uid) {
-                                const databaseUser = await getUser(auth.currentUser?.uid);
-                                setUserInfo ? setUserInfo(databaseUser) : console.warn("setUserInfo is undefined");
+                                await getUser(auth.currentUser?.uid)
+                                    .then(async (firebaseUser) => {
+                                        setUserInfo && firebaseUser ? setUserInfo(firebaseUser) : console.warn("setUserInfo() is undefined");
+                                    })
+                                    .catch(err => console.error(err));
                             }
                         })
                         .catch((err) => console.error(err))
@@ -196,6 +334,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
 };
 
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
+    const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
     return (
         <ScrollView>
 
@@ -206,7 +345,7 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
 const AboutScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     return (
         <ScrollView>
-
+            <Text>Information about the app</Text>
         </ScrollView>
     );
 };
