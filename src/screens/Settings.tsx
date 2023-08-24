@@ -45,7 +45,7 @@ const SettingsButton = ({ iconName, mainText, subText, darkMode, onPress }: { ic
  * @param subText - The smaller text to be displayed on the button. This should add more details to what the button does
  * @param darkMode - Whether or not the button should display in dark mode. Will default to false
  * @param onPress - Function that is called when button is pressed. Defaults to logging "Button Pressed"
- * @param isInitiallyToggled - Sets whether or not the button is toggled on/off on render. This is useful when a user is modifying a boolean value
+ * @param isInitiallyToggled - Sets whether or not the button is toggled on/off on render. This is useful when a user is modifying a currently established boolean value
  */
 const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, isInitiallyToggled }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string, subText?: string, darkMode?: boolean, onPress?: Function, isInitiallyToggled?: boolean }) => {
     const [isToggled, setIsToggled] = useState<boolean>(isInitiallyToggled ?? false);
@@ -160,10 +160,12 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     const [imageName, setImageName] = useState<string | null | undefined>(null);
 
     // Hooks used to save state of modified fields before user hits "save"
+    const [photoURL, setPhotoURL] = useState<string>(userInfo?.publicInfo?.photoURL ?? "PHOTO URL");
     const [displayName, setDisplayName] = useState<string>(userInfo?.publicInfo?.displayName ?? "DISPLAY NAME");
     const [name, setName] = useState<string>(userInfo?.publicInfo?.name ?? "NAME");
     const [bio, setBio] = useState<string>(userInfo?.publicInfo?.bio ?? "BIO");
-    const [photoURL, setPhotoURL] = useState<string>(userInfo?.publicInfo?.photoURL ?? "PHOTO URL");
+    const [major, setMajor] = useState<string>(userInfo?.publicInfo?.major ?? "MAJOR");
+    const [classYear, setClassYear] = useState<string>(userInfo?.publicInfo?.classYear ?? "MAJOR");
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
@@ -248,7 +250,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
 
     return (
         <ScrollView
-            className={`flex-col ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
+            className={`flex-col pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
             contentContainerStyle={{
                 alignItems: 'center'
             }}
@@ -281,8 +283,25 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                 darkMode={darkMode}
             />
             <SettingsButton
+                mainText='Major'
+                subText={major}
                 darkMode={darkMode}
             />
+            <SettingsButton
+                mainText='Class Year'
+                subText={classYear}
+                darkMode={darkMode}
+            />
+            <View className='border rounded-lg p-4 bg-gray-300'>
+                <Text className='text-2xl'>Committees</Text>
+                {userInfo?.publicInfo?.committees?.map((element, index) => {
+                    return (
+                        <View className='bg-black w-2 h-2' key={index}>
+
+                        </View>
+                    )
+                })}
+            </View>
             {loading && <ActivityIndicator className='absolute top-0 bottom-0' size={100} />}
         </ScrollView>
     );
