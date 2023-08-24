@@ -13,12 +13,12 @@ import * as ImagePicker from "expo-image-picker";
 import { getBlobFromURI, selectImage } from '../api/fileSelection';
 
 /**
- * 
+ * Button used for navigation or creating a screen where a user can edit their information
  * @param iconName - Name of MaterialCommunityIcon to be used. Vector graphics can be found here: https://icons.expo.fyi/Index with the label "MaterialCommunityIcons"
  * @param mainText - The large text to be displayed on the button. This should be one or two words briefly explaining what the button does
- * @param subText - The smaller text to be displayed on the button. This should add more details to what the button does
+ * @param subText  - The smaller text to be displayed on the button. This should add more details to what the button does
  * @param darkMode - Whether or not the button should display in dark mode. Will default to false
- * @param onPress - Function that is called when button is pressed. Defaults to logging "Button Pressed"
+ * @param onPress  - Function that is called when button is pressed. Defaults to logging "Button Pressed"
  */
 const SettingsButton = ({ iconName, mainText, subText, darkMode, onPress }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string, subText?: string, darkMode?: boolean, onPress?: Function }) => {
     return (
@@ -39,12 +39,12 @@ const SettingsButton = ({ iconName, mainText, subText, darkMode, onPress }: { ic
 };
 
 /**
- * 
- * @param iconName - Name of MaterialCommunityIcon to be used. Vector graphics can be found here: https://icons.expo.fyi/Index with the label "MaterialCommunityIcons"
- * @param mainText - The large text to be displayed on the button. This should be one or two words briefly explaining what the button does
- * @param subText - The smaller text to be displayed on the button. This should add more details to what the button does
- * @param darkMode - Whether or not the button should display in dark mode. Will default to false
- * @param onPress - Function that is called when button is pressed. Defaults to logging "Button Pressed"
+ * Button used for user to toggle on/off features aka modifying boolean values for their account
+ * @param iconName           - Name of MaterialCommunityIcon to be used. Vector graphics can be found here: https://icons.expo.fyi/Index with the label "MaterialCommunityIcons"
+ * @param mainText           - The large text to be displayed on the button. This should be one or two words briefly explaining what the button does
+ * @param subText            - The smaller text to be displayed on the button. This should add more details to what the button does
+ * @param darkMode           - Whether or not the button should display in dark mode. Will default to false
+ * @param onPress            - Function that is called when button is pressed. Defaults to logging "Button Pressed"
  * @param isInitiallyToggled - Sets whether or not the button is toggled on/off on render. This is useful when a user is modifying a currently established boolean value
  */
 const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, isInitiallyToggled }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string, subText?: string, darkMode?: boolean, onPress?: Function, isInitiallyToggled?: boolean }) => {
