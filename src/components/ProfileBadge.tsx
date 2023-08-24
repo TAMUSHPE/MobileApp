@@ -6,9 +6,9 @@ import { validateHexColor, calculateHexLuminosity } from '../helpers/colorUtils'
  * Renders a badge with the provided text and styles.
  *
  * @param text - The text to be displayed on the badge.
- * @param badgeStyle - Style of the badge surrounding text. Default: "px-2 py-1 bg-slate-600 rounded-full inline-block mr-1 mb-1".
+ * @param badgeClassName - Style of the badge surrounding text. Default: "px-2 py-1 bg-slate-600 rounded-full inline-block mr-1 mb-1".
  * @param badgeColor - Hex code for color of badge background.
- * @param textStyle - Style of the text element in the badge. Default: "text-white text-center".
+ * @param textClassName - Style of the text element in the badge. Default: "text-white text-center".
  * @param textColor - Hex code for color of badge text.
  * @returns The rendered badge component.
  */
