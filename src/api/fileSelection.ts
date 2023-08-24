@@ -1,9 +1,11 @@
 import * as ImagePicker from 'expo-image-picker';
 
 /**
- * Prompts user to select image and returns result of user selecting image. This result will contain data referring to where the image is and other useful metadata.
- * @returns
- * Object containing data of selected image including local URI.
+ * Prompts the user to select an image and returns the result of the user's selection. 
+ * This result contains data referring to the image's location and other useful metadata.
+ *
+ * @param options - The options for the image picker.
+ * @returns - Object containing data of the selected image, including the local URI
  */
 export const selectImage = async (options: ImagePicker.ImagePickerOptions | undefined = {
     mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -29,11 +31,10 @@ export const selectImage = async (options: ImagePicker.ImagePickerOptions | unde
 };
 
 /**
- * Obtains blob from a URI of a file that is hosted somewhere.
- * @param uri 
- * URI of file that is hosted.
- * @returns 
- * Blob of file or null value meaning no image was found or an error occured while trying to fetch image.
+ * Obtains a blob from a URI of a file that is hosted somewhere.
+ *
+ * @param uri - URI of the hosted file.
+ * @returns - Blob of file or null value meaning no image was found or an error occured while trying to fetch image.
  */
 export const getBlobFromURI = async (uri: string): Promise<Blob | null> => {
     return await fetch(uri)

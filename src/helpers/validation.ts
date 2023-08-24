@@ -1,30 +1,22 @@
-/**
- * Matches generic email pattern. {name}@{second-level domain}.{top-level domain}
- */
+/**  Matches generic email pattern. {name}@{second-level domain}.{top-level domain} */
 export const validateEmail = (email: string): boolean => {
     const emailRegex: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     return typeof email == 'string' && emailRegex.test(email);
 };
 
-/**
- * Matches TAMU email pattern. {name}@tamu.edu
- */
+/**  Matches TAMU email pattern. {name}@tamu.edu */
 export const validateTamuEmail = (email: string): boolean => {
     const emailRegex: RegExp = /^[A-Z0-9._%+-]+@(tamu.edu)$/i;
     return typeof email == 'string' && emailRegex.test(email);
 };
 
-/**
- * Matches passwords with 4-64 characters with characters being alphanumeric or any special characters on a standard qwerty keyboard
- */
+/** Matches passwords with 4-64 characters with characters being alphanumeric or any special characters on a standard qwerty keyboard */
 export const validatePassword = (password: string): boolean => {
     const passwordRegex: RegExp = /^[A-Z0-9 !"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{4,64}$/i;
     return typeof password == 'string' && passwordRegex.test(password);
 };
 
-/**
- * Values used for password strength calculation 
- */
+/** Values used for password strength calculation */
 export enum PasswordStrength {
     INVALID = 0,
     WEAK = 1,

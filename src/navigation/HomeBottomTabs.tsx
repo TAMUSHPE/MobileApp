@@ -1,67 +1,55 @@
 import React from 'react';
 import { View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Octicons } from '@expo/vector-icons';
-import { MembersStackNavigator } from './MembersStack';
-import { CommitteesStackNavigator } from './CommitteesStack';
-
-// Screens
-import ResourcesScreen from '../screens/Resources';
+import { MembersStack } from './MembersStack';
+import { CommitteesStack } from './CommitteesStack';
+import { ResourcesStack } from './ResourcesStack';
 import HomeDrawer from './HomeDrawer';
 
+const TAB_ICON_CONFIG: Record<TabName, OcticonIconName> = {
+    Home: 'home',
+    ResourcesStack: 'repo',
+    Committees: 'people',
+    Members: 'search',
+};
+
+const activeIconColor = 'maroon';
+const inactiveIconColor = 'black';
+const iconSize = 28;
+
+
+const generateTabIcon = (routeName: TabName, focused: boolean): JSX.Element => {
+    const iconName = TAB_ICON_CONFIG[routeName] || 'x-circle';
+    const iconColor = focused ? activeIconColor : inactiveIconColor;
+    return <Octicons name={iconName} size={iconSize} color={iconColor} />;
+};
 
 const HomeBottomTabs = () => {
-    const HomeBottomTabs = createBottomTabNavigator();
-    const insets = useSafeAreaInsets();
+    const BottomTabs = createBottomTabNavigator();
 
     return (
         <View
             className='flex-1 bg-offwhite'>
-            <HomeBottomTabs.Navigator
+            <BottomTabs.Navigator
                 screenOptions={({ route }) => ({
-                    tabBarIcon: ({ focused }) => {
-                        const iconSize = 28;
-                        const iconColor = focused ? 'maroon' : 'black';
-                        var iconName: any = 'x-circle';
-
-                        switch (route.name) {
-                            case 'Home':
-                                iconName = 'home';
-                                break;
-                            case 'Resources':
-                                iconName = 'repo';
-                                break;
-                            case 'Committees':
-                                iconName = 'people';
-                                break;
-                            case 'Members':
-                                iconName = 'search';
-                                break;
-                            default:
-                                iconName = 'x-circle';
-                        }
-                        return <Octicons name={iconName} size={iconSize} color={iconColor} />
-                    },
-                    tabBarStyle: {
-                        // height: 50,
-                        // paddingBottom: 1,
-                        // paddingTop: -10,
-
-                    },
+                    tabBarIcon: ({ focused }) => generateTabIcon(route.name as TabName, focused),
                     headerShown: false,
                     tabBarActiveTintColor: 'maroon',
                     tabBarInactiveTintColor: 'black',
                     tabBarShowLabel: false,
                 })}
             >
-                <HomeBottomTabs.Screen name="Home" component={HomeDrawer} />
-                <HomeBottomTabs.Screen name="Resources" component={ResourcesScreen} />
-                <HomeBottomTabs.Screen name="Committees" component={CommitteesStackNavigator} />
-                <HomeBottomTabs.Screen name="Members" component={MembersStackNavigator} />
-            </HomeBottomTabs.Navigator >
+                <BottomTabs.Screen name="Home" component={HomeDrawer} />
+                <BottomTabs.Screen name="ResourcesStack" component={ResourcesStack} />
+                <BottomTabs.Screen name="Committees" component={CommitteesStack} />
+                <BottomTabs.Screen name="Members" component={MembersStack} />
+            </BottomTabs.Navigator >
         </View>
     );
 };
+
+type OcticonIconName = 'number' | 'home' | 'repo' | 'people' | 'search' | 'x-circle' // Manually define, expo doesn't provide type
+type TabName = 'Home' | 'ResourcesStack' | 'Committees' | 'Members';
 
 export default HomeBottomTabs;

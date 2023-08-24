@@ -1,18 +1,16 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text } from 'react-native';
 import React from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { MembersStackNavigatorParams } from '../types/Navigation';
+import { MembersStackParams } from '../types/Navigation';
 
-const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackNavigatorParams>) => {
+const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
     return (
         <View className="flex flex-1 flex-col justify-center items-center">
-            <TouchableOpacity
-                className='flex justify-center items-center mt-4 p-6 rounded-md bg-[#500]'
-                onPress={() => {
-                    navigation.navigate("PublicProfile", {email: "jhernandez18@tamu.edu"});
-                }}>
-                <Text className='font-bold text-white text-5xl'>go to a member public profile</Text>
-            </TouchableOpacity>
+            <View>
+                <Text>
+                    Member Screen
+                </Text>
+            </View>
         </View>
     )
 }

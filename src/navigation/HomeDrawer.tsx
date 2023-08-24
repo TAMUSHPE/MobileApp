@@ -1,35 +1,30 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { Image, TouchableOpacity, View } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
-import { HomeDrawerNavigatorParams } from '../types/Navigation';
-import { Image, TouchableOpacity, View, Text } from 'react-native';
-import { auth, db } from '../config/firebaseConfig';
-import { signOut } from 'firebase/auth';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { signOut } from 'firebase/auth';
+import { doc, setDoc, arrayRemove } from 'firebase/firestore';
+import { auth, db } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
-import { arrayRemove } from "firebase/firestore";
-import HomeScreen from '../screens/Home';
-import { Images } from '../../assets';
-import { doc, setDoc } from 'firebase/firestore';
 import ProfileBadge from '../components/ProfileBadge';
+import HomeScreen from '../screens/Home';
+import { User } from '../types/User';
+import { HomeDrawerParams } from '../types/Navigation';
+import { Images } from '../../assets';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
+    const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const userContext = useContext(UserContext);
-    if (!userContext) {
+    const { userInfo, setUserInfo } = userContext ?? {};
+    if (!setUserInfo) {
         return null;
     }
 
-    const { userInfo, setUserInfo } = userContext;
-
-    const removeLocalUser = () => {
-        AsyncStorage.removeItem('@user')
-            .catch((err) => console.error(err));
-    }
     const removeExpoPushToken = async () => {
         const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
         const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
         await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true })
-            .catch(err => console.error(err));
         await AsyncStorage.removeItem('@expoPushToken');
     }
 
@@ -38,12 +33,26 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         signOut(auth)
             .then(() => {
                 // Once signed out, forces user to login screen by setting the current user info to "undefined"
-                removeLocalUser();
+                AsyncStorage.removeItem('@user')
                 setUserInfo(undefined);
             })
-            .catch((err) => console.error(err));
+            .catch((error) => console.error(error));
     };
-    console.log(userInfo?.publicInfo);
+
+    useEffect(() => {
+        const getLocalUser = () => {
+            AsyncStorage.getItem("@user")
+                .then(userJSON => {
+                    const userData = userJSON ? JSON.parse(userJSON) : undefined;
+                    setLocalUser(userData);
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        };
+        getLocalUser();
+    }, [])
+
     return (
         <DrawerContentScrollView {...props}>
             <View className='flex-col bg-dark-navy w-full p-4'>
@@ -54,17 +63,23 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                         source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
                     />
                 </View>
-                <View className="flex-row">
+                <View className="flex-row flex-wrap">
                     <ProfileBadge
                         text="Test"
                     />
                     <ProfileBadge />
-                    {userInfo?.publicInfo?.committees?.map((committeeName: string) => (
-                        <ProfileBadge />
+                    {userInfo?.publicInfo?.committees?.map((committeeName: string, index) => (
+                        <ProfileBadge
+                            key={committeeName}
+                            text={committeeName}
+                        />
                     ))}
                 </View>
             </View>
             <DrawerItem label="Settings" onPress={() => props.navigation.navigate("SettingsScreen", { userId: 1234 })} />
+            {localUser?.publicInfo?.roles?.officer?.valueOf()
+                && <DrawerItem label="Admin Dashboard" onPress={() => props.navigation.navigate("AdminDashboard")} />}
+
             <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
         </DrawerContentScrollView>
     );
@@ -92,14 +107,14 @@ const HomeDrawerHeader = (props: DrawerHeaderProps) => {
                     source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL as string } : Images.DEFAULT_USER_PICTURE}
                 />
             </TouchableOpacity>
-        </SafeAreaView >
+        </SafeAreaView>
     );
 }
 
 const HomeDrawer = () => {
-    const HomeDrawer = createDrawerNavigator<HomeDrawerNavigatorParams>();
+    const Drawer = createDrawerNavigator<HomeDrawerParams>();
     return (
-        <HomeDrawer.Navigator
+        <Drawer.Navigator
             initialRouteName="HomeScreen"
             drawerContent={(props) => <HomeDrawerContent {...props} />}
             screenOptions={{
@@ -107,8 +122,8 @@ const HomeDrawer = () => {
                 drawerPosition: "right",
             }}
         >
-            <HomeDrawer.Screen name="HomeScreen" component={HomeScreen} />
-        </HomeDrawer.Navigator>
+            <Drawer.Screen name="HomeScreen" component={HomeScreen} />
+        </Drawer.Navigator>
     );
 };
 

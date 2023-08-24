@@ -1,1 +1,2 @@
-export {sendNotificationOfficeHours } from "./pushNotification";
+export { sendNotificationOfficeHours } from "./pushNotification";
+export { updateRanksScheduled, updateRanksOnCall } from "./pointSheet";
