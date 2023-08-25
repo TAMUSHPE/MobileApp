@@ -54,10 +54,15 @@ export type CommitteesStackParams = {
     CommitteesScreen: undefined;
 }
 
+export type AdminDashboardParams = {
+    AdminDashboard: undefined;
+    CommitteesEditor: undefined;
+}
+
 // Drawers
 export type HomeDrawerParams = {
     HomeScreen: undefined;
-    Resources: undefined;
+    AdminDashboardStack: undefined;
     Logout: undefined;
 };
 
