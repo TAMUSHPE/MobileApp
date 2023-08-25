@@ -2,7 +2,7 @@ import { View, Text, TouchableHighlight, ScrollView, NativeScrollEvent, NativeSy
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Octicons } from '@expo/vector-icons';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { auth } from "../config/firebaseConfig"
 import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../api/fetchGoogleSheets'
 import { getUserByEmail, getPublicUserData } from '../api/firebaseUtils'
@@ -12,7 +12,7 @@ import { GoogleSheetsResponse } from '../types/GoogleSheetsTypes';
 import { ResourcesStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
 
-const PointsLeaderboard = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
+const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
     const [rankCards, setRankCards] = useState<PublicUserInfoUID[]>([])
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [initLoading, setInitLoading] = useState(true);
