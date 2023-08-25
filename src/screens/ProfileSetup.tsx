@@ -42,9 +42,9 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         titleStartY={20}
                         titleEndY={0}
                         maxCharacters={64}
-                        blurTextStyle='text-white text-md'
-                        focusTextStyle='text-white text-md'
-                        textInputStyle="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mb-3"
+                        blurTextClassName='text-white text-md'
+                        focusTextClassName='text-white text-md'
+                        textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mb-3"
                     />
                     <TextInputWithFloatingTitle
                         setTextFunction={(text: string) => {
@@ -57,11 +57,11 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         titleEndY={0}
                         placeholderText='Write a short bio...'
                         maxCharacters={250}
-                        blurTextStyle='text-white text-md'
-                        focusTextStyle='text-white text-md'
+                        blurTextClassName='text-white text-md'
+                        focusTextClassName='text-white text-md'
                         lineCount={5}
                         isMultiline
-                        textInputStyle="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mb-3"
+                        textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mb-3"
                     />
                     <InteractButton
                         onPress={async () => {
@@ -275,9 +275,9 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                         titleStartY={20}
                         titleEndY={0}
                         maxCharacters={64}
-                        blurTextStyle='text-white text-md'
-                        focusTextStyle='text-white text-md'
-                        textInputStyle="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1"
+                        blurTextClassName='text-white text-md'
+                        focusTextClassName='text-white text-md'
+                        textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1"
                     />
                     <TextInputWithFloatingTitle
                         setTextFunction={(text: string) => {
@@ -290,9 +290,9 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                         titleStartY={20}
                         titleEndY={0}
                         maxCharacters={64}
-                        blurTextStyle='text-white text-md'
-                        focusTextStyle='text-white text-md'
-                        textInputStyle="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mb-5"
+                        blurTextClassName='text-white text-md'
+                        focusTextClassName='text-white text-md'
+                        textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mb-5"
                     />
                 </KeyboardAvoidingView>
                 <View className='flex-row'>

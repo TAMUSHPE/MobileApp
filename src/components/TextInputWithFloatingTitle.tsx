@@ -1,18 +1,18 @@
 import { View, Text, Animated, TextInput } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 
-const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleStartY, titleEndY, componentStyle, textInputStyle, focusTextStyle, blurTextStyle, placeholderText, maxCharacters, lineCount, isMultiline }: { setTextFunction: Function, inputValue: string | undefined, title?: string, titleStartY?: number, titleEndY?: number, componentStyle?: string, textInputStyle?: string, focusTextStyle?: string, blurTextStyle?: string, placeholderText?: string, maxCharacters?: number, lineCount?: number, isMultiline?: boolean }) => {
-    const [titleStyle, setTitleStyle] = useState<string | undefined>(blurTextStyle ?? "");
+const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleStartY, titleEndY, componentClassName, textInputClassName, focusTextClassName, blurTextClassName, placeholderText, maxCharacters, lineCount, isMultiline }: { setTextFunction: (text: string) => any, inputValue: string | undefined, title?: string, titleStartY?: number, titleEndY?: number, componentClassName?: string, textInputClassName?: string, focusTextClassName?: string, blurTextClassName?: string, placeholderText?: string, maxCharacters?: number, lineCount?: number, isMultiline?: boolean }) => {
+    const [titleClassName, setTitleClassName] = useState<string | undefined>(blurTextClassName ?? "");
     const moveTitle = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (inputValue !== "") {
             moveTitleTop();
-            setTitleStyle(focusTextStyle);
+            setTitleClassName(focusTextClassName);
         }
         else {
             moveTitleBottom();
-            setTitleStyle(blurTextStyle);
+            setTitleClassName(blurTextClassName);
         }
     });
 
@@ -38,15 +38,15 @@ const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleS
     });
 
     return (
-        <View className={componentStyle}>
+        <View className={componentClassName}>
             <Animated.View style={{
                 transform: [{ translateY: yVal }],
             }}>
-                <Text className={titleStyle}>{title ?? "Title"}</Text>
+                <Text className={titleClassName}>{title ?? "Title"}</Text>
             </Animated.View>
             <TextInput
                 placeholder={placeholderText ?? ""}
-                className={textInputStyle ?? ""}
+                className={textInputClassName ?? ""}
                 multiline={isMultiline ?? false}
                 value={inputValue ?? ""}
                 numberOfLines={lineCount ?? 1}
