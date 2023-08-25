@@ -14,6 +14,7 @@ import { getBlobFromURI, selectImage } from '../api/fileSelection';
 import ProfileBadge from '../components/ProfileBadge';
 import { committeesList } from '../types/User';
 import { validateTamuEmail } from '../helpers/validation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /**
  * Button used for navigation or creating a screen where a user can edit their information
@@ -50,7 +51,7 @@ const SettingsButton = ({ iconName, mainText, subText, darkMode, onPress }: { ic
  * @param onPress            - Function that is called when button is pressed. Defaults to logging "Button Pressed"
  * @param isInitiallyToggled - Sets whether or not the button is toggled on/off on render. This is useful when a user is modifying a currently established boolean value
  */
-const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, isInitiallyToggled }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string, subText?: string, darkMode?: boolean, onPress?: Function, isInitiallyToggled?: boolean }) => {
+const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, isInitiallyToggled }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string, subText?: string, darkMode?: boolean, onPress?: () => any, isInitiallyToggled?: boolean }) => {
     const [isToggled, setIsToggled] = useState<boolean>(isInitiallyToggled ?? false);
 
     const handleToggle = () => {
@@ -102,7 +103,11 @@ const SettingsListItem = ({ iconName, mainText, subText, darkMode }: { iconName?
     );
 };
 
-const SettingsSaveButton = ({ onPress }: { onPress?: Function }) => {
+/**
+ * Save Button used on every screen which a user modifies important data
+ * @param onPress - Function to be called when button is pressed
+ */
+const SettingsSaveButton = ({ onPress }: { onPress?: () => any }) => {
     return (
         <TouchableHighlight
             onPress={() => onPress ? onPress() : console.log("Save Button Pressed")}
@@ -117,6 +122,10 @@ const SettingsSaveButton = ({ onPress }: { onPress?: Function }) => {
         </TouchableHighlight>
     );
 };
+
+const StringUpdatingModal = ({ showModal, onCancel, onDone, title, stringName, lines }: { showModal: boolean, onCancel: () => any, onDone: (result: string) => any, title: string, stringName: string, lines: number }) => {
+
+}
 
 const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     const { userInfo } = useContext(UserContext) ?? {};
@@ -313,6 +322,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                 if (auth.currentUser?.uid) {
                     const firebaseUser = await getUser(auth.currentUser.uid);
                     setUserInfo ? setUserInfo(firebaseUser) : console.warn("setUserInfo() is undefined");
+                    await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
                 }
             })
             .catch(err => console.error("Error attempting to save changes: ", err))
@@ -427,6 +437,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                                 await getUser(auth.currentUser?.uid)
                                     .then(async (firebaseUser) => {
                                         setUserInfo && firebaseUser ? setUserInfo(firebaseUser) : console.warn("setUserInfo() is undefined");
+                                        await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
                                     })
                                     .catch(err => console.error(err));
                             }
