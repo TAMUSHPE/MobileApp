@@ -12,7 +12,7 @@ module.exports = {
                 "pale-blue": "#72A9BE",
                 "dark-navy": "#191740",
                 "pale-orange": "#EF9260",
-                "continue-dark": "#C24E3A",
+                "continue-dark": "#ED652F",
                 "continue-light": "#C24E3A",
                 "primary-bg-dark": "#121212",
                 "primary-bg-light": "#FAF9F6",
