@@ -123,9 +123,41 @@ const SettingsSaveButton = ({ onPress }: { onPress?: () => any }) => {
     );
 };
 
-const StringUpdatingModal = ({ showModal, onCancel, onDone, title, stringName, lines }: { showModal: boolean, onCancel: () => any, onDone: (result: string) => any, title: string, stringName: string, lines: number }) => {
-
-}
+const SettingsModal = ({ visible, onCancel, onDone, title, content, darkMode }: { visible: boolean, onCancel: () => any, onDone: () => any, title?: string, content?: React.JSX.Element, darkMode?: boolean }) => {
+    return (
+        <Modal
+            visible={visible}
+            transparent
+            animationType='slide'
+            onRequestClose={() => onCancel()}
+        >
+            <SafeAreaView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}  rounded-t-xl h-full box-shadow-md`}>
+                {/* Header */}
+                <View className='flex-row justify-between mx-1 my-4'>
+                    <TouchableHighlight
+                        className='rounded-2xl px-8 py-2'
+                        onPress={() => onCancel()}
+                        underlayColor={"#BBB"}
+                    >
+                        <Text className={`${darkMode ? "text-white" : "text-black"} text-xl font-bold`}>Cancel</Text>
+                    </TouchableHighlight>
+                    <Text className='font-bold'>{title}</Text>
+                    <TouchableHighlight
+                        className='rounded-2xl px-8 py-2'
+                        onPress={() => onDone()}
+                        underlayColor={"#BBB"}
+                    >
+                        <Text className={'text-xl text-orange font-bold'}>Done</Text>
+                    </TouchableHighlight>
+                </View>
+                {/* Modal Content */}
+                <View>
+                    {content ?? (<Text className={`${darkMode ? "text-white" : "text-black"} text-center text-4xl`}>A user will edit their settings here</Text>)}
+                </View>
+            </SafeAreaView>
+        </Modal>
+    );
+};
 
 const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     const { userInfo } = useContext(UserContext) ?? {};
@@ -231,6 +263,12 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     const [major, setMajor] = useState<string>(userInfo?.publicInfo?.major ?? "MAJOR");
     const [classYear, setClassYear] = useState<string>(userInfo?.publicInfo?.classYear ?? "MAJOR");
 
+    // Modal options
+    const [showModal, setShowModal] = useState<boolean>(true);
+    const [onModalDone, setOnModalDone] = useState<() => any>();
+    const [onModalCancel, setOnModalCancel] = useState<() => any>();
+    const [modalContent, setModalContent] = useState<React.JSX.Element>(<Text>Default Content</Text>);
+
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     useEffect(() => {
@@ -331,6 +369,12 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
 
     return (
         <View className='items-center'>
+            <SettingsModal
+                visible={showModal}
+                onCancel={() => onModalCancel ? onModalCancel() : setShowModal(false)}
+                onDone={() => onModalDone ? onModalDone() : setShowModal(false)}
+                darkMode={darkMode}
+            />
             <ScrollView
                 className={`flex-col pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
                 contentContainerStyle={{
@@ -353,29 +397,44 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                     mainText='Display Name'
                     subText={displayName}
                     darkMode={darkMode}
+                    onPress={() => {
+                        setShowModal(true);
+                    }}
                 />
                 <SettingsButton
                     mainText='Name'
                     subText={name}
                     darkMode={darkMode}
+                    onPress={() => {
+                        setShowModal(true)
+                    }}
                 />
                 <SettingsButton
                     mainText='Bio'
                     subText={bio.length < 20 ? bio : bio.slice(0, 19) + "..."}
                     darkMode={darkMode}
+                    onPress={() => {
+                        setShowModal(true)
+                    }}
                 />
                 <SettingsButton
                     mainText='Major'
                     subText={major}
                     darkMode={darkMode}
+                    onPress={() => {
+                        setShowModal(true)
+                    }}
                 />
                 <SettingsButton
                     mainText='Class Year'
                     subText={classYear}
                     darkMode={darkMode}
+                    onPress={() => {
+                        setShowModal(true)
+                    }}
                 />
                 <View className={`border max-w-11/12 rounded-lg p-3 mx-3 my-3 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
-                    <Text className='text-2xl mb-4'>Committees</Text>
+                    <Text className={`text-2xl mb-4 ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
                     <View className='flex-row flex-wrap'>
                         {userInfo?.publicInfo?.committees?.map((committeeName: string, index: number) => {
                             const committeeInfo = committeesList.find(element => element.name == committeeName);
@@ -456,23 +515,32 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
-        <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <ScrollView className={`py-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <Text className={`px-6 text-xl ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Info</Text>
+            <SettingsListItem
+                mainText='Unique Identifier'
+                subText={auth.currentUser?.uid ?? "UID"}
+                darkMode={darkMode}
+            />
+            <Text className={`px-6 mt-6 text-xl ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Authentication</Text>
             <SettingsButton
-                mainText='Account Email Change'
+                mainText='Change Email'
                 subText={auth.currentUser?.email ?? "EMAIL"}
                 onPress={() => alert("This button's function is unimplemented")}
-
+                darkMode={darkMode}
             />
             {!validateTamuEmail(auth.currentUser?.email ?? "") &&
                 <SettingsToggleButton
                     mainText='Use TAMU Email'
                     subText={userInfo?.publicInfo?.tamuEmail ?? "No TAMU email set"}
                     onPress={() => alert("This button's function is unimplemented")}
+                    darkMode={darkMode}
                 />
             }
             <SettingsButton
                 mainText='Password Reset'
                 onPress={() => alert("This button's function is unimplemented")}
+                darkMode={darkMode}
             />
         </ScrollView>
     );
