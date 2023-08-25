@@ -1,5 +1,5 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, Switch, ActivityIndicator } from 'react-native';
-import React, { useContext, useState } from 'react';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, Switch, ActivityIndicator, Modal } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
 import { SettingsStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import { auth } from '../config/firebaseConfig';
@@ -11,6 +11,9 @@ import { getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import * as ImagePicker from "expo-image-picker";
 import { getBlobFromURI, selectImage } from '../api/fileSelection';
+import ProfileBadge from '../components/ProfileBadge';
+import { committeesList } from '../types/User';
+import { validateTamuEmail } from '../helpers/validation';
 
 /**
  * Button used for navigation or creating a screen where a user can edit their information
@@ -78,6 +81,43 @@ const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, 
     );
 };
 
+/**
+ * List Item used for just displaying information. Same style as settings buttons
+ * @param iconName - Name of MaterialCommunityIcon to be used. Vector graphics can be found here: https://icons.expo.fyi/Index with the label "MaterialCommunityIcons"
+ * @param mainText - The large text to be displayed on the button. This should be one or two words briefly explaining what the button does
+ * @param subText  - The smaller text to be displayed on the button. This should add more details to what the button does
+ * @param darkMode - Whether or not the button should display in dark mode. Will default to false
+ */
+const SettingsListItem = ({ iconName, mainText, subText, darkMode }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string, subText?: string, darkMode?: boolean }) => {
+    return (
+        <View className='w-full h-24 justify-center px-3'>
+            <View className='flex-row my-2 items-center'>
+                {iconName && <MaterialCommunityIcons name={iconName} size={46} color={darkMode ? "white" : "black"} />}
+                <View className="ml-3 flex-col">
+                    <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>{mainText ?? "Default Text"}</Text>
+                    {subText && <Text className={`text-lg ${darkMode ? "text-[#BBB]" : "text-[#444]"}`}>{subText}</Text>}
+                </View>
+            </View>
+        </View>
+    );
+};
+
+const SettingsSaveButton = ({ onPress }: { onPress?: Function }) => {
+    return (
+        <TouchableHighlight
+            onPress={() => onPress ? onPress() : console.log("Save Button Pressed")}
+            className='w-4/6 p-3 absolute bottom-3 bg-blue-600 rounded-full items-center'
+            underlayColor={"#48ABFF"}
+            activeOpacity={1}
+        >
+            <View className='flex-row items-center justify-center'>
+                <MaterialCommunityIcons name={"floppy"} size={40} color="white" />
+                <Text className='text-white text-3xl ml-2'>Save</Text>
+            </View>
+        </TouchableHighlight>
+    );
+};
+
 const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     const { userInfo } = useContext(UserContext) ?? {};
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
@@ -134,6 +174,20 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackPara
                 onPress={() => navigation.navigate("AccountSettingsScreen")}
             />
             <SettingsButton
+                iconName='message-alert-outline'
+                mainText='Feedback'
+                subText='Help us by sending app feedback!'
+                darkMode={darkMode}
+                onPress={() => alert("Feature Unimplemented")}
+            />
+            <SettingsButton
+                iconName='frequently-asked-questions'
+                mainText='FAQ'
+                subText='Frequently asked questions'
+                darkMode={darkMode}
+                onPress={() => alert("Screen does not currently exist")}
+            />
+            <SettingsButton
                 iconName='information-outline'
                 mainText='About'
                 subText='Information about the app'
@@ -158,6 +212,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     const [loading, setLoading] = useState<boolean>(false);
     const [image, setImage] = useState<Blob | null>(null);
     const [imageName, setImageName] = useState<string | null | undefined>(null);
+    const [showSaveButton, setShowSaveButton] = useState<boolean>(false);
 
     // Hooks used to save state of modified fields before user hits "save"
     const [photoURL, setPhotoURL] = useState<string>(userInfo?.publicInfo?.photoURL ?? "PHOTO URL");
@@ -168,6 +223,22 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     const [classYear, setClassYear] = useState<string>(userInfo?.publicInfo?.classYear ?? "MAJOR");
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    useEffect(() => {
+        if (
+            photoURL != userInfo?.publicInfo?.photoURL ||
+            displayName != userInfo?.publicInfo?.displayName ||
+            name != userInfo?.publicInfo?.name ||
+            bio != userInfo?.publicInfo?.bio ||
+            major != userInfo?.publicInfo?.major ||
+            classYear != userInfo?.publicInfo?.classYear
+        ) {
+            setShowSaveButton(true);
+        }
+        else {
+            setShowSaveButton(false);
+        }
+    }, [photoURL, displayName, name, bio, major, classYear]);
 
     const selectProfilePicture = async () => {
         const result = await selectImage({
@@ -249,61 +320,78 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     }
 
     return (
-        <ScrollView
-            className={`flex-col pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
-            contentContainerStyle={{
-                alignItems: 'center'
-            }}
-        >
-            <View className='py-10 w-full items-center'>
-                <TouchableOpacity activeOpacity={0.7} onPress={async () => await selectProfilePicture()}>
-                    <Image
-                        className='w-32 h-32 rounded-full'
-                        defaultSource={Images.DEFAULT_USER_PICTURE}
-                        source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
-                    />
-                    <View className='absolute bg-[#D4D4D4] p-0.5 right-0 bottom-0 rounded-full'>
-                        <MaterialCommunityIcons name="file-edit-outline" size={40} color="#747474" />
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <SettingsButton
-                mainText='Display Name'
-                subText={displayName}
-                darkMode={darkMode}
-            />
-            <SettingsButton
-                mainText='Name'
-                subText={name}
-                darkMode={darkMode}
-            />
-            <SettingsButton
-                mainText='Bio'
-                subText={bio.length < 20 ? bio : bio.slice(0, 19) + "..."}
-                darkMode={darkMode}
-            />
-            <SettingsButton
-                mainText='Major'
-                subText={major}
-                darkMode={darkMode}
-            />
-            <SettingsButton
-                mainText='Class Year'
-                subText={classYear}
-                darkMode={darkMode}
-            />
-            <View className='border rounded-lg p-4 bg-gray-300'>
-                <Text className='text-2xl'>Committees</Text>
-                {userInfo?.publicInfo?.committees?.map((element, index) => {
-                    return (
-                        <View className='bg-black w-2 h-2' key={index}>
-
+        <View className='items-center'>
+            <ScrollView
+                className={`flex-col pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
+                contentContainerStyle={{
+                    alignItems: 'center'
+                }}
+            >
+                <View className='py-10 w-full items-center'>
+                    <TouchableOpacity activeOpacity={0.7} onPress={async () => await selectProfilePicture()}>
+                        <Image
+                            className='w-32 h-32 rounded-full'
+                            defaultSource={Images.DEFAULT_USER_PICTURE}
+                            source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
+                        />
+                        <View className='absolute bg-[#D4D4D4] p-0.5 right-0 bottom-0 rounded-full'>
+                            <MaterialCommunityIcons name="file-edit-outline" size={40} color="#747474" />
                         </View>
-                    )
-                })}
-            </View>
-            {loading && <ActivityIndicator className='absolute top-0 bottom-0' size={100} />}
-        </ScrollView>
+                    </TouchableOpacity>
+                </View>
+                <SettingsButton
+                    mainText='Display Name'
+                    subText={displayName}
+                    darkMode={darkMode}
+                />
+                <SettingsButton
+                    mainText='Name'
+                    subText={name}
+                    darkMode={darkMode}
+                />
+                <SettingsButton
+                    mainText='Bio'
+                    subText={bio.length < 20 ? bio : bio.slice(0, 19) + "..."}
+                    darkMode={darkMode}
+                />
+                <SettingsButton
+                    mainText='Major'
+                    subText={major}
+                    darkMode={darkMode}
+                />
+                <SettingsButton
+                    mainText='Class Year'
+                    subText={classYear}
+                    darkMode={darkMode}
+                />
+                <View className={`border max-w-11/12 rounded-lg p-3 mx-3 my-3 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+                    <Text className='text-2xl mb-4'>Committees</Text>
+                    <View className='flex-row flex-wrap'>
+                        {userInfo?.publicInfo?.committees?.map((committeeName: string, index: number) => {
+                            const committeeInfo = committeesList.find(element => element.name == committeeName);
+                            return (
+                                <ProfileBadge
+                                    badgeClassName='p-2 max-w-2/5 rounded-full mr-1 mb-2'
+                                    text={committeeName}
+                                    badgeColor={committeeInfo ? committeeInfo?.color : ""}
+                                    key={index}
+                                />
+                            )
+                        })}
+                        <TouchableHighlight onPress={() => console.log("Add Committees Button Pressed")} className='p-2 w-1/3 rounded-full mb-2 bg-[#FD551A]' underlayColor={"#FCA788"}>
+                            <Text className='text-white text-center'>+</Text>
+                        </TouchableHighlight>
+                    </View>
+                </View>
+                <View className='h-20' />
+                {loading && <ActivityIndicator className='absolute top-0 bottom-0' size={100} />}
+            </ScrollView>
+            {showSaveButton &&
+                <SettingsSaveButton
+                    onPress={() => saveChanges()}
+                />
+            }
+        </View>
     );
 };
 
@@ -354,17 +442,39 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
 
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
-    return (
-        <ScrollView>
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
+    return (
+        <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <SettingsButton
+                mainText='Account Email Change'
+                subText={auth.currentUser?.email ?? "EMAIL"}
+                onPress={() => alert("This button's function is unimplemented")}
+
+            />
+            {!validateTamuEmail(auth.currentUser?.email ?? "") &&
+                <SettingsToggleButton
+                    mainText='Use TAMU Email'
+                    subText={userInfo?.publicInfo?.tamuEmail ?? "No TAMU email set"}
+                    onPress={() => alert("This button's function is unimplemented")}
+                />
+            }
+            <SettingsButton
+                mainText='Password Reset'
+                onPress={() => alert("This button's function is unimplemented")}
+            />
         </ScrollView>
     );
 };
 
 const AboutScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
+    const pkg: any = require("../../package.json");
+    const { userInfo } = useContext(UserContext) ?? {};
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
     return (
-        <ScrollView>
-            <Text>Information about the app</Text>
+        <ScrollView className={`p-6 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <Text className={`text-3xl py-2 ${darkMode ? "text-white" : "text-black"}`}>{`${pkg.name} ${pkg.version}`}</Text>
         </ScrollView>
     );
 };

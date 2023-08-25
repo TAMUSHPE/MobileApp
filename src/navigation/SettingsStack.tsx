@@ -23,7 +23,7 @@ const SettingsStack = () => {
             <Stack.Screen name="SearchSettingsScreen" component={SearchSettingsScreen} options={{ title: "Search Settings" }} />
             <Stack.Screen name="ProfileSettingsScreen" component={ProfileSettingsScreen} options={{ title: "Profile Settings" }} />
             <Stack.Screen name="DisplaySettingsScreen" component={DisplaySettingsScreen} options={{ title: "Display Settings" }} />
-            <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} options={{ title: "Account Settings" }} />
+            <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} options={{ title: "Account Settings/Info" }} />
             <Stack.Screen name="AboutScreen" component={AboutScreen} options={{ title: "About" }} />
         </Stack.Navigator>
     );
