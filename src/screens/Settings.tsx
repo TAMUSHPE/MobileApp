@@ -15,6 +15,7 @@ import ProfileBadge from '../components/ProfileBadge';
 import { committeesList } from '../types/User';
 import { validateTamuEmail } from '../helpers/validation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
 
 /**
  * Button used for navigation or creating a screen where a user can edit their information
@@ -126,6 +127,7 @@ const SettingsSaveButton = ({ onPress }: { onPress?: () => any }) => {
 const SettingsModal = ({ visible, onCancel, onDone, title, content, darkMode }: { visible: boolean, onCancel: () => any, onDone: () => any, title?: string, content?: React.JSX.Element, darkMode?: boolean }) => {
     return (
         <Modal
+            className='bg-[#F00]'
             visible={visible}
             transparent
             animationType='slide'
@@ -135,7 +137,7 @@ const SettingsModal = ({ visible, onCancel, onDone, title, content, darkMode }: 
                 {/* Header */}
                 <View className='flex-row justify-between mx-1 my-4'>
                     <TouchableHighlight
-                        className='rounded-2xl px-8 py-2'
+                        className='rounded-4xl rounded-4xl px-8 py-2'
                         onPress={() => onCancel()}
                         underlayColor={"#BBB"}
                     >
@@ -147,7 +149,7 @@ const SettingsModal = ({ visible, onCancel, onDone, title, content, darkMode }: 
                         onPress={() => onDone()}
                         underlayColor={"#BBB"}
                     >
-                        <Text className={'text-xl text-orange font-bold'}>Done</Text>
+                        <Text className={`${darkMode ? "text-continue-dark" : "text-continue-light"} text-xl font-bold`}>Done</Text>
                     </TouchableHighlight>
                 </View>
                 {/* Modal Content */}
@@ -255,19 +257,26 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     const [imageName, setImageName] = useState<string | null | undefined>(null);
     const [showSaveButton, setShowSaveButton] = useState<boolean>(false);
 
-    // Hooks used to save state of modified fields before user hits "save"
+    /**
+     * Hooks used to save state of modified fields before user hits "save"
+     */
     const [photoURL, setPhotoURL] = useState<string>(userInfo?.publicInfo?.photoURL ?? "PHOTO URL");
+
+    // Names
     const [displayName, setDisplayName] = useState<string>(userInfo?.publicInfo?.displayName ?? "DISPLAY NAME");
     const [name, setName] = useState<string>(userInfo?.publicInfo?.name ?? "NAME");
+
+    // Bio
     const [bio, setBio] = useState<string>(userInfo?.publicInfo?.bio ?? "BIO");
+
+    // Academic Info
     const [major, setMajor] = useState<string>(userInfo?.publicInfo?.major ?? "MAJOR");
     const [classYear, setClassYear] = useState<string>(userInfo?.publicInfo?.classYear ?? "MAJOR");
 
     // Modal options
-    const [showModal, setShowModal] = useState<boolean>(true);
-    const [onModalDone, setOnModalDone] = useState<() => any>();
-    const [onModalCancel, setOnModalCancel] = useState<() => any>();
-    const [modalContent, setModalContent] = useState<React.JSX.Element>(<Text>Default Content</Text>);
+    const [showNamesModal, setShowNamesModal] = useState<boolean>(false);
+    const [showBioModal, setShowBioModal] = useState<boolean>(false);
+    const [showAcademicInfoModal, setShowAcademicInfoModal] = useState<boolean>(false);
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
@@ -364,17 +373,14 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                 }
             })
             .catch(err => console.error("Error attempting to save changes: ", err))
-            .finally(() => setLoading(false));
+            .finally(() => {
+                setLoading(false);
+                setShowSaveButton(false);
+            });
     }
 
     return (
         <View className='items-center'>
-            <SettingsModal
-                visible={showModal}
-                onCancel={() => onModalCancel ? onModalCancel() : setShowModal(false)}
-                onDone={() => onModalDone ? onModalDone() : setShowModal(false)}
-                darkMode={darkMode}
-            />
             <ScrollView
                 className={`flex-col pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
                 contentContainerStyle={{
@@ -393,45 +399,62 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                         </View>
                     </TouchableOpacity>
                 </View>
+                <SettingsModal
+                    visible={showNamesModal}
+                    onCancel={() => {
+                        setShowNamesModal(false);
+
+                        // Reset fields to default
+                        setDisplayName(userInfo?.publicInfo?.displayName ?? "DISPLAY NAME");
+                        setName(userInfo?.publicInfo?.name ?? "NAME");
+                    }}
+                    onDone={() => {
+                        setShowNamesModal(false);
+                    }}
+                    content={(
+                        <View>
+                            <TextInputWithFloatingTitle
+                                setTextFunction={(text) => setName(text)}
+                                inputValue={name}
+                                title="Name"
+                            />
+                            <TextInputWithFloatingTitle
+                                setTextFunction={(text) => setName(text)}
+                                inputValue={name}
+                                title="Name"
+                            />
+                        </View>
+                    )}
+                />
                 <SettingsButton
                     mainText='Display Name'
                     subText={displayName}
                     darkMode={darkMode}
-                    onPress={() => {
-                        setShowModal(true);
-                    }}
+                    onPress={() => setShowNamesModal(true)}
                 />
                 <SettingsButton
                     mainText='Name'
                     subText={name}
                     darkMode={darkMode}
-                    onPress={() => {
-                        setShowModal(true)
-                    }}
+                    onPress={() => setShowNamesModal(true)}
                 />
                 <SettingsButton
                     mainText='Bio'
-                    subText={bio.length < 20 ? bio : bio.slice(0, 19) + "..."}
+                    subText={bio.length < 30 ? bio : bio.slice(0, 30) + "..."}
                     darkMode={darkMode}
-                    onPress={() => {
-                        setShowModal(true)
-                    }}
+                    onPress={() => setShowBioModal(true)}
                 />
                 <SettingsButton
                     mainText='Major'
                     subText={major}
                     darkMode={darkMode}
-                    onPress={() => {
-                        setShowModal(true)
-                    }}
+                    onPress={() => setShowAcademicInfoModal(true)}
                 />
                 <SettingsButton
                     mainText='Class Year'
                     subText={classYear}
                     darkMode={darkMode}
-                    onPress={() => {
-                        setShowModal(true)
-                    }}
+                    onPress={() => setShowAcademicInfoModal(true)}
                 />
                 <View className={`border max-w-11/12 rounded-lg p-3 mx-3 my-3 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                     <Text className={`text-2xl mb-4 ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
