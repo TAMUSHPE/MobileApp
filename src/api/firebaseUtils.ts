@@ -3,6 +3,7 @@ import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
+import { Committee } from "../types/Committees";
 
 
 /**
@@ -208,3 +209,42 @@ export const uploadFileToFirebase = (file: Blob, path: string, metadata?: Upload
     return uploadTask;
 };
 
+export const getCommitteeInfo = async (committeeName: string) => {
+    return getDoc(doc(db, `committees/${committeeName}`))
+        .then((res) => {
+            const responseData = res.data()
+            if (responseData) {
+                return {
+                    description: responseData?.description,
+                    headUID: responseData?.headUID,
+                    leadUIDs: responseData?.leadUIDs,
+                    memberCount: responseData?.memberCount,
+                    memberApplicationLink: responseData?.memberApplicationLink,
+                    leadApplicationLink: responseData?.leadApplicationLink,
+                } as Committee;
+            }
+            else {
+                return undefined;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            return undefined;
+        });
+}
+
+export const setCommitteeInfo = async (committeeName: string, committeeData: Committee) => {
+    try {
+      await setDoc(doc(db, `committees/${committeeName}`), {
+        description: committeeData.description,
+        headUID: committeeData.headUID,
+        leadUIDs: committeeData.leadUIDs,
+        memberApplicationLink: committeeData.memberApplicationLink,
+        leadApplicationLink: committeeData.leadApplicationLink,
+      }, { merge: true });
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };

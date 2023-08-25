@@ -1,26 +1,16 @@
 import { View, Text } from 'react-native'
-import React from 'react'
+import React, { useState } from 'react'
 import CommitteesInfo from './CommitteesInfo'
 import CommitteesSlider from './CommitteesSlider'
+import { Committee } from '../types/Committees'
 
 const CommitteesTab = () => {
-    /**
-     * Data:
-     * The UID for each committee head
-     * The UIDs for each committee lead
-     * Member Application Link
-     * Lead Application Link
-     * 
-     * Firebase Actions:
-     * Committee Head/Lead Assignment
-     * Set Member/Lead Application Link
-     * Discription of committee editable by head
-     * Any other content editable by head
-     */
+    const [selectedCommittee, setSelectedCommittee] = useState<Committee | null>(null) // depending on user committe get default committee
+
     return (
         <View>
-            <CommitteesSlider />
-            <CommitteesInfo />
+            <CommitteesSlider onCommitteeSelected={setSelectedCommittee} selectedCommittee={selectedCommittee} />
+            <CommitteesInfo selectedCommittee={selectedCommittee} />
         </View>
     )
 }
