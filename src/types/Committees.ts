@@ -1,3 +1,4 @@
+// firebase names
 export const CommitteeConstants = {
     "TECHNICALAFFAIRS": "technical-affairs",
     "PUBLICRELATIONS": "public-relations",
