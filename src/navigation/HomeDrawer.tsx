@@ -12,6 +12,7 @@ import HomeScreen from '../screens/Home';
 import { User, committeesList } from '../types/User';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
+import { StatusBar } from 'expo-status-bar';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
@@ -57,6 +58,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     // "dark-navy" is #191740. 
     return (
         <DrawerContentScrollView {...props} contentContainerStyle={{ backgroundColor: "#191740", height: "100%" }}>
+            <StatusBar style='inverted' />
             <View className="flex-col bg-dark-navy w-full p-4">
                 <View className='flex-row mb-2'>
                     <Image

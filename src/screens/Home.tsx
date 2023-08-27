@@ -9,6 +9,7 @@ import HighlightSlider from '../components/HighlightSlider';
 import OfficeHours from '../components/OfficeHours';
 import OfficeSignIn from '../components/OfficeSignIn';
 import { User } from '../types/User';
+import { StatusBar } from 'expo-status-bar';
 
 /**
  * Renders the home screen of the application.
@@ -61,6 +62,7 @@ const HomeScreen = () => {
 
     return (
         <ScrollView className="flex flex-col bg-offwhite">
+            <StatusBar style='dark' />
             <HighlightSlider />
             <OfficeHours />
             {localUser?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
