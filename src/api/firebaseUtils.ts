@@ -2,7 +2,7 @@ import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
-import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
+import { PrivateUserInfo, PublicUserInfo, PublicUserInfoUID, User } from "../types/User";
 
 
 /**
@@ -120,7 +120,7 @@ export const getUserByEmail = async (email: string): Promise<{userData: PublicUs
     }
 }
 
-export const getOfficers = async (): Promise<PublicUserInfo[]> => {
+export const getOfficers = async (): Promise<PublicUserInfoUID[]> => {
     try {
         const userRef = collection(db, 'users');
         const q = query(
@@ -133,7 +133,12 @@ export const getOfficers = async (): Promise<PublicUserInfo[]> => {
             return [];
         }
 
-        const officers = querySnapshot.docs.map((doc) => doc.data());
+        const officers = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            }
+        });
 
         return officers;
 
@@ -143,7 +148,7 @@ export const getOfficers = async (): Promise<PublicUserInfo[]> => {
     }
 }
 
-export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => {
+export const getMembersExcludeOfficers = async (): Promise<PublicUserInfoUID[]> => {
     try {
         const userRef = collection(db, 'users');
         const q = query(
@@ -156,7 +161,12 @@ export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => 
             return [];
         }
 
-        const members = querySnapshot.docs.map((doc) => doc.data());
+        const members = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            }
+        });
 
         return members;
 
