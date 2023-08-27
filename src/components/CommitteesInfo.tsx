@@ -1,5 +1,5 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Images } from '../../assets';
 import { Committee } from '../types/Committees';
 import { getCommitteeInfo, getPublicUserData } from '../api/firebaseUtils';
@@ -52,6 +52,17 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee }) => 
 
         fetchCommitteeInfo();
     }, [selectedCommittee.name]);
+
+    const handleLinkPress = async (url: string) => {
+        const supported = await Linking.canOpenURL(url);
+
+        if (supported) {
+            await Linking.openURL(url);
+        } else {
+            console.log(`Don't know how to open this URL: ${url}`);
+        }
+    };
+
 
     return (
         <View>
@@ -106,11 +117,13 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee }) => 
                 </TouchableOpacity>
                 <TouchableOpacity
                     className='bg-white rounded-xl h-8 w-[43%] items-center justify-center border-gray-600 border'
+                    onPress={() => handleLinkPress(committeeInfo?.memberApplicationLink || '')}
                 >
                     <Text>Member Application</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     className='bg-white rounded-xl h-8 w-[43%] items-center justify-center border-gray-600 border'
+                    onPress={() => handleLinkPress(committeeInfo?.leadApplicationLink || '')}
                 >
                     <Text>Leader Application</Text>
                 </TouchableOpacity>
