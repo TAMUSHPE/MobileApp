@@ -16,10 +16,15 @@ export const validatePassword = (password: string): boolean => {
     return typeof password == 'string' && passwordRegex.test(password);
 };
 
-/** Checks if a display name is both within the a range of length and unique. Currently stubbed */
+/** Checks if a display name is both within a length and unique. Alerts user of issue should it arise. Currently stubbed */
 export const validateDisplayName = (username: string): boolean => {
     return true;
 };
+
+/** Checks if a name is both within a length. Alerts user of issue should it arise. Currently stubbed  */
+export const validateName = (name: string): boolean => {
+    return true;
+}
 
 /** Values used for password strength calculation */
 export enum PasswordStrength {

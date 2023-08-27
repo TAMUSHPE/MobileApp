@@ -13,9 +13,18 @@ import * as ImagePicker from "expo-image-picker";
 import { getBlobFromURI, selectImage } from '../api/fileSelection';
 import ProfileBadge from '../components/ProfileBadge';
 import { committeesList } from '../types/User';
-import { validateTamuEmail } from '../helpers/validation';
+import { validateDisplayName, validateName, validateTamuEmail } from '../helpers/validation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
+import { StatusBar } from 'expo-status-bar';
+
+/**
+ * Title used to separate sections of information in different settings screens.
+ */
+const SettingsSectionTitle = ({ text, darkMode }: { text: string, darkMode?: boolean }) => {
+    return (
+        <Text className={`text-left px-6 mt-6 text-xl ${darkMode ? "text-gray-300" : "text-gray-700"}`}>{text}</Text>
+    );
+};
 
 /**
  * Button used for navigation or creating a screen where a user can edit their information
@@ -172,6 +181,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackPara
                 alignItems: 'center'
             }}
         >
+            <StatusBar style={darkMode ? "light" : "dark"} />
             <View className='w-full py-8 px-4 flex-row items-center justify-between'>
                 <View>
                     <Text className={`text-4xl ${darkMode ? "text-white" : "text-black"}`}>{userInfo?.publicInfo?.displayName}</Text>
@@ -187,18 +197,18 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackPara
             </View>
             <TouchableHighlight
                 onPress={() => navigation.navigate("SearchSettingsScreen")}
-                className='rounded-full w-11/12 p-4 mb-5 mt-2 bg-[#E9E9E9]'
+                className={`rounded-full w-11/12 p-4 mb-5 mt-2 bg-[#E9E9E9]`}
                 underlayColor={"#ccd3d8"}
             >
                 <View className='flex-row items-center'>
                     <MaterialCommunityIcons name="text-box-search-outline" size={30} color="#78818a" />
-                    <Text className='text-xl ml-4 text-[#78818a]'>Search settings...</Text>
+                    <Text className={`text-xl ml-4 text-[#78818a]`}>Search settings...</Text>
                 </View>
             </TouchableHighlight>
             <SettingsButton
                 iconName='pencil-circle'
                 mainText='Profile'
-                subText='Photo, Display Name, etc..'
+                subText='Photo, Display Name, etc...'
                 darkMode={darkMode}
                 onPress={() => navigation.navigate("ProfileSettingsScreen")}
             />
@@ -212,7 +222,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackPara
             <SettingsButton
                 iconName='account-box'
                 mainText='Account'
-                subText='Email, Password..'
+                subText='Email, Password...'
                 darkMode={darkMode}
                 onPress={() => navigation.navigate("AccountSettingsScreen")}
             />
@@ -381,16 +391,42 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
 
     return (
         <View className='items-center'>
-            <ScrollView
-                className={`flex-col pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
-                contentContainerStyle={{
-                    alignItems: 'center'
-                }}
-            >
+            <StatusBar style={darkMode ? "light" : "dark"} />
+            <ScrollView className={`flex-col pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+                <SettingsModal
+                    visible={showNamesModal}
+                    darkMode={darkMode}
+                    onCancel={() => {
+                        if (validateDisplayName(displayName) && validateName(name)) {
+                            setShowNamesModal(false);
+
+                            // Reset fields to default
+                            setDisplayName(userInfo?.publicInfo?.displayName ?? "DISPLAY NAME");
+                            setName(userInfo?.publicInfo?.name ?? "NAME");
+                        }
+                    }}
+                    onDone={() => setShowNamesModal(false)}
+                    content={(
+                        <View>
+                            <Text>Display Name</Text>
+                            <TextInput
+                                className=''
+                                onChangeText={(text: string) => setDisplayName(text)}
+                                value={displayName}
+                            />
+                            <Text>Name</Text>
+                            <TextInput
+                                className=''
+                                onChangeText={(text: string) => setName(text)}
+                                value={name}
+                            />
+                        </View>
+                    )}
+                />
                 <View className='py-10 w-full items-center'>
                     <TouchableOpacity activeOpacity={0.7} onPress={async () => await selectProfilePicture()}>
                         <Image
-                            className='w-32 h-32 rounded-full'
+                            className='w-40 h-40 rounded-full'
                             defaultSource={Images.DEFAULT_USER_PICTURE}
                             source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
                         />
@@ -399,33 +435,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                         </View>
                     </TouchableOpacity>
                 </View>
-                <SettingsModal
-                    visible={showNamesModal}
-                    onCancel={() => {
-                        setShowNamesModal(false);
-
-                        // Reset fields to default
-                        setDisplayName(userInfo?.publicInfo?.displayName ?? "DISPLAY NAME");
-                        setName(userInfo?.publicInfo?.name ?? "NAME");
-                    }}
-                    onDone={() => {
-                        setShowNamesModal(false);
-                    }}
-                    content={(
-                        <View>
-                            <TextInputWithFloatingTitle
-                                setTextFunction={(text) => setName(text)}
-                                inputValue={name}
-                                title="Name"
-                            />
-                            <TextInputWithFloatingTitle
-                                setTextFunction={(text) => setName(text)}
-                                inputValue={name}
-                                title="Name"
-                            />
-                        </View>
-                    )}
-                />
                 <SettingsButton
                     mainText='Display Name'
                     subText={displayName}
@@ -444,6 +453,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                     darkMode={darkMode}
                     onPress={() => setShowBioModal(true)}
                 />
+                <SettingsSectionTitle text='Academic Info' darkMode={darkMode} />
                 <SettingsButton
                     mainText='Major'
                     subText={major}
@@ -456,7 +466,8 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                     darkMode={darkMode}
                     onPress={() => setShowAcademicInfoModal(true)}
                 />
-                <View className={`border max-w-11/12 rounded-lg p-3 mx-3 my-3 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+                <SettingsSectionTitle text='SHPE Info' darkMode={darkMode} />
+                <View className={`border max-w-11/12 rounded-3xl p-3 mx-3 my-3 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                     <Text className={`text-2xl mb-4 ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
                     <View className='flex-row flex-wrap'>
                         {userInfo?.publicInfo?.committees?.map((committeeName: string, index: number) => {
@@ -502,6 +513,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                 minHeight: '100%',
             }}
         >
+            <StatusBar style={darkMode ? "light" : "dark"} />
             <SettingsToggleButton
                 mainText='Dark theme'
                 subText='Changes display of entire app'
@@ -538,14 +550,15 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
-        <ScrollView className={`py-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
-            <Text className={`px-6 text-xl ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Info</Text>
+        <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
+            <SettingsSectionTitle text='Info' darkMode={darkMode} />
             <SettingsListItem
                 mainText='Unique Identifier'
                 subText={auth.currentUser?.uid ?? "UID"}
                 darkMode={darkMode}
             />
-            <Text className={`px-6 mt-6 text-xl ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Authentication</Text>
+            <SettingsSectionTitle text='Authentication' darkMode={darkMode} />
             <SettingsButton
                 mainText='Change Email'
                 subText={auth.currentUser?.email ?? "EMAIL"}
@@ -576,6 +589,7 @@ const AboutScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>
 
     return (
         <ScrollView className={`p-6 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
             <Text className={`text-3xl py-2 ${darkMode ? "text-white" : "text-black"}`}>{`${pkg.name} ${pkg.version}`}</Text>
         </ScrollView>
     );

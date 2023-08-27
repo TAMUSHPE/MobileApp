@@ -42,8 +42,8 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         titleStartY={20}
                         titleEndY={0}
                         maxCharacters={64}
-                        blurTextClassName='text-white text-md'
-                        focusTextClassName='text-white text-md'
+                        blurTitleClassName='text-white text-md'
+                        focusTitleClassName='text-white text-md'
                         textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mb-3"
                     />
                     <TextInputWithFloatingTitle
@@ -57,8 +57,8 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         titleEndY={0}
                         placeholderText='Write a short bio...'
                         maxCharacters={250}
-                        blurTextClassName='text-white text-md'
-                        focusTextClassName='text-white text-md'
+                        blurTitleClassName='text-white text-md'
+                        focusTitleClassName='text-white text-md'
                         lineCount={5}
                         isMultiline
                         textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mb-3"
@@ -275,8 +275,8 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                         titleStartY={20}
                         titleEndY={0}
                         maxCharacters={64}
-                        blurTextClassName='text-white text-md'
-                        focusTextClassName='text-white text-md'
+                        blurTitleClassName='text-white text-md'
+                        focusTitleClassName='text-white text-md'
                         textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1"
                     />
                     <TextInputWithFloatingTitle
@@ -290,8 +290,8 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                         titleStartY={20}
                         titleEndY={0}
                         maxCharacters={64}
-                        blurTextClassName='text-white text-md'
-                        focusTextClassName='text-white text-md'
+                        blurTitleClassName='text-white text-md'
+                        focusTitleClassName='text-white text-md'
                         textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mb-5"
                     />
                 </KeyboardAvoidingView>
