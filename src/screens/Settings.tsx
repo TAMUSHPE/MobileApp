@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, Switch, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, Modal } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { SettingsStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
@@ -116,24 +116,38 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     const [imageName, setImageName] = useState<string | null | undefined>(null);
     const [showSaveButton, setShowSaveButton] = useState<boolean>(false);
 
+    const defaultVals = {
+        photoURL: "",
+        displayName: "DISPLAY NAME",
+        name: "NAME",
+        bio: "BIO",
+        major: "MAJOR",
+        classYear: "CLASS YEAR",
+        committees: ["No Committees Found"],
+    }
+
     //Hooks used to save state of modified fields before user hits "save"
-    const [photoURL, setPhotoURL] = useState<string>(userInfo?.publicInfo?.photoURL ?? "PHOTO URL");
+    const [photoURL, setPhotoURL] = useState<string | undefined>(userInfo?.publicInfo?.photoURL);
 
     // Names
-    const [displayName, setDisplayName] = useState<string>(userInfo?.publicInfo?.displayName ?? "DISPLAY NAME");
-    const [name, setName] = useState<string>(userInfo?.publicInfo?.name ?? "NAME");
+    const [displayName, setDisplayName] = useState<string | undefined>(userInfo?.publicInfo?.displayName);
+    const [name, setName] = useState<string | undefined>(userInfo?.publicInfo?.name);
 
     // Bio
-    const [bio, setBio] = useState<string>(userInfo?.publicInfo?.bio ?? "BIO");
+    const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
 
     // Academic Info
-    const [major, setMajor] = useState<string>(userInfo?.publicInfo?.major ?? "MAJOR");
-    const [classYear, setClassYear] = useState<string>(userInfo?.publicInfo?.classYear ?? "MAJOR");
+    const [major, setMajor] = useState<string | undefined>(userInfo?.publicInfo?.major);
+    const [classYear, setClassYear] = useState<string | undefined>(userInfo?.publicInfo?.classYear);
+
+    // SHPE Info
+    const [committees, setCommittees] = useState<Array<string> | undefined>(userInfo?.publicInfo?.committees);
 
     // Modal options
     const [showNamesModal, setShowNamesModal] = useState<boolean>(false);
     const [showBioModal, setShowBioModal] = useState<boolean>(false);
     const [showAcademicInfoModal, setShowAcademicInfoModal] = useState<boolean>(false);
+    const [showCommitteesModal, setShowCommitteesModal] = useState<boolean>(false);
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
@@ -210,11 +224,21 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     const saveChanges = async () => {
         setLoading(true)
         uploadProfilePicture();
+
+        /**
+         * This is some very weird syntax and very javascript specific, so here's an explanation for what's going on:
+         * 
+         * setPublicUserData() updates the fields that are in the object passed into it.
+         * The spread operator (...) adds each key in an object to the parent object.
+         * By adding a conditional and the && operator next to the child object, this essentially creates a "Conditional Key Addition".
+         * This makes it so the information will not be overridden in Firebase if the value of a key is empty/undefined.
+         */
         await setPublicUserData({
-            displayName: displayName,
-            name: name,
-            bio: bio,
-            photoURL: photoURL,
+            ...(displayName !== undefined) && { displayName: displayName },
+            ...(name !== undefined) && { name: name },
+            ...(bio !== undefined) && { bio: bio },
+            ...(photoURL !== undefined) && { photoURL: photoURL },
+            ...(committees !== undefined) && { committees: committees },
         })
             .then(async () => {
                 if (auth.currentUser)
@@ -240,35 +264,80 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
         <View className='items-center'>
             <StatusBar style={darkMode ? "light" : "dark"} />
             <ScrollView className={`flex-col pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+                {/* Names Modal */}
                 <SettingsModal
                     visible={showNamesModal}
                     darkMode={darkMode}
+                    title='Names'
                     onCancel={() => {
-                        if (validateDisplayName(displayName) && validateName(name)) {
-                            setShowNamesModal(false);
-
-                            // Reset fields to default
-                            setDisplayName(userInfo?.publicInfo?.displayName ?? "DISPLAY NAME");
-                            setName(userInfo?.publicInfo?.name ?? "NAME");
-                        }
+                        setDisplayName(userInfo?.publicInfo?.displayName);
+                        setName(userInfo?.publicInfo?.name);
+                        setShowNamesModal(false);
                     }}
-                    onDone={() => setShowNamesModal(false)}
+                    onDone={() => {
+                        // TODO Make alert messages more verbose
+                        if (validateDisplayName(displayName) && validateName(name))
+                            setShowNamesModal(false);
+                        else if (!validateDisplayName(displayName))
+                            alert("Invalid Display Name. Display Name must not be empty and must be less than 80 characters long.");
+                        else if (!validateName(name))
+                            alert("Invalid Name. Name must not be empty and must be less than 80 characters long.");
+                    }}
                     content={(
                         <View>
-                            <Text>Display Name</Text>
-                            <TextInput
-                                className=''
-                                onChangeText={(text: string) => setDisplayName(text)}
-                                value={displayName}
-                            />
-                            <Text>Name</Text>
-                            <TextInput
-                                className=''
-                                onChangeText={(text: string) => setName(text)}
-                                value={name}
-                            />
+                            <View className='px-6 py-2'>
+                                <Text className={`text-lg ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Display Name</Text>
+                                <TextInput
+                                    className={`text-xl ${darkMode ? "text-white" : "text-black"}`}
+                                    onChangeText={(text: string) => setDisplayName(text)}
+                                    value={displayName}
+                                    autoCorrect={false}
+                                />
+                            </View>
+                            <View className='px-6 py-2'>
+                                <Text className={`text-lg ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Name</Text>
+                                <TextInput
+                                    className={`text-xl ${darkMode ? "text-white" : "text-black"}`}
+                                    onChangeText={(text: string) => setName(text)}
+                                    value={name}
+                                    autoCorrect={false}
+                                />
+                            </View>
                         </View>
                     )}
+                />
+                {/* Bio Modal */}
+                <SettingsModal
+                    visible={showBioModal}
+                    darkMode={darkMode}
+                    title='Bio'
+                    onCancel={() => {
+                        setBio(userInfo?.publicInfo?.bio ?? defaultVals.bio);
+                        setShowBioModal(false);
+                    }}
+                    onDone={() => setShowBioModal(false)}
+                />
+                {/* Academic Info Modal */}
+                <SettingsModal
+                    visible={showAcademicInfoModal}
+                    darkMode={darkMode}
+                    title='Academics'
+                    onCancel={() => {
+                        setMajor(userInfo?.publicInfo?.major ?? defaultVals.major);
+                        setClassYear(userInfo?.publicInfo?.classYear ?? defaultVals.classYear);
+                        setShowAcademicInfoModal(false);
+                    }}
+                    onDone={() => setShowAcademicInfoModal(false)}
+                />
+                {/* Committees Modal */}
+                <SettingsModal
+                    visible={showCommitteesModal}
+                    darkMode={darkMode}
+                    onCancel={() => {
+                        setCommittees(userInfo?.publicInfo?.committees ?? defaultVals.committees);
+                        setShowCommitteesModal(false);
+                    }}
+                    onDone={() => setShowCommitteesModal(false)}
                 />
                 <View className='py-10 w-full items-center'>
                     <TouchableOpacity activeOpacity={0.7} onPress={async () => await selectProfilePicture()}>
@@ -284,32 +353,32 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                 </View>
                 <SettingsButton
                     mainText='Display Name'
-                    subText={displayName}
+                    subText={displayName ?? defaultVals.displayName}
                     darkMode={darkMode}
                     onPress={() => setShowNamesModal(true)}
                 />
                 <SettingsButton
                     mainText='Name'
-                    subText={name}
+                    subText={name ?? defaultVals.name}
                     darkMode={darkMode}
                     onPress={() => setShowNamesModal(true)}
                 />
                 <SettingsButton
                     mainText='Bio'
-                    subText={bio.length < 30 ? bio : bio.slice(0, 30) + "..."}
+                    subText={bio ? bio.length < 30 ? bio : bio.slice(0, 30) + "..." : defaultVals.bio}
                     darkMode={darkMode}
                     onPress={() => setShowBioModal(true)}
                 />
                 <SettingsSectionTitle text='Academic Info' darkMode={darkMode} />
                 <SettingsButton
                     mainText='Major'
-                    subText={major}
+                    subText={major ?? defaultVals.major}
                     darkMode={darkMode}
                     onPress={() => setShowAcademicInfoModal(true)}
                 />
                 <SettingsButton
                     mainText='Class Year'
-                    subText={classYear}
+                    subText={classYear ?? defaultVals.classYear}
                     darkMode={darkMode}
                     onPress={() => setShowAcademicInfoModal(true)}
                 />
@@ -328,7 +397,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                                 />
                             )
                         })}
-                        <TouchableHighlight onPress={() => console.log("Add Committees Button Pressed")} className='p-2 w-1/3 rounded-full mb-2 bg-[#FD551A]' underlayColor={"#FCA788"}>
+                        <TouchableHighlight onPress={() => setShowCommitteesModal(true)} className='p-2 w-1/3 rounded-full mb-2 bg-[#FD551A]' underlayColor={"#FCA788"}>
                             <Text className='text-white text-center'>+</Text>
                         </TouchableHighlight>
                     </View>
