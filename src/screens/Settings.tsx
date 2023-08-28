@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, Modal, KeyboardAvoidingView } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { SettingsStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
@@ -284,7 +284,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                             alert("Invalid Name. Name must not be empty and must be less than 80 characters long.");
                     }}
                     content={(
-                        <View>
+                        <KeyboardAvoidingView>
                             <View className='px-6 py-2'>
                                 <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Display Name</Text>
                                 <TextInput
@@ -295,6 +295,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                                     multiline
                                     inputMode='text'
                                     maxLength={80}
+                                    placeholder='Display Name...'
                                 />
                             </View>
                             <View className='px-6 py-2'>
@@ -307,9 +308,10 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                                     multiline
                                     inputMode='text'
                                     maxLength={80}
+                                    placeholder='Full Name..'
                                 />
                             </View>
-                        </View>
+                        </KeyboardAvoidingView>
                     )}
                 />
                 {/* Bio Modal */}
@@ -322,6 +324,19 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                         setShowBioModal(false);
                     }}
                     onDone={() => setShowBioModal(false)}
+                    content={(
+                        <KeyboardAvoidingView className='px-6'>
+                            <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Bio</Text>
+                            <TextInput
+                                className={`p-2 rounded-lg ${darkMode ? "bg-secondary-bg-dark text-white" : "bg-secondary-bg-light text-black border border-black"}`}
+                                onChangeText={(text: string) => setBio(text)}
+                                value={bio}
+                                multiline
+                                numberOfLines={8}
+                                placeholder='Write a short bio...'
+                            />
+                        </KeyboardAvoidingView>
+                    )}
                 />
                 {/* Academic Info Modal */}
                 <SettingsModal
@@ -409,7 +424,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                     </View>
                 </View>
                 <View className='h-20' />
-                {loading && <ActivityIndicator className='absolute top-0 bottom-0' size={100} />}
+                {loading && <ActivityIndicator className='absolute top-0 bottom-0 left-0 right-0' size={100} />}
             </ScrollView>
             {showSaveButton &&
                 <SettingsSaveButton
@@ -424,8 +439,9 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     const userContext = useContext(UserContext)
     const { userInfo, setUserInfo } = userContext ?? {};
     const [loading, setLoading] = useState<boolean>(false);
+    const [darkModeToggled, setDarkModeToggled] = useState<boolean>(userInfo?.private?.privateInfo?.settings?.darkMode ?? false);
 
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode
 
     return (
         <ScrollView
@@ -439,10 +455,11 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
             <SettingsToggleButton
                 mainText='Dark theme'
                 subText='Changes display of entire app'
-                isInitiallyToggled={darkMode}
+                isToggled={darkModeToggled}
                 darkMode={darkMode}
                 onPress={async () => {
-                    setLoading(true)
+                    setDarkModeToggled(!darkModeToggled);
+                    setLoading(true);
                     await setPrivateUserData({
                         settings: {
                             darkMode: !darkMode
@@ -459,10 +476,12 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                             }
                         })
                         .catch((err) => console.error(err))
-                        .finally(() => setLoading(false));
+                        .finally(() => {
+                            setLoading(false);
+                        });
                 }}
             />
-            {loading && <ActivityIndicator className='absolute top-0 bottom-0' size={100} />}
+            {loading && <ActivityIndicator className='absolute top-0 bottom-0 left-0 right-0' size={100} />}
         </ScrollView>
     );
 };
