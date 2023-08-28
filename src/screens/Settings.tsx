@@ -18,7 +18,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../components/SettingsComponents"
 
-
+/**
+ * Settings entrance screen which has a search function and paths to every other settings screen
+ */
 const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     const { userInfo } = useContext(UserContext) ?? {};
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
@@ -100,6 +102,9 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackPara
     )
 }
 
+/**
+ * Screen where user can search the settings for any option they may need. This will redirect them to the respective screen that they have searched for.
+ */
 const SearchSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     alert("Settings Search and Settings Transition Unimplemented")
     return (
@@ -109,6 +114,11 @@ const SearchSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSta
     );
 };
 
+
+/**
+ * Screen where a user can edit a majority of their public info. This includes thing like their profile picture, name, display name, committees, etc...
+ * These changes are synced in firebase.
+ */
 const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
     const [loading, setLoading] = useState<boolean>(false);
@@ -354,7 +364,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                     content={(
                         <KeyboardAvoidingView>
                             <View className='px-6 py-2'>
-                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Display Name</Text>
+                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Major</Text>
                                 <TextInput
                                     className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
                                     onChangeText={(text: string) => setMajor(text)}
@@ -367,7 +377,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                                 />
                             </View>
                             <View className='px-6 py-2'>
-                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Name</Text>
+                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Class Year</Text>
                                 <TextInput
                                     className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
                                     onChangeText={(text: string) => setClassYear(text)}
@@ -467,6 +477,10 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     );
 };
 
+/**
+ * Screen where user can modify how to the app looks. 
+ * These changes are synced in firebase.
+ */
 const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     const userContext = useContext(UserContext)
     const { userInfo, setUserInfo } = userContext ?? {};
@@ -518,6 +532,10 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     );
 };
 
+/**
+ * Screen where user can both view information about their account and request a change of their email and/or password.
+ * These changes will go through firebase where an email will be sent to the user. 
+ */
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
@@ -555,6 +573,9 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
     );
 };
 
+/**
+ * This screen contains information about the app and info that may be useful to developers.
+ */
 const AboutScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
     const pkg: any = require("../../package.json");
     const { userInfo } = useContext(UserContext) ?? {};
@@ -574,4 +595,3 @@ const AboutScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>
 
 
 export { SettingsScreen, SearchSettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutScreen };
-
