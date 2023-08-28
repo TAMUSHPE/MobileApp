@@ -32,7 +32,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackPara
         >
             <StatusBar style={darkMode ? "light" : "dark"} />
             <View className='w-full py-8 px-4 flex-row items-center justify-between'>
-                <View>
+                <View className='flex-1'>
                     <Text className={`text-4xl ${darkMode ? "text-white" : "text-black"}`}>{userInfo?.publicInfo?.displayName}</Text>
                     <Text className={`text-xl ${darkMode ? "text-white" : "text-black"}`}>{userInfo?.publicInfo?.name}</Text>
                 </View>
@@ -286,21 +286,27 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                     content={(
                         <View>
                             <View className='px-6 py-2'>
-                                <Text className={`text-lg ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Display Name</Text>
+                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Display Name</Text>
                                 <TextInput
-                                    className={`text-xl ${darkMode ? "text-white" : "text-black"}`}
+                                    className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
                                     onChangeText={(text: string) => setDisplayName(text)}
                                     value={displayName}
                                     autoCorrect={false}
+                                    multiline
+                                    inputMode='text'
+                                    maxLength={80}
                                 />
                             </View>
                             <View className='px-6 py-2'>
-                                <Text className={`text-lg ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Name</Text>
+                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Name</Text>
                                 <TextInput
-                                    className={`text-xl ${darkMode ? "text-white" : "text-black"}`}
+                                    className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
                                     onChangeText={(text: string) => setName(text)}
                                     value={name}
                                     autoCorrect={false}
+                                    multiline
+                                    inputMode='text'
+                                    maxLength={80}
                                 />
                             </View>
                         </View>
@@ -504,9 +510,13 @@ const AboutScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
-        <ScrollView className={`p-6 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />
-            <Text className={`text-3xl py-2 ${darkMode ? "text-white" : "text-black"}`}>{`${pkg.name} ${pkg.version}`}</Text>
+            <SettingsListItem
+                mainText='App Version'
+                subText={`${pkg.name} ${pkg.version}`}
+                darkMode={darkMode}
+            />
         </ScrollView>
     );
 };
