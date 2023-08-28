@@ -66,9 +66,9 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                         defaultSource={Images.DEFAULT_USER_PICTURE}
                         source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
                     />
-                    <View>
-                        <Text className='text-white text-xl'>{userInfo?.publicInfo?.displayName ?? "Username"}</Text>
-                        <Text className='text-white text-sm'>{userInfo?.publicInfo?.name ?? "Name"}</Text>
+                    <View className='flex-1 max-w-full'>
+                        <Text className='text-white text-xl break-words mb-2'>{userInfo?.publicInfo?.displayName ?? "Username"}</Text>
+                        <Text className='text-white text-sm break-words'>{userInfo?.publicInfo?.name ?? "Name"}</Text>
                     </View>
                 </View>
                 <View className="flex-row flex-wrap">
