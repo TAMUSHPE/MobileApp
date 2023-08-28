@@ -234,10 +234,12 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
          * This makes it so the information will not be overridden in Firebase if the value of a key is empty/undefined.
          */
         await setPublicUserData({
+            ...(photoURL !== undefined) && { photoURL: photoURL },
             ...(displayName !== undefined) && { displayName: displayName },
             ...(name !== undefined) && { name: name },
             ...(bio !== undefined) && { bio: bio },
-            ...(photoURL !== undefined) && { photoURL: photoURL },
+            ...(major !== undefined) && { major: major },
+            ...(classYear !== undefined) && { classYear: classYear },
             ...(committees !== undefined) && { committees: committees },
         })
             .then(async () => {
@@ -328,7 +330,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                         <KeyboardAvoidingView className='px-6'>
                             <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Bio</Text>
                             <TextInput
-                                className={`p-2 rounded-lg ${darkMode ? "bg-secondary-bg-dark text-white" : "bg-secondary-bg-light text-black border border-black"}`}
+                                className={`p-2 rounded-lg text-base ${darkMode ? "bg-secondary-bg-dark text-white" : "bg-secondary-bg-light text-black border border-black"}`}
                                 onChangeText={(text: string) => setBio(text)}
                                 value={bio}
                                 multiline
@@ -349,6 +351,36 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                         setShowAcademicInfoModal(false);
                     }}
                     onDone={() => setShowAcademicInfoModal(false)}
+                    content={(
+                        <KeyboardAvoidingView>
+                            <View className='px-6 py-2'>
+                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Display Name</Text>
+                                <TextInput
+                                    className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
+                                    onChangeText={(text: string) => setMajor(text)}
+                                    value={major}
+                                    autoCorrect={false}
+                                    multiline
+                                    inputMode='text'
+                                    maxLength={80}
+                                    placeholder='Major...'
+                                />
+                            </View>
+                            <View className='px-6 py-2'>
+                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Name</Text>
+                                <TextInput
+                                    className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
+                                    onChangeText={(text: string) => setClassYear(text)}
+                                    value={classYear}
+                                    autoCorrect={false}
+                                    multiline
+                                    inputMode='text'
+                                    maxLength={80}
+                                    placeholder='Class Year..'
+                                />
+                            </View>
+                        </KeyboardAvoidingView>
+                    )}
                 />
                 {/* Committees Modal */}
                 <SettingsModal
@@ -418,7 +450,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                                 />
                             )
                         })}
-                        <TouchableHighlight onPress={() => setShowCommitteesModal(true)} className='p-2 w-1/3 rounded-full mb-2 bg-[#FD551A]' underlayColor={"#FCA788"}>
+                        <TouchableHighlight onPress={() => setShowCommitteesModal(true)} className='p-2 w-1/4 rounded-full mb-2 bg-[#FD551A]' underlayColor={"#FCA788"}>
                             <Text className='text-white text-center'>+</Text>
                         </TouchableHighlight>
                     </View>
