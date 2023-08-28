@@ -51,6 +51,14 @@ export interface PublicUserInfo {
 };
 
 /**
+ * This is seperate from PublicUserInfo because the UID is not stored in the document.
+ * This is used when the UID is needed that is not the currently logged in user.
+ */
+export interface PublicUserInfoUID extends PublicUserInfo {
+    uid?: string
+}
+
+/**
  * This interface represents the settings for the application.
  * Different sliders and values will be added to this over time.
  */
@@ -68,13 +76,14 @@ export interface PrivateUserInfo {
     expoPushTokens?: string[];
 };
 
+
 /**
- * This is seperate from PublicUserInfo because the UID is not stored in the document.
- * This is used when the UID is needed that is not the currently logged in user.
+ * Data which is used to moderate a user's functionality in the app.
+ * This information should be viewable by the user and app admins. This data should NOT be able to be modified by the user. 
  */
-export interface PublicUserInfoUID extends PublicUserInfo {
-    uid?: string
-}
+export interface UserModerationData{
+    canUseKnockOnWall?: boolean;
+};
 
 /**
  * This interface represents a user as it is stored in firebase-auth.
@@ -84,9 +93,9 @@ export interface User {
     publicInfo?: PublicUserInfo;
     private?: {
         privateInfo?: PrivateUserInfo | undefined;
+        moderationData?: UserModerationData;
     }
 };
-
 
 export interface MemberStatus {
     uid: string;
