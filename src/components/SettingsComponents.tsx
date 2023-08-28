@@ -121,27 +121,26 @@ const SettingsSaveButton = ({ onPress }: { onPress?: () => any }) => {
 const SettingsModal = ({ visible, onCancel, onDone, title, content, darkMode }: { visible: boolean, onCancel: () => any, onDone: () => any, title?: string, content?: React.JSX.Element, darkMode?: boolean }) => {
     return (
         <Modal
-            className='bg-[#F00]'
             visible={visible}
             transparent
             animationType='slide'
             onRequestClose={() => onCancel()}
         >
-            <SafeAreaView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}  rounded-t-xl h-full box-shadow-md`}>
+            <SafeAreaView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light border border-gray-400"}  rounded-t-xl h-full box-shadow-md`}>
                 {/* Header */}
-                <View className='flex-row justify-between mx-1 my-4'>
+                <View className='flex-row items-center justify-between mx-1 my-4'>
                     <TouchableHighlight
                         className='rounded-4xl rounded-4xl px-8 py-2'
                         onPress={() => onCancel()}
-                        underlayColor={"#BBB"}
+                        underlayColor={`${darkMode ? "#6a6a6a" : "#BBB"}`}
                     >
-                        <Text className={`${darkMode ? "text-white" : "text-black"} text-xl font-bold`}>Cancel</Text>
+                        <Text className={`${darkMode ? "text-gray-300" : "text-black"} text-xl font-bold`}>Cancel</Text>
                     </TouchableHighlight>
-                    <Text className='font-bold'>{title}</Text>
+                    <Text className={`${darkMode ? "text-white" : "text-black"} text-2xl py-2`}>{title}</Text>
                     <TouchableHighlight
                         className='rounded-2xl px-8 py-2'
                         onPress={() => onDone()}
-                        underlayColor={"#BBB"}
+                        underlayColor={`${darkMode ? "#6a6a6a" : "#BBB"}`}
                     >
                         <Text className={`${darkMode ? "text-continue-dark" : "text-continue-light"} text-xl font-bold`}>Done</Text>
                     </TouchableHighlight>
