@@ -7,7 +7,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons'
  */
 const SettingsSectionTitle = ({ text, darkMode }: { text: string, darkMode?: boolean }) => {
     return (
-        <Text className={`text-left px-6 mt-6 text-xl ${darkMode ? "text-gray-300" : "text-gray-700"}`}>{text}</Text>
+        <Text className={`text-left px-6 mt-6 text-xl ${darkMode ? "text-[#cecece]" : "text-gray-700"}`}>{text}</Text>
     );
 };
 

@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, Modal, KeyboardAvoidingView } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { SettingsStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
@@ -303,27 +303,32 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
             <TouchableHighlight
                 className={`border-2 my-4 p-4 rounded-xl w-11/12 shadow-md shadow-black ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${committeeData.isChecked ? "border-green-400" : "border-transparent"}`}
                 onPress={() => onPress(committeeData.id)}
-                underlayColor={darkMode ? "#DDD" : "#DDD"}
+                underlayColor={darkMode ? "#7a7a7a" : "#DDD"}
             >
                 <View className={`items-center flex-row justify-between`}>
                     <View className='flex-row items-center'>
                         <View className='h-8 w-8 mr-4 rounded-full' style={{ backgroundColor: committeeData.color }} />
-                        <Text className='text-2xl'>{committeeData.name}</Text>
+                        <Text className={`text-2xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeData.name}</Text>
                     </View>
-                    {committeeData.isChecked && committeeIndex >= 0 && <Text className={`text-xl`}>{committeeIndex + 1}</Text>}
+                    {committeeData.isChecked && committeeIndex >= 0 && <Text className={`text-xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeIndex + 1}</Text>}
                 </View>
             </TouchableHighlight>
         );
     };
 
+    /**
+     * This function is called whenever a committee is toggled by the user.
+     * Because of the way hooks work, we have to make a deep copy of committeeListItems with the single committee isChecked changed.
+     * @param id - id of the committee being selected/unselected
+     */
     const handleCommitteeToggle = (id: number) => {
-        let modifiedCommittees = committeeListItems.map((element) => {
+        const modifiedCommitteeListItems = committeeListItems.map((element) => {
             if (id === element.id) {
                 return { ...element, isChecked: !element.isChecked }
             }
             return element;
         });
-        setCommitteeListItems(modifiedCommittees);
+        setCommitteeListItems(modifiedCommitteeListItems);
     }
 
     return (
@@ -457,18 +462,19 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                 onDone={() => setShowCommitteesModal(false)}
                 content={(
                     <View className='flex-col'>
-                        <Text className='text-lg px-4'>The number displayed beside each committee represents the order in which they will be displayed on your profile.</Text>
                         <ScrollView
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={{
-                                minHeight: "105%",
+                                minHeight: "115%",
                             }}
                         >
+                            <Text className={`text-lg px-4 mb-2 ${darkMode ? "text-gray-300" : "text-black"}`}>The number displayed beside each committee represents the order in which they will be displayed on your profile.</Text>
                             <View className='w-full h-full flex-col items-center'>
                                 {committeeListItems.map((committeeData) => (
                                     <CommitteeListItemComponent
                                         key={committeeData.id}
                                         committeeData={committeeData}
+                                        darkMode={darkMode}
                                         committees={committees ?? defaultVals.committees}
                                         onPress={(id: number) => handleCommitteeToggle(id)}
                                     />
@@ -478,7 +484,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                     </View>
                 )}
             />
-            <ScrollView className={`flex-col pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <ScrollView className={`flex-col w-full pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
                 <View className='py-10 w-full items-center'>
                     <TouchableOpacity activeOpacity={0.7} onPress={async () => await selectProfilePicture()}>
                         <Image
@@ -523,7 +529,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                     onPress={() => setShowAcademicInfoModal(true)}
                 />
                 <SettingsSectionTitle text='SHPE Info' darkMode={darkMode} />
-                <View className={`border max-w-11/12 rounded-3xl p-3 mx-3 my-3 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+                <View className={`border max-w-11/12 rounded-3xl shadow-sm shadow-black p-3 mx-3 my-3 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                     <Text className={`text-2xl mb-4 ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
                     <View className='flex-row flex-wrap'>
                         {committees?.map((committeeName: string, index: number) => {
@@ -661,9 +667,15 @@ const AboutScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>
     return (
         <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />
+            <SettingsSectionTitle text='App Metadata' darkMode={darkMode} />
             <SettingsListItem
                 mainText='App Version'
                 subText={`${pkg.name} ${pkg.version}`}
+                darkMode={darkMode}
+            />
+            <SettingsListItem
+                mainText='Platform'
+                subText={`${Platform.OS} ${Platform.Version as string}`}
                 darkMode={darkMode}
             />
         </ScrollView>
