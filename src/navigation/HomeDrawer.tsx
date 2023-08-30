@@ -55,20 +55,29 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         color: userInfo?.private?.privateInfo?.settings?.darkMode ? "#EEE" : "#000"
     }
 
-    // "dark-navy" is #191740. 
     return (
-        <DrawerContentScrollView {...props} contentContainerStyle={{ backgroundColor: "#191740", height: "100%" }}>
+        <DrawerContentScrollView
+            {...props}
+            contentContainerStyle={{
+                backgroundColor: "#191740"/* "dark-navy" is #191740. */,
+                height: "100%"
+            }}
+        >
             <StatusBar style='inverted' />
-            <View className="flex-col bg-dark-navy w-full p-4">
-                <View className='flex-row mb-2'>
+            <View className="flex-col bg-dark-navy w-full px-4 pb-4">
+                <View className='flex-row mb-2 items-center'>
                     <Image
                         className="flex w-16 h-16 rounded-full mr-2"
                         defaultSource={Images.DEFAULT_USER_PICTURE}
                         source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
                     />
-                    <View className='flex-1 max-w-full'>
-                        <Text className='text-white text-xl break-words mb-2'>{userInfo?.publicInfo?.displayName ?? "Username"}</Text>
+                    <View className='flex-1 flex-col max-w-full'>
+                        <Text className='text-white text-xl break-words mb-1'>{userInfo?.publicInfo?.displayName ?? "Username"}</Text>
                         <Text className='text-white text-sm break-words'>{userInfo?.publicInfo?.name ?? "Name"}</Text>
+                        <View className='flex-row items-center'>
+                            <View className='rounded-full w-2 h-2 bg-orange mr-1' />
+                            <Text className='text-white text-sm break-words'>{`${userInfo?.publicInfo?.points ?? 0} points`}</Text>
+                        </View>
                     </View>
                 </View>
                 <View className="flex-row flex-wrap">
