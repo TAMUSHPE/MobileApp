@@ -130,7 +130,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
         photoURL: "",
         displayName: "DISPLAY NAME",
         name: "NAME",
-        bio: "BIO",
+        bio: "Write a short bio...",
         major: "MAJOR",
         classYear: "CLASS YEAR",
         committees: ["No Committees Found"],
@@ -138,20 +138,23 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
 
     //Hooks used to save state of modified fields before user hits "save"
     const [photoURL, setPhotoURL] = useState<string | undefined>(userInfo?.publicInfo?.photoURL);
-
-    // Names
     const [displayName, setDisplayName] = useState<string | undefined>(userInfo?.publicInfo?.displayName);
     const [name, setName] = useState<string | undefined>(userInfo?.publicInfo?.name);
-
-    // Bio
     const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
-
-    // Academic Info
     const [major, setMajor] = useState<string | undefined>(userInfo?.publicInfo?.major);
     const [classYear, setClassYear] = useState<string | undefined>(userInfo?.publicInfo?.classYear);
+    const [committees, setCommittees] = useState<Array<string> | undefined>(userInfo?.publicInfo?.committees);
 
     // SHPE Info
-    const [committees, setCommittees] = useState<Array<string> | undefined>(userInfo?.publicInfo?.committees);
+    type CommitteeListItemData = {
+        id: number,
+        name: string,
+        color: string,
+        isChecked: boolean,
+    }
+
+    const [committeeListItems, setCommitteeListItems] = useState<Array<CommitteeListItemData>>(committeesList.map((element) => { return { ...element, isChecked: committees?.includes(element.name) ?? false } }));
+
 
     // Modal options
     const [showNamesModal, setShowNamesModal] = useState<boolean>(false);
@@ -161,6 +164,25 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
+    /**
+     * Checks for any changes to committeeListItems. Updates committees to reflect these changes.
+     * Any elements that aren't in committeeListItems will stay in committees for data integrity reasons
+     */
+    useEffect(() => {
+        committeeListItems.forEach((element) => {
+            if (element.isChecked && !committees?.includes(element.name)) {
+                setCommittees(committees !== undefined ? [...committees, element.name] : [element.name])
+            }
+            else if (!element.isChecked && committees?.includes(element.name)) {
+                setCommittees(committees?.filter((committeeName) => committeeName !== element.name) ?? [])
+            }
+        })
+    }, [committeeListItems]);
+
+    /**
+     * Checks for any pending changes in user data.  
+     * If any deviate from userInfo, display a "save" button which will save the changes to firebase.
+     */
     useEffect(() => {
         if (
             photoURL != userInfo?.publicInfo?.photoURL ||
@@ -168,14 +190,17 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
             name != userInfo?.publicInfo?.name ||
             bio != userInfo?.publicInfo?.bio ||
             major != userInfo?.publicInfo?.major ||
-            classYear != userInfo?.publicInfo?.classYear
+            classYear != userInfo?.publicInfo?.classYear ||
+            // Checks if committees list is essentially equivalent to the committees list in userInfo (Same length and contains each element) 
+            committees?.length !== userInfo?.publicInfo?.committees?.length ||
+            !committees?.every((element, index) => userInfo?.publicInfo?.committees?.at(index) == element)
         ) {
             setShowSaveButton(true);
         }
         else {
             setShowSaveButton(false);
         }
-    }, [photoURL, displayName, name, bio, major, classYear]);
+    }, [photoURL, displayName, name, bio, major, classYear, committees]);
 
     const selectProfilePicture = async () => {
         const result = await selectImage({
@@ -272,136 +297,188 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
             });
     }
 
+    const CommitteeListItemComponent = ({ committeeData, onPress, darkMode, committees }: { committeeData: CommitteeListItemData, onPress: (id: number) => void, darkMode?: boolean, committees: Array<string> }) => {
+        const committeeIndex = committees.indexOf(committeeData.name);
+        return (
+            <TouchableHighlight
+                className={`border-2 my-4 p-4 rounded-xl w-11/12 shadow-md shadow-black ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${committeeData.isChecked ? "border-green-400" : "border-transparent"}`}
+                onPress={() => onPress(committeeData.id)}
+                underlayColor={darkMode ? "#DDD" : "#DDD"}
+            >
+                <View className={`items-center flex-row justify-between`}>
+                    <View className='flex-row items-center'>
+                        <View className='h-8 w-8 mr-4 rounded-full' style={{ backgroundColor: committeeData.color }} />
+                        <Text className='text-2xl'>{committeeData.name}</Text>
+                    </View>
+                    {committeeData.isChecked && committeeIndex >= 0 && <Text className={`text-xl`}>{committeeIndex + 1}</Text>}
+                </View>
+            </TouchableHighlight>
+        );
+    };
+
+    const handleCommitteeToggle = (id: number) => {
+        let modifiedCommittees = committeeListItems.map((element) => {
+            if (id === element.id) {
+                return { ...element, isChecked: !element.isChecked }
+            }
+            return element;
+        });
+        setCommitteeListItems(modifiedCommittees);
+    }
+
     return (
         <View className='items-center'>
             <StatusBar style={darkMode ? "light" : "dark"} />
-            <ScrollView className={`flex-col pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
-                {/* Names Modal */}
-                <SettingsModal
-                    visible={showNamesModal}
-                    darkMode={darkMode}
-                    title='Names'
-                    onCancel={() => {
-                        setDisplayName(userInfo?.publicInfo?.displayName);
-                        setName(userInfo?.publicInfo?.name);
+            {/* Names Modal */}
+            <SettingsModal
+                visible={showNamesModal}
+                darkMode={darkMode}
+                title='Names'
+                onCancel={() => {
+                    setDisplayName(userInfo?.publicInfo?.displayName);
+                    setName(userInfo?.publicInfo?.name);
+                    setShowNamesModal(false);
+                }}
+                onDone={() => {
+                    // TODO Make alert messages more verbose
+                    if (validateDisplayName(displayName) && validateName(name))
                         setShowNamesModal(false);
-                    }}
-                    onDone={() => {
-                        // TODO Make alert messages more verbose
-                        if (validateDisplayName(displayName) && validateName(name))
-                            setShowNamesModal(false);
-                        else if (!validateDisplayName(displayName))
-                            alert("Invalid Display Name. Display Name must not be empty and must be less than 80 characters long.");
-                        else if (!validateName(name))
-                            alert("Invalid Name. Name must not be empty and must be less than 80 characters long.");
-                    }}
-                    content={(
-                        <KeyboardAvoidingView>
-                            <View className='px-6 py-2'>
-                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Display Name</Text>
-                                <TextInput
-                                    className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
-                                    onChangeText={(text: string) => setDisplayName(text)}
-                                    value={displayName}
-                                    autoCorrect={false}
-                                    multiline
-                                    inputMode='text'
-                                    maxLength={80}
-                                    placeholder='Display Name...'
-                                />
-                            </View>
-                            <View className='px-6 py-2'>
-                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Name</Text>
-                                <TextInput
-                                    className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
-                                    onChangeText={(text: string) => setName(text)}
-                                    value={name}
-                                    autoCorrect={false}
-                                    multiline
-                                    inputMode='text'
-                                    maxLength={80}
-                                    placeholder='Full Name..'
-                                />
-                            </View>
-                        </KeyboardAvoidingView>
-                    )}
-                />
-                {/* Bio Modal */}
-                <SettingsModal
-                    visible={showBioModal}
-                    darkMode={darkMode}
-                    title='Bio'
-                    onCancel={() => {
-                        setBio(userInfo?.publicInfo?.bio ?? defaultVals.bio);
-                        setShowBioModal(false);
-                    }}
-                    onDone={() => setShowBioModal(false)}
-                    content={(
-                        <KeyboardAvoidingView className='px-6'>
-                            <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Bio</Text>
+                    else if (!validateDisplayName(displayName))
+                        alert("Invalid Display Name. Display Name must not be empty and must be less than 80 characters long.");
+                    else if (!validateName(name))
+                        alert("Invalid Name. Name must not be empty and must be less than 80 characters long.");
+                }}
+                content={(
+                    <KeyboardAvoidingView>
+                        <View className='px-6 py-2'>
+                            <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Display Name</Text>
                             <TextInput
-                                className={`p-2 rounded-lg text-base ${darkMode ? "bg-secondary-bg-dark text-white" : "bg-secondary-bg-light text-black border border-black"}`}
-                                onChangeText={(text: string) => setBio(text)}
-                                value={bio}
+                                className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
+                                onChangeText={(text: string) => setDisplayName(text)}
+                                value={displayName}
+                                autoCorrect={false}
                                 multiline
-                                numberOfLines={8}
-                                placeholder='Write a short bio...'
+                                inputMode='text'
+                                maxLength={80}
+                                placeholder='Display Name...'
                             />
-                        </KeyboardAvoidingView>
-                    )}
-                />
-                {/* Academic Info Modal */}
-                <SettingsModal
-                    visible={showAcademicInfoModal}
-                    darkMode={darkMode}
-                    title='Academics'
-                    onCancel={() => {
-                        setMajor(userInfo?.publicInfo?.major ?? defaultVals.major);
-                        setClassYear(userInfo?.publicInfo?.classYear ?? defaultVals.classYear);
-                        setShowAcademicInfoModal(false);
-                    }}
-                    onDone={() => setShowAcademicInfoModal(false)}
-                    content={(
-                        <KeyboardAvoidingView>
-                            <View className='px-6 py-2'>
-                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Major</Text>
-                                <TextInput
-                                    className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
-                                    onChangeText={(text: string) => setMajor(text)}
-                                    value={major}
-                                    autoCorrect={false}
-                                    multiline
-                                    inputMode='text'
-                                    maxLength={80}
-                                    placeholder='Major...'
-                                />
+                        </View>
+                        <View className='px-6 py-2'>
+                            <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Name</Text>
+                            <TextInput
+                                className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
+                                onChangeText={(text: string) => setName(text)}
+                                value={name}
+                                autoCorrect={false}
+                                multiline
+                                inputMode='text'
+                                maxLength={80}
+                                placeholder='Full Name..'
+                            />
+                        </View>
+                    </KeyboardAvoidingView>
+                )}
+            />
+            {/* Bio Modal */}
+            <SettingsModal
+                visible={showBioModal}
+                darkMode={darkMode}
+                title='Bio'
+                onCancel={() => {
+                    setBio(userInfo?.publicInfo?.bio ?? defaultVals.bio);
+                    setShowBioModal(false);
+                }}
+                onDone={() => setShowBioModal(false)}
+                content={(
+                    <KeyboardAvoidingView className='px-6'>
+                        <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Bio</Text>
+                        <TextInput
+                            className={`p-2 rounded-lg text-base ${darkMode ? "bg-secondary-bg-dark text-white" : "bg-secondary-bg-light text-black border border-black"}`}
+                            onChangeText={(text: string) => setBio(text)}
+                            value={bio}
+                            multiline
+                            numberOfLines={8}
+                            placeholder='Write a short bio...'
+                        />
+                    </KeyboardAvoidingView>
+                )}
+            />
+            {/* Academic Info Modal */}
+            <SettingsModal
+                visible={showAcademicInfoModal}
+                darkMode={darkMode}
+                title='Academics'
+                onCancel={() => {
+                    setMajor(userInfo?.publicInfo?.major ?? defaultVals.major);
+                    setClassYear(userInfo?.publicInfo?.classYear ?? defaultVals.classYear);
+                    setShowAcademicInfoModal(false);
+                }}
+                onDone={() => setShowAcademicInfoModal(false)}
+                content={(
+                    <KeyboardAvoidingView>
+                        <View className='px-6 py-2'>
+                            <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Major</Text>
+                            <TextInput
+                                className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
+                                onChangeText={(text: string) => setMajor(text)}
+                                value={major}
+                                autoCorrect={false}
+                                multiline
+                                inputMode='text'
+                                maxLength={80}
+                                placeholder='Major...'
+                            />
+                        </View>
+                        <View className='px-6 py-2'>
+                            <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Class Year</Text>
+                            <TextInput
+                                className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
+                                onChangeText={(text: string) => setClassYear(text)}
+                                value={classYear}
+                                autoCorrect={false}
+                                multiline
+                                inputMode='text'
+                                maxLength={80}
+                                placeholder='Class Year..'
+                            />
+                        </View>
+                    </KeyboardAvoidingView>
+                )}
+            />
+            {/* Committees Modal */}
+            <SettingsModal
+                visible={showCommitteesModal}
+                darkMode={darkMode}
+                onCancel={() => {
+                    setCommittees(userInfo?.publicInfo?.committees ?? defaultVals.committees);
+                    setCommitteeListItems(committeesList.map((element) => { return { ...element, isChecked: userInfo?.publicInfo?.committees?.includes(element.name) ?? false } }));
+                    setShowCommitteesModal(false);
+                }}
+                onDone={() => setShowCommitteesModal(false)}
+                content={(
+                    <View className='flex-col'>
+                        <Text className='text-lg px-4'>The number displayed beside each committee represents the order in which they will be displayed on your profile.</Text>
+                        <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            contentContainerStyle={{
+                                minHeight: "105%",
+                            }}
+                        >
+                            <View className='w-full h-full flex-col items-center'>
+                                {committeeListItems.map((committeeData) => (
+                                    <CommitteeListItemComponent
+                                        key={committeeData.id}
+                                        committeeData={committeeData}
+                                        committees={committees ?? defaultVals.committees}
+                                        onPress={(id: number) => handleCommitteeToggle(id)}
+                                    />
+                                ))}
                             </View>
-                            <View className='px-6 py-2'>
-                                <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Class Year</Text>
-                                <TextInput
-                                    className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
-                                    onChangeText={(text: string) => setClassYear(text)}
-                                    value={classYear}
-                                    autoCorrect={false}
-                                    multiline
-                                    inputMode='text'
-                                    maxLength={80}
-                                    placeholder='Class Year..'
-                                />
-                            </View>
-                        </KeyboardAvoidingView>
-                    )}
-                />
-                {/* Committees Modal */}
-                <SettingsModal
-                    visible={showCommitteesModal}
-                    darkMode={darkMode}
-                    onCancel={() => {
-                        setCommittees(userInfo?.publicInfo?.committees ?? defaultVals.committees);
-                        setShowCommitteesModal(false);
-                    }}
-                    onDone={() => setShowCommitteesModal(false)}
-                />
+                        </ScrollView>
+                    </View>
+                )}
+            />
+            <ScrollView className={`flex-col pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
                 <View className='py-10 w-full items-center'>
                     <TouchableOpacity activeOpacity={0.7} onPress={async () => await selectProfilePicture()}>
                         <Image
@@ -449,7 +526,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
                 <View className={`border max-w-11/12 rounded-3xl p-3 mx-3 my-3 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                     <Text className={`text-2xl mb-4 ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
                     <View className='flex-row flex-wrap'>
-                        {userInfo?.publicInfo?.committees?.map((committeeName: string, index: number) => {
+                        {committees?.map((committeeName: string, index: number) => {
                             const committeeInfo = committeesList.find(element => element.name == committeeName);
                             return (
                                 <ProfileBadge
