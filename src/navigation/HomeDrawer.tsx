@@ -9,6 +9,7 @@ import { auth, db } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import ProfileBadge from '../components/ProfileBadge';
 import HomeScreen from '../screens/Home';
+import AdminDashboardStack from './AdminDashboardStack';
 import { User, committeesList } from '../types/User';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
@@ -156,6 +157,7 @@ const HomeDrawer = () => {
             }}
         >
             <Drawer.Screen name="HomeScreen" component={HomeScreen} />
+            <Drawer.Screen name="AdminDashboardStack" component={AdminDashboardStack} />
         </Drawer.Navigator>
     );
 };
