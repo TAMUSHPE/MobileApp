@@ -93,6 +93,7 @@ export type TestBankProps = {
 
 export type MembersProps = {
     userData?: PublicUserInfoUID
+    handleOnPress?: any
     navigation: NativeStackNavigationProp<MembersStackParams>
 }
 

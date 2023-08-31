@@ -2,20 +2,21 @@ import { View, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { MembersProps } from '../types/Navigation'
 
-const MemberCard: React.FC<MembersProps> = ({ userData, navigation }) => {
+const MemberCard: React.FC<MembersProps> = ({ userData, handleOnPress, navigation }) => {
     if (!userData) {
         return
     }
     const { name, displayName, classYear, committees, roles, uid } = userData
 
     return (
-        <TouchableOpacity className='flex-row space-x-5 bg-blue-400 p-7'
-            onPress={() => { navigation.navigate("PublicProfile", { uid: uid! }) }}
+        <TouchableOpacity className='p-7'
+            onPress={handleOnPress}
         >
-            <Text>{name}</Text>
-            <Text>{displayName}</Text>
-            <Text>{classYear}</Text>
-            <Text>{committees}</Text>
+            <Text>{`Name:  ${name}`}</Text>
+            <Text>{`Display  Name: ${displayName}`}</Text>
+            <Text>{`Class Year: ${classYear}`}</Text>
+            <Text>{`Committees: ${committees}`}</Text>
+            <Text>{`Roles: ${JSON.stringify(roles)}`}</Text>
         </TouchableOpacity>
     )
 }

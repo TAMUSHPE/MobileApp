@@ -1,17 +1,30 @@
-import { View, Text, ActivityIndicator } from 'react-native';
+import { View, Text, ActivityIndicator, Image } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useRoute } from '@react-navigation/native';
 import { auth } from '../config/firebaseConfig';
 import { getPublicUserData } from '../api/firebaseUtils';
 import { MembersProps, MembersScreenRouteProp } from '../types/Navigation';
+import { Roles } from '../types/User';
+import { Images } from '../../assets';
 
 const PublicProfileScreen = ({ navigation }: MembersProps) => {
     const route = useRoute<MembersScreenRouteProp>();
     const { uid } = route.params;
-    // In the future, this will be part of the auth object
+
     const [points, setPoints] = useState<number>();
     const [name, setName] = useState<string>();
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>();
+    const [bio, setBio] = useState<string>();
+    const [committees, setCommittees] = useState<string[]>();
+    const [roles, setRoles] = useState<Roles>();
+    const [classYear, setClassYear] = useState<string>();
+    const [major, setMajor] = useState<string>();
+    const [displayName, setDisplayName] = useState<string>();
+    const [email, setEmail] = useState<string>();
+    const [photoURL, setPhotoURL] = useState<string>();
+    const [pointsRank, setPointsRank] = useState<number | null>();
+
+
 
     useEffect(() => {
         const fetchPublicUserData = async () => {
@@ -19,6 +32,15 @@ const PublicProfileScreen = ({ navigation }: MembersProps) => {
                 const publicUserData = await getPublicUserData(uid);
                 setPoints(publicUserData?.points);
                 setName(publicUserData?.name);
+                setBio(publicUserData?.bio);
+                setCommittees(publicUserData?.committees);
+                setRoles(publicUserData?.roles);
+                setClassYear(publicUserData?.classYear);
+                setMajor(publicUserData?.major);
+                setDisplayName(publicUserData?.displayName);
+                setEmail(publicUserData?.email);
+                setPhotoURL(publicUserData?.photoURL);
+                setPointsRank(publicUserData?.pointsRank);
             } catch (error) {
                 console.error("Failed to fetch public user data:", error);
             } finally {
@@ -40,9 +62,24 @@ const PublicProfileScreen = ({ navigation }: MembersProps) => {
 
     return (
         <View className="items-center justify-center flex-1">
-            <Text>
-                {`${name} - Points: ${points?.toFixed(2)}`}
-            </Text>
+            <View>
+                <Image
+                    className="flex w-16 h-16 rounded-full"
+                    defaultSource={Images.DEFAULT_USER_PICTURE}
+                    source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
+                />
+            </View>
+            <Text> {`Name: ${name}`} </Text>
+            <Text> {`Points: ${points?.toFixed(2)}`}</Text>
+            <Text> {`Bio: ${bio}`} </Text>
+            <Text> {`Committees: ${committees}`} </Text>
+            <Text> {`Roles: ${JSON.stringify(roles)}`} </Text>
+            <Text> {`Class Year: ${classYear}`} </Text>
+            <Text> {`Major: ${major}`} </Text>
+            <Text> {`Display Name: ${displayName}`} </Text>
+            <Text> {`Email: ${email}`} </Text>
+            <Text> {`Points Rank: ${pointsRank}`} </Text>
+
         </View>
     )
 }
