@@ -107,7 +107,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                 </View>
             </View>
             <View className={`${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} flex-grow`}>
-                <DrawerItem label="Settings" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("Settings")} />
+                <DrawerItem label="Settings" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("SettingsScreen")} />
                 {
                     localUser?.publicInfo?.roles?.officer?.valueOf() &&
                     <DrawerItem label="Admin Dashboard" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("AdminDashboard")} />

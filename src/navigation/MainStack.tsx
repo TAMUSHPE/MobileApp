@@ -1,21 +1,45 @@
-import React from "react";
+import React, { useContext } from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeBottomTabs from "./HomeBottomTabs";
 import AdminDashboard from "../screens/AdminDashboard";
 import { MainStackParams } from '../types/Navigation';
-import { SettingsStack } from "./SettingsStack";
+import { SettingsScreen, SearchSettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen } from "../screens/Settings";
+import { UserContext } from "../context/UserContext";
 
 const MainStack = () => {
     const Stack = createNativeStackNavigator<MainStackParams>();
+    const { userInfo } = useContext(UserContext) ?? {};
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
     return (
-        <Stack.Navigator
-            screenOptions={{
-                headerShown: false
-            }}
-        >
-            <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
-            <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
-            <Stack.Screen name="Settings" component={SettingsStack} />
+        <Stack.Navigator initialRouteName="HomeBottomTabs">
+            {/* Main components */}
+            <Stack.Group
+                screenOptions={{
+                    headerShown: false
+                }}
+            >
+                <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
+                <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+            </Stack.Group>
+
+            {/* Settings Screens */}
+            <Stack.Group
+                screenOptions={{
+                    headerShown: true,
+                    headerStyle: {
+                        backgroundColor: darkMode ? "#2a2a2a" : "#FFF",
+                    },
+                    headerTintColor: darkMode ? "#F2F2F2" : "#000",
+                }}
+            >
+                <Stack.Screen name="SettingsScreen" component={SettingsScreen} options={{ title: "Settings" }} />
+                <Stack.Screen name="SearchSettingsScreen" component={SearchSettingsScreen} options={{ title: "Search Settings" }} />
+                <Stack.Screen name="ProfileSettingsScreen" component={ProfileSettingsScreen} options={{ title: "Profile Settings" }} />
+                <Stack.Screen name="DisplaySettingsScreen" component={DisplaySettingsScreen} options={{ title: "Display Settings" }} />
+                <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} options={{ title: "Account Settings/Info" }} />
+                <Stack.Screen name="AboutSettingsScreen" component={AboutSettingsScreen} options={{ title: "About" }} />
+            </Stack.Group>
         </Stack.Navigator>
     );
 };
