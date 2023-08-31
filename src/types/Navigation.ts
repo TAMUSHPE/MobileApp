@@ -1,7 +1,7 @@
 
 import { ImageSourcePropType } from "react-native";
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type {RouteProp} from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
 import { PublicUserInfoUID } from "./User";
 import { Test } from '../types/GoogleSheetsTypes';
 
@@ -10,9 +10,12 @@ export type MainStackParams = {
     HomeDrawer: HomeDrawerParams;
     HomeBottomTabs: undefined;
     AdminDashboard: undefined;
-    SettingsScreen: {
-        userId: number;
-    };
+    SettingsScreen: undefined;
+    SearchSettingsScreen: undefined;
+    ProfileSettingsScreen: undefined;
+    DisplaySettingsScreen: undefined;
+    AccountSettingsScreen: undefined;
+    AboutSettingsScreen: undefined;
 };
 
 export type AuthStackParams = {
@@ -54,6 +57,7 @@ export type CommitteesStackParams = {
     CommitteesScreen: undefined;
 }
 
+
 // Drawers
 export type HomeDrawerParams = {
     HomeScreen: undefined;
@@ -71,8 +75,8 @@ export type HomeBottomTabParams = {
 };
 
 export type ResourcesProps = {
-    items:{
-        title:string;
+    items: {
+        title: string;
         screen: keyof ResourcesStackParams;
         image: ImageSourcePropType;
         "bg-color": string;
