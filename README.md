@@ -88,7 +88,7 @@ There are other flags that must be added depending on how the app is being teste
 - `--tunnel` - This flag creates an ngrok tunnel that will run locally on your network
 - `--go` - This flag launches an expo go server
 - `--dev-client` - This flag launches a development server
-- `--localhost` - This flag hosts the server locally instead of on LAN. This is useful when connecting you don't have a network or are on public wifi and want to connect your physical phone via a cable.
+- `--localhost` - This flag hosts the server locally instead of on LAN. This is useful when connecting and you don't have a network or are on public wifi and want to connect your physical phone via a cable.
 
 There are also various macros in `package.json` under the "scripts" key which can be used via `yarn <script-name>`. For example, `yarn go` will run `npx expo `
 
