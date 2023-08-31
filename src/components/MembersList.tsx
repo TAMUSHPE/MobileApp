@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native'
+import { View, Text, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { getMembersExcludeOfficers, getOfficers } from '../api/firebaseUtils'
 import { MembersProps } from '../types/Navigation'
@@ -19,18 +19,28 @@ const MembersList: React.FC<MembersProps> = ({ navigation }) => {
     }, [])
 
     return (
-        <View>
+        <ScrollView>
             <Text>Offices:</Text>
-            {officers.map((userData, index) => (
-                <MemberCard key={index} userData={userData} navigation={navigation} />
-            ))}
+            {officers.map((userData, index) => {
+                const handleOnPress = () => {
+                    navigation.navigate("PublicProfile", { uid: userData.uid! })
+                }
+                return (
+                    <MemberCard key={index} userData={userData} navigation={navigation} handleOnPress={handleOnPress} />
+                )
+            })}
 
             <Text>Members:</Text>
 
-            {members.map((userData, index) => (
-                <MemberCard key={index} userData={userData} navigation={navigation} />
-            ))}
-        </View>
+            {members.map((userData, index) => {
+                const handleOnPress = () => {
+                    navigation.navigate("PublicProfile", { uid: userData.uid! })
+                }
+                return (
+                    <MemberCard key={index} userData={userData} navigation={navigation} handleOnPress={handleOnPress} />
+                )
+            })}
+        </ScrollView>
     )
 }
 

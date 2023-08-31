@@ -73,7 +73,7 @@ export interface PrivateUserInfo {
  * This is used when the UID is needed that is not the currently logged in user.
  */
 export interface PublicUserInfoUID extends PublicUserInfo {
-    uid?: string
+    uid: string
 }
 
 /**
