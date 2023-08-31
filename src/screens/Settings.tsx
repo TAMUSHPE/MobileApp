@@ -1,6 +1,6 @@
 import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
-import { SettingsStackParams } from '../types/Navigation';
+import { MainStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import { auth } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
@@ -21,7 +21,7 @@ import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsLis
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
  */
-const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
+const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const { userInfo } = useContext(UserContext) ?? {};
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
@@ -96,7 +96,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackPara
                 mainText='About'
                 subText='Information about the app'
                 darkMode={darkMode}
-                onPress={() => navigation.navigate("AboutScreen")}
+                onPress={() => navigation.navigate("AboutSettingsScreen")}
             />
         </ScrollView>
     )
@@ -105,7 +105,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackPara
 /**
  * Screen where user can search the settings for any option they may need. This will redirect them to the respective screen that they have searched for.
  */
-const SearchSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
+const SearchSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     alert("Settings Search and Settings Transition Unimplemented")
     return (
         <SafeAreaView>
@@ -119,7 +119,7 @@ const SearchSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSta
  * Screen where a user can edit a majority of their public info. This includes thing like their profile picture, name, display name, committees, etc...
  * These changes are synced in firebase.
  */
-const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
+const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
     const [loading, setLoading] = useState<boolean>(false);
     const [image, setImage] = useState<Blob | null>(null);
@@ -564,7 +564,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
  * Screen where user can modify how to the app looks. 
  * These changes are synced in firebase.
  */
-const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
+const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const userContext = useContext(UserContext)
     const { userInfo, setUserInfo } = userContext ?? {};
     const [loading, setLoading] = useState<boolean>(false);
@@ -619,7 +619,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
  * Screen where user can both view information about their account and request a change of their email and/or password.
  * These changes will go through firebase where an email will be sent to the user. 
  */
-const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
+const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
@@ -659,7 +659,7 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<SettingsSt
 /**
  * This screen contains information about the app and info that may be useful to developers.
  */
-const AboutScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>) => {
+const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const pkg: any = require("../../package.json");
     const { userInfo } = useContext(UserContext) ?? {};
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
@@ -683,4 +683,4 @@ const AboutScreen = ({ navigation }: NativeStackScreenProps<SettingsStackParams>
 };
 
 
-export { SettingsScreen, SearchSettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutScreen };
+export { SettingsScreen, SearchSettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen };
