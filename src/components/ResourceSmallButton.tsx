@@ -12,6 +12,11 @@ const ResourceSmallButton: React.FC<ResourceSmallButtonProps> = ({ items }) => {
     const { url, image, 'bg-color': bgColor } = items;
 
     const handlePress = useCallback(async () => {
+        if (!url) {
+            console.warn(`URL is Empty/Falsy when calling handlePress(): ${url}`);
+            return;
+        }
+
         const supported = await Linking.canOpenURL(url);
 
         if (supported) {

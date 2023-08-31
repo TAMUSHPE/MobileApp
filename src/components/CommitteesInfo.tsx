@@ -54,13 +54,23 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee }) => 
     }, [selectedCommittee.name]);
 
     const handleLinkPress = async (url: string) => {
-        const supported = await Linking.canOpenURL(url);
-
-        if (supported) {
-            await Linking.openURL(url);
-        } else {
-            console.log(`Don't know how to open this URL: ${url}`);
+        if (!url) {
+            console.warn(`Empty/Falsy URL passed to handleLinkPress(): ${url}`);
+            return;
         }
+
+        await Linking.canOpenURL(url)
+            .then(async (supported) => {
+                if (supported) {
+                    await Linking.openURL(url)
+                        .catch((err) => console.error(`Issue opening url: ${err}`));
+                } else {
+                    console.warn(`Don't know how to open this URL: ${url}`);
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+            });
     };
 
     return (
