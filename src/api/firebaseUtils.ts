@@ -1,8 +1,8 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
-import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
+import { PrivateUserInfo, PublicUserInfo, PublicUserInfoUID, User } from "../types/User";
 import { Committee } from "../types/Committees";
 
 
@@ -121,6 +121,62 @@ export const getUserByEmail = async (email: string): Promise<{userData: PublicUs
     }
 }
 
+export const getOfficers = async (): Promise<PublicUserInfoUID[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const q = query(
+            userRef,
+             where("roles.officer", "==", true),
+             orderBy("name")
+        );
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const officers = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            }
+        });
+
+        return officers;
+
+    } catch (error) {
+        console.error("Error fetching officers:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
+export const getMembersExcludeOfficers = async (): Promise<PublicUserInfoUID[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const q = query(
+            userRef,
+             where("roles.officer", "==", false),
+             orderBy("name")
+        );
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const members = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            }
+        });
+
+        return members;
+
+    } catch (error) {
+        console.error("Error fetching members:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
 /**
  * Sets the public data of the currently logged-in user. This data is readable by anyone.
  * 
@@ -168,6 +224,9 @@ export const initializeCurrentUserData = async (): Promise<User> => {
         photoURL: auth.currentUser?.photoURL || "",
         roles: {
             reader: true,
+            officer: false,
+            admin: false,
+            developer: false,
         },
     };
 

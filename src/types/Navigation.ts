@@ -99,5 +99,14 @@ export type TestBankProps = {
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 
+export type MembersProps = {
+    userData?: PublicUserInfoUID
+    handleOnPress?: any
+    navigation: NativeStackNavigationProp<MembersStackParams>
+}
+
+export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScreen">;
+
+// routes prop for screens (not components) 
+export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
-export type MembersProps = NativeStackScreenProps<MembersStackParams, "PublicProfile">;
