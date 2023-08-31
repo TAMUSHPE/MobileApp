@@ -1,7 +1,7 @@
 
 import { ImageSourcePropType } from "react-native";
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
-import type {RouteProp} from '@react-navigation/native';
+import type { RouteProp } from '@react-navigation/native';
 import { PublicUserInfoUID } from "./User";
 import { Test } from '../types/GoogleSheetsTypes';
 
@@ -10,9 +10,12 @@ export type MainStackParams = {
     HomeDrawer: HomeDrawerParams;
     HomeBottomTabs: undefined;
     AdminDashboard: undefined;
-    SettingsScreen: {
-        userId: number;
-    };
+    SettingsScreen: undefined;
+    SearchSettingsScreen: undefined;
+    ProfileSettingsScreen: undefined;
+    DisplaySettingsScreen: undefined;
+    AccountSettingsScreen: undefined;
+    AboutSettingsScreen: undefined;
 };
 
 export type AuthStackParams = {
@@ -76,8 +79,8 @@ export type HomeBottomTabParams = {
 };
 
 export type ResourcesProps = {
-    items:{
-        title:string;
+    items: {
+        title: string;
         screen: keyof ResourcesStackParams;
         image: ImageSourcePropType;
         "bg-color": string;
@@ -95,9 +98,6 @@ export type TestBankProps = {
     testData: Test;
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
-
-export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
-export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScreen">;
 
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
 export type MembersProps = NativeStackScreenProps<MembersStackParams, "PublicProfile">;

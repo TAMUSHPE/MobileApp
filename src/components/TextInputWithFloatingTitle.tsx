@@ -1,18 +1,35 @@
 import { View, Text, Animated, TextInput } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 
-const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleStartY, titleEndY, componentStyle, textInputStyle, focusTextStyle, blurTextStyle, placeholderText, maxCharacters, lineCount, isMultiline }: { setTextFunction: Function, inputValue: string | undefined, title?: string, titleStartY?: number, titleEndY?: number, componentStyle?: string, textInputStyle?: string, focusTextStyle?: string, blurTextStyle?: string, placeholderText?: string, maxCharacters?: number, lineCount?: number, isMultiline?: boolean }) => {
-    const [titleStyle, setTitleStyle] = useState<string | undefined>(blurTextStyle ?? "");
+type TextInputWithFloatingTitleProps = {
+    setTextFunction: (text: string) => any,
+    inputValue: string | undefined,
+    title?: string,
+    titleStartY?: number,
+    titleEndY?: number,
+    componentClassName?: string,
+    textInputClassName?: string,
+    titleClassName?: string,
+    focusTitleClassName?: string,
+    blurTitleClassName?: string,
+    placeholderText?: string,
+    maxCharacters?: number,
+    lineCount?: number,
+    isMultiline?: boolean
+}
+
+const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleStartY, titleEndY, componentClassName, textInputClassName, titleClassName, focusTitleClassName, blurTitleClassName, placeholderText, maxCharacters, lineCount, isMultiline }: TextInputWithFloatingTitleProps) => {
+    const [currentTitleClassName, setCurrentTitleClassName] = useState<string | undefined>(titleClassName ?? blurTitleClassName ?? "");
     const moveTitle = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
         if (inputValue !== "") {
             moveTitleTop();
-            setTitleStyle(focusTextStyle);
+            setCurrentTitleClassName(titleClassName ? titleClassName : focusTitleClassName);
         }
         else {
             moveTitleBottom();
-            setTitleStyle(blurTextStyle);
+            setCurrentTitleClassName(titleClassName ? titleClassName : blurTitleClassName);
         }
     });
 
@@ -34,19 +51,19 @@ const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleS
 
     const yVal = moveTitle.interpolate({
         inputRange: [0, 1],
-        outputRange: [titleStartY ?? 0, titleEndY ?? 0]
+        outputRange: [titleStartY ?? 20, titleEndY ?? 0]
     });
 
     return (
-        <View className={componentStyle}>
+        <View className={componentClassName}>
             <Animated.View style={{
                 transform: [{ translateY: yVal }],
             }}>
-                <Text className={titleStyle}>{title ?? "Title"}</Text>
+                <Text className={titleClassName}>{title ?? "Title"}</Text>
             </Animated.View>
             <TextInput
                 placeholder={placeholderText ?? ""}
-                className={textInputStyle ?? ""}
+                className={textInputClassName ?? ""}
                 multiline={isMultiline ?? false}
                 value={inputValue ?? ""}
                 numberOfLines={lineCount ?? 1}

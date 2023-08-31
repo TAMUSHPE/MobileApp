@@ -7,13 +7,13 @@ export type CommitteeData = {
 };
 
 export const committeesList: Array<CommitteeData> = [
-    { id: 1, name: "Technical Affairs", color: "bg-gray-500", },
-    { id: 2, name: "MentorSHPE", color: "bg-slate-500", },
-    { id: 3, name: "Scholastic", color: "bg-yellow-500", },
-    { id: 4, name: "SHPEtinas", color: "bg-green-500", },
-    { id: 5, name: "Secretary", color: "bg-indigo-500", },
-    { id: 6, name: "Public Relations", color: "bg-pink-500", },
-    { id: 7, name: "Internal Affairs", color: "bg-blue-500", },
+    { id: 1, name: "Technical Affairs", color: "#777", },
+    { id: 2, name: "MentorSHPE", color: "#404e5a", },
+    { id: 3, name: "Scholastic", color: "#F2CC10", },
+    { id: 4, name: "SHPEtinas", color: "#1EFF42", },
+    { id: 5, name: "Secretary", color: "#FFA0D5", },
+    { id: 6, name: "Public Relations", color: "#9337FF", },
+    { id: 7, name: "Internal Affairs", color: "#051DDB", },
 ];
 
 /**
@@ -51,6 +51,14 @@ export interface PublicUserInfo {
 };
 
 /**
+ * This is seperate from PublicUserInfo because the UID is not stored in the document.
+ * This is used when the UID is needed that is not the currently logged in user.
+ */
+export interface PublicUserInfoUID extends PublicUserInfo {
+    uid?: string
+}
+
+/**
  * This interface represents the settings for the application.
  * Different sliders and values will be added to this over time.
  */
@@ -68,13 +76,14 @@ export interface PrivateUserInfo {
     expoPushTokens?: string[];
 };
 
+
 /**
- * This is seperate from PublicUserInfo because the UID is not stored in the document.
- * This is used when the UID is needed that is not the currently logged in user.
+ * Data which is used to moderate a user's functionality in the app.
+ * This information should be viewable by the user and app admins. This data should NOT be able to be modified by the user. 
  */
-export interface PublicUserInfoUID extends PublicUserInfo {
-    uid?: string
-}
+export interface UserModerationData{
+    canUseKnockOnWall?: boolean;
+};
 
 /**
  * This interface represents a user as it is stored in firebase-auth.
@@ -84,9 +93,9 @@ export interface User {
     publicInfo?: PublicUserInfo;
     private?: {
         privateInfo?: PrivateUserInfo | undefined;
+        moderationData?: UserModerationData;
     }
 };
-
 
 export interface MemberStatus {
     uid: string;
