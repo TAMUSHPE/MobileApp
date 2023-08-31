@@ -10,7 +10,8 @@
     "build-android": "npx expo prebuild && npx expo run:android",
     "build-ios": "npx expo prebuild && npx expo run:ios",
     "go": "npx expo start --go",
-    "go-tunnel": "npx expo start --tunnel --go"
+    "go-tunnel": "npx expo start --tunnel --go",
+    "go-localhost": "npx expo start --localhost --go"
   },
   "dependencies": {
     "@babel/preset-env": "^7.22.9",

@@ -1,20 +1,30 @@
 /**  Matches generic email pattern. {name}@{second-level domain}.{top-level domain} */
-export const validateEmail = (email: string): boolean => {
+export const validateEmail = (email: any): boolean => {
     const emailRegex: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     return typeof email == 'string' && emailRegex.test(email);
 };
 
 /**  Matches TAMU email pattern. {name}@tamu.edu */
-export const validateTamuEmail = (email: string): boolean => {
+export const validateTamuEmail = (email: any): boolean => {
     const emailRegex: RegExp = /^[A-Z0-9._%+-]+@(tamu.edu)$/i;
     return typeof email == 'string' && emailRegex.test(email);
 };
 
 /** Matches passwords with 4-64 characters with characters being alphanumeric or any special characters on a standard qwerty keyboard */
-export const validatePassword = (password: string): boolean => {
+export const validatePassword = (password: any): boolean => {
     const passwordRegex: RegExp = /^[A-Z0-9 !"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{4,64}$/i;
     return typeof password == 'string' && passwordRegex.test(password);
 };
+
+/** Checks if a display name is both within a length and unique. Alerts user of issue should it arise. Currently stubbed */
+export const validateDisplayName = (displayName: any): boolean => {
+    return typeof displayName == 'string' && displayName.length > 0 && displayName.length <= 80;
+};
+
+/** Checks if a name is both within a length. Alerts user of issue should it arise. Currently stubbed  */
+export const validateName = (name: any): boolean => {
+    return typeof name == 'string' && name.length > 0 && name.length <= 80;
+}
 
 /** Values used for password strength calculation */
 export enum PasswordStrength {
@@ -46,3 +56,4 @@ export const evaluatePasswordStrength = (password: string): number => {
         return PasswordStrength.STRONG;
     }
 };
+
