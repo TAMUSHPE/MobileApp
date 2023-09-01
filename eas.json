@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 3.14.0"
+    "version": ">= 4.1.2"
   },
   "build": {
     "development": {
@@ -10,12 +10,17 @@
       },
       "ios": {
         "buildConfiguration": "Debug"
-      }
+      },
+      "channel": "development"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "channel": "staging"
     },
-    "production": {}
+    "production": {
+      "autoIncrement": true,
+      "channel": "production"
+    }
   },
   "submit": {
     "production": {}

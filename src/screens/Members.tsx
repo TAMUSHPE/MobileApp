@@ -1,19 +1,26 @@
-import { View, Text, TouchableOpacity } from 'react-native';
-import React from 'react';
+import { View, Text } from 'react-native';
+import React, { useEffect } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { MembersStackNavigatorParamList } from '../types/Navigation';
+import { MembersStackParams } from '../types/Navigation';
+import MembersList from '../components/MembersList';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackNavigatorParamList>) => {
+const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
+    /**
+     * TODO:
+     * Get list of officers from firebase in alphabet order
+     * Get list of members excluding officers from firebase in alphabet order
+     * Display officer -> members where only officers will have year + committee tags while members will only include year
+     * 
+     * Add Filtering System by Officer, year, committee, major, name
+     * 
+     */
+
     return (
-        <View className="flex flex-1 flex-col justify-center items-center">
-            <TouchableOpacity
-                className='flex justify-center items-center mt-4 p-6 rounded-md bg-[#500]'
-                onPress={() => {
-                    navigation.navigate("PublicProfile", {email: "jhernandez18@tamu.edu"});
-                }}>
-                <Text className='font-bold text-white text-5xl'>go to a member public profile</Text>
-            </TouchableOpacity>
-        </View>
+        <SafeAreaView>
+            <Text>Members Screen</Text>
+            <MembersList navigation={navigation} />
+        </SafeAreaView >
     )
 }
 

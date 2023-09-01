@@ -1,16 +1,17 @@
 import { View, Text, TextInput, KeyboardAvoidingView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { auth } from '../config/firebaseConfig';
+import React, { useContext, useLayoutEffect, useState } from 'react';
+import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { LoginStackNavigatorParamList } from '../types/Navigation';
-import React, { useLayoutEffect, useState } from 'react';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
+import { getUser, initializeCurrentUserData } from '../api/firebaseUtils';
+import { auth } from '../config/firebaseConfig';
 import { evaluatePasswordStrength, validateEmail, validatePassword } from '../helpers/validation';
-import { initializeCurrentUserData } from '../api/firebaseUtils';
 import InteractButton from '../components/InteractButton';
+import { AuthStackParams } from '../types/Navigation';
+import { UserContext } from '../context/UserContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
-    // Hooks
+const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [displayName, setDisplayName] = useState<string>("");
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -19,6 +20,12 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
     const [passwordStrengthText, setPasswordStrengthText] = useState<string>("INVALID\n- Minimum 4 characters\n- Valid characters: : A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~");
 
     const inputStyle = "bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1";
+
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext ?? {};
+    if (!setUserInfo) {
+        return null;
+    }
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -49,8 +56,15 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
 
                 await initializeCurrentUserData();
             })
+            .then(async () => {
+                // On Account Creation, save user to local
+                // This is to deal with user that close app during profile setup
+                const authUser = await getUser(auth.currentUser?.uid!)
+                await AsyncStorage.setItem("@user", JSON.stringify(authUser));
+                setUserInfo(authUser); // Navigates to Home
+            })
             .then(() => {
-                navigation.replace("ProfileSetup");
+                navigation.navigate("ProfileSetup");
             })
             .catch((err) => { console.error(err.message); });
     }
@@ -139,10 +153,11 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<LoginStackNavigat
                     />
                 </View>
                 <InteractButton
-                    pressFunction={() => registerUser()}
+                    onPress={() => registerUser()}
                     label="Register Account"
-                    buttonStyle="bg-red mt-5 rounded-xl"
-                    textStyle="text-white font-bold"
+                    buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
+                    textClassName="text-white font-bold"
+                    underlayColor='#A22E2B'
                 />
             </KeyboardAvoidingView>
             <View className="my-10 border-t-2 border-t-[#a8a8a8] w-11/12" />

@@ -1,20 +1,17 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { CommitteesStackNavigatorParamList } from '../types/Navigation';
-
 import CommitteesScreen from "../screens/Committees";
+import { CommitteesStackParams } from '../types/Navigation';
+import PublicProfileScreen from "../screens/PublicProfile";
 
-const CommitteesStackNavigator = () => {
-    const CommitteesStack = createNativeStackNavigator<CommitteesStackNavigatorParamList>();
+const CommitteesStack = () => {
+    const Stack = createNativeStackNavigator<CommitteesStackParams>();
     return (
-        <CommitteesStack.Navigator
-            screenOptions={{
-                headerShown: false,
-            }}
-        >
-            <CommitteesStack.Screen name="CommitteesScreen" component={CommitteesScreen} />
-        </CommitteesStack.Navigator>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="CommitteesScreen" component={CommitteesScreen} />
+            <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
+        </Stack.Navigator>
     );
 }
 
-export { CommitteesStackNavigator }
+export { CommitteesStack }

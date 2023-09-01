@@ -1,25 +1,47 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext } from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { MainStackNavigatorParamList } from '../types/Navigation';
-import { LoginStackNavigator } from "./LoginStack";
-import { HomeStackNavigator } from "./HomeStack";
-import { ProfileSetupStackNavigator } from "./ProfileSetupStack";
+import HomeBottomTabs from "./HomeBottomTabs";
+import AdminDashboard from "../screens/AdminDashboard";
+import { MainStackParams } from '../types/Navigation';
+import { SettingsScreen, SearchSettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen } from "../screens/Settings";
 import { UserContext } from "../context/UserContext";
 
-// Screens  
+const MainStack = () => {
+    const Stack = createNativeStackNavigator<MainStackParams>();
+    const { userInfo } = useContext(UserContext) ?? {};
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
-const MainStackNavigator = () => {
-    const MainStack = createNativeStackNavigator<MainStackNavigatorParamList>();
     return (
-        <MainStack.Navigator
-            screenOptions={{
-                headerShown: false,
-            }}
-        >
-            <MainStack.Screen name="LoginStack" component={LoginStackNavigator} />
-            <MainStack.Screen name="ProfileSetup" component={ProfileSetupStackNavigator} />
-        </MainStack.Navigator>
+        <Stack.Navigator initialRouteName="HomeBottomTabs">
+            {/* Main components */}
+            <Stack.Group
+                screenOptions={{
+                    headerShown: false
+                }}
+            >
+                <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
+                <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+            </Stack.Group>
+
+            {/* Settings Screens */}
+            <Stack.Group
+                screenOptions={{
+                    headerShown: true,
+                    headerStyle: {
+                        backgroundColor: darkMode ? "#2a2a2a" : "#FFF",
+                    },
+                    headerTintColor: darkMode ? "#F2F2F2" : "#000",
+                }}
+            >
+                <Stack.Screen name="SettingsScreen" component={SettingsScreen} options={{ title: "Settings" }} />
+                <Stack.Screen name="SearchSettingsScreen" component={SearchSettingsScreen} options={{ title: "Search Settings" }} />
+                <Stack.Screen name="ProfileSettingsScreen" component={ProfileSettingsScreen} options={{ title: "Profile Settings" }} />
+                <Stack.Screen name="DisplaySettingsScreen" component={DisplaySettingsScreen} options={{ title: "Display Settings" }} />
+                <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} options={{ title: "Account Settings/Info" }} />
+                <Stack.Screen name="AboutSettingsScreen" component={AboutSettingsScreen} options={{ title: "About" }} />
+            </Stack.Group>
+        </Stack.Navigator>
     );
 };
 
-export { MainStackNavigator };
+export { MainStack };

@@ -1,44 +1,120 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { Image, TouchableOpacity, View, Text } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
-import { HomeDrawerNavigatorParamList } from '../types/Navigation';
-import { Image, TouchableOpacity, View } from 'react-native';
-import { auth } from '../config/firebaseConfig';
-import { signOut } from 'firebase/auth';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { signOut } from 'firebase/auth';
+import { doc, setDoc, arrayRemove } from 'firebase/firestore';
+import { auth, db } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
-
-// Screens
+import ProfileBadge from '../components/ProfileBadge';
 import HomeScreen from '../screens/Home';
+import AdminDashboardStack from './AdminDashboardStack';
+import { User, committeesList } from '../types/User';
+import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
+import { StatusBar } from 'expo-status-bar';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
+    const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const userContext = useContext(UserContext);
-    if (!userContext) {
-        return null;
+    const { userInfo, setUserInfo } = userContext ?? {};
+
+    const removeExpoPushToken = async () => {
+        const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
+        const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
+        await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true })
+        await AsyncStorage.removeItem('@expoPushToken');
     }
 
-    const { setUserInfo } = userContext;
-    const removeLocalUser = () => {
-        AsyncStorage.removeItem('@user')
-            .catch(e => {
-                console.log(e);
-            });
-    }
-    const signOutUser = () => {
+    const signOutUser = async () => {
+        await removeExpoPushToken();
         signOut(auth)
             .then(() => {
-                // Once signed out, forces user to login screen and resets navigation stack so that login is the only element.
-                removeLocalUser();
-                setUserInfo(undefined);
+                // Once signed out, forces user to login screen by setting the current user info to "undefined"
+                AsyncStorage.removeItem('@user')
+                setUserInfo ? setUserInfo(undefined) : console.warn("setUserInfo is undefined.");
             })
-            .catch((err) => console.error(err));
+            .catch((error) => console.error(error));
     };
 
+    useEffect(() => {
+        const getLocalUser = () => {
+            AsyncStorage.getItem("@user")
+                .then(userJSON => {
+                    const userData = userJSON ? JSON.parse(userJSON) : undefined;
+                    setLocalUser(userData);
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        };
+        getLocalUser();
+    }, [])
+
+    const drawerItemLabelStyle = {
+        color: userInfo?.private?.privateInfo?.settings?.darkMode ? "#EEE" : "#000"
+    }
+
     return (
-        <DrawerContentScrollView {...props}>
-            <DrawerItem label="Settings" onPress={() => props.navigation.navigate("SettingsScreen", { userId: 1234 })} />
-            <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
+        <DrawerContentScrollView
+            {...props}
+            contentContainerStyle={{
+                backgroundColor: "#191740"/* "dark-navy" is #191740. */,
+                height: "100%"
+            }}
+        >
+            <StatusBar style='inverted' />
+            <View className="flex-col bg-dark-navy w-full px-4 pb-4">
+                <View className='flex-row mb-2 items-center'>
+                    <Image
+                        className="flex w-16 h-16 rounded-full mr-2"
+                        defaultSource={Images.DEFAULT_USER_PICTURE}
+                        source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
+                    />
+                    <View className='flex-1 flex-col max-w-full'>
+                        <Text className='text-white text-xl break-words mb-1'>{userInfo?.publicInfo?.displayName ?? "Username"}</Text>
+                        <Text className='text-white text-sm break-words'>{userInfo?.publicInfo?.name ?? "Name"}</Text>
+                        <View className='flex-row items-center'>
+                            <View className='rounded-full w-2 h-2 bg-orange mr-1' />
+                            <Text className='text-white text-sm break-words'>{`${userInfo?.publicInfo?.points ?? 0} points`}</Text>
+                        </View>
+                    </View>
+                </View>
+                <View className="flex-row flex-wrap">
+                    <ProfileBadge
+                        text={userInfo?.publicInfo?.classYear}
+                        badgeClassName='px-2 py-1 bg-maroon rounded-full inline-block mr-1 mb-1'
+                        badgeColor='#500000'
+                        textClassName='text-center text-xs'
+                    />
+                    <ProfileBadge
+                        text={userInfo?.publicInfo?.major}
+                        badgeClassName='px-2 py-1 bg-pale-blue rounded-full inline-block mr-1 mb-1'
+                        badgeColor='#72A9EF'
+                        textClassName='text-center text-xs'
+                    />
+                    {userInfo?.publicInfo?.committees?.map((committeeName: string) => {
+                        const committeeInfo = committeesList.find(element => element.name == committeeName);
+                        return (
+                            <ProfileBadge
+                                key={committeeName}
+                                text={committeeName}
+                                badgeColor={committeeInfo ? committeeInfo?.color : ""}
+                                textClassName='text-black text-center text-xs'
+                            />
+                        );
+                    })}
+                </View>
+            </View>
+            <View className={`${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} flex-grow`}>
+                <DrawerItem label="Settings" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("SettingsScreen")} />
+                {
+                    localUser?.publicInfo?.roles?.officer?.valueOf() &&
+                    <DrawerItem label="Admin Dashboard" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("AdminDashboard")} />
+                }
+                <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
+            </View>
         </DrawerContentScrollView>
     );
 };
@@ -60,19 +136,19 @@ const HomeDrawerHeader = (props: DrawerHeaderProps) => {
                 onPress={() => props.navigation.openDrawer()}
             >
                 <Image
-                    className="flex w-10 h-10 rounded-full"
+                    className="flex w-12 h-12 rounded-full"
                     defaultSource={Images.DEFAULT_USER_PICTURE}
                     source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL as string } : Images.DEFAULT_USER_PICTURE}
                 />
             </TouchableOpacity>
-        </SafeAreaView >
+        </SafeAreaView>
     );
 }
 
 const HomeDrawer = () => {
-    const HomeDrawer = createDrawerNavigator<HomeDrawerNavigatorParamList>();
+    const Drawer = createDrawerNavigator<HomeDrawerParams>();
     return (
-        <HomeDrawer.Navigator
+        <Drawer.Navigator
             initialRouteName="HomeScreen"
             drawerContent={(props) => <HomeDrawerContent {...props} />}
             screenOptions={{
@@ -80,8 +156,9 @@ const HomeDrawer = () => {
                 drawerPosition: "right",
             }}
         >
-            <HomeDrawer.Screen name="HomeScreen" component={HomeScreen} />
-        </HomeDrawer.Navigator>
+            <Drawer.Screen name="HomeScreen" component={HomeScreen} />
+            <Drawer.Screen name="AdminDashboardStack" component={AdminDashboardStack} />
+        </Drawer.Navigator>
     );
 };
 
