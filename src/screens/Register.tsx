@@ -1,13 +1,15 @@
 import { View, Text, TextInput, KeyboardAvoidingView } from 'react-native';
-import React, { useLayoutEffect, useState } from 'react';
+import React, { useContext, useLayoutEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
-import { initializeCurrentUserData } from '../api/firebaseUtils';
+import { getUser, initializeCurrentUserData } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
 import { evaluatePasswordStrength, validateEmail, validatePassword } from '../helpers/validation';
 import InteractButton from '../components/InteractButton';
 import { AuthStackParams } from '../types/Navigation';
+import { UserContext } from '../context/UserContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [displayName, setDisplayName] = useState<string>("");
@@ -18,6 +20,12 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     const [passwordStrengthText, setPasswordStrengthText] = useState<string>("INVALID\n- Minimum 4 characters\n- Valid characters: : A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~");
 
     const inputStyle = "bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1";
+
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext ?? {};
+    if (!setUserInfo) {
+        return null;
+    }
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -47,6 +55,13 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                 });
 
                 await initializeCurrentUserData();
+            })
+            .then(async () => {
+                // On Account Creation, save user to local
+                // This is to deal with user that close app during profile setup
+                const authUser = await getUser(auth.currentUser?.uid!)
+                await AsyncStorage.setItem("@user", JSON.stringify(authUser));
+                setUserInfo(authUser); // Navigates to Home
             })
             .then(() => {
                 navigation.navigate("ProfileSetup");
