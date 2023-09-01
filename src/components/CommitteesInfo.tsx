@@ -3,15 +3,16 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Images } from '../../assets';
 import { Committee } from '../types/Committees';
 import { getCommitteeInfo, getPublicUserData } from '../api/firebaseUtils';
-import { PublicUserInfo } from '../types/User';
+import { PublicUserInfo, PublicUserInfoUID } from '../types/User';
+import { CommitteesInfoProp } from '../types/Navigation';
 
-const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee }) => {
+const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navigation }) => {
     if (!selectedCommittee) {
         return null; // replace with a proper empty screen
     }
     const [committeeInfo, setCommitteeInfo] = useState<Committee | null>(null);
-    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfo | null>(null);
-    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfo[]>([]);
+    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfoUID | null>(null);
+    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfoUID[]>([]);
 
     useEffect(() => {
         const fetchCommitteeInfo = async () => {
@@ -39,14 +40,17 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee }) => 
         const fetchHeadUserData = async (uid: string) => {
             const fetchedInfo = await getPublicUserData(uid);
             if (fetchedInfo) {
-                setHeadUserInfo(fetchedInfo);
+                setHeadUserInfo({
+                    ...fetchedInfo,
+                    uid,
+                });
             }
         };
 
         const fetchLeadUserData = async (uid: string) => {
             const fetchedInfo = await getPublicUserData(uid);
             if (fetchedInfo) {
-                setLeadsUserInfo(prevState => [...prevState, fetchedInfo]);
+                setLeadsUserInfo(prevState => [...prevState, { ...fetchedInfo, uid }]);
             }
         }
 
@@ -89,7 +93,12 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee }) => 
                     <View className={`flex-row justify-between ${leadsUserInfo.length > 0 ? "mx-4" : "mx-10"} items-center`}>
                         <View className={`${leadsUserInfo.length > 0 ? "w-[1/3]" : "w-[1/2] "} items-center`}>
                             <Text>Head</Text>
-                            <Image source={headUserInfo?.photoURL ? { uri: headUserInfo?.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-8 w-8 mt-2 rounded-full' />
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate("PublicProfile", { uid: headUserInfo?.uid! })}
+                            >
+
+                                <Image source={headUserInfo?.photoURL ? { uri: headUserInfo?.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-8 w-8 mt-2 rounded-full' />
+                            </TouchableOpacity>
                         </View>
 
                         {leadsUserInfo.length > 0 &&
@@ -97,8 +106,12 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee }) => 
                                 <Text>Lead</Text>
                                 <View className='flex-row-reverse mt-2'>
                                     {leadsUserInfo.map((lead, index) => (
-                                        <View className='w-4 '>
-                                            <Image source={leadsUserInfo[index].photoURL ? { uri: leadsUserInfo[index].photoURL } : Images.DEFAULT_USER_PICTURE} className='h-8 w-8 rounded-full' />
+                                        <View className='w-4' key={index}>
+                                            <TouchableOpacity
+                                                onPress={() => navigation.navigate("PublicProfile", { uid: lead.uid! })}
+                                            >
+                                                <Image source={leadsUserInfo[index].photoURL ? { uri: leadsUserInfo[index].photoURL } : Images.DEFAULT_USER_PICTURE} className='h-8 w-8 rounded-full' />
+                                            </TouchableOpacity>
                                         </View>
                                     ))}
 
@@ -144,8 +157,5 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee }) => 
     )
 }
 
-type CommitteesInfoProp = {
-    selectedCommittee: Committee | null;
-}
 
 export default CommitteesInfo

@@ -3,11 +3,13 @@ import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import CommitteesTab from '../components/CommitteesTab'
 import MemberSHPETab from '../components/MemberSHPETab'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { CommitteesStackParams } from '../types/Navigation'
 
 type CommittesTabs = "Committees" | "MemberSHPE"
 
 
-const Committees = () => {
+const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams>) => {
     const [currentTab, setCurrentTab] = useState<CommittesTabs>("Committees")
 
     return (
@@ -27,7 +29,7 @@ const Committees = () => {
             </View>
 
             {/* Content */}
-            {currentTab === "Committees" && <CommitteesTab />}
+            {currentTab === "Committees" && <CommitteesTab navigation={navigation} />}
             {currentTab === "MemberSHPE" && <MemberSHPETab />}
 
         </SafeAreaView>

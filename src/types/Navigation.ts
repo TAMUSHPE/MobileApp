@@ -4,6 +4,7 @@ import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-naviga
 import type { RouteProp } from '@react-navigation/native';
 import { PublicUserInfoUID } from "./User";
 import { Test } from '../types/GoogleSheetsTypes';
+import { Committee } from "./Committees";
 
 // Stacks
 export type MainStackParams = {
@@ -55,6 +56,9 @@ export type ResourcesStackParams = {
 
 export type CommitteesStackParams = {
     CommitteesScreen: undefined;
+    PublicProfile: {
+        uid: string;
+    };
 }
 
 export type AdminDashboardParams = {
@@ -103,6 +107,11 @@ export type MembersProps = {
     userData?: PublicUserInfoUID
     handleOnPress?: any
     navigation: NativeStackNavigationProp<MembersStackParams>
+}
+
+export type CommitteesInfoProp = {
+    selectedCommittee?: Committee | null
+    navigation: NativeStackNavigationProp<CommitteesStackParams>
 }
 
 export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScreen">;
