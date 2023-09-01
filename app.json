@@ -2,7 +2,8 @@
   "expo": {
     "name": "TAMU SHPE",
     "slug": "TAMU-SHPE",
-    "version": "1.0.0",
+    "version": "0.1.0",
+    "owner": "tamu-shpe",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,6 +18,14 @@
         {
           "photosPermission": "The app can access photos"
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
       ]
     ],
     "assetBundlePatterns": [
@@ -25,15 +34,30 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "scheme": "TAMUSHPE",
+    "scheme": "tamu-shpe",
     "android": {
+      "googleServicesFile": "./google-services.json",
       "package": "com.tamu.shpe",
       "permissions": [
         "android.permission.RECORD_AUDIO"
-      ]
+      ],
+      "versionCode": 2
     },
     "ios": {
-      "bundleIdentifier": "com.tamu.shpe"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "bundleIdentifier": "com.tamu.shpe",
+      "buildNumber": "9"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5b75342a-5739-4b5b-838f-89ff1fe3979d"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/5b75342a-5739-4b5b-838f-89ff1fe3979d"
     }
   }
 }

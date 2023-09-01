@@ -1,23 +1,18 @@
 import React from "react";
 import { createStackNavigator } from '@react-navigation/stack';
-import { ProfileSetupStackNavigatorParamList } from "../types/Navigation";
 import { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupCommittees } from "../screens/ProfileSetup";
+import { ProfileSetupStackParams } from "../types/Navigation";
 
-
-const ProfileSetupStackNavigator = () => {
-    const ProfileSetupTabs = createStackNavigator<ProfileSetupStackNavigatorParamList>();
+const ProfileSetupStack = () => {
+    const Stack = createStackNavigator<ProfileSetupStackParams>();
     return (
-        <ProfileSetupTabs.Navigator
-        screenOptions={{
-            headerShown: false,
-        }}
-        >
-            <ProfileSetupTabs.Screen name="SetupNameAndBio" component={SetupNameAndBio} />
-            <ProfileSetupTabs.Screen name="SetupProfilePicture" component={SetupProfilePicture} />
-            <ProfileSetupTabs.Screen name="SetupAcademicInformation" component={SetupAcademicInformation} />
-            <ProfileSetupTabs.Screen name="SetupCommittees" component={SetupCommittees} />
-        </ProfileSetupTabs.Navigator>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="SetupNameAndBio" component={SetupNameAndBio} />
+            <Stack.Screen name="SetupProfilePicture" component={SetupProfilePicture} />
+            <Stack.Screen name="SetupAcademicInformation" component={SetupAcademicInformation} />
+            <Stack.Screen name="SetupCommittees" component={SetupCommittees} />
+        </Stack.Navigator>
     );
 };
 
-export { ProfileSetupStackNavigator };
+export { ProfileSetupStack };

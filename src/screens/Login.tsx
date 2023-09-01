@@ -1,58 +1,88 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Image } from "react-native";
-import React, { useState, useContext } from "react";
-import { auth } from "../config/firebaseConfig";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { LoginStackNavigatorParamList } from "../types/Navigation";
+import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator } from "react-native";
+import React, { useEffect, useState, useContext } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import InteractButton from "../components/InteractButton";
-import { Images } from "../../assets";
-import { getUser, initializeCurrentUserData } from "../api/firebaseUtils";
-import { signInWithEmailAndPassword, signInAnonymously, UserCredential, updateProfile } from "firebase/auth";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Google from "expo-auth-session/providers/google";
+import { auth } from "../config/firebaseConfig";
+import { signInWithEmailAndPassword, signInWithCredential, GoogleAuthProvider } from "firebase/auth";
+import { initializeCurrentUserData } from "../api/firebaseUtils";
 import { UserContext } from "../context/UserContext";
+import InteractButton from "../components/InteractButton";
+import { AuthStackParams } from "../types/Navigation";
+import { Images } from "../../assets";
 
-const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNavigatorParamList>) => {
-    // Hooks
+const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
 
-    // User Context
     const userContext = useContext(UserContext);
-    if (!userContext) {
+    const { userInfo, setUserInfo } = userContext ?? {};
+    if (!setUserInfo) {
         return null;
     }
-    const { userInfo, setUserInfo } = userContext;
 
+    const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+        iosClientId: "600060629240-m7bu9ba9namtlmo9sii2s8qs2j9k5bt4.apps.googleusercontent.com",
+        androidClientId: "600060629240-bdfsdcfmbrjh5skdc9qufchrmcnm26fb.apps.googleusercontent.com",
+    });
 
-    const signIn = async () => {
-        signInWithEmailAndPassword(auth, email, password)
-            .then(async () => {
-                return await initializeCurrentUserData();
+    /**
+     * Due to asynchronous problem, the value of completedAccountSetup may
+     * initially be undefined. This function will check the value when userInfo
+     * is changed until it's either true or false.
+     */
+    useEffect(() => {
+        if (userInfo?.private?.privateInfo?.completedAccountSetup === false) {
+            navigation.navigate("ProfileSetup");
+        }
+    }, [userInfo]);
+
+    const handleUserAuth = () => {
+        setLoading(true);
+        initializeCurrentUserData()
+            .then(userFromFirebase => {
+                AsyncStorage.setItem("@user", JSON.stringify(userFromFirebase))
+                    .then(() => {
+                        setUserInfo(userFromFirebase);
+                    })
+                    .catch(error => {
+                        console.error("Error storing user in AsyncStorage:", error);
+                    });
             })
-            .then(async authUser => {
-                await AsyncStorage.setItem("@user", JSON.stringify(authUser));
-                setUserInfo(authUser);
-
-                if (!userInfo?.private?.privateInfo?.completedAccountSetup) {
-                    navigation.replace("ProfileSetup")
-                }
+            .catch(error => {
+                console.error("Error during user authentication:", error);
             })
-            .catch(err => {
-                console.error(err);
+            .finally(() => {
+                setLoading(false);
             });
+    };
+
+    const emailSignIn = async () => {
+        signInWithEmailAndPassword(auth, email, password)
+            .then(handleUserAuth)
+            .catch((error: Error) => {
+                console.error("Error during email sign-in:", error);
+                alert(error.message);
+            })
     }
 
-    const guestSignIn = () => {
-        signInAnonymously(auth)
-            .then((authUser: UserCredential) => {
-                updateProfile(authUser.user, {
-                    displayName: "Guest Account",
-                    photoURL: "",
+    // Handle Google Sign-In
+    useEffect(() => {
+        if (response?.type === "success") {
+            const { id_token } = response.params;
+            const credential = GoogleAuthProvider.credential(id_token);
+            signInWithCredential(auth, credential)
+                .then(handleUserAuth)
+                .catch(error => {
+                    console.error("Error during Google sign-in:", error);
                 });
-                alert("Login as guest will be depricated in the future.");
-                setUserInfo({}) // Guest Login will be depricated in the future. No need to Fix
-            })
-            .catch((err) => console.error(err.message));
+        }
+    }, [response]);
+
+    const googleSignIn = async () => {
+        promptAsync();
     }
 
     return (
@@ -81,37 +111,36 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<LoginStackNav
                         onChangeText={(text) => setPassword(text)}
                         value={password}
                         inputMode="text"
-                        onSubmitEditing={() => signIn()}
+                        onSubmitEditing={() => emailSignIn()}
                         textContentType="password"
                     />
+                    {loading && (
+                        <ActivityIndicator className="mt-4" size={"large"} />
+                    )}
                 </KeyboardAvoidingView>
                 <View className="flex-col mt-2">
                     <InteractButton
-                        pressFunction={() => signIn()}
+                        onPress={() => emailSignIn()}
                         label="Sign In"
-                        buttonStyle="bg-red mt-5 rounded-xl"
-                        textStyle="text-white font-bold"
+                        buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
+                        textClassName="text-white font-bold"
+                        underlayColor="#A22E2B"
                     />
                     <View className="items-center my-4">
                         <Text className="text-white">Or</Text>
                     </View>
                     <InteractButton
-                        pressFunction={() => navigation.navigate("RegisterScreen")}
+                        onPress={() => navigation.navigate("RegisterScreen")}
                         label="Register Account"
-                        buttonStyle="bg-[#ddd] rounded-xl"
-                        textStyle="text-[#3b3b3b] font-bold"
+                        buttonClassName="justify-center items-center bg-white rounded-xl"
+                        textClassName="text-[#3b3b3b] font-bold"
                     />
                     <InteractButton
-                        pressFunction={() => guestSignIn()}
-                        label="Sign In As Guest"
-                        buttonStyle="bg-[#ddd] mt-2 rounded-xl"
-                        textStyle="text-[#3b3b3b] font-bold"
-                    />
-                    <InteractButton
-                        pressFunction={() => alert("This feature is not implemented")}
-                        label="Sign In with TAMU Google Account"
-                        buttonStyle="bg-[#ddd] mt-2 rounded-xl"
-                        textStyle="text-[#3b3b3b] font-bold"
+                        onPress={() => googleSignIn()}
+                        label="Sign In with Google"
+                        buttonClassName="justify-center items-center bg-white mt-2 rounded-xl"
+                        textClassName="text-[#3b3b3b] font-bold"
+                        iconSource={{ uri: "https://developers.google.com/static/identity/images/g-logo.png" }}
                     />
                 </View>
             </View>
