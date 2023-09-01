@@ -5,7 +5,7 @@ import * as ImagePicker from "expo-image-picker";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDownloadURL } from "firebase/storage";
-import { updateProfile } from 'firebase/auth';
+import { signOut, updateProfile } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
 import { getUser, setPrivateUserData, setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
 import { getBlobFromURI, selectImage } from '../api/fileSelection';
@@ -15,6 +15,7 @@ import InteractButton from '../components/InteractButton';
 import { ProfileSetupStackParams } from '../types/Navigation';
 import { committeesList } from '../types/User';
 import { Images } from '../../assets';
+import { Octicons } from '@expo/vector-icons';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
@@ -23,9 +24,30 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
 
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext ?? {};
+    if (!setUserInfo) {
+        return null;
+    }
+
+    const signOutUser = async () => {
+        signOut(auth)
+            .then(() => {
+                AsyncStorage.removeItem('@user')
+                setUserInfo ? setUserInfo(undefined) : console.warn("setUserInfo is undefined.");
+            })
+            .catch((error) => console.error(error));
+    };
+
     return (
         <SafeAreaView className={safeAreaViewStyle}>
             <View>
+                <TouchableOpacity onPress={() => {
+                    signOutUser();
+                    navigation.goBack()
+                }}>
+                    <Octicons name="chevron-left" size={30} color="white" />
+                </TouchableOpacity>
                 <View className='flex-col items-center mb-20'>
                     <Text className='text-white text-center text-3xl'>Tell Us About Yourself</Text>
                     <Text className='text-white text-center text-lg mt-4'>Please enter your full name{"\n"} below to get started.</Text>
