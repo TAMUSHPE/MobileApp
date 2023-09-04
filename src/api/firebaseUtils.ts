@@ -51,6 +51,8 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
  * @returns - Promise of data. An undefined return means that the file does not exist or the user does not have permissions to access the document.
  */
 export const getPrivateUserData = async (uid: string): Promise<PrivateUserInfo | undefined> => {
+    if(auth.currentUser?.uid != uid) return undefined;
+
     return await getDoc(doc(db, `users/${uid}/private`, "privateInfo"))
         .then((res) => {
             const responseData = res.data()
