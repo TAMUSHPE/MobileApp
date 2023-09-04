@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native'
+import { View } from 'react-native'
 import React, { useState } from 'react'
 import CommitteesInfo from './CommitteesInfo'
 import CommitteesSlider from './CommitteesSlider'

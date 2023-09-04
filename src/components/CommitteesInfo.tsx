@@ -1,9 +1,9 @@
 import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Images } from '../../assets';
 import { Committee } from '../types/Committees';
 import { getCommitteeInfo, getPublicUserData } from '../api/firebaseUtils';
-import { PublicUserInfo, PublicUserInfoUID } from '../types/User';
+import { PublicUserInfoUID } from '../types/User';
 import { CommitteesInfoProp } from '../types/Navigation';
 
 const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navigation }) => {

@@ -1,8 +1,8 @@
-import { View, Text, ScrollView } from 'react-native'
+import { Text, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { getMembersExcludeOfficers, getOfficers } from '../api/firebaseUtils'
 import { MembersProps } from '../types/Navigation'
-import { PublicUserInfo, PublicUserInfoUID } from '../types/User'
+import { PublicUserInfoUID } from '../types/User'
 import MemberCard from './MemberCard'
 
 const MembersList: React.FC<MembersProps> = ({ navigation }) => {
