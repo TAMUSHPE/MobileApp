@@ -87,7 +87,7 @@ export const getUser = async (uid: string): Promise<User | undefined> => {
     }
     else {
         return {
-            publicInfo: publicData!,
+            publicInfo: publicData,
             private: {
                 privateInfo: privateData,
             },
