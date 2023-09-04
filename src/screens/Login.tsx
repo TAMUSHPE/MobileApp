@@ -18,10 +18,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
     const [loading, setLoading] = useState<boolean>(false);
 
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext ?? {};
-    if (!setUserInfo) {
-        return null;
-    }
+    const { userInfo, setUserInfo } = userContext!;
 
     const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
         iosClientId: "600060629240-m7bu9ba9namtlmo9sii2s8qs2j9k5bt4.apps.googleusercontent.com",

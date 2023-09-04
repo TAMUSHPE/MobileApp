@@ -18,7 +18,7 @@ import { StatusBar } from 'expo-status-bar';
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext ?? {};
+    const { userInfo, setUserInfo } = userContext!;
 
     const removeExpoPushToken = async () => {
         const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
@@ -33,7 +33,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             .then(() => {
                 // Once signed out, forces user to login screen by setting the current user info to "undefined"
                 AsyncStorage.removeItem('@user')
-                setUserInfo ? setUserInfo(undefined) : console.warn("setUserInfo is undefined.");
+                setUserInfo(undefined);
             })
             .catch((error) => console.error(error));
     };
