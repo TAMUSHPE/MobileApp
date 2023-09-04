@@ -51,7 +51,7 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
  * @returns - Promise of data. An undefined return means that the file does not exist or the user does not have permissions to access the document.
  */
 export const getPrivateUserData = async (uid: string): Promise<PrivateUserInfo | undefined> => {
-    if(auth.currentUser?.uid != uid) return undefined;
+    if (auth.currentUser?.uid != uid) return undefined;
 
     return await getDoc(doc(db, `users/${uid}/private`, "privateInfo"))
         .then((res) => {
@@ -101,7 +101,7 @@ export const getUser = async (uid: string): Promise<User | undefined> => {
  * @param email Email address associated with a user.
  * @returns Object containing user data and UID, or null if no user found for the provided email.
  */
-export const getUserByEmail = async (email: string): Promise<{userData: PublicUserInfo, userUID: string} | null> => {
+export const getUserByEmail = async (email: string): Promise<{ userData: PublicUserInfo, userUID: string } | null> => {
     try {
         const userRef = collection(db, 'users');
         const q = query(userRef, where("email", "==", email));
@@ -128,8 +128,8 @@ export const getOfficers = async (): Promise<PublicUserInfoUID[]> => {
         const userRef = collection(db, 'users');
         const q = query(
             userRef,
-             where("roles.officer", "==", true),
-             orderBy("name")
+            where("roles.officer", "==", true),
+            orderBy("name")
         );
         const querySnapshot = await getDocs(q);
         if (querySnapshot.empty) {
@@ -156,8 +156,8 @@ export const getMembersExcludeOfficers = async (): Promise<PublicUserInfoUID[]> 
         const userRef = collection(db, 'users');
         const q = query(
             userRef,
-             where("roles.officer", "==", false),
-             orderBy("name")
+            where("roles.officer", "==", false),
+            orderBy("name")
         );
         const querySnapshot = await getDocs(q);
         if (querySnapshot.empty) {
@@ -296,16 +296,16 @@ export const getCommitteeInfo = async (committeeName: string) => {
 
 export const setCommitteeInfo = async (committeeName: string, committeeData: Committee) => {
     try {
-      await setDoc(doc(db, `committees/${committeeName}`), {
-        description: committeeData.description,
-        headUID: committeeData.headUID,
-        leadUIDs: committeeData.leadUIDs,
-        memberApplicationLink: committeeData.memberApplicationLink,
-        leadApplicationLink: committeeData.leadApplicationLink,
-      }, { merge: true });
-      return true;
+        await setDoc(doc(db, `committees/${committeeName}`), {
+            description: committeeData.description,
+            headUID: committeeData.headUID,
+            leadUIDs: committeeData.leadUIDs,
+            memberApplicationLink: committeeData.memberApplicationLink,
+            leadApplicationLink: committeeData.leadApplicationLink,
+        }, { merge: true });
+        return true;
     } catch (err) {
-      console.error(err);
-      return false;
+        console.error(err);
+        return false;
     }
-  };
+};
