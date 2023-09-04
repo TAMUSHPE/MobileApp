@@ -25,16 +25,13 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     const [bio, setBio] = useState<string>("");
 
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext ?? {};
-    if (!setUserInfo) {
-        return null;
-    }
+    const { userInfo, setUserInfo } = userContext!;
 
     const signOutUser = async () => {
         signOut(auth)
             .then(() => {
                 AsyncStorage.removeItem('@user')
-                setUserInfo ? setUserInfo(undefined) : console.warn("setUserInfo is undefined.");
+                setUserInfo(undefined);
             })
             .catch((error) => console.error(error));
     };
@@ -360,10 +357,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
 const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
     // User Context
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext ?? {};
-    if (!setUserInfo) {
-        return null;
-    }
+    const { userInfo, setUserInfo } = userContext!;
 
     // color will eventually get replaced with logo source
     type CommitteeListItemData = {

@@ -120,7 +120,7 @@ const SearchSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
  * These changes are synced in firebase.
  */
 const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [loading, setLoading] = useState<boolean>(false);
     const [image, setImage] = useState<Blob | null>(null);
     const [imageName, setImageName] = useState<string | null | undefined>(null);
@@ -286,8 +286,13 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
                 if (auth.currentUser?.uid) {
                     const firebaseUser = await getUser(auth.currentUser.uid);
-                    setUserInfo ? setUserInfo(firebaseUser) : console.warn("setUserInfo() is undefined");
-                    await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                    if (firebaseUser) {
+                        setUserInfo(firebaseUser);
+                        await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                    }
+                    else {
+                        console.warn("firebaseUser returned as undefined when attempting to sync. Sync will be skipped.");
+                    }
                 }
             })
             .catch(err => console.error("Error attempting to save changes: ", err))
@@ -566,7 +571,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
  */
 const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const userContext = useContext(UserContext)
-    const { userInfo, setUserInfo } = userContext ?? {};
+    const { userInfo, setUserInfo } = userContext!;
     const [loading, setLoading] = useState<boolean>(false);
     const [darkModeToggled, setDarkModeToggled] = useState<boolean>(userInfo?.private?.privateInfo?.settings?.darkMode ?? false);
 
@@ -598,8 +603,13 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                             if (auth.currentUser?.uid) {
                                 await getUser(auth.currentUser?.uid)
                                     .then(async (firebaseUser) => {
-                                        setUserInfo && firebaseUser ? setUserInfo(firebaseUser) : console.warn("setUserInfo() is undefined");
-                                        await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                                        if (firebaseUser) {
+                                            setUserInfo(firebaseUser);
+                                            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                                        }
+                                        else {
+                                            console.warn("firebaseUser returned as undefined when attempting to sync. Sync will be skipped.");
+                                        }
                                     })
                                     .catch(err => console.error(err));
                             }
@@ -620,7 +630,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
  * These changes will go through firebase where an email will be sent to the user. 
  */
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    const { userInfo, setUserInfo } = useContext(UserContext) ?? {};
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (

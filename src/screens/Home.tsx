@@ -20,10 +20,7 @@ import { StatusBar } from 'expo-status-bar';
  */
 const HomeScreen = () => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
-    const { setUserInfo } = useContext(UserContext) ?? {};
-    if (!setUserInfo) {
-        return null;
-    }
+    const { setUserInfo } = useContext(UserContext)!;
 
     useEffect(() => {
         // only for testing since manually change user in firebase need to look into this later

@@ -22,10 +22,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     const inputStyle = "bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1";
 
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext ?? {};
-    if (!setUserInfo) {
-        return null;
-    }
+    const { userInfo, setUserInfo } = userContext!;
 
     useLayoutEffect(() => {
         navigation.setOptions({
