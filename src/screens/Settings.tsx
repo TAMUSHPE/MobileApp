@@ -632,6 +632,11 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 subText={auth.currentUser?.uid ?? "UID"}
                 darkMode={darkMode}
             />
+            <SettingsListItem
+                mainText='Account Creation Time'
+                subText={auth.currentUser?.metadata.creationTime}
+                darkMode={darkMode}
+            />
             <SettingsSectionTitle text='Authentication' darkMode={darkMode} />
             <SettingsButton
                 mainText='Change Email'
