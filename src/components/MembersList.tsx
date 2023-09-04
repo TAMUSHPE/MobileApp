@@ -20,7 +20,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation }) => {
 
     return (
         <ScrollView>
-            <Text>Offices:</Text>
+            <Text>Officers:</Text>
             {officers.map((userData, index) => {
                 const handleOnPress = () => {
                     navigation.navigate("PublicProfile", { uid: userData.uid! })
