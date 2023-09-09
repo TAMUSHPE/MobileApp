@@ -10,6 +10,7 @@ import { AuthStackParams } from '../types/Navigation';
 const AuthStackWarning = () => {
     const state = useNavigationState((state) => state);
 
+    // Warn user that are not log in when scanning QR code for events
     useEffect(() => {
         if (!state) return;
         if (state.routes.some((route) => route.name === 'EventVerificationScreen')) {

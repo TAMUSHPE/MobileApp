@@ -49,6 +49,7 @@ const RootNavigator = () => {
     };
 
     return (
+        // Temp fallback for loading screen
         <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
             {userInfo?.private?.privateInfo?.completedAccountSetup ? <MainStack /> : <AuthStack />}
         </NavigationContainer>

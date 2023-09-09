@@ -6,21 +6,21 @@ import QRCode from "react-qr-code";
 import ViewShot from "react-native-view-shot";
 import RNFS from 'react-native-fs';
 import { EventVerificationProps, EventVerificationScreenRouteProp } from '../types/Navigation'
-import Constants, { ExecutionEnvironment } from 'expo-constants';
 const EventVerification = ({ navigation }: EventVerificationProps) => {
-
-
     const [status, requestPermission] = MediaLibrary.usePermissions();
     const viewShotRef = useRef<ViewShot>(null);
     const route = useRoute<EventVerificationScreenRouteProp>();
     const { id } = route.params;
 
+
+    // Admin Only - Permission to download QRCode
     useEffect(() => {
         if (status === null) {
             requestPermission();
         }
     }, [status])
 
+    // Admin Only - Download QRCode
     const onImageDownload = async () => {
         const uri = await viewShotRef.current?.capture?.();
         if (uri) {
@@ -44,6 +44,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
         <View>
             <Text>Event: {id} </Text>
             <ViewShot ref={viewShotRef} options={{ format: "png", quality: 0.9 }}>
+                {/* Generates a QRCode to navigate to event verification screen with params of id=123*/}
                 <QRCode value="tamu-shpe://event?id=123" />
             </ViewShot>
             <TouchableOpacity onPress={onImageDownload}>
