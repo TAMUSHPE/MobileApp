@@ -10,7 +10,7 @@ import { pointType } from '../types/Events';
 import { createEvent } from '../api/firebaseUtils';
 
 const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
-    const [event, setEvent] = useState<SHPEEvent>({})
+    const [event, setEvent] = useState<SHPEEvent>({ attendance: 0 })
     const [openPointsCategory, setOpenPointsCategory] = useState(false);
     const [pointsCategoryValue, setPointsCategoryValue] = useState(null);
     const [pointsCategoryItems, setPointsCategoryItems] = useState([

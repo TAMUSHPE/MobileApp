@@ -42,7 +42,7 @@ const MainStack = () => {
                 <Stack.Screen name="AboutSettingsScreen" component={AboutSettingsScreen} options={{ title: "About" }} />
             </Stack.Group>
 
-            <Stack.Screen name="EventVerificationScreen" component={EventVerification} options={{ title: "Event Verification" }} />
+            <Stack.Screen name="EventVerificationScreen" component={EventVerification} />
 
         </Stack.Navigator>
     );

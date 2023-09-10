@@ -19,14 +19,14 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [UpdatedEvent, setUpdatedEvent] = useState<SHPEEventID>(event);
 
     const [openPointsCategory, setOpenPointsCategory] = useState(false);
-    const [pointsCategoryValue, setPointsCategoryValue] = useState(null);
+    const [pointsCategoryValue, setPointsCategoryValue] = useState(event.pointsCategory);
     const [pointsCategoryItems, setPointsCategoryItems] = useState([
         { label: 'General Meeting - 3', value: pointType.GENERAL_MEETING },
         { label: 'Committee Workshop - 3', value: pointType.ACADEMIC_WORKSHOP }
     ]);
 
     const [openNotificationGroup, setOpenNotificationGroup] = useState(false);
-    const [notificationGroupValue, setNotificationGroupValue] = useState(null);
+    const [notificationGroupValue, setNotificationGroupValue] = useState(event.notificationGroup);
     const [notificationGroupItem, setNotificationGroupItem] = useState([
         { label: 'Everyone', value: 'all' },
         { label: 'Tech Affairs', value: CommitteeConstants.TECHNICALAFFAIRS }
@@ -36,6 +36,10 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [updated, setUpdated] = useState(false);
     const [status, requestPermission] = MediaLibrary.usePermissions();
     const viewShotRef = useRef<ViewShot>(null);
+
+    useEffect(() => {
+
+    }, [])
 
     useEffect(() => {
         if (status === null) {
@@ -51,7 +55,6 @@ const UpdateEvent = ({ navigation }: EventProps) => {
 
             RNFS.moveFile(uri, filePath)
                 .then(() => {
-                    console.log("Image saved to", filePath);
                     MediaLibrary.saveToLibraryAsync(filePath)
                     setDownloaded(true);
                 })
@@ -80,6 +83,14 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             console.log("Failed to delete the event.");
         }
     }
+
+    useEffect(() => {
+        setUpdatedEvent(prevEvent => ({
+            ...prevEvent,
+            pointsCategory: pointsCategoryValue || "",
+            notificationGroup: notificationGroupValue || [],
+        }));
+    }, [setNotificationGroupItem, setPointsCategoryItems, pointsCategoryValue, notificationGroupValue]);
 
     return (
         <SafeAreaView>
@@ -143,7 +154,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     <Text>Select Points Category</Text>
                     <DropDownPicker
                         open={openPointsCategory}
-                        value={pointsCategoryValue}
+                        value={pointsCategoryValue!}
                         items={pointsCategoryItems}
                         setOpen={setOpenPointsCategory}
                         setValue={setPointsCategoryValue}
@@ -156,7 +167,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     <Text>Select Notification Group</Text>
                     <DropDownPicker
                         open={openNotificationGroup}
-                        value={notificationGroupValue}
+                        value={notificationGroupValue!}
                         items={notificationGroupItem}
                         setOpen={setOpenNotificationGroup}
                         setValue={setNotificationGroupValue}

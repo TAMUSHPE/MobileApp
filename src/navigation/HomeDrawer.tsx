@@ -113,6 +113,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                     localUser?.publicInfo?.roles?.officer?.valueOf() &&
                     <DrawerItem label="Admin Dashboard" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("AdminDashboard")} />
                 }
+                <DrawerItem label="eventVerificationTest" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("EventVerificationScreen", { id: "naAl9ySCucuP0txiR87e" })} />
                 <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
             </View>
         </DrawerContentScrollView>

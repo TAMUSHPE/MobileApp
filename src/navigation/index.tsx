@@ -24,13 +24,7 @@ const RootNavigator = () => {
     } else {
         if (userLoading)
             return (
-                <View className="flex items-center justify-center bg-dark-navy h-screen w-screen">
-                    <Image
-                        source={Images.SHPE_LOGO}
-                        className="h-48 w-48"
-                    />
-                    <ActivityIndicator className='mt-4' size={"large"} />
-                </View>
+                <RenderUserLoading />
             );
     }
 
@@ -50,9 +44,22 @@ const RootNavigator = () => {
 
     return (
         // Temp fallback for loading screen
-        <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
+        <NavigationContainer linking={linking} fallback={<RenderUserLoading />}>
             {userInfo?.private?.privateInfo?.completedAccountSetup ? <MainStack /> : <AuthStack />}
         </NavigationContainer>
+    );
+};
+
+
+const RenderUserLoading = () => {
+    return (
+        <View className="flex items-center justify-center bg-dark-navy h-screen w-screen">
+            <Image
+                source={Images.SHPE_LOGO}
+                className="h-48 w-48"
+            />
+            <ActivityIndicator className='mt-4' size={"large"} />
+        </View>
     );
 };
 

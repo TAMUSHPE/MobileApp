@@ -24,7 +24,6 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
             fetchEvents();
         }, [])
     );
-    console.log(events)
     return (
         <SafeAreaView>
             <View className='justify-center items-center pt-4'>
