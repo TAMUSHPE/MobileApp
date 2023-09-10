@@ -64,6 +64,9 @@ export type CommitteesStackParams = {
 export type EventsStackParams = {
     EventsScreen: undefined;
     CreateEvent: undefined;
+    UpdateEvent: {
+        id: string;
+    };
 }
 
 export type AdminDashboardParams = {
@@ -114,6 +117,13 @@ export type MembersProps = {
     navigation: NativeStackNavigationProp<MembersStackParams>
 }
 
+export type UpdateEventProps = {
+    id?: string;
+    navigation: NativeStackNavigationProp<EventsStackParams>
+}
+
+
+
 
 
 export type CommitteesInfoProp = {
@@ -126,3 +136,4 @@ export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScr
 // routes prop for screens (not components) 
 export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
+export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;

@@ -1,9 +1,10 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, PublicUserInfoUID, User } from "../types/User";
 import { Committee } from "../types/Committees";
+import { SHPEEvent } from "../types/Events";
 
 
 /**
@@ -309,3 +310,23 @@ export const setCommitteeInfo = async (committeeName: string, committeeData: Com
         return false;
     }
 };
+
+export const createEvent = async (event: SHPEEvent) => {
+    try {
+        console.log(JSON.stringify(event, null, 2));
+        const docRef = await addDoc(collection(db, "events"), {
+            name: event.name,
+            description: event.description,
+            pointsCategory: event.pointsCategory || [],
+            notificationGroup: event.notificationGroup || [],
+            startDate: event.startDate,
+            endDate: event.endDate,
+            location: event.location,
+            // image: event.image,
+        });
+        return docRef.id;
+      } catch (error) {
+        console.error("Error adding document: ", error);
+        return null;
+      }
+}
