@@ -12,7 +12,6 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
     const route = useRoute<EventVerificationScreenRouteProp>();
     const { id } = route.params;
 
-
     // Admin Only - Permission to download QRCode
     useEffect(() => {
         if (status === null) {

@@ -28,9 +28,13 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
     const handleCreateEvent = async () => {
         const newEventId = await createEvent(event);
         if (newEventId) {
-            navigation.navigate("UpdateEvent", { event: event });
+            const updatedEvent = {
+                ...event,
+                id: newEventId
+            };
+            navigation.navigate("UpdateEvent", { event: updatedEvent });
         } else {
-            console.log('Event creation failed');
+            console.error("Failed to create a new event.");
         }
     }
 

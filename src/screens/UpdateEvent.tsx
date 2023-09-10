@@ -10,7 +10,7 @@ import RNFS from 'react-native-fs';
 import { SHPEEventID, pointType } from '../types/Events';
 import { CommitteeConstants } from '../types/Committees';
 import DropDownPicker from 'react-native-dropdown-picker';
-import { updateEvent } from '../api/firebaseUtils';
+import { destroyEvent, updateEvent } from '../api/firebaseUtils';
 
 
 const UpdateEvent = ({ navigation }: EventProps) => {
@@ -69,6 +69,15 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             setUpdated(true);
         } else {
             console.log('Event update failed');
+        }
+    }
+
+    const handleDestroyEvent = async () => {
+        const isDeleted = await destroyEvent(UpdatedEvent.id!);
+        if (isDeleted) {
+            navigation.navigate("EventsScreen")
+        } else {
+            console.log("Failed to delete the event.");
         }
     }
 
@@ -168,6 +177,11 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     <Text>Update Event</Text>
                 </TouchableOpacity>
                 {updated && <Text className='text-green-500'>Information has been updated</Text>}
+                <TouchableOpacity className='w-20 h-10 bg-red-400 mt-4 justify-center items-center'
+                    onPress={() => handleDestroyEvent()}
+                >
+                    <Text>Destory Event</Text>
+                </TouchableOpacity>
             </View>
         </SafeAreaView>
     )

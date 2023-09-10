@@ -6,19 +6,24 @@ import { EventsStackParams } from '../types/Navigation';
 import { getEvents } from '../api/firebaseUtils';
 import { SHPEEventID } from '../types/Events';
 import EventCard from '../components/EventCard';
+import { useFocusEffect } from '@react-navigation/native';
+
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [events, setEvents] = useState<SHPEEventID[]>([]);
-    useEffect(() => {
-        const fetchEvents = async () => {
-            const eventsData = await getEvents();
-            if (eventsData) {
-                setEvents(eventsData);
-            }
-        };
 
-        fetchEvents();
-    }, [])
+    useFocusEffect(
+        React.useCallback(() => {
+            const fetchEvents = async () => {
+                const eventsData = await getEvents();
+                if (eventsData) {
+                    setEvents(eventsData);
+                }
+            };
+
+            fetchEvents();
+        }, [])
+    );
     console.log(events)
     return (
         <SafeAreaView>
