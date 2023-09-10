@@ -17,6 +17,9 @@ export type MainStackParams = {
     DisplaySettingsScreen: undefined;
     AccountSettingsScreen: undefined;
     AboutSettingsScreen: undefined;
+    EventVerificationScreen: {
+        id: string;
+    };
 };
 
 export type AuthStackParams = {
@@ -131,9 +134,15 @@ export type CommitteesInfoProp = {
     navigation: NativeStackNavigationProp<CommitteesStackParams>
 }
 
+export type EventVerificationProps = {
+    id?: string;
+    navigation?: NativeStackNavigationProp<MainStackParams>
+}
+
 export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScreen">;
 
 // routes prop for screens (not components) 
 export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
 export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;
+export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;
