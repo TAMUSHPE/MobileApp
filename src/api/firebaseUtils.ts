@@ -1,6 +1,6 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, PublicUserInfoUID, User } from "../types/User";
 import { Committee } from "../types/Committees";
@@ -374,4 +374,16 @@ export const getEvents = async () => {
       events.push({ id: doc.id, ...doc.data() });
     });
     return events;
+}
+
+export const destroyEvent = async (eventID: string) => {
+    try {
+        const docRef = doc(db, "events", eventID);
+        await deleteDoc(docRef);
+        console.log("Document successfully deleted!");
+        return true;
+      } catch (error) {
+        console.error("Error deleting document: ", error);
+        return false;
+      }
 }
