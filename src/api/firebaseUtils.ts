@@ -1,6 +1,6 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, PublicUserInfoUID, User } from "../types/User";
 import { Committee } from "../types/Committees";
@@ -313,7 +313,6 @@ export const setCommitteeInfo = async (committeeName: string, committeeData: Com
 
 export const createEvent = async (event: SHPEEvent) => {
     try {
-        console.log("create", JSON.stringify(event, null, 2));
         const docRef = await addDoc(collection(db, "events"), {
             name: event.name,
             description: event.description,
@@ -322,6 +321,7 @@ export const createEvent = async (event: SHPEEvent) => {
             startDate: event.startDate,
             endDate: event.endDate,
             location: event.location,
+            attendance: 0,
             // image: event.image,
         });
         return docRef.id;
@@ -380,10 +380,31 @@ export const destroyEvent = async (eventID: string) => {
     try {
         const docRef = doc(db, "events", eventID);
         await deleteDoc(docRef);
-        console.log("Document successfully deleted!");
         return true;
       } catch (error) {
         console.error("Error deleting document: ", error);
         return false;
       }
 }
+// await setDoc(doc(db, "users", auth.currentUser?.uid!), data, { merge: true })
+export const addEventLog = async (eventID: string) => {
+    try {
+        const logDoc = doc(db, `events/${eventID}/logs/${auth.currentUser?.uid!}`);
+        const logDocRef = await getDoc(logDoc);
+        
+        if (!logDocRef.exists()) {
+            await setDoc(logDoc, { signedInTime: serverTimestamp() }, { merge: true });
+            
+            const eventDoc = doc(db, 'events', eventID);
+            const eventDocRef = await getDoc(eventDoc);
+
+            if (eventDocRef.exists()) {
+                const currentCount = eventDocRef.data().attendance || 0;
+                await updateDoc(eventDoc, { attendance: currentCount + 1 });
+            }
+            
+        }
+    } catch (e) {
+        console.error("Error adding log: ", e);
+    }
+};

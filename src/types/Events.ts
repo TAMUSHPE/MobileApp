@@ -7,6 +7,7 @@ export interface SHPEEvent {
     startDate?: string;
     endDate?: string;
     location?: string;
+    attendance?: number;
     image?: number;
 }
 export interface SHPEEventID extends SHPEEvent {
