@@ -63,6 +63,7 @@ export type CommitteesStackParams = {
 
 export type EventsStackParams = {
     EventsScreen: undefined;
+    CreateEvent: undefined;
 }
 
 export type AdminDashboardParams = {
