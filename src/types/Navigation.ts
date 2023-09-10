@@ -5,6 +5,7 @@ import type { RouteProp } from '@react-navigation/native';
 import { PublicUserInfoUID } from "./User";
 import { Test } from '../types/GoogleSheetsTypes';
 import { Committee } from "./Committees";
+import { SHPEEventID } from "./Events";
 
 // Stacks
 export type MainStackParams = {
@@ -68,8 +69,11 @@ export type EventsStackParams = {
     EventsScreen: undefined;
     CreateEvent: undefined;
     UpdateEvent: {
-        id: string;
+        event: SHPEEventID;
     };
+    SHPEEvent: {
+        event: SHPEEventID
+    }
 }
 
 export type AdminDashboardParams = {
@@ -120,14 +124,10 @@ export type MembersProps = {
     navigation: NativeStackNavigationProp<MembersStackParams>
 }
 
-export type UpdateEventProps = {
-    id?: string;
+export type EventProps = {
+    event?: SHPEEventID;
     navigation: NativeStackNavigationProp<EventsStackParams>
 }
-
-
-
-
 
 export type CommitteesInfoProp = {
     selectedCommittee?: Committee | null
@@ -145,4 +145,5 @@ export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScr
 export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
 export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;
+export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "SHPEEvent">;
 export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;

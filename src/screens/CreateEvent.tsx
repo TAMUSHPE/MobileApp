@@ -28,7 +28,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
     const handleCreateEvent = async () => {
         const newEventId = await createEvent(event);
         if (newEventId) {
-            navigation.navigate("UpdateEvent", { id: newEventId });
+            navigation.navigate("UpdateEvent", { event: event });
         } else {
             console.log('Event creation failed');
         }
@@ -42,7 +42,6 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
         }));
     }, [setNotificationGroupItem, setPointsCategoryItems, pointsCategoryValue, notificationGroupValue]);
 
-    console.log(event)
     return (
         <SafeAreaView>
             <TouchableOpacity
