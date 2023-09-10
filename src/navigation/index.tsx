@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { ActivityIndicator, View, Image } from "react-native";
+import { ActivityIndicator, View, Image, Text } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { UserContext } from '../context/UserContext';
 import { AuthStack } from './AuthStack';
@@ -34,8 +34,23 @@ const RootNavigator = () => {
             );
     }
 
+    const linking = {
+        prefixes: ['tamu-shpe://'],
+        config: {
+            screens: {
+                EventVerificationScreen: {
+                    path: 'event/:id?',
+                    parse: {
+                        id: (id: string) => `${id}`,
+                    },
+                },
+            },
+        },
+    };
+
     return (
-        <NavigationContainer>
+        // Temp fallback for loading screen
+        <NavigationContainer linking={linking} fallback={<Text>Loading...</Text>}>
             {userInfo?.private?.privateInfo?.completedAccountSetup ? <MainStack /> : <AuthStack />}
         </NavigationContainer>
     );

@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeBottomTabs from "./HomeBottomTabs";
 import AdminDashboard from "../screens/AdminDashboard";
+import EventVerification from "../screens/EventVerification";
 import { MainStackParams } from '../types/Navigation';
 import { SettingsScreen, SearchSettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen } from "../screens/Settings";
 import { UserContext } from "../context/UserContext";
@@ -40,6 +41,9 @@ const MainStack = () => {
                 <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} options={{ title: "Account Settings/Info" }} />
                 <Stack.Screen name="AboutSettingsScreen" component={AboutSettingsScreen} options={{ title: "About" }} />
             </Stack.Group>
+
+            <Stack.Screen name="EventVerificationScreen" component={EventVerification} options={{ title: "Event Verification" }} />
+
         </Stack.Navigator>
     );
 };
