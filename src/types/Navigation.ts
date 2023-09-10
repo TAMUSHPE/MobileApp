@@ -61,6 +61,10 @@ export type CommitteesStackParams = {
     };
 }
 
+export type EventsStackParams = {
+    EventsScreen: undefined;
+}
+
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
     CommitteesEditor: undefined;
@@ -108,6 +112,8 @@ export type MembersProps = {
     handleOnPress?: any
     navigation: NativeStackNavigationProp<MembersStackParams>
 }
+
+
 
 export type CommitteesInfoProp = {
     selectedCommittee?: Committee | null
