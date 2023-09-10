@@ -1,10 +1,10 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, PublicUserInfoUID, User } from "../types/User";
 import { Committee } from "../types/Committees";
-import { SHPEEvent } from "../types/Events";
+import { SHPEEvent, SHPEEventID } from "../types/Events";
 
 
 /**
@@ -313,11 +313,11 @@ export const setCommitteeInfo = async (committeeName: string, committeeData: Com
 
 export const createEvent = async (event: SHPEEvent) => {
     try {
-        console.log(JSON.stringify(event, null, 2));
+        console.log("create", JSON.stringify(event, null, 2));
         const docRef = await addDoc(collection(db, "events"), {
             name: event.name,
             description: event.description,
-            pointsCategory: event.pointsCategory || [],
+            pointsCategory: event.pointsCategory || "",
             notificationGroup: event.notificationGroup || [],
             startDate: event.startDate,
             endDate: event.endDate,
@@ -329,4 +329,49 @@ export const createEvent = async (event: SHPEEvent) => {
         console.error("Error adding document: ", error);
         return null;
       }
+}
+
+export const updateEvent = async (event:SHPEEventID) => {
+    try {
+      const docRef = doc(db, "events", event.id!);
+      await updateDoc(docRef, {
+        name: event.name,
+        description: event.description,
+        pointsCategory: event.pointsCategory || [],
+        notificationGroup: event.notificationGroup || [],
+        startDate: event.startDate,
+        endDate: event.endDate,
+        location: event.location,
+        // image: event.image,
+      });
+      return event.id;
+    } catch (error) {
+      console.error("Error updating document: ", error);
+      return null;
+    }
+}
+
+export const getEvent = async (eventID: string) => {
+    try {
+        const eventRef = doc(db, "events", eventID);
+        const eventDoc = await getDoc(eventRef);
+        if (eventDoc.exists()) {
+            return eventDoc.data();
+        } else {
+            console.log("No such document!");
+            return null;
+        }
+    } catch (error) {
+        console.log("Error getting document:", error);
+        return null;
+    }
+}
+
+export const getEvents = async () => {
+    const querySnapshot = await getDocs(collection(db, "events"));
+    const events:SHPEEventID[] = [];
+    querySnapshot.forEach((doc) => {
+      events.push({ id: doc.id, ...doc.data() });
+    });
+    return events;
 }

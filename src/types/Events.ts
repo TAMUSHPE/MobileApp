@@ -9,11 +9,15 @@ export interface SHPEEvent {
     location?: string;
     image?: number;
 }
+export interface SHPEEventID extends SHPEEvent {
+    id?: string
+}
+
 
 export enum pointType {
-    GENERAL_MEETING = 0,
-    ACADEMIC_WORKSHOP = 1,
-    ACADEMIC_SOCIAL = 2,
+    GENERAL_MEETING = "0",
+    ACADEMIC_WORKSHOP = "1",
+    ACADEMIC_SOCIAL = "2",
 }
 
 
