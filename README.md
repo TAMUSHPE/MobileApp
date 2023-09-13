@@ -26,7 +26,7 @@
 
 ## About The Project
 
-We are excited to introduce our mobile app project for the Society of Hispanic Professional Engineers (SHPE). This app aims to serve as an information hub and a valuable resource for our members. With a focus on enhancing member engagement and providing access to important resources, the app will play a pivotal role in connecting and empowering our familia.
+We are excited to introduce our mobile app project for the Society of Hispanic Professional Engineers (SHPE). This app aims to serve as an information hub and a valuable resource for our members. With a focus on enhancing member engagement and providing access to important resources, the app will play a pivotal role in connecting and empowering our familia. For realzies!
 
 ### Built With
 
