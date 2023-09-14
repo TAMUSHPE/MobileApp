@@ -4,6 +4,7 @@ import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, ord
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, PublicUserInfoUID, User } from "../types/User";
 import { Committee } from "../types/Committees";
+import { validateTamuEmail } from "../helpers/validation";
 
 
 /**
@@ -17,24 +18,9 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
         .then(async (res) => {
             const responseData = res.data()
             const points = await memberPoints(responseData?.email); // Queries google sheets for points data
-            if (responseData) {
-                return {
-                    email: responseData?.email,
-                    displayName: responseData?.displayName,
-                    photoURL: responseData?.photoURL,
-                    roles: responseData?.roles,
-                    name: responseData?.name,
-                    bio: responseData?.bio,
-                    major: responseData?.major,
-                    classYear: responseData?.classYear,
-                    committees: responseData?.committees,
-                    points: points,
-                    pointsRank: responseData?.pointsRank,
-                    rankChange: responseData?.rankChange,
-                }
-            }
-            else {
-                return responseData;
+            return {
+                ...responseData,
+                points: points,
             }
         })
         .catch(err => {
@@ -56,16 +42,7 @@ export const getPrivateUserData = async (uid: string): Promise<PrivateUserInfo |
     return await getDoc(doc(db, `users/${uid}/private`, "privateInfo"))
         .then((res) => {
             const responseData = res.data()
-            if (responseData) {
-                return {
-                    completedAccountSetup: responseData?.completedAccountSetup,
-                    settings: responseData?.settings,
-                    expoPushTokens: responseData?.expoPushTokens,
-                }
-            }
-            else {
-                return undefined;
-            }
+            return responseData;
         })
         .catch(err => {
             console.error(err);
@@ -215,15 +192,24 @@ export const appendExpoPushToken = async (expoPushToken: string) => {
 };
 
 /**
- * Obtains information on the current user. If this information is undefined, creates a default user.
+ * Obtains information on the current user.
+ * 
+ * defaultPublicInfo and defaultPrivateInfo are what a user object should initialize as should either be undefined.
+ * If any fields are undefined in the returned user from getUser(), values from defaultPublicInfo and defaultPrivateInfo will be pulled
  * 
  * @returns - User data formatted according to User interface defined in "./src/types/User.tsx".
  */
-export const initializeCurrentUserData = async (): Promise<User> => {
+export const initializeCurrentUserData = async (): Promise<User> => { 
+
+    /**
+     * Both defaultPublicInfo and defaultPrivateInfo contain critical information used for the app to work as intended.
+     * Should any values not exist in the returned object from firebase, the default data will be used instead.
+     */
     const defaultPublicInfo: PublicUserInfo = {
-        email: auth.currentUser?.email || "",
-        displayName: auth.currentUser?.displayName || "",
-        photoURL: auth.currentUser?.photoURL || "",
+        email: auth.currentUser?.email ?? "",
+        tamuEmail: validateTamuEmail(auth.currentUser?.email) ? auth.currentUser!.email! : "",
+        displayName: auth.currentUser?.displayName ?? "",
+        photoURL: auth.currentUser?.photoURL ?? "",
         roles: {
             reader: true,
             officer: false,
@@ -242,8 +228,8 @@ export const initializeCurrentUserData = async (): Promise<User> => {
     const user = await getUser(auth.currentUser?.uid!);
 
     if (!user) {
-        await setPublicUserData(defaultPublicInfo);
-        await setPrivateUserData(defaultPrivateInfo);
+        setPublicUserData(defaultPublicInfo);
+        setPrivateUserData(defaultPrivateInfo);
         return {
             publicInfo: defaultPublicInfo,
             private: {
@@ -252,7 +238,23 @@ export const initializeCurrentUserData = async (): Promise<User> => {
         };
     }
     else {
-        return user;
+        const defaultRoles = defaultPublicInfo.roles!; // Shallow copy roles 
+        const updatedUser = {
+            publicInfo: {
+                ...Object.assign(defaultPublicInfo, user.publicInfo),
+                roles: Object.assign(defaultRoles, user.publicInfo?.roles),
+            },
+            private: {
+                privateInfo: Object.assign(defaultPrivateInfo, user.private?.privateInfo),
+                moderationData: {
+                    ...user.private?.moderationData,
+                }
+            }
+        };
+        setPublicUserData(updatedUser.publicInfo);
+        setPrivateUserData(updatedUser.private.privateInfo);
+
+        return updatedUser;
     }
 };
 
