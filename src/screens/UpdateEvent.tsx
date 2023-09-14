@@ -4,8 +4,8 @@ import { EventProps, UpdateEventScreenRouteProp } from '../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as MediaLibrary from 'expo-media-library';
-import QRCode from "react-qr-code";
 import ViewShot from "react-native-view-shot";
+import QRCode from 'react-native-qrcode-svg';
 import RNFS from 'react-native-fs';
 import { SHPEEventID, pointType } from '../types/Events';
 import { CommitteeConstants } from '../types/Committees';
@@ -38,24 +38,35 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const viewShotRef = useRef<ViewShot>(null);
 
     useEffect(() => {
-
-    }, [])
-
-    useEffect(() => {
         if (status === null) {
             requestPermission();
         }
     }, [status])
 
+    useEffect(() => {
+        setUpdatedEvent(prevEvent => ({
+            ...prevEvent,
+            pointsCategory: pointsCategoryValue || "",
+            notificationGroup: notificationGroupValue || [],
+        }));
+    }, [setNotificationGroupItem, setPointsCategoryItems, pointsCategoryValue, notificationGroupValue]);
+
     const onImageDownload = async () => {
+        console.log('Capture started');
         const uri = await viewShotRef.current?.capture?.();
+        console.log('Capture done', uri);
+
         if (uri) {
             const sanitizedEventName = event.name!.replace(/ /g, '_');
-            const filePath = `${RNFS.DocumentDirectoryPath}/QRCode_${sanitizedEventName}.png`;
+            const currentDate = new Date().toISOString().replace(/[-:.]/g, '')
+            const filePath = `${RNFS.DocumentDirectoryPath}/${currentDate}_${sanitizedEventName}.png`;
 
+            console.log('Moving file');
             RNFS.moveFile(uri, filePath)
-                .then(() => {
-                    MediaLibrary.saveToLibraryAsync(filePath)
+                .then(async () => {
+                    console.log('File moved');
+                    console.log(filePath)
+                    await MediaLibrary.saveToLibraryAsync(filePath)
                     setDownloaded(true);
                 })
                 .catch((err) => {
@@ -65,6 +76,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             console.error("Failed to capture the QRCode");
         }
     };
+
 
     const handleUpdateEvent = async () => {
         const updatedEvent = await updateEvent(UpdatedEvent);
@@ -84,13 +96,6 @@ const UpdateEvent = ({ navigation }: EventProps) => {
         }
     }
 
-    useEffect(() => {
-        setUpdatedEvent(prevEvent => ({
-            ...prevEvent,
-            pointsCategory: pointsCategoryValue || "",
-            notificationGroup: notificationGroupValue || [],
-        }));
-    }, [setNotificationGroupItem, setPointsCategoryItems, pointsCategoryValue, notificationGroupValue]);
 
     return (
         <SafeAreaView>
