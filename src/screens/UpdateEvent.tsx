@@ -1,86 +1,45 @@
-import { View, Text, TouchableOpacity, TextInput } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import { View, Text, TouchableOpacity, TextInput, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import * as MediaLibrary from 'expo-media-library';
-import ViewShot from "react-native-view-shot";
-import QRCode from 'react-native-qrcode-svg';
-import RNFS from 'react-native-fs';
-import { SHPEEventID, pointType } from '../types/Events';
-import { CommitteeConstants } from '../types/Committees';
-import DropDownPicker from 'react-native-dropdown-picker';
+import { SHPEEventID, monthNames } from '../types/Events';
 import { destroyEvent, updateEvent } from '../api/firebaseUtils';
-
+import { Octicons } from '@expo/vector-icons';
+import { Picker } from '@react-native-picker/picker';
+import DatePicker from 'react-native-date-picker'
+import { Images } from '../../assets';
+import { Timestamp } from 'firebase/firestore';
 
 const UpdateEvent = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
     const { event } = route.params;
-    const [UpdatedEvent, setUpdatedEvent] = useState<SHPEEventID>(event);
-
-    const [openPointsCategory, setOpenPointsCategory] = useState(false);
-    const [pointsCategoryValue, setPointsCategoryValue] = useState(event.pointsCategory);
-    const [pointsCategoryItems, setPointsCategoryItems] = useState([
-        { label: 'General Meeting - 3', value: pointType.GENERAL_MEETING },
-        { label: 'Committee Workshop - 3', value: pointType.ACADEMIC_WORKSHOP }
-    ]);
-
-    const [openNotificationGroup, setOpenNotificationGroup] = useState(false);
-    const [notificationGroupValue, setNotificationGroupValue] = useState(event.notificationGroup);
-    const [notificationGroupItem, setNotificationGroupItem] = useState([
-        { label: 'Everyone', value: 'all' },
-        { label: 'Tech Affairs', value: CommitteeConstants.TECHNICALAFFAIRS }
-    ]);
-
-    const [downloaded, setDownloaded] = useState(false);
+    const [updatedEvent, setUpdatedEvent] = useState<SHPEEventID>(event);
     const [updated, setUpdated] = useState(false);
-    const [status, requestPermission] = MediaLibrary.usePermissions();
-    const viewShotRef = useRef<ViewShot>(null);
+
+    const [startOpen, setStartOpen] = useState(false)
+    const [endOpen, setEndOpen] = useState(false)
+    const startDateAsDate = updatedEvent.startDate ? updatedEvent.startDate.toDate() : new Date();
+    const endDateAsDate = updatedEvent.endDate ? updatedEvent.endDate.toDate() : new Date();
+
+    const [showStartDate, setShowStartDate] = useState(false);
+    const [showEndDate, setShowEndDate] = useState(false);
+
 
     useEffect(() => {
-        if (status === null) {
-            requestPermission();
+        console.log(updatedEvent)
+        if (updatedEvent.startDate) {
+            setShowStartDate(true)
         }
-    }, [status])
-
-    useEffect(() => {
-        setUpdatedEvent(prevEvent => ({
-            ...prevEvent,
-            pointsCategory: pointsCategoryValue || "",
-            notificationGroup: notificationGroupValue || [],
-        }));
-    }, [setNotificationGroupItem, setPointsCategoryItems, pointsCategoryValue, notificationGroupValue]);
-
-    const onImageDownload = async () => {
-        console.log('Capture started');
-        const uri = await viewShotRef.current?.capture?.();
-        console.log('Capture done', uri);
-
-        if (uri) {
-            const sanitizedEventName = event.name!.replace(/ /g, '_');
-            const currentDate = new Date().toISOString().replace(/[-:.]/g, '')
-            const filePath = `${RNFS.DocumentDirectoryPath}/${currentDate}_${sanitizedEventName}.png`;
-
-            console.log('Moving file');
-            RNFS.moveFile(uri, filePath)
-                .then(async () => {
-                    console.log('File moved');
-                    console.log(filePath)
-                    await MediaLibrary.saveToLibraryAsync(filePath)
-                    setDownloaded(true);
-                })
-                .catch((err) => {
-                    console.error("Failed to save image:", err);
-                });
-        } else {
-            console.error("Failed to capture the QRCode");
+        if (updatedEvent.endDate) {
+            setShowEndDate(true)
         }
-    };
+    }, [event])
 
 
     const handleUpdateEvent = async () => {
-        const updatedEvent = await updateEvent(UpdatedEvent);
-        if (updatedEvent) {
+        const newEvent = await updateEvent(updatedEvent);
+        if (newEvent) {
             setUpdated(true);
         } else {
             console.log('Event update failed');
@@ -88,7 +47,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     }
 
     const handleDestroyEvent = async () => {
-        const isDeleted = await destroyEvent(UpdatedEvent.id!);
+        const isDeleted = await destroyEvent(updatedEvent.id!);
         if (isDeleted) {
             navigation.navigate("EventsScreen")
         } else {
@@ -96,110 +55,220 @@ const UpdateEvent = ({ navigation }: EventProps) => {
         }
     }
 
+    const formatDate = (date: Date) => {
+        const day = date.getDate();
+        const month = monthNames[date.getMonth()];
+        const hours = date.getHours();
+        const minutes = date.getMinutes();
+
+        const formattedHours = hours % 12 || 12;
+        const formattedMinutes = minutes.toString().padStart(2, "0");
+        const amPm = hours >= 12 ? 'PM' : 'AM';
+
+        return `${month} ${day} - ${formattedHours}:${formattedMinutes} ${amPm}`;
+    }
+
 
     return (
         <SafeAreaView>
-            <TouchableOpacity onPress={() => navigation.navigate("SHPEEvent", { event: UpdatedEvent })}>
-                <Text className='text-2xl'>Back</Text>
-            </TouchableOpacity>
-            <Text>Event: {UpdatedEvent.id}</Text>
+            <ScrollView>
+                {/* Header */}
+                <View className='flex-row items-center h-10'>
+                    <View className='w-screen absolute'>
+                        <Text className="text-2xl font-bold justify-center text-center">{updatedEvent.name}</Text>
+                    </View>
+                    <View className='pl-6'>
+                        <TouchableOpacity className="pr-4" onPress={() => navigation.navigate("EventInfo", { eventId: updatedEvent.id! })} >
+                            <Octicons name="chevron-left" size={30} color="black" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
 
-            <View className='w-screen'>
+                <View className="mt-2 pl-6">
+                    <Text className='text-xl font-semibold'>Update Event</Text>
+                </View>
+
+                {/* Image */}
                 <View className='justify-center items-center'>
-                    <ViewShot ref={viewShotRef} options={{ format: "png", quality: 0.9 }}>
-                        <QRCode value={`tamu-shpe://event?id=${UpdatedEvent.id}`} />
-                    </ViewShot>
-                    <TouchableOpacity onPress={onImageDownload}
-                        className='bg-blue-400 p-4 rounded-lg mt-4'>
-                        <Text>Download QRCode</Text>
+                    <Image
+                        className="mt-2 h-60 w-[90%] bg-gray-700 rounded-xl"
+                        source={Images.EVENT}
+                    />
+                </View>
+
+                {/* Form */}
+                <View className='mt-9 p-6'>
+                    <View>
+                        <Text className='text-gray-500'>Event Title</Text>
+                        <View className='flex-row border-b-2 border-slate-400'>
+                            <TextInput
+                                className={`w-[90%] rounded-md text-xl py-1 ${updatedEvent?.name ? 'font-normal' : 'font-extrabold'}`}
+                                value={updatedEvent?.name}
+                                onChangeText={(text) => setUpdatedEvent({ ...event, name: text })}
+                                placeholder="Name"
+                            />
+                        </View>
+                    </View>
+
+                    <View className='flex-row mt-4'>
+                        <View className='w-[48%] mr-[2%]'>
+                            <Text className='text-gray-500'>Start Date</Text>
+                            <TouchableOpacity
+                                onPress={() => setStartOpen(true)}
+                            >
+                                <View className='flex-row border-b-2 py-1 h-10 border-gray-400 justify-between '>
+                                    {showStartDate &&
+                                        <Text className='text-lg font-extrabold'>
+                                            {formatDate(startDateAsDate)}
+                                        </Text>
+                                    }
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+
+                        <View className='w-[48%] ml-[2%]'>
+                            <Text className='text-gray-500'>End Date</Text>
+                            <TouchableOpacity
+                                onPress={() => setEndOpen(true)}
+                            >
+                                <View className='flex-row border-b-2 py-1 h-10 border-gray-400 justify-between '>
+                                    {showEndDate &&
+                                        <Text className='text-lg font-extrabold'>
+                                            {formatDate(endDateAsDate)}
+                                        </Text>
+                                    }
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <View className='flex-row mt-20'>
+                        <View className='w-[48%] mr-[2%]'>
+                            <Text className='text-gray-500'>Points</Text>
+
+                            <View className='w-full border-b-2 border-gray-400'>
+
+                                <Picker
+                                    style={{ width: '100%' }}
+                                    selectedValue={updatedEvent.pointsCategory}
+                                    onValueChange={(itemValue, itemIndex) =>
+                                        setUpdatedEvent({ ...updatedEvent, pointsCategory: itemValue })
+                                    }>
+
+                                    {/* Can use mapping for this */}
+                                    <Picker.Item label="General Meeting" value="1" />
+                                    <Picker.Item label="Community Service" value="2" />
+                                    <Picker.Item label="Professional Workshop" value="3" />
+                                    <Picker.Item label="Academic Social" value="4" />
+                                    <Picker.Item label="Elections" value="5" />
+                                </Picker>
+                            </View>
+                        </View>
+
+                        <View className='w-[48%] ml-[2%]'>
+                            <Text className='text-gray-500'>Notification Group</Text>
+
+                            <View className='w-full border-b-2 border-gray-400'>
+                                <Picker
+                                    style={{ width: '100%' }}
+                                    selectedValue={updatedEvent.notificationGroup}
+                                    onValueChange={(itemValue, itemIndex) =>
+                                        setUpdatedEvent({ ...updatedEvent, notificationGroup: itemValue })
+                                    }>
+                                    {/* Can use mapping for this */}
+                                    <Picker.Item label="All" value="6" />
+                                    <Picker.Item label="Tech" value="7" />
+                                    <Picker.Item label="MentorSHPE" value="8" />
+                                    <Picker.Item label="Scholastic" value="9" />
+                                    <Picker.Item label="SHPEtinas" value="10" />
+                                </Picker>
+                            </View>
+                        </View>
+                    </View>
+
+
+                    <View className='mt-20'>
+                        <Text className='text-gray-500 mb-2'>Description</Text>
+                        <TextInput
+                            className='w-full rounded-md text-lg px-2 py-1 bg-white h-32'
+                            value={updatedEvent?.description}
+                            onChangeText={(text) => setUpdatedEvent({ ...updatedEvent, description: text })}
+                            placeholder="Add a description"
+                            multiline={true}
+                            style={{ textAlignVertical: 'top' }}
+                        />
+                    </View>
+
+                    <View className='mt-7'>
+                        <Text className='text-gray-500 mb-2'>Location</Text>
+                        <TextInput
+                            className='w-full rounded-md h-16 text-lg px-2 py-1 bg-white'
+                            value={updatedEvent?.location}
+                            onChangeText={(text) => setUpdatedEvent({ ...updatedEvent, location: text })}
+                            placeholder="Add a location"
+                            multiline={true}
+                            style={{ textAlignVertical: 'top' }}
+                        />
+                    </View>
+
+                </View>
+
+
+                <View className='flex-row w-screen justify-center items-center pt-4 space-x-7'>
+                    <TouchableOpacity className='w-20 h-10 bg-blue-400 justify-center items-center rounded-md'
+                        onPress={() => handleUpdateEvent()}
+                    >
+                        <Text>Update Event</Text>
                     </TouchableOpacity>
-                    {downloaded && <Text className='text-green-500'>Downloaded to photos</Text>}
+                    <TouchableOpacity className='w-20 h-10 bg-blue-300 justify-center items-center rounded-md'
+                        onPress={() => navigation.navigate("QRCode", { event: updatedEvent })}
+                    >
+                        <Text>View QRCode</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity className='w-20 h-10 bg-red-400 justify-center items-center rounded-md'
+                        onPress={() => handleDestroyEvent()}
+                    >
+                        <Text>Destory Event</Text>
+                    </TouchableOpacity>
                 </View>
-            </View>
-
-            <Text>Editor:</Text>
-            <View className='flex-row flex-wrap'>
-                <TextInput
-                    value={UpdatedEvent?.name}
-                    onChangeText={(text) => setUpdatedEvent({ ...UpdatedEvent, name: text })}
-                    placeholder="Name"
-                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4'
-                />
-                <TextInput
-                    value={UpdatedEvent?.description}
-                    onChangeText={(text) => setUpdatedEvent({ ...UpdatedEvent, description: text })}
-                    placeholder="description"
-                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4'
-                />
-
-
-                <TextInput
-                    value={UpdatedEvent?.startDate}
-                    onChangeText={(text) => setUpdatedEvent({ ...UpdatedEvent, startDate: text })}
-                    placeholder="startDate"
-                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4'
-                />
-
-                <TextInput
-                    value={UpdatedEvent?.endDate}
-                    onChangeText={(text) => setUpdatedEvent({ ...UpdatedEvent, endDate: text })}
-                    placeholder="endDate"
-                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4'
-                />
-
-                <TextInput
-                    value={UpdatedEvent?.location}
-                    onChangeText={(text) => setUpdatedEvent({ ...UpdatedEvent, location: text })}
-                    placeholder="location"
-                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4'
-                />
-
-
-                <View className='w-64'>
-                    <Text>Select Points Category</Text>
-                    <DropDownPicker
-                        open={openPointsCategory}
-                        value={pointsCategoryValue!}
-                        items={pointsCategoryItems}
-                        setOpen={setOpenPointsCategory}
-                        setValue={setPointsCategoryValue}
-                        setItems={setPointsCategoryItems}
-                        zIndex={2000}
-                        zIndexInverse={1000}
-                    />
-                </View>
-                <View className='w-64'>
-                    <Text>Select Notification Group</Text>
-                    <DropDownPicker
-                        open={openNotificationGroup}
-                        value={notificationGroupValue!}
-                        items={notificationGroupItem}
-                        setOpen={setOpenNotificationGroup}
-                        setValue={setNotificationGroupValue}
-                        setItems={setNotificationGroupItem}
-                        multiple={true}
-                        min={0}
-                        max={20}
-                        zIndex={1000}
-                        zIndexInverse={2000}
-                    />
-                </View>
-
-            </View>
-            <View className='w-screen justify-center items-center pt-4'>
-                <TouchableOpacity className='w-20 h-10 bg-blue-400 justify-center items-center'
-                    onPress={() => handleUpdateEvent()}
-                >
-                    <Text>Update Event</Text>
-                </TouchableOpacity>
                 {updated && <Text className='text-green-500'>Information has been updated</Text>}
-                <TouchableOpacity className='w-20 h-10 bg-red-400 mt-4 justify-center items-center'
-                    onPress={() => handleDestroyEvent()}
-                >
-                    <Text>Destory Event</Text>
-                </TouchableOpacity>
-            </View>
-        </SafeAreaView>
+
+                <View className='pb-32'></View>
+            </ScrollView>
+            <DatePicker
+                modal
+                mode="datetime"
+                open={startOpen}
+                date={startDateAsDate}
+                onConfirm={(date) => {
+                    setStartOpen(false)
+                    setUpdatedEvent({
+                        ...updatedEvent,
+                        startDate: Timestamp.fromDate(date)
+                    });
+                }}
+                onCancel={() => {
+                    setStartOpen(false)
+                }}
+            />
+
+            <DatePicker
+                modal
+                mode="datetime"
+                open={endOpen}
+                date={endDateAsDate}
+                onConfirm={(date) => {
+                    setEndOpen(false)
+                    setUpdatedEvent({
+                        ...updatedEvent,
+                        endDate: Timestamp.fromDate(date)
+                    });
+                }}
+                onCancel={() => {
+                    setEndOpen(false)
+                }}
+            />
+        </SafeAreaView >
     )
 }
 
