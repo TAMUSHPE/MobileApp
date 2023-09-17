@@ -1,4 +1,4 @@
-import { Text, ScrollView } from 'react-native'
+import { Text, ScrollView, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { getMembersExcludeOfficers, getOfficers } from '../api/firebaseUtils'
 import { MembersProps } from '../types/Navigation'
@@ -20,26 +20,28 @@ const MembersList: React.FC<MembersProps> = ({ navigation }) => {
 
     return (
         <ScrollView>
-            <Text>Officers:</Text>
-            {officers.map((userData, index) => {
-                const handleOnPress = () => {
-                    navigation.navigate("PublicProfile", { uid: userData.uid! })
-                }
-                return (
-                    <MemberCard key={index} userData={userData} navigation={navigation} handleOnPress={handleOnPress} />
-                )
-            })}
+            <View className='ml-4'>
+                <Text className='text-xl mb-4 text-bold'>Officers</Text>
+                {officers.map((userData, index) => {
+                    const handleOnPress = () => {
+                        navigation.navigate("PublicProfile", { uid: userData.uid! })
+                    }
+                    return (
+                        <MemberCard key={index} userData={userData} navigation={navigation} handleOnPress={handleOnPress} />
+                    )
+                })}
 
-            <Text>Members:</Text>
+                <Text className='text-xl mb-4 text-bold'>Members </Text>
+                {members.map((userData, index) => {
 
-            {members.map((userData, index) => {
-                const handleOnPress = () => {
-                    navigation.navigate("PublicProfile", { uid: userData.uid! })
-                }
-                return (
-                    <MemberCard key={index} userData={userData} navigation={navigation} handleOnPress={handleOnPress} />
-                )
-            })}
+                    const handleOnPress = () => {
+                        navigation.navigate("PublicProfile", { uid: userData.uid! })
+                    }
+                    return (
+                        <MemberCard key={index} userData={userData} navigation={navigation} handleOnPress={handleOnPress} />
+                    )
+                })}
+            </View>
         </ScrollView>
     )
 }
