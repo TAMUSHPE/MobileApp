@@ -1,9 +1,10 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, PublicUserInfoUID, User } from "../types/User";
 import { Committee } from "../types/Committees";
+import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
 import { validateTamuEmail } from "../helpers/validation";
 
 
@@ -311,3 +312,195 @@ export const setCommitteeInfo = async (committeeName: string, committeeData: Com
         return false;
     }
 };
+
+export const createEvent = async (event: SHPEEvent) => {
+    try {
+        const docRef = await addDoc(collection(db, "events"), {
+            name: event.name,
+            description: event.description,
+            pointsCategory: event.pointsCategory,
+            notificationGroup: event.notificationGroup, 
+            startDate: event.startDate,
+            endDate: event.endDate, 
+            location: event.location,
+            attendance: 0, 
+        });
+
+        return docRef.id;
+    } catch (error) {
+        console.error("Error adding document: ", error);
+        return null;
+    }
+};
+export const updateEvent = async (event:SHPEEventID) => {
+    try {
+      const docRef = doc(db, "events", event.id!);
+      await updateDoc(docRef, {
+        name: event.name,
+        description: event.description,
+        pointsCategory: event.pointsCategory || [],
+        notificationGroup: event.notificationGroup || [],
+        startDate: event.startDate,
+        endDate: event.endDate,
+        location: event.location,
+      });
+      return event.id;
+    } catch (error) {
+      console.error("Error updating document: ", error);
+      return null;
+    }
+}
+
+export const getEvent = async (eventID: string) => {
+    try {
+        const eventRef = doc(db, "events", eventID);
+        const eventDoc = await getDoc(eventRef);
+        if (eventDoc.exists()) {
+            return eventDoc.data() as SHPEEventID;
+        } else {
+            console.log("No such document!");
+            return null;
+        }
+    } catch (error) {
+        console.log("Error getting document:", error);
+        return null;
+    }
+}
+
+export const getUpcomingEvents = async () => {
+    const currentTime = new Date();
+    const eventsRef = collection(db, "events");
+    const q = query(eventsRef, where("endDate", ">", currentTime));
+    const querySnapshot = await getDocs(q);
+    const events: SHPEEventID[] = [];
+    querySnapshot.forEach((doc) => {
+      events.push({ id: doc.id, ...doc.data() });
+    });
+
+    events.sort((a, b) => {
+        const dateA = a.startDate ? a.startDate.toDate() : undefined;
+        const dateB = b.startDate ? b.startDate.toDate() : undefined;
+      
+        if (dateA && dateB) {
+          return dateA.getTime() - dateB.getTime();
+        }
+        return -1; // error
+      });
+      
+    return events;
+};
+
+export const getPastEvents = async () => {
+    const currentTime = new Date();
+    const eventsRef = collection(db, "events");
+    const q = query(eventsRef, where("endDate", "<", currentTime));
+    const querySnapshot = await getDocs(q);
+    const events: SHPEEventID[] = [];
+    querySnapshot.forEach((doc) => {
+      events.push({ id: doc.id, ...doc.data() });
+    });
+    events.sort((a, b) => {
+        const dateA = a.startDate ? a.startDate.toDate() : undefined;
+        const dateB = b.startDate ? b.startDate.toDate() : undefined;
+      
+        if (dateA && dateB) {
+          return dateA.getTime() - dateB.getTime();
+        }
+        return -1; // error
+      });
+      
+    return events;
+};
+
+
+
+export const destroyEvent = async (eventID: string) => {
+  try {
+    const eventRef = doc(db, "events", eventID);
+
+    const logRef = collection(eventRef, "log");
+    const logQuery = query(logRef);
+    const logSnapshot = await getDocs(logQuery);
+    const deleteLogPromises = logSnapshot.docs.map((logDoc) => {
+      return deleteDoc(logDoc.ref);
+    });
+
+
+    await Promise.all(deleteLogPromises);
+    await deleteDoc(eventRef);
+    return true;
+  } catch (error) {
+    console.error("Error deleting event and log: ", error);
+    return false;
+  }
+}
+
+
+const isEventActive = async (eventId: string) => {
+    try {
+        const eventDoc = doc(db, `events/${eventId}`);
+        const eventDocRef = await getDoc(eventDoc);
+        if (eventDocRef.exists()) {
+            const eventData = eventDocRef.data();
+            const eventEndDate = eventData?.endDate;
+            if (eventEndDate) {
+                const eventEndTime = (eventEndDate as Timestamp).toDate().getTime();
+                const currentTime = new Date().getTime();
+
+                if (currentTime > eventEndTime) {
+                    return EventLogStatus.EVENT_OVER;
+                } else {
+                    return null
+                }
+            }
+        }
+    } catch (error) {
+        console.error("Error checking event active status: ", error);
+    }
+    return EventLogStatus.ERROR;
+};
+
+
+export const addEventLog = async (eventId: string) => {
+    const isActive = await isEventActive(eventId);
+    if (isActive) return isActive;
+    
+    try {
+        const logDoc = doc(db, `events/${eventId}/logs/${auth.currentUser?.uid!}`);
+        const logDocRef = await getDoc(logDoc);
+
+        const eventDoc = doc(db, `events/${eventId}`);
+        const eventDocRef = await getDoc(eventDoc);
+
+        
+        if (!logDocRef.exists()) {
+            await setDoc(logDoc, { signedInTime: serverTimestamp() }, { merge: true });
+            
+            const eventDoc = doc(db, 'events', eventId);
+            const eventDocRef = await getDoc(eventDoc);
+
+            if (eventDocRef.exists()) {
+                const currentCount = eventDocRef.data().attendance || 0;
+                await updateDoc(eventDoc, { attendance: currentCount + 1 });
+                return EventLogStatus.SUCCESS;
+            }
+        } else {
+            return EventLogStatus.ALREADY_LOGGED;
+        }
+    } catch (e) {
+        console.error("Error adding log: ", e);
+    }
+
+    return EventLogStatus.ERROR;
+};
+
+export const isUserSignedIn = async (eventId: string, uid:string) => {
+    const eventLogDocRef = doc(db, 'events', eventId, 'logs', uid);
+    const docSnap = await getDoc(eventLogDocRef);
+
+    if (docSnap.exists()) {
+      return true;
+    } else {
+      return false;
+    }
+  }
