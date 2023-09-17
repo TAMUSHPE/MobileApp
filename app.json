@@ -26,14 +26,6 @@
             "useFrameworks": "static"
           }
         }
-      ],
-      [
-        "expo-media-library",
-        {
-          "photosPermission": "Allow TAMU-SHPE to access your photos.",
-          "savePhotosPermission": "Allow TAMU-SHPE to save photos.",
-          "isAccessMediaLocationEnabled": true
-        }
       ]
     ],
     "assetBundlePatterns": [
