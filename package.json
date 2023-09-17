@@ -11,11 +11,13 @@
     "build-ios": "npx expo prebuild && npx expo run:ios",
     "go": "npx expo start --go",
     "go-tunnel": "npx expo start --tunnel --go",
-    "go-localhost": "npx expo start --localhost --go"
+    "go-localhost": "npx expo start --localhost --go",
+    "dev-client-sim": "eas build --profile development-sim --platform ios"
   },
   "dependencies": {
     "@babel/preset-env": "^7.22.9",
     "@react-native-async-storage/async-storage": "1.18.2",
+    "@react-native-picker/picker": "2.4.10",
     "@react-navigation/bottom-tabs": "^6.5.8",
     "@react-navigation/core": "^6.4.8",
     "@react-navigation/drawer": "^6.6.2",
@@ -46,6 +48,7 @@
     "nativewind": "^2.0.11",
     "react": "18.2.0",
     "react-native": "0.72.4",
+    "react-native-date-picker": "^4.3.2",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "~2.12.0",
@@ -65,7 +68,7 @@
     "@babel/plugin-transform-template-literals": "^7.22.5",
     "@types/react": "~18.2.14",
     "@types/react-native": "^0.72.2",
-    "eas-cli": "^3.14.0",
+    "eas-cli": "^5.2.0",
     "sharp-cli": "^4.1.1",
     "tailwindcss": "^3.3.2",
     "typescript": "^5.1.3"
