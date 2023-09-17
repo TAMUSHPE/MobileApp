@@ -6,12 +6,14 @@ import { MembersStack } from './MembersStack';
 import { CommitteesStack } from './CommitteesStack';
 import { ResourcesStack } from './ResourcesStack';
 import HomeDrawer from './HomeDrawer';
+import { EventsStack } from './EventsStack';
 
 const TAB_ICON_CONFIG: Record<TabName, OcticonIconName> = {
     Home: 'home',
     ResourcesStack: 'repo',
     Committees: 'people',
     Members: 'search',
+    Events: "calendar",
 };
 
 const activeIconColor = 'maroon';
@@ -42,6 +44,7 @@ const HomeBottomTabs = () => {
             >
                 <BottomTabs.Screen name="Home" component={HomeDrawer} />
                 <BottomTabs.Screen name="ResourcesStack" component={ResourcesStack} />
+                <BottomTabs.Screen name="Events" component={EventsStack} />
                 <BottomTabs.Screen name="Committees" component={CommitteesStack} />
                 <BottomTabs.Screen name="Members" component={MembersStack} />
             </BottomTabs.Navigator >
@@ -49,7 +52,7 @@ const HomeBottomTabs = () => {
     );
 };
 
-type OcticonIconName = 'number' | 'home' | 'repo' | 'people' | 'search' | 'x-circle' // Manually define, expo doesn't provide type
-type TabName = 'Home' | 'ResourcesStack' | 'Committees' | 'Members';
+type OcticonIconName = 'number' | 'home' | 'repo' | 'people' | 'search' | 'calendar' | 'x-circle' // Manually define, expo doesn't provide type
+type TabName = 'Home' | 'ResourcesStack' | 'Committees' | 'Members' | 'Events';
 
 export default HomeBottomTabs;

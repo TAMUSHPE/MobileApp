@@ -16,7 +16,6 @@ import { Images } from '../../assets';
 import { StatusBar } from 'expo-status-bar';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
-    const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
 
@@ -37,20 +36,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             })
             .catch((error) => console.error(error));
     };
-
-    useEffect(() => {
-        const getLocalUser = () => {
-            AsyncStorage.getItem("@user")
-                .then(userJSON => {
-                    const userData = userJSON ? JSON.parse(userJSON) : undefined;
-                    setLocalUser(userData);
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-        };
-        getLocalUser();
-    }, [])
 
     const drawerItemLabelStyle = {
         color: userInfo?.private?.privateInfo?.settings?.darkMode ? "#EEE" : "#000"
@@ -110,7 +95,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             <View className={`${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} flex-grow`}>
                 <DrawerItem label="Settings" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("SettingsScreen")} />
                 {
-                    localUser?.publicInfo?.roles?.officer?.valueOf() &&
+                    userInfo?.publicInfo?.roles?.officer?.valueOf() &&
                     <DrawerItem label="Admin Dashboard" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("AdminDashboard")} />
                 }
                 <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />

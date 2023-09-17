@@ -17,4 +17,5 @@ export const Images =  {
     COMMITTEE_2: require("./committee_2.png"),
     COMMITTEE_3: require("./committee_3.png"),
     COMMITTEE_4: require("./committee_4.png"),
+    EVENT: require("./event.png"),
 };
