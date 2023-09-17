@@ -68,12 +68,9 @@ export type CommitteesStackParams = {
 export type EventsStackParams = {
     EventsScreen: undefined;
     CreateEvent: undefined;
-    UpdateEvent: {
-        event: SHPEEventID;
-    };
-    SHPEEvent: {
-        event: SHPEEventID
-    }
+    UpdateEvent: { event: SHPEEventID };
+    EventInfo: { eventId: string };
+    QRCode: { event: SHPEEventID };
 }
 
 export type AdminDashboardParams = {
@@ -139,11 +136,18 @@ export type EventVerificationProps = {
     navigation?: NativeStackNavigationProp<MainStackParams>
 }
 
+export type QRCodeProps = {
+    event?: SHPEEventID;
+    navigation: NativeStackNavigationProp<EventsStackParams>
+}
+
 export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScreen">;
 
-// routes prop for screens (not components) 
+// routes prop for screens
 export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
 export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;
-export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "SHPEEvent">;
+export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "EventInfo">;
 export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;
+export type QRCodeScreenRouteProp = RouteProp<EventsStackParams, "QRCode">;
+
