@@ -20,7 +20,7 @@ export const committeesList: Array<CommitteeData> = [
  * This interface represents the roles a user has. These values will only determine what the app looks like and **not** firebase read/write/edit/delete permissions.
  */
 export interface Roles {
-    reader: boolean;
+    reader?: boolean;
     officer?: boolean;
     admin?: boolean;
     developer?: boolean;
