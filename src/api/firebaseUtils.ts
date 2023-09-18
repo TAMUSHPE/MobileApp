@@ -449,7 +449,7 @@ export const destroyEvent = async (eventID: string) => {
   
 
 
-const isEventActive = async (eventId: string) => {
+const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     try {
         const eventDoc = doc(db, `events/${eventId}`);
         const eventDocRef = await getDoc(eventDoc);
@@ -463,7 +463,7 @@ const isEventActive = async (eventId: string) => {
                 if (currentTime > eventEndTime) {
                     return EventLogStatus.EVENT_OVER;
                 } else {
-                    return null
+                    return EventLogStatus.EVENT_ONGOING
                 }
             }
         }
@@ -474,9 +474,11 @@ const isEventActive = async (eventId: string) => {
 };
 
 
-export const addEventLog = async (eventId: string) => {
-    const isActive = await isEventActive(eventId);
-    if (isActive) return isActive;
+export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
+    const status = await getEventStatus(eventId);
+    if (status != EventLogStatus.EVENT_ONGOING) {
+        return status;
+    }
     
     try {
         const logDoc = doc(db, `events/${eventId}/logs/${auth.currentUser?.uid!}`);

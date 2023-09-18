@@ -19,6 +19,7 @@ export interface SHPEEventID extends SHPEEvent {
 export enum EventLogStatus {
     SUCCESS = "success",
     EVENT_OVER = "event_over",
+    EVENT_ONGOING  = "event_ongoing",
     ALREADY_LOGGED = "already_logged",
     ERROR = "error",
 }
