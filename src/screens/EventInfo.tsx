@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { EventProps, SHPEEventScreenRouteProp } from '../types/Navigation'
-import { useRoute } from '@react-navigation/core';
+import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { SHPEEventID, monthNames } from '../types/Events';
@@ -18,28 +18,34 @@ const EventInfo = ({ navigation }: EventProps) => {
     const startDateAsDate = event?.startDate ? event?.startDate.toDate() : null;
     const endDateAsDate = event?.endDate ? event?.endDate.toDate() : null;
 
-    useEffect(() => {
-        const fetchUserInLog = async () => {
-            const isUserInLog = await isUserSignedIn(eventId, auth?.currentUser?.uid!);
-            setUserSignedIn(isUserInLog);
-        };
+    useFocusEffect(
+        useCallback(() => {
+            const fetchUserInLog = async () => {
+                const isUserInLog = await isUserSignedIn(eventId, auth?.currentUser?.uid!);
+                setUserSignedIn(isUserInLog);
+            };
 
-        fetchUserInLog();
-    }, []);
-
-    useEffect(() => {
-        const fetchEventData = async () => {
-            try {
-                const eventData = await getEvent(eventId);
-                if (eventData) {
-                    setEvent({ ...eventData, id: eventId });
+            const fetchEventData = async () => {
+                console.log("fetching");
+                try {
+                    const eventData = await getEvent(eventId);
+                    if (eventData) {
+                        setEvent({ ...eventData, id: eventId });
+                    }
+                } catch (error) {
+                    console.error("An error occurred while fetching the event: ", error);
                 }
-            } catch (error) {
-                console.error("An error occurred while fetching the event: ", error);
-            }
-        };
-        fetchEventData();
-    }, [eventId])
+            };
+            fetchUserInLog();
+
+            fetchEventData();
+
+            // Optional: Return a cleanup function
+            return () => {
+                // Any cleanup operation, if needed.
+            };
+        }, [eventId])
+    );
 
 
     const formatDate = (date: Date) => {
@@ -62,7 +68,6 @@ const EventInfo = ({ navigation }: EventProps) => {
                 <ActivityIndicator size="large" />
             </View>
         )
-
     } else {
         return (
             <SafeAreaView>

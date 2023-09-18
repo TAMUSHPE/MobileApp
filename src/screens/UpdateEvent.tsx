@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, TextInput, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform } from 'react-native'
+import React, { useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,7 +7,7 @@ import { SHPEEventID, monthNames } from '../types/Events';
 import { destroyEvent, updateEvent } from '../api/firebaseUtils';
 import { Octicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
-import DatePicker from 'react-native-date-picker'
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Images } from '../../assets';
 import { Timestamp } from 'firebase/firestore';
 
@@ -16,26 +16,14 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const { event } = route.params;
     const [updatedEvent, setUpdatedEvent] = useState<SHPEEventID>(event);
     const [updated, setUpdated] = useState(false);
-
-    const [startOpen, setStartOpen] = useState(false)
-    const [endOpen, setEndOpen] = useState(false)
-    const startDateAsDate = updatedEvent.startDate ? updatedEvent.startDate.toDate() : new Date();
-    const endDateAsDate = updatedEvent.endDate ? updatedEvent.endDate.toDate() : new Date();
-
     const [showStartDate, setShowStartDate] = useState(false);
+    const [showStartTime, setShowStartTime] = useState(false);
     const [showEndDate, setShowEndDate] = useState(false);
+    const [showEndTime, setShowEndTime] = useState(false);
 
 
-    useEffect(() => {
-        console.log(updatedEvent)
-        if (updatedEvent.startDate) {
-            setShowStartDate(true)
-        }
-        if (updatedEvent.endDate) {
-            setShowEndDate(true)
-        }
-    }, [event])
-
+    const startDate = updatedEvent.startDate!.toDate()
+    const endDate = updatedEvent.endDate!.toDate()
 
     const handleUpdateEvent = async () => {
         const newEvent = await updateEvent(updatedEvent);
@@ -58,6 +46,11 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const formatDate = (date: Date) => {
         const day = date.getDate();
         const month = monthNames[date.getMonth()];
+
+        return `${month} ${day}`;
+    }
+
+    const formatTime = (date: Date) => {
         const hours = date.getHours();
         const minutes = date.getMinutes();
 
@@ -65,12 +58,12 @@ const UpdateEvent = ({ navigation }: EventProps) => {
         const formattedMinutes = minutes.toString().padStart(2, "0");
         const amPm = hours >= 12 ? 'PM' : 'AM';
 
-        return `${month} ${day} - ${formattedHours}:${formattedMinutes} ${amPm}`;
+        return `${formattedHours}:${formattedMinutes} ${amPm}`
     }
-
 
     return (
         <SafeAreaView>
+
             <ScrollView>
                 {/* Header */}
                 <View className='flex-row items-center h-10'>
@@ -110,38 +103,81 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         </View>
                     </View>
 
-                    <View className='flex-row mt-4'>
-                        <View className='w-[48%] mr-[2%]'>
-                            <Text className='text-gray-500'>Start Date</Text>
-                            <TouchableOpacity
-                                onPress={() => setStartOpen(true)}
-                            >
-                                <View className='flex-row border-b-2 py-1 h-10 border-gray-400 justify-between '>
-                                    {showStartDate &&
-                                        <Text className='text-lg font-extrabold'>
-                                            {formatDate(startDateAsDate)}
-                                        </Text>
-                                    }
+                    {Platform.OS === 'ios' &&
+                        <View className='mt-4'>
+                            <View className='flex-row items-center'>
+                                <Text className='text-gray-500 text-lg text-center'>Start Date</Text>
+                                <View className='flex-row py-1 h-10 border-gray-400'>
+                                    <DateTimePicker
+                                        testID="dateTimePicker"
+                                        value={startDate}
+                                        mode={"datetime"}
+                                        onChange={(event, selectedDate) => {
+                                            setUpdatedEvent({
+                                                ...updatedEvent,
+                                                startDate: Timestamp.fromDate(selectedDate!)
+                                            });
+                                        }}
+                                    />
                                 </View>
-                            </TouchableOpacity>
-                        </View>
+                            </View>
 
-                        <View className='w-[48%] ml-[2%]'>
-                            <Text className='text-gray-500'>End Date</Text>
-                            <TouchableOpacity
-                                onPress={() => setEndOpen(true)}
-                            >
-                                <View className='flex-row border-b-2 py-1 h-10 border-gray-400 justify-between '>
-                                    {showEndDate &&
-                                        <Text className='text-lg font-extrabold'>
-                                            {formatDate(endDateAsDate)}
-                                        </Text>
-                                    }
+                            <View className='flex-row items-center'>
+                                <Text className='text-gray-500 text-lg text-center'>End Date</Text>
+                                <View className='flex-row py-1 h-10 border-gray-400'>
+                                    <DateTimePicker
+                                        testID="dateTimePicker"
+                                        value={endDate}
+                                        mode={"datetime"}
+                                        onChange={(event, selectedDate) => {
+                                            setUpdatedEvent({
+                                                ...updatedEvent,
+                                                endDate: Timestamp.fromDate(selectedDate!)
+                                            });
+                                        }}
+                                    />
                                 </View>
-                            </TouchableOpacity>
+                            </View>
                         </View>
-                    </View>
+                    }
 
+                    {Platform.OS === 'android' &&
+                        <View className='flex-row mt-4'>
+                            <View className='w-[48%] mr-[2%]'>
+                                <Text className='text-gray-500'>Start Date</Text>
+                                <View className='flex-row border-b-2 py-1 h-10 border-gray-400'>
+                                    <TouchableOpacity onPress={() => setShowStartDate(true)}>
+                                        <Text className='text-lg font-extrabold'>
+                                            {formatDate(startDate)} - { }
+                                        </Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity onPress={() => setShowStartTime(true)}>
+                                        <Text className='text-lg font-extrabold'>
+                                            {formatTime(startDate)}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+
+                            <View className='w-[48%] ml-[2%]'>
+                                <Text className='text-gray-500'>End Date</Text>
+
+                                <View className='flex-row border-b-2 py-1 h-10 border-gray-400'>
+                                    <TouchableOpacity onPress={() => setShowEndDate(true)}>
+                                        <Text className='text-lg font-extrabold'>
+                                            {formatDate(endDate)} - { }
+                                        </Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity onPress={() => setShowEndTime(true)}>
+                                        <Text className='text-lg font-extrabold'>
+                                            {formatTime(endDate)}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </View>
+                    }
                     <View className='flex-row mt-20'>
                         <View className='w-[48%] mr-[2%]'>
                             <Text className='text-gray-500'>Points</Text>
@@ -234,40 +270,74 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 {updated && <Text className='text-green-500'>Information has been updated</Text>}
 
                 <View className='pb-32'></View>
-            </ScrollView>
-            <DatePicker
-                modal
-                mode="datetime"
-                open={startOpen}
-                date={startDateAsDate}
-                onConfirm={(date) => {
-                    setStartOpen(false)
-                    setUpdatedEvent({
-                        ...updatedEvent,
-                        startDate: Timestamp.fromDate(date)
-                    });
-                }}
-                onCancel={() => {
-                    setStartOpen(false)
-                }}
-            />
+            </ScrollView >
+            {showStartDate && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={startDate}
+                    mode={"date"}
+                    onChange={
+                        (event, selectedDate) => {
+                            setShowStartDate(false);
+                            setUpdatedEvent({
+                                ...updatedEvent,
+                                startDate: Timestamp.fromDate(selectedDate!)
+                            });
+                        }
+                    }
+                />
+            )}
 
-            <DatePicker
-                modal
-                mode="datetime"
-                open={endOpen}
-                date={endDateAsDate}
-                onConfirm={(date) => {
-                    setEndOpen(false)
-                    setUpdatedEvent({
-                        ...updatedEvent,
-                        endDate: Timestamp.fromDate(date)
-                    });
-                }}
-                onCancel={() => {
-                    setEndOpen(false)
-                }}
-            />
+            {showStartTime && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={startDate}
+                    mode={"time"}
+                    onChange={
+                        (event, selectedDate) => {
+                            setShowStartTime(false);
+                            setUpdatedEvent({
+                                ...updatedEvent,
+                                startDate: Timestamp.fromDate(selectedDate!)
+                            });
+                        }
+                    }
+                />
+            )}
+
+            {showEndDate && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={endDate}
+                    mode={"date"}
+                    onChange={
+                        (event, selectedDate) => {
+                            setUpdatedEvent({
+                                ...updatedEvent,
+                                endDate: Timestamp.fromDate(selectedDate!)
+                            });
+                            setShowEndDate(false);
+                        }
+                    }
+                />
+            )}
+
+            {showEndTime && (
+                <DateTimePicker
+                    testID="dateTimePicker"
+                    value={endDate}
+                    mode={"time"}
+                    onChange={
+                        (event, selectedDate) => {
+                            setUpdatedEvent({
+                                ...updatedEvent,
+                                endDate: Timestamp.fromDate(selectedDate!)
+                            });
+                            setShowEndTime(false);
+                        }
+                    }
+                />
+            )}
         </SafeAreaView >
     )
 }
