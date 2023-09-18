@@ -27,15 +27,6 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
     const startDate = (newEvent.startDate ? newEvent.startDate.toDate() : new Date());
     const endDate = (newEvent.endDate ? newEvent.endDate.toDate() : new Date());
 
-    useEffect(() => {
-        if (newEvent.startDate) {
-            setShowStartDate(true)
-        }
-        if (newEvent.endDate) {
-            setShowEndDate(true)
-        }
-    }, [newEvent])
-
     const formatDate = (date: Date) => {
         const day = date.getDate();
         const month = monthNames[date.getMonth()];

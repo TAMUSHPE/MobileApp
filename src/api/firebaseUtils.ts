@@ -415,25 +415,38 @@ export const getPastEvents = async () => {
 
 
 export const destroyEvent = async (eventID: string) => {
-  try {
-    const eventRef = doc(db, "events", eventID);
-
-    const logRef = collection(eventRef, "log");
-    const logQuery = query(logRef);
-    const logSnapshot = await getDocs(logQuery);
-    const deleteLogPromises = logSnapshot.docs.map((logDoc) => {
-      return deleteDoc(logDoc.ref);
-    });
-
-
-    await Promise.all(deleteLogPromises);
-    await deleteDoc(eventRef);
-    return true;
-  } catch (error) {
-    console.error("Error deleting event and log: ", error);
-    return false;
-  }
-}
+    try {
+      const eventRef = doc(db, "events", eventID);
+      const logRef = collection(db, `/events/${eventID}/logs`);
+      const logQuery = query(logRef);
+      const logSnapshot = await getDocs(logQuery);
+  
+      // Debug: Check if we received any logs
+      console.log("Received logs: ", logSnapshot.docs.length);
+  
+      // Delete logs if they exist
+      if (!logSnapshot.empty) {
+        const deleteLogPromises = logSnapshot.docs.map((logDoc) => {
+          return deleteDoc(logDoc.ref);
+        });
+  
+        await Promise.all(deleteLogPromises);
+      } else {
+        console.log("No logs to delete.");
+      }
+  
+      // Delete the event
+      await deleteDoc(eventRef);
+  
+      console.log("Event and logs deleted successfully");
+      return true;
+  
+    } catch (error) {
+      console.error("Error deleting event and log: ", error);
+      return false;
+    }
+  };
+  
 
 
 const isEventActive = async (eventId: string) => {
