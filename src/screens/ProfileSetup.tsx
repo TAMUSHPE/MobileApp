@@ -13,7 +13,7 @@ import { UserContext } from '../context/UserContext';
 import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
 import InteractButton from '../components/InteractButton';
 import { ProfileSetupStackParams } from '../types/Navigation';
-import { committeesList } from '../types/User';
+import { CommitteeConstants } from '../types/Committees';
 import { Images } from '../../assets';
 import { Octicons } from '@expo/vector-icons';
 
@@ -361,22 +361,21 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
 
     // color will eventually get replaced with logo source
     type CommitteeListItemData = {
-        id: number,
         name: string,
         color: string,
         isChecked: boolean,
     }
 
-    const committeesListItems: Array<CommitteeListItemData> = committeesList.map((element) => { return { ...element, isChecked: false } })
+    const committeesListItems: Array<CommitteeListItemData> = Object.values(CommitteeConstants).map((element) => { return { ...element, isChecked: false } })
 
     const [canContinue, setCanContinue] = useState<boolean>(true);
     const [committees, setCommittees] = useState<Array<CommitteeListItemData>>(committeesListItems);
     const [noneIsChecked, setNoneIsChecked] = useState<boolean>(false);
     let selectedCommittees: Array<string> = committees.filter((element: CommitteeListItemData) => element.isChecked).map((element: CommitteeListItemData) => element.name);
 
-    const handleToggle = (id: number) => {
+    const handleToggle = (name: string) => {
         let modifiedCommittees = committees.map((element) => {
-            if (id === element.id) {
+            if (name === element.name) {
                 return { ...element, isChecked: !element.isChecked }
             }
             return element;
@@ -401,12 +400,12 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
      * @param committeeData - Data containing information including the ID, name, color, and whether or not the committee is checked.
      * @param onPress - Function that gets called when toggle is pressed. The id from committeeData will be passed to it
      */
-    const CommitteeToggle = ({ committeeData, onPress }: { committeeData: CommitteeListItemData, onPress: Function, }) => {
+    const CommitteeToggle = ({ committeeData, onPress }: { committeeData: CommitteeListItemData, onPress: (name: string) => void, }) => {
         return (
             <TouchableOpacity
                 className={`rounded-md w-full py-2 px-1 my-3 bg-white flex-row items-center justify-between border-4 ${committeeData.isChecked ? "border-green-500 shadow-lg" : "border-transparent shadow-sm"}`}
                 activeOpacity={0.9}
-                onPress={() => onPress(committeeData.id)}
+                onPress={() => onPress(committeeData.name)}
             >
                 <View className='flex-row items-center'>
                     <View className={`h-10 w-10 rounded-full mr-2`} style={{ backgroundColor: committeeData.color ?? "#000" }} />
@@ -442,10 +441,10 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     <View className='w-full h-full pb-28'>
                         {committees.map((committeeData: CommitteeListItemData) =>
                         (
-                            <CommitteeToggle committeeData={committeeData} onPress={(id: number) => handleToggle(id)} key={committeeData.id} />
+                            <CommitteeToggle committeeData={committeeData} onPress={(name: string) => handleToggle(name)} key={committeeData.name} />
                         )
                         )}
-                        <CommitteeToggle committeeData={{ id: 0, name: "None Right Now", color: "#f55", isChecked: noneIsChecked }} onPress={() => handleNonePressed()} key={0} />
+                        <CommitteeToggle committeeData={{ name: "None Right Now", color: "#f55", isChecked: noneIsChecked }} onPress={() => handleNonePressed()} key={0} />
                     </View>
                 </ScrollView>
                 <View className='flex-row w-10/12 justify-between mb-4'>

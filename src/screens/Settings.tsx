@@ -12,7 +12,7 @@ import { updateProfile } from 'firebase/auth';
 import * as ImagePicker from "expo-image-picker";
 import { getBlobFromURI, selectImage } from '../api/fileSelection';
 import ProfileBadge from '../components/ProfileBadge';
-import { committeesList } from '../types/User';
+import { CommitteeConstants } from '../types/Committees';
 import { validateDisplayName, validateName, validateTamuEmail } from '../helpers/validation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
@@ -133,7 +133,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         bio: "Write a short bio...",
         major: "MAJOR",
         classYear: "CLASS YEAR",
-        committees: ["No Committees Found"],
+        committees: [],
     }
 
     //Hooks used to save state of modified fields before user hits "save"
@@ -147,14 +147,12 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
     // SHPE Info
     type CommitteeListItemData = {
-        id: number,
         name: string,
         color: string,
         isChecked: boolean,
     }
 
-    const [committeeListItems, setCommitteeListItems] = useState<Array<CommitteeListItemData>>(committeesList.map((element) => { return { ...element, isChecked: committees?.includes(element.name) ?? false } }));
-
+    const [committeeList, setCommitteeList] = useState<Array<CommitteeListItemData>>(Object.values(CommitteeConstants).map((element) => { return { ...element, isChecked: committees?.includes(element.name) ?? false } }));
 
     // Modal options
     const [showNamesModal, setShowNamesModal] = useState<boolean>(false);
@@ -165,11 +163,11 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     /**
-     * Checks for any changes to committeeListItems. Updates committees to reflect these changes.
-     * Any elements that aren't in committeeListItems will stay in committees for data integrity reasons
+     * Checks for any changes to committeeList. Updates committees to reflect these changes.
+     * Any elements that aren't in committeeList will stay in committees for data integrity reasons
      */
     useEffect(() => {
-        committeeListItems.forEach((element) => {
+        committeeList.forEach((element) => {
             if (element.isChecked && !committees?.includes(element.name)) {
                 setCommittees(committees !== undefined ? [...committees, element.name] : [element.name])
             }
@@ -177,7 +175,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 setCommittees(committees?.filter((committeeName) => committeeName !== element.name) ?? [])
             }
         })
-    }, [committeeListItems]);
+    }, [committeeList]);
 
     /**
      * Checks for any pending changes in user data.  
@@ -302,12 +300,12 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
             });
     }
 
-    const CommitteeListItemComponent = ({ committeeData, onPress, darkMode, committees }: { committeeData: CommitteeListItemData, onPress: (id: number) => void, darkMode?: boolean, committees: Array<string> }) => {
+    const CommitteeListItemComponent = ({ committeeData, onPress, darkMode, committees }: { committeeData: CommitteeListItemData, onPress: (name: string) => void, darkMode?: boolean, committees: Array<string> }) => {
         const committeeIndex = committees.indexOf(committeeData.name);
         return (
             <TouchableHighlight
                 className={`border-2 my-4 p-4 rounded-xl w-11/12 shadow-md shadow-black ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${committeeData.isChecked ? "border-green-400" : "border-transparent"}`}
-                onPress={() => onPress(committeeData.id)}
+                onPress={() => onPress(committeeData.name)}
                 underlayColor={darkMode ? "#7a7a7a" : "#DDD"}
             >
                 <View className={`items-center flex-row justify-between`}>
@@ -326,14 +324,14 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
      * Because of the way hooks work, we have to make a deep copy of committeeListItems with the single committee isChecked changed.
      * @param id - id of the committee being selected/unselected
      */
-    const handleCommitteeToggle = (id: number) => {
-        const modifiedCommitteeListItems = committeeListItems.map((element) => {
-            if (id === element.id) {
+    const handleCommitteeToggle = (name: string) => {
+        const modifiedCommitteeList = committeeList.map((element) => {
+            if (name === element.name) {
                 return { ...element, isChecked: !element.isChecked }
             }
             return element;
         });
-        setCommitteeListItems(modifiedCommitteeListItems);
+        setCommitteeList(modifiedCommitteeList);
     }
 
     return (
@@ -461,7 +459,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 darkMode={darkMode}
                 onCancel={() => {
                     setCommittees(userInfo?.publicInfo?.committees ?? defaultVals.committees);
-                    setCommitteeListItems(committeesList.map((element) => { return { ...element, isChecked: userInfo?.publicInfo?.committees?.includes(element.name) ?? false } }));
+                    setCommitteeList(Object.values(CommitteeConstants).map((element) => { return { ...element, isChecked: userInfo?.publicInfo?.committees?.includes(element.name) ?? false } }));
                     setShowCommitteesModal(false);
                 }}
                 onDone={() => setShowCommitteesModal(false)}
@@ -475,13 +473,13 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                         >
                             <Text className={`text-lg px-4 mb-2 ${darkMode ? "text-gray-300" : "text-black"}`}>The number displayed beside each committee represents the order in which they will be displayed on your profile.</Text>
                             <View className='w-full h-full flex-col items-center'>
-                                {committeeListItems.map((committeeData) => (
+                                {committeeList.map((committeeData, index) => (
                                     <CommitteeListItemComponent
-                                        key={committeeData.id}
+                                        key={index}
                                         committeeData={committeeData}
                                         darkMode={darkMode}
                                         committees={committees ?? defaultVals.committees}
-                                        onPress={(id: number) => handleCommitteeToggle(id)}
+                                        onPress={(name: string) => handleCommitteeToggle(name)}
                                     />
                                 ))}
                             </View>
@@ -538,7 +536,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     <Text className={`text-2xl mb-4 ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
                     <View className='flex-row flex-wrap'>
                         {committees?.map((committeeName: string, index: number) => {
-                            const committeeInfo = committeesList.find(element => element.name == committeeName);
+                            const committeeInfo = Object.values(CommitteeConstants).find(element => element.name == committeeName);
                             return (
                                 <ProfileBadge
                                     badgeClassName='p-2 max-w-2/5 rounded-full mr-1 mb-2'
