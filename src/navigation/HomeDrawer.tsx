@@ -10,7 +10,7 @@ import { UserContext } from '../context/UserContext';
 import ProfileBadge from '../components/ProfileBadge';
 import HomeScreen from '../screens/Home';
 import AdminDashboardStack from './AdminDashboardStack';
-import { User, committeesList } from '../types/User';
+import { CommitteeConstants } from '../types/Committees';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import { StatusBar } from 'expo-status-bar';
@@ -80,7 +80,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                         textClassName='text-center text-xs'
                     />
                     {userInfo?.publicInfo?.committees?.map((committeeName: string) => {
-                        const committeeInfo = committeesList.find(element => element.name == committeeName);
+                        const committeeInfo = Object.values(CommitteeConstants).find(element => element.name == committeeName);
                         return (
                             <ProfileBadge
                                 key={committeeName}

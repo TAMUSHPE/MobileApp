@@ -6,19 +6,19 @@ import { Images } from "../../assets"
 const CommitteesSlider: React.FC<CommitteesSlideProp> = ({ onCommitteeSelected, selectedCommittee }) => {
     const committees: Committee[] = [
         {
-            name: CommitteeConstants.TECHNICALAFFAIRS,
+            ...CommitteeConstants.TECHNICALAFFAIRS,
             image: Images.COMMITTEE_1,
         },
         {
-            name: CommitteeConstants.PUBLICRELATIONS,
+            ...CommitteeConstants.PUBLICRELATIONS,
             image: Images.COMMITTEE_2,
         },
         {
-            name: CommitteeConstants.MENTORSHPE,
+            ...CommitteeConstants.MENTORSHPE,
             image: Images.COMMITTEE_3,
         },
         {
-            name: CommitteeConstants.SCHOLASTIC,
+            ...CommitteeConstants.SCHOLASTIC,
             image: Images.COMMITTEE_4,
         },
     ]
