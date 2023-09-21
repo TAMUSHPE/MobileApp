@@ -264,7 +264,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     <TouchableOpacity className='w-20 h-10 bg-red-400 justify-center items-center rounded-md'
                         onPress={() => handleDestroyEvent()}
                     >
-                        <Text>Destory Event</Text>
+                        <Text>Destroy Event</Text>
                     </TouchableOpacity>
                 </View>
                 {updated && <Text className='text-green-500'>Information has been updated</Text>}
