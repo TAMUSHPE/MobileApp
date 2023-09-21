@@ -13,7 +13,7 @@ import { UserContext } from '../context/UserContext';
 import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
 import InteractButton from '../components/InteractButton';
 import { ProfileSetupStackParams } from '../types/Navigation';
-import { CommitteeConstants } from '../types/Committees';
+import { CommitteeConstants, CommitteeKey, CommitteeVal } from '../types/Committees';
 import { Images } from '../../assets';
 import { Octicons } from '@expo/vector-icons';
 
@@ -166,7 +166,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
 
     const uploadProfilePicture = () => {
         if (image) {
-            const uploadTask = uploadFileToFirebase(image, `profile-pictures/${auth.currentUser?.uid}/${imageName ?? "user-profile-picture"}`);
+            const uploadTask = uploadFileToFirebase(image, `user-docs/${auth.currentUser?.uid}/user-profile-picture`);
 
             uploadTask.on("state_changed",
                 (snapshot) => {
@@ -358,39 +358,39 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     // User Context
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
+    const [canContinue, setCanContinue] = useState<boolean>(true);
+    const [committees, setCommittees] = useState<Array<CommitteeKey>>([]);
+    const [noneIsChecked, setNoneIsChecked] = useState<boolean>(false);
 
-    // color will eventually get replaced with logo source
-    type CommitteeListItemData = {
-        name: string,
-        color: string,
-        isChecked: boolean,
+    /**
+     * This function is called whenever a committee is toggled by the user.
+     * Because of the way hooks work, we have to make a deep copy of committees.
+     * @param name - name of the committee being selected/unselected
+     */
+    const handleCommitteeToggle = (name: CommitteeKey | "NONE") => {
+        if(name == "NONE"){
+            handleNonePressed();
+            return;
+        }
+        
+        setNoneIsChecked(false);
+        const index = committees?.indexOf(name) ?? -1;
+        let modifiedCommittees = [...committees ?? []];
+        if (index === -1) {
+            modifiedCommittees?.push(name);
+        }
+        else {
+            modifiedCommittees?.splice(index, 1);
+        }
+        setCommittees(modifiedCommittees);
     }
 
-    const committeesListItems: Array<CommitteeListItemData> = Object.values(CommitteeConstants).map((element) => { return { ...element, isChecked: false } })
-
-    const [canContinue, setCanContinue] = useState<boolean>(true);
-    const [committees, setCommittees] = useState<Array<CommitteeListItemData>>(committeesListItems);
-    const [noneIsChecked, setNoneIsChecked] = useState<boolean>(false);
-    let selectedCommittees: Array<string> = committees.filter((element: CommitteeListItemData) => element.isChecked).map((element: CommitteeListItemData) => element.name);
-
-    const handleToggle = (name: string) => {
-        let modifiedCommittees = committees.map((element) => {
-            if (name === element.name) {
-                return { ...element, isChecked: !element.isChecked }
-            }
-            return element;
-        });
-        setCommittees(modifiedCommittees);
-        setNoneIsChecked(false);
-    };
-
+    /**
+     * Handler for when a user presses "None for now"
+     */
     const handleNonePressed = () => {
-        if (!noneIsChecked) {
-            let modifiedCommittees = committees.map((element) => {
-                return { ...element, isChecked: false }
-            });
-            setCommittees(modifiedCommittees);
-        }
+        if (!noneIsChecked)
+            setCommittees([]);
         setNoneIsChecked(!noneIsChecked);
     };
 
@@ -400,12 +400,12 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
      * @param committeeData - Data containing information including the ID, name, color, and whether or not the committee is checked.
      * @param onPress - Function that gets called when toggle is pressed. The id from committeeData will be passed to it
      */
-    const CommitteeToggle = ({ committeeData, onPress }: { committeeData: CommitteeListItemData, onPress: (name: string) => void, }) => {
+    const CommitteeToggle = ({ committeeData, committeeKey, isChecked, onPress }: { committeeData: { name: string, color: string }, committeeKey: CommitteeKey | "NONE", isChecked: boolean, onPress: (key: CommitteeKey | "NONE") => void, }) => {
         return (
             <TouchableOpacity
-                className={`rounded-md w-full py-2 px-1 my-3 bg-white flex-row items-center justify-between border-4 ${committeeData.isChecked ? "border-green-500 shadow-lg" : "border-transparent shadow-sm"}`}
+                className={`rounded-md w-full py-2 px-1 my-3 bg-white flex-row items-center justify-between border-4 ${isChecked ? "border-green-500 shadow-lg" : "border-transparent shadow-sm"}`}
                 activeOpacity={0.9}
-                onPress={() => onPress(committeeData.name)}
+                onPress={() => onPress(committeeKey)}
             >
                 <View className='flex-row items-center'>
                     <View className={`h-10 w-10 rounded-full mr-2`} style={{ backgroundColor: committeeData.color ?? "#000" }} />
@@ -415,7 +415,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     className='h-10 w-10'
                     source={Images.CHECKMARK}
                     style={{
-                        opacity: committeeData.isChecked ? 1 : 0
+                        opacity: isChecked ? 1 : 0
                     }}
                 />
             </TouchableOpacity>
@@ -423,7 +423,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     };
 
     useEffect(() => {
-        setCanContinue(selectedCommittees.length > 0);
+        setCanContinue(committees.length > 0);
     }, [committees]);
 
     return (
@@ -434,17 +434,31 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     <Text className='text-white text-center text-lg mt-4'>{"Are you part of any committees? If yes, we'd love to know which ones."}</Text>
                 </View>
                 <ScrollView
-                    className='w-11/12 h-1/2 flex-col px-3 bg-[#b5b5cc] my-5 rounded-md'
+                    className='w-11/12 h-1/2 flex-col px-3 bg-[#b5b5cc2c] my-5 rounded-md'
                     persistentScrollbar
                     scrollToOverflowEnabled
                 >
                     <View className='w-full h-full pb-28'>
-                        {committees.map((committeeData: CommitteeListItemData) =>
-                        (
-                            <CommitteeToggle committeeData={committeeData} onPress={(name: string) => handleToggle(name)} key={committeeData.name} />
-                        )
+                        {Object.keys(CommitteeConstants).map((key: string) => {
+                            const committeeData = CommitteeConstants[key as CommitteeKey];
+                            return (
+                                <CommitteeToggle
+                                    committeeData={committeeData}
+                                    committeeKey={key as CommitteeKey}
+                                    isChecked={committees?.findIndex(element => element == key) !== -1}
+                                    onPress={(name: CommitteeKey | "NONE") => handleCommitteeToggle(name)}
+                                    key={committeeData.name}
+                                />
+                            )
+                        }
                         )}
-                        <CommitteeToggle committeeData={{ name: "None Right Now", color: "#f55", isChecked: noneIsChecked }} onPress={() => handleNonePressed()} key={0} />
+                        <CommitteeToggle
+                            committeeData={{ name: "None Right Now", color: "#f55" }}
+                            committeeKey={"NONE"}
+                            isChecked={noneIsChecked}
+                            onPress={(name) => handleNonePressed()}
+                            key={0}
+                        />
                     </View>
                 </ScrollView>
                 <View className='flex-row w-10/12 justify-between mb-4'>
@@ -458,17 +472,10 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         onPress={async () => {
                             if (canContinue || noneIsChecked) {
                                 if (auth.currentUser) {
-                                    if (noneIsChecked) {
-                                        setPublicUserData({
-                                            committees: ["None"],
-                                        });
-                                    }
-                                    else {
-                                        setPublicUserData({
-                                            committees: selectedCommittees,
-                                        });
-                                    }
-                                    setPrivateUserData({
+                                    await setPublicUserData({
+                                        committees: committees,
+                                    });
+                                    await setPrivateUserData({
                                         completedAccountSetup: true,
                                     });
                                 }
@@ -488,10 +495,10 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                 <InteractButton
                     onPress={async () => {
                         if (auth.currentUser) {
-                            setPublicUserData({
-                                committees: ["None"],
+                            await setPublicUserData({
+                                committees: [],
                             });
-                            setPrivateUserData({
+                            await setPrivateUserData({
                                 completedAccountSetup: true,
                             });
                         }

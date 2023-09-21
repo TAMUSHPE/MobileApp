@@ -59,7 +59,7 @@ const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleS
             <Animated.View style={{
                 transform: [{ translateY: yVal }],
             }}>
-                <Text className={titleClassName}>{title ?? "Title"}</Text>
+                <Text className={currentTitleClassName}>{title ?? "Title"}</Text>
             </Animated.View>
             <TextInput
                 placeholder={placeholderText ?? ""}
