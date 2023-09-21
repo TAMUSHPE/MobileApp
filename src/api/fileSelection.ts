@@ -1,4 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import * as DocumentPicker from 'expo-document-picker';
+import { Platform } from 'react-native';
 
 /**
  * Prompts the user to select an image and returns the result of the user's selection. 
@@ -17,7 +20,7 @@ export const selectImage = async (options: ImagePicker.ImagePickerOptions | unde
     }
     return await ImagePicker.launchImageLibraryAsync(options)
         .then((result) => {
-            if (!(result.assets == undefined)) {
+            if (!(result.canceled && result.assets === undefined)) {
                 return result;
             }
             else {
@@ -25,10 +28,33 @@ export const selectImage = async (options: ImagePicker.ImagePickerOptions | unde
             }
         })
         .catch(err => {
-            console.error(err);
+            console.error("Issue picking image:", err);
             return undefined;
         });
 };
+
+export const selectFile = async (): Promise<DocumentPicker.DocumentPickerResult | undefined> => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+        alert("File permissions are required to upload a file!");
+        return undefined;
+    }
+    return await DocumentPicker.getDocumentAsync().then((result) => {
+        if (!(result.canceled && result.assets === undefined)) {
+            return result;
+        }
+        else {
+            return undefined;
+        }
+    }).catch(err => {
+        console.error("Issue picking file: ", err);
+        return undefined;
+    })
+}
+
+export const downloadFile = async (file: Blob) => {
+
+}
 
 /**
  * Obtains a blob from a URI of a file that is hosted somewhere.

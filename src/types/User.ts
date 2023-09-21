@@ -23,6 +23,7 @@ export interface PublicUserInfo {
     tamuEmail?: string;
     displayName?: string;
     photoURL?: string;
+    resumeURL?: string;
     roles?: Roles;
     name?: string;
     bio?: string;

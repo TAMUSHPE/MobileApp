@@ -20,6 +20,12 @@
         }
       ],
       [
+        "expo-document-picker",
+        {
+          "iCloudContainerEnvironment": "Access to files in iCloud"
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "ios": {
