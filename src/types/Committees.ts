@@ -22,17 +22,17 @@ export const CommitteeConstants = {
     SCHOLASTIC: {
         name: "Scholastic",
         firebaseDocName: "scholastic",
-        color: "#F2CC10",
+        color: "#ff9a0d",
     },
     SHPETINAS: {
         name: "SHPEtinas",
         firebaseDocName: "shpetinas",
-        color: "#1EFF42",
+        color: "#ffcced",
     },
     SECRETARY: {
         name: "Secretary",
         firebaseDocName: "secretary",
-        color: "#FFA0D5",
+        color: "#ffe747",
     }, 
     INTERNALAFFAIRS: {
         name: "Internal Affairs",
@@ -42,7 +42,7 @@ export const CommitteeConstants = {
     TREASURER: {
         name: "Treasurer",
         firebaseDocName: "treasurer",
-        color: "#051DDB",
+        color: "#16ff12",
     },
 } as const;
 
