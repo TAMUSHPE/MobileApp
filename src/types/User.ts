@@ -1,4 +1,5 @@
 import { Timestamp, FieldValue } from 'firebase/firestore';
+import { CommitteeKey } from './Committees';
 
 /**
  * This interface represents the roles a user has. These values will only determine what the app looks like and **not** firebase read/write/edit/delete permissions.
@@ -27,7 +28,7 @@ export interface PublicUserInfo {
     bio?: string;
     major?: string;
     classYear?: string;
-    committees?: Array<string>;
+    committees?: Array<CommitteeKey | string>;
     pointsRank?: number;
     rankChange?: RankChange;
     // Google Sheets parameters
