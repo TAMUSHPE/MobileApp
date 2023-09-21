@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, KeyboardAvoidingView, Platform, Linking } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { MainStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
@@ -10,13 +10,14 @@ import { setPublicUserData, setPrivateUserData, getUser, uploadFileToFirebase } 
 import { getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import * as ImagePicker from "expo-image-picker";
-import { getBlobFromURI, selectImage } from '../api/fileSelection';
+import { getBlobFromURI, selectFile, selectImage } from '../api/fileSelection';
 import ProfileBadge from '../components/ProfileBadge';
 import { CommitteeConstants, CommitteeKey, CommitteeVal } from '../types/Committees';
 import { validateDisplayName, validateName, validateTamuEmail } from '../helpers/validation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../components/SettingsComponents"
+import InteractButton from '../components/InteractButton';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
@@ -123,7 +124,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [loading, setLoading] = useState<boolean>(false);
     const [image, setImage] = useState<Blob | null>(null);
-    const [imageName, setImageName] = useState<string | null | undefined>(null);
+    const [resume, setResume] = useState<Blob | null>(null);
     const [showSaveButton, setShowSaveButton] = useState<boolean>(false);
 
     const defaultVals = {
@@ -138,6 +139,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
     //Hooks used to save state of modified fields before user hits "save"
     const [photoURL, setPhotoURL] = useState<string | undefined>(userInfo?.publicInfo?.photoURL);
+    const [resumeURL, setResumeURL] = useState<string | undefined>(userInfo?.publicInfo?.resumeURL);
     const [displayName, setDisplayName] = useState<string | undefined>(userInfo?.publicInfo?.displayName);
     const [name, setName] = useState<string | undefined>(userInfo?.publicInfo?.name);
     const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
@@ -150,6 +152,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [showBioModal, setShowBioModal] = useState<boolean>(false);
     const [showAcademicInfoModal, setShowAcademicInfoModal] = useState<boolean>(false);
     const [showCommitteesModal, setShowCommitteesModal] = useState<boolean>(false);
+    const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
@@ -178,9 +181,17 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
         if (result) {
             const imageBlob = await getBlobFromURI(result.assets![0].uri);
-            setPhotoURL(result.assets![0].uri);
             setImage(imageBlob);
-            setImageName(result.assets![0].fileName);
+        }
+    }
+
+    const selectResume = async () => {
+        const result = await selectFile();
+        console.log(result);
+        if (result) {
+            const resumeBlob = await getBlobFromURI(result.assets![0].uri);
+            setResume(resumeBlob);
+            saveChanges();
         }
     }
 
@@ -210,6 +221,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
                         console.log("File available at", URL);
                         if (auth.currentUser) {
+                            setPhotoURL(URL);
                             await updateProfile(auth.currentUser, {
                                 photoURL: URL
                             });
@@ -222,9 +234,46 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         }
     }
 
+    const uploadResume = () => {
+        if (resume) {
+            const uploadTask = uploadFileToFirebase(resume, `user-docs/${auth.currentUser?.uid}/user-resume`);
+
+            uploadTask.on("state_changed",
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                },
+                (error) => {
+                    switch (error.code) {
+                        case "storage/unauthorized":
+                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            break;
+                        case "storage/canceled":
+                            alert("File upload cancelled");
+                            break;
+                        default:
+                            alert("An unknown error has occured")
+                            break;
+                    }
+                },
+                async () => {
+                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
+                        console.log("File available at", URL);
+                        if (auth.currentUser) {
+                            setResumeURL(URL);
+                            await setPublicUserData({
+                                resumeURL: URL
+                            });
+                        }
+                    });
+                });
+        }
+    }
+
     const saveChanges = async () => {
         setLoading(true)
         uploadProfilePicture();
+        uploadResume();
 
         /**
          * This is some very weird syntax and very javascript specific, so here's an explanation for what's going on:
@@ -236,6 +285,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
          */
         await setPublicUserData({
             ...(photoURL !== undefined) && { photoURL: photoURL },
+            ...(resumeURL !== undefined) && { resumeURL: resumeURL },
             ...(displayName !== undefined) && { displayName: displayName },
             ...(name !== undefined) && { name: name },
             ...(bio !== undefined) && { bio: bio },
@@ -475,6 +525,46 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     </View>
                 )}
             />
+            {/* Resume Modal */}
+            <SettingsModal
+                visible={showResumeModal}
+                onCancel={() => setShowResumeModal(false)}
+                onDone={() => setShowResumeModal(false)}
+                content={(
+                    <View>
+                        <InteractButton
+                            label='Upload Resume'
+                            onPress={async () => {
+                                await selectResume();
+                                saveChanges();
+                            }}
+                        />
+                        <InteractButton
+                            label='View Resume'
+                            onPress={async () => {
+                                console.log(resumeURL);
+                                if (resumeURL) {
+                                    await Linking.canOpenURL(resumeURL)
+                                        .then(async (supported) => {
+                                            if (supported) {
+                                                await Linking.openURL(resumeURL!)
+                                                    .catch((err) => console.error(`Issue opening url: ${err}`));
+                                            } else {
+                                                console.warn(`Don't know how to open this URL: ${resumeURL}`);
+                                            }
+                                        })
+                                        .catch((err) => {
+                                            console.error(err);
+                                        });
+                                }
+                                else {
+                                    alert("No resume found")
+                                }
+                            }}
+                        />
+                    </View>
+                )}
+            />
             <ScrollView className={`flex-col w-full pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
                 <View className='py-10 w-full items-center'>
                     <TouchableOpacity activeOpacity={0.7} onPress={async () => await selectProfilePicture()}>
@@ -541,6 +631,11 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                         </TouchableHighlight>
                     </View>
                 </View>
+                <SettingsButton
+                    mainText='Resume'
+                    darkMode={darkMode}
+                    onPress={() => setShowResumeModal(true)}
+                />
                 <View className='h-20' />
                 {loading && <ActivityIndicator className='absolute top-0 bottom-0 left-0 right-0' size={100} />}
             </ScrollView>
