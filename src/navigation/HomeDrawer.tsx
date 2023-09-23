@@ -10,7 +10,7 @@ import { UserContext } from '../context/UserContext';
 import ProfileBadge from '../components/ProfileBadge';
 import HomeScreen from '../screens/Home';
 import AdminDashboardStack from './AdminDashboardStack';
-import { User, committeesList } from '../types/User';
+import { CommitteeConstants, CommitteeKey } from '../types/Committees';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import { StatusBar } from 'expo-status-bar';
@@ -79,16 +79,18 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                         badgeColor='#72A9EF'
                         textClassName='text-center text-xs'
                     />
-                    {userInfo?.publicInfo?.committees?.map((committeeName: string) => {
-                        const committeeInfo = committeesList.find(element => element.name == committeeName);
-                        return (
-                            <ProfileBadge
-                                key={committeeName}
-                                text={committeeName}
-                                badgeColor={committeeInfo ? committeeInfo?.color : ""}
-                                textClassName='text-black text-center text-xs'
-                            />
-                        );
+                    {userInfo?.publicInfo?.committees?.map((key: string) => {
+                        const committeeInfo = CommitteeConstants[key as CommitteeKey];
+                        if (committeeInfo) {
+                            return (
+                                <ProfileBadge
+                                    key={key}
+                                    text={committeeInfo.name}
+                                    badgeColor={committeeInfo ? committeeInfo?.color : ""}
+                                    textClassName='text-black text-center text-xs'
+                                />
+                            );
+                        }
                     })}
                 </View>
             </View>
