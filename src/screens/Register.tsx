@@ -71,7 +71,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
         const passwordStrengthValues = [
             {
                 color: "text-[#f00]",
-                text: "INVALID\n- Minimum 4 characters\n- Valid characters: : A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~"
+                text: "INVALID\n- Minimum 6 characters\n- Valid characters: : A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~"
             },
             {
                 color: "text-[#f90]",

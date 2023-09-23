@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, KeyboardAvoidingView, Platform, Linking } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { MainStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
@@ -10,13 +10,14 @@ import { setPublicUserData, setPrivateUserData, getUser, uploadFileToFirebase } 
 import { getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import * as ImagePicker from "expo-image-picker";
-import { getBlobFromURI, selectImage } from '../api/fileSelection';
+import { getBlobFromURI, selectFile, selectImage } from '../api/fileSelection';
 import ProfileBadge from '../components/ProfileBadge';
-import { committeesList } from '../types/User';
+import { CommitteeConstants, CommitteeKey, CommitteeVal } from '../types/Committees';
 import { validateDisplayName, validateName, validateTamuEmail } from '../helpers/validation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../components/SettingsComponents"
+import InteractButton from '../components/InteractButton';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
@@ -123,7 +124,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [loading, setLoading] = useState<boolean>(false);
     const [image, setImage] = useState<Blob | null>(null);
-    const [imageName, setImageName] = useState<string | null | undefined>(null);
+    const [resume, setResume] = useState<Blob | null>(null);
     const [showSaveButton, setShowSaveButton] = useState<boolean>(false);
 
     const defaultVals = {
@@ -133,51 +134,27 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         bio: "Write a short bio...",
         major: "MAJOR",
         classYear: "CLASS YEAR",
-        committees: ["No Committees Found"],
+        committees: [],
     }
 
     //Hooks used to save state of modified fields before user hits "save"
     const [photoURL, setPhotoURL] = useState<string | undefined>(userInfo?.publicInfo?.photoURL);
+    const [resumeURL, setResumeURL] = useState<string | undefined>(userInfo?.publicInfo?.resumeURL);
     const [displayName, setDisplayName] = useState<string | undefined>(userInfo?.publicInfo?.displayName);
     const [name, setName] = useState<string | undefined>(userInfo?.publicInfo?.name);
     const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
     const [major, setMajor] = useState<string | undefined>(userInfo?.publicInfo?.major);
     const [classYear, setClassYear] = useState<string | undefined>(userInfo?.publicInfo?.classYear);
-    const [committees, setCommittees] = useState<Array<string> | undefined>(userInfo?.publicInfo?.committees);
-
-    // SHPE Info
-    type CommitteeListItemData = {
-        id: number,
-        name: string,
-        color: string,
-        isChecked: boolean,
-    }
-
-    const [committeeListItems, setCommitteeListItems] = useState<Array<CommitteeListItemData>>(committeesList.map((element) => { return { ...element, isChecked: committees?.includes(element.name) ?? false } }));
-
+    const [committees, setCommittees] = useState<Array<CommitteeKey | string> | undefined>(userInfo?.publicInfo?.committees);
 
     // Modal options
     const [showNamesModal, setShowNamesModal] = useState<boolean>(false);
     const [showBioModal, setShowBioModal] = useState<boolean>(false);
     const [showAcademicInfoModal, setShowAcademicInfoModal] = useState<boolean>(false);
     const [showCommitteesModal, setShowCommitteesModal] = useState<boolean>(false);
+    const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
-
-    /**
-     * Checks for any changes to committeeListItems. Updates committees to reflect these changes.
-     * Any elements that aren't in committeeListItems will stay in committees for data integrity reasons
-     */
-    useEffect(() => {
-        committeeListItems.forEach((element) => {
-            if (element.isChecked && !committees?.includes(element.name)) {
-                setCommittees(committees !== undefined ? [...committees, element.name] : [element.name])
-            }
-            else if (!element.isChecked && committees?.includes(element.name)) {
-                setCommittees(committees?.filter((committeeName) => committeeName !== element.name) ?? [])
-            }
-        })
-    }, [committeeListItems]);
 
     /**
      * Checks for any pending changes in user data.  
@@ -185,22 +162,14 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
      */
     useEffect(() => {
         if (
-            photoURL != userInfo?.publicInfo?.photoURL ||
-            displayName != userInfo?.publicInfo?.displayName ||
-            name != userInfo?.publicInfo?.name ||
-            bio != userInfo?.publicInfo?.bio ||
-            major != userInfo?.publicInfo?.major ||
-            classYear != userInfo?.publicInfo?.classYear ||
-            // Checks if committees list is essentially equivalent to the committees list in userInfo (Same length and contains each element) 
-            committees?.length !== userInfo?.publicInfo?.committees?.length ||
-            !committees?.every((element, index) => userInfo?.publicInfo?.committees?.at(index) == element)
+            photoURL != userInfo?.publicInfo?.photoURL
         ) {
             setShowSaveButton(true);
         }
         else {
             setShowSaveButton(false);
         }
-    }, [photoURL, displayName, name, bio, major, classYear, committees]);
+    }, [photoURL]);
 
     const selectProfilePicture = async () => {
         const result = await selectImage({
@@ -212,15 +181,23 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
         if (result) {
             const imageBlob = await getBlobFromURI(result.assets![0].uri);
-            setPhotoURL(result.assets![0].uri);
             setImage(imageBlob);
-            setImageName(result.assets![0].fileName);
+        }
+    }
+
+    const selectResume = async () => {
+        const result = await selectFile();
+        console.log(result);
+        if (result) {
+            const resumeBlob = await getBlobFromURI(result.assets![0].uri);
+            setResume(resumeBlob);
+            saveChanges();
         }
     }
 
     const uploadProfilePicture = () => {
         if (image) {
-            const uploadTask = uploadFileToFirebase(image, `profile-pictures/${auth.currentUser?.uid}/${imageName ?? "user-profile-picture"}`);
+            const uploadTask = uploadFileToFirebase(image, `user-docs/${auth.currentUser?.uid}/user-profile-picture`);
 
             uploadTask.on("state_changed",
                 (snapshot) => {
@@ -244,6 +221,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
                         console.log("File available at", URL);
                         if (auth.currentUser) {
+                            setPhotoURL(URL);
                             await updateProfile(auth.currentUser, {
                                 photoURL: URL
                             });
@@ -256,9 +234,46 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         }
     }
 
+    const uploadResume = () => {
+        if (resume) {
+            const uploadTask = uploadFileToFirebase(resume, `user-docs/${auth.currentUser?.uid}/user-resume`);
+
+            uploadTask.on("state_changed",
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                },
+                (error) => {
+                    switch (error.code) {
+                        case "storage/unauthorized":
+                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            break;
+                        case "storage/canceled":
+                            alert("File upload cancelled");
+                            break;
+                        default:
+                            alert("An unknown error has occured")
+                            break;
+                    }
+                },
+                async () => {
+                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
+                        console.log("File available at", URL);
+                        if (auth.currentUser) {
+                            setResumeURL(URL);
+                            await setPublicUserData({
+                                resumeURL: URL
+                            });
+                        }
+                    });
+                });
+        }
+    }
+
     const saveChanges = async () => {
         setLoading(true)
         uploadProfilePicture();
+        uploadResume();
 
         /**
          * This is some very weird syntax and very javascript specific, so here's an explanation for what's going on:
@@ -270,6 +285,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
          */
         await setPublicUserData({
             ...(photoURL !== undefined) && { photoURL: photoURL },
+            ...(resumeURL !== undefined) && { resumeURL: resumeURL },
             ...(displayName !== undefined) && { displayName: displayName },
             ...(name !== undefined) && { name: name },
             ...(bio !== undefined) && { bio: bio },
@@ -302,12 +318,12 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
             });
     }
 
-    const CommitteeListItemComponent = ({ committeeData, onPress, darkMode, committees }: { committeeData: CommitteeListItemData, onPress: (id: number) => void, darkMode?: boolean, committees: Array<string> }) => {
-        const committeeIndex = committees.indexOf(committeeData.name);
+    const CommitteeListItemComponent = ({ committeeData, committeeKey, onPress, darkMode, committees, isChecked }: { committeeData: CommitteeVal, committeeKey: CommitteeKey, onPress: (name: CommitteeKey) => void, darkMode?: boolean, committees: Array<string>, isChecked: boolean }) => {
+        const committeeIndex = committees.indexOf(committeeKey);
         return (
             <TouchableHighlight
-                className={`border-2 my-4 p-4 rounded-xl w-11/12 shadow-md shadow-black ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${committeeData.isChecked ? "border-green-400" : "border-transparent"}`}
-                onPress={() => onPress(committeeData.id)}
+                className={`border-2 my-4 p-4 rounded-xl w-11/12 shadow-md shadow-black ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${isChecked ? "border-green-400" : "border-transparent"}`}
+                onPress={() => onPress(committeeKey)}
                 underlayColor={darkMode ? "#7a7a7a" : "#DDD"}
             >
                 <View className={`items-center flex-row justify-between`}>
@@ -315,7 +331,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                         <View className='h-8 w-8 mr-4 rounded-full' style={{ backgroundColor: committeeData.color }} />
                         <Text className={`text-2xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeData.name}</Text>
                     </View>
-                    {committeeData.isChecked && committeeIndex >= 0 && <Text className={`text-xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeIndex + 1}</Text>}
+                    {isChecked && committeeIndex >= 0 && <Text className={`text-xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeIndex + 1}</Text>}
                 </View>
             </TouchableHighlight>
         );
@@ -323,17 +339,19 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
     /**
      * This function is called whenever a committee is toggled by the user.
-     * Because of the way hooks work, we have to make a deep copy of committeeListItems with the single committee isChecked changed.
-     * @param id - id of the committee being selected/unselected
+     * Because of the way hooks work, we have to make a deep copy of committees.
+     * @param name - name of the committee being selected/unselected
      */
-    const handleCommitteeToggle = (id: number) => {
-        const modifiedCommitteeListItems = committeeListItems.map((element) => {
-            if (id === element.id) {
-                return { ...element, isChecked: !element.isChecked }
-            }
-            return element;
-        });
-        setCommitteeListItems(modifiedCommitteeListItems);
+    const handleCommitteeToggle = (name: CommitteeKey) => {
+        const index = committees?.indexOf(name) ?? -1;
+        let modifiedCommittees = [...committees ?? []];
+        if (index === -1) {
+            modifiedCommittees?.push(name);
+        }
+        else {
+            modifiedCommittees?.splice(index, 1);
+        }
+        setCommittees(modifiedCommittees);
     }
 
     return (
@@ -351,12 +369,16 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 }}
                 onDone={() => {
                     // TODO Make alert messages more verbose
-                    if (validateDisplayName(displayName) && validateName(name))
+                    if (validateDisplayName(displayName) && validateName(name)) {
+                        saveChanges();
                         setShowNamesModal(false);
-                    else if (!validateDisplayName(displayName))
+                    }
+                    else if (!validateDisplayName(displayName)) {
                         alert("Invalid Display Name. Display Name must not be empty and must be less than 80 characters long.");
-                    else if (!validateName(name))
+                    }
+                    else if (!validateName(name)) {
                         alert("Invalid Name. Name must not be empty and must be less than 80 characters long.");
+                    }
                 }}
                 content={(
                     <KeyboardAvoidingView>
@@ -398,7 +420,10 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     setBio(userInfo?.publicInfo?.bio ?? defaultVals.bio);
                     setShowBioModal(false);
                 }}
-                onDone={() => setShowBioModal(false)}
+                onDone={() => {
+                    saveChanges();
+                    setShowBioModal(false);
+                }}
                 content={(
                     <KeyboardAvoidingView className='px-6'>
                         <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Bio</Text>
@@ -423,7 +448,10 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     setClassYear(userInfo?.publicInfo?.classYear ?? defaultVals.classYear);
                     setShowAcademicInfoModal(false);
                 }}
-                onDone={() => setShowAcademicInfoModal(false)}
+                onDone={() => {
+                    saveChanges();
+                    setShowAcademicInfoModal(false)
+                }}
                 content={(
                     <KeyboardAvoidingView>
                         <View className='px-6 py-2'>
@@ -461,31 +489,79 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 darkMode={darkMode}
                 onCancel={() => {
                     setCommittees(userInfo?.publicInfo?.committees ?? defaultVals.committees);
-                    setCommitteeListItems(committeesList.map((element) => { return { ...element, isChecked: userInfo?.publicInfo?.committees?.includes(element.name) ?? false } }));
                     setShowCommitteesModal(false);
                 }}
-                onDone={() => setShowCommitteesModal(false)}
+                onDone={() => {
+                    saveChanges();
+                    setShowCommitteesModal(false)
+                }}
                 content={(
                     <View className='flex-col'>
                         <ScrollView
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={{
-                                minHeight: "115%",
+                                minHeight: "130%",
                             }}
                         >
                             <Text className={`text-lg px-4 mb-2 ${darkMode ? "text-gray-300" : "text-black"}`}>The number displayed beside each committee represents the order in which they will be displayed on your profile.</Text>
                             <View className='w-full h-full flex-col items-center'>
-                                {committeeListItems.map((committeeData) => (
-                                    <CommitteeListItemComponent
-                                        key={committeeData.id}
-                                        committeeData={committeeData}
-                                        darkMode={darkMode}
-                                        committees={committees ?? defaultVals.committees}
-                                        onPress={(id: number) => handleCommitteeToggle(id)}
-                                    />
-                                ))}
+                                {Object.keys(CommitteeConstants).map((key: string) => {
+                                    // key is guaranteed to be of type CommitteeKey since we're iterating through each key
+                                    const committeeData = CommitteeConstants[key as CommitteeKey];
+                                    return (
+                                        <CommitteeListItemComponent
+                                            key={key}
+                                            committeeData={committeeData}
+                                            committeeKey={key as CommitteeKey}
+                                            darkMode={darkMode}
+                                            isChecked={committees?.findIndex(element => element == key) !== -1}
+                                            committees={committees ?? defaultVals.committees}
+                                            onPress={(name: CommitteeKey) => handleCommitteeToggle(name)}
+                                        />
+                                    )
+                                })}
                             </View>
                         </ScrollView>
+                    </View>
+                )}
+            />
+            {/* Resume Modal */}
+            <SettingsModal
+                visible={showResumeModal}
+                onCancel={() => setShowResumeModal(false)}
+                onDone={() => setShowResumeModal(false)}
+                content={(
+                    <View>
+                        <InteractButton
+                            label='Upload Resume'
+                            onPress={async () => {
+                                await selectResume();
+                                saveChanges();
+                            }}
+                        />
+                        <InteractButton
+                            label='View Resume'
+                            onPress={async () => {
+                                console.log(resumeURL);
+                                if (resumeURL) {
+                                    await Linking.canOpenURL(resumeURL)
+                                        .then(async (supported) => {
+                                            if (supported) {
+                                                await Linking.openURL(resumeURL!)
+                                                    .catch((err) => console.error(`Issue opening url: ${err}`));
+                                            } else {
+                                                console.warn(`Don't know how to open this URL: ${resumeURL}`);
+                                            }
+                                        })
+                                        .catch((err) => {
+                                            console.error(err);
+                                        });
+                                }
+                                else {
+                                    alert("No resume found")
+                                }
+                            }}
+                        />
                     </View>
                 )}
             />
@@ -537,22 +613,29 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 <View className={`border max-w-11/12 rounded-3xl shadow-sm shadow-black p-3 mx-3 my-3 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                     <Text className={`text-2xl mb-4 ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
                     <View className='flex-row flex-wrap'>
-                        {committees?.map((committeeName: string, index: number) => {
-                            const committeeInfo = committeesList.find(element => element.name == committeeName);
-                            return (
-                                <ProfileBadge
-                                    badgeClassName='p-2 max-w-2/5 rounded-full mr-1 mb-2'
-                                    text={committeeName}
-                                    badgeColor={committeeInfo ? committeeInfo?.color : ""}
-                                    key={index}
-                                />
-                            )
+                        {committees?.map((key: string, index: number) => {
+                            const committeeInfo = CommitteeConstants[key as CommitteeKey];
+                            if (committeeInfo) {
+                                return (
+                                    <ProfileBadge
+                                        badgeClassName='p-2 max-w-2/5 rounded-full mr-1 mb-2'
+                                        text={committeeInfo.name}
+                                        badgeColor={committeeInfo ? committeeInfo?.color : ""}
+                                        key={index}
+                                    />
+                                );
+                            }
                         })}
                         <TouchableHighlight onPress={() => setShowCommitteesModal(true)} className='p-2 w-1/4 rounded-full mb-2 bg-[#FD551A]' underlayColor={"#FCA788"}>
                             <Text className='text-white text-center'>+</Text>
                         </TouchableHighlight>
                     </View>
                 </View>
+                <SettingsButton
+                    mainText='Resume'
+                    darkMode={darkMode}
+                    onPress={() => setShowResumeModal(true)}
+                />
                 <View className='h-20' />
                 {loading && <ActivityIndicator className='absolute top-0 bottom-0 left-0 right-0' size={100} />}
             </ScrollView>

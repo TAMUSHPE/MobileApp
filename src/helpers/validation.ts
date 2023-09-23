@@ -12,7 +12,7 @@ export const validateTamuEmail = (email: any): boolean => {
 
 /** Matches passwords with 4-64 characters with characters being alphanumeric or any special characters on a standard qwerty keyboard */
 export const validatePassword = (password: any): boolean => {
-    const passwordRegex: RegExp = /^[A-Z0-9 !"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{4,64}$/i;
+    const passwordRegex: RegExp = /^[A-Z0-9 !"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{6,64}$/i;
     return typeof password == 'string' && passwordRegex.test(password);
 };
 
