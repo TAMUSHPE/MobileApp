@@ -71,6 +71,7 @@
     "@babel/plugin-transform-arrow-functions": "^7.22.5",
     "@babel/plugin-transform-shorthand-properties": "^7.22.5",
     "@babel/plugin-transform-template-literals": "^7.22.5",
+    "@types/jest": "^29.5.5",
     "@types/react": "~18.2.14",
     "@types/react-native": "^0.72.2",
     "eas-cli": "^5.2.0",
