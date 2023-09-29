@@ -68,7 +68,7 @@ export const calculateRGBLuminosity = (color: ColorValues): number => {
 
 /** Calculates a generally accepted perceived luminosity for a given hex value according to Digital UTI BT.601.
  * @argument color - hex code of color being used in calculation
- * @returns perceived luminosity. returns 256 if color is not valid
+ * @returns perceived luminosity. returns 255 if color is not valid
  */
 export const calculateHexLuminosity = (color: string): number => {
     const colorRGBAVals = hexToRGBA(color);
