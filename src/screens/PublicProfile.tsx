@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator, Image } from 'react-native';
+import { View, Text, ActivityIndicator, Image, TouchableHighlight } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { useRoute } from '@react-navigation/native';
 import { auth } from '../config/firebaseConfig';
@@ -6,6 +6,10 @@ import { getPublicUserData } from '../api/firebaseUtils';
 import { MembersProps, MembersScreenRouteProp } from '../types/Navigation';
 import { Roles } from '../types/User';
 import { Images } from '../../assets';
+import { committeesList } from '../types/User';
+import { Octicons } from '@expo/vector-icons';
+import ProfileBadge from '../components/ProfileBadge';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const PublicProfileScreen = ({ navigation }: MembersProps) => {
     const route = useRoute<MembersScreenRouteProp>();
@@ -61,26 +65,48 @@ const PublicProfileScreen = ({ navigation }: MembersProps) => {
     }
 
     return (
-        <View className="items-center justify-center flex-1">
-            <View>
-                <Image
-                    className="flex w-16 h-16 rounded-full"
-                    defaultSource={Images.DEFAULT_USER_PICTURE}
-                    source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
-                />
+        <SafeAreaView className='h-full' edges={['right', 'top', 'left']}>
+            <View className='fixed top-0 left-6 right-0'>
+                <TouchableHighlight onPress={() => navigation.goBack()} underlayColor="offwhite">
+                    <Octicons name="chevron-left" size={30} color="black" />
+                </TouchableHighlight>
             </View>
-            <Text> {`Name: ${name}`} </Text>
-            <Text> {`Points: ${points?.toFixed(2)}`}</Text>
-            <Text> {`Bio: ${bio}`} </Text>
-            <Text> {`Committees: ${committees}`} </Text>
-            <Text> {`Roles: ${JSON.stringify(roles)}`} </Text>
-            <Text> {`Class Year: ${classYear}`} </Text>
-            <Text> {`Major: ${major}`} </Text>
-            <Text> {`Display Name: ${displayName}`} </Text>
-            <Text> {`Email: ${email}`} </Text>
-            <Text> {`Points Rank: ${pointsRank}`} </Text>
-
-        </View>
+            <View className="items-center justify-center flex-1 space-y-8">
+                <View className='flex items-center justify-center'>
+                    <Image
+                        className="flex w-28 h-28 rounded-full"
+                        defaultSource={Images.DEFAULT_USER_PICTURE}
+                        source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
+                    />
+                    <View className='flex-row items-center justify-start'>
+                        <Text className='text-2xl font-bold'> {`${name}`} </Text>
+                        <View className='rounded-full w-2 h-2 bg-orange ml-1' />
+                        <Text className='font-bold'> {`${points?.toFixed(2)} pts`} </Text>
+                    </View>
+                    <Text className='text-gray-500'> {email} </Text>
+                </View>
+                <View className='bg-white w-4/5 rounded-xl items-center pt-3 pb-7 px-7 space-y-1 shadow-md shadow-black'>
+                    <Text className='text-xl font-bold'> {`${major} ${classYear}`} </Text>
+                    <Text className=''> {`${bio}`} </Text>
+                </View>
+                <View className='bg-white w-4/5 rounded-xl pt-3 pb-12 px-2 space-y-2 shadow-md shadow-black items-center'>
+                    <Text className='text-xl font-bold'> Committees </Text>
+                    <View className='flex-row flex-wrap'>
+                        {committees?.map((committeeName: string) => {
+                            const committeeInfo = committeesList.find(element => element.name == committeeName);
+                            return (
+                                <ProfileBadge
+                                    key={committeeName}
+                                    text={committeeName}
+                                    badgeColor={committeeInfo ? committeeInfo?.color : ""}
+                                    textClassName='text-black text-center text-md'
+                                />
+                            );
+                        })}
+                    </View>
+                </View>
+            </View>
+        </SafeAreaView>
     )
 }
 
