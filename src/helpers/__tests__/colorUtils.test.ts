@@ -66,28 +66,41 @@ test("Test conversion from RGBA object to hex string", () => {
 
 
 test("Test if luminosity for random color is within range [0, 255]", () => {
-    const colorVals: colorUtils.ColorValues = {
-        r: Math.random() * 255,
-        g: Math.random() * 255,
-        b: Math.random() * 255,
-        a: Math.random() * 255,
+    const colorVals1: colorUtils.ColorValues = {
+        r: Math.trunc(Math.random() * 255),
+        g: Math.trunc(Math.random() * 255),
+        b: Math.trunc(Math.random() * 255),
+        a: Math.trunc(Math.random() * 255),
     };
 
-    const luminosity = colorUtils.calculateRGBLuminosity(colorVals);
-    expect(luminosity).toBeGreaterThanOrEqual(0);
-    expect(luminosity).toBeLessThanOrEqual(255);
+    const luminosity1 = colorUtils.calculateRGBLuminosity(colorVals1);
+    expect(luminosity1).toBeGreaterThanOrEqual(0);
+    expect(luminosity1).toBeLessThanOrEqual(255);
+
+    const colorVals2: colorUtils.ColorValues = {
+        r: Math.trunc(Math.random() * 255),
+        g: Math.trunc(Math.random() * 255),
+        b: Math.trunc(Math.random() * 255),
+    };
+
+    const luminosity2 = colorUtils.calculateRGBLuminosity(colorVals2);
+    expect(luminosity2).toBeGreaterThanOrEqual(0);
+    expect(luminosity2).toBeLessThanOrEqual(255);
 });
 
 
-test("Test if luminosity for random color hex string is within range [0, 255]", () => {
+test("Test if luminosity for random color hex string is within range [0, 255] and invalid color returns 255.", () => {
     const colorVals: colorUtils.ColorValues = {
-        r: Math.random() * 255,
-        g: Math.random() * 255,
-        b: Math.random() * 255,
-        a: Math.random() * 255,
+        r: Math.trunc(Math.random() * 255),
+        g: Math.trunc(Math.random() * 255),
+        b: Math.trunc(Math.random() * 255),
+        a: Math.trunc(Math.random() * 255),
     };
 
     const luminosity = colorUtils.calculateHexLuminosity(colorUtils.RGBAToHex(colorVals));
     expect(luminosity).toBeGreaterThanOrEqual(0);
     expect(luminosity).toBeLessThanOrEqual(255);
+
+    const invalidColorString = randomStrRange(0, 100);
+    expect(colorUtils.calculateHexLuminosity(invalidColorString)).toBe(255);
 });
