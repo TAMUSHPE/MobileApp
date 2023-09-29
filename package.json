@@ -3,6 +3,7 @@
   "version": "0.2.1",
   "scripts": {
     "start": "npx expo start --dev-client",
+    "test": "jest",
     "android": "npx expo run:android",
     "ios": "npx expo run:ios",
     "web": "npx expo start --web",
