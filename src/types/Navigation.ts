@@ -116,7 +116,7 @@ export type TestBankProps = {
 
 export type MembersProps = {
     userData?: PublicUserInfoUID
-    handleOnPress?: any
+    handleCardPress: (uid: string) => string | void;
     navigation: NativeStackNavigationProp<MembersStackParams>
 }
 

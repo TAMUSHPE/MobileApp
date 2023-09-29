@@ -7,7 +7,7 @@ import { PublicUserInfoUID } from '../types/User'
 import MemberCard from './MemberCard'
 import { TouchableOpacity } from 'react-native';
 
-const MembersList: React.FC<MembersProps> = ({ navigation }) => {
+const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress }) => {
     const [officers, setOfficers] = useState<PublicUserInfoUID[]>([])
     const [members, setMembers] = useState<PublicUserInfoUID[]>([])
     const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -103,11 +103,12 @@ const MembersList: React.FC<MembersProps> = ({ navigation }) => {
                     </View>
                 }
                 {filteredOfficers.map((userData, index) => {
-                    const handleOnPress = () => {
-                        navigation.navigate("PublicProfile", { uid: userData.uid! })
-                    }
                     return (
-                        <MemberCard key={index} userData={userData} navigation={navigation} handleOnPress={handleOnPress} />
+                        <MemberCard
+                            key={index}
+                            userData={userData}
+                            navigation={navigation}
+                            handleCardPress={() => handleCardPress(userData.uid!)} />
                     )
                 })}
 
@@ -123,7 +124,11 @@ const MembersList: React.FC<MembersProps> = ({ navigation }) => {
                         navigation.navigate("PublicProfile", { uid: userData.uid! })
                     }
                     return (
-                        <MemberCard key={index} userData={userData} navigation={navigation} handleOnPress={handleOnPress} />
+                        <MemberCard
+                            key={index}
+                            userData={userData}
+                            navigation={navigation}
+                            handleCardPress={() => handleCardPress(userData.uid!)} />
                     )
                 })}
             </View>
