@@ -99,10 +99,3 @@ describe("Verify firestore cloud storage works", () => {
         });
     });
 });
-
-
-
-
-
-
-
