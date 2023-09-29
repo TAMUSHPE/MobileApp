@@ -11,7 +11,7 @@ import { SHPEEventID } from "./Events";
 export type MainStackParams = {
     HomeDrawer: HomeDrawerParams;
     HomeBottomTabs: undefined;
-    AdminDashboard: undefined;
+    AdminDashboardStack: undefined;
     SettingsScreen: undefined;
     SearchSettingsScreen: undefined;
     ProfileSettingsScreen: undefined;
@@ -81,7 +81,6 @@ export type AdminDashboardParams = {
 // Drawers
 export type HomeDrawerParams = {
     HomeScreen: undefined;
-    AdminDashboardStack: undefined;
     Logout: undefined;
 };
 
