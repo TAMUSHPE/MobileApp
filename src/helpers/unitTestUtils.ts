@@ -9,7 +9,9 @@ export const randomStr = (length: number = 1): string => {
     if (length < 0) {
         throw new Error("String length cannot be less than 0", { cause: "Argument 'length' in randomStr() is less than 0" });
     }
-    return crypto.randomBytes(Math.floor(length / 2)).toString("hex");
+
+    // Creates random bytes and converts them to a string. Padding is used in case the length is odd.
+    return crypto.randomBytes(Math.floor(length / 2)).toString("hex").padEnd(length, crypto.randomBytes(1).toString("hex"));
 };
 
 /**
