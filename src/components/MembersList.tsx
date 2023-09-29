@@ -121,7 +121,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress }) =>
                 {filteredMembers.map((userData, index) => {
 
                     const handleOnPress = () => {
-                        navigation.navigate("PublicProfile", { uid: userData.uid! })
+                        navigation!.navigate("PublicProfile", { uid: userData.uid! })
                     }
                     return (
                         <MemberCard

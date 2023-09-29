@@ -300,11 +300,11 @@ export const getCommitteeInfo = async (committeeName: string) => {
 export const setCommitteeInfo = async (committeeName: string, committeeData: Committee) => {
     try {
         await setDoc(doc(db, `committees/${committeeName}`), {
-            description: committeeData.description,
-            headUID: committeeData.headUID,
-            leadUIDs: committeeData.leadUIDs,
-            memberApplicationLink: committeeData.memberApplicationLink,
-            leadApplicationLink: committeeData.leadApplicationLink,
+            description: committeeData.description || "",
+            headUID: committeeData.headUID || "",
+            leadUIDs: committeeData.leadUIDs || [],
+            memberApplicationLink: committeeData.memberApplicationLink || "",
+            leadApplicationLink: committeeData.leadApplicationLink || "",
         }, { merge: true });
         return true;
     } catch (err) {
