@@ -14,7 +14,15 @@ import { validateTamuEmail } from "../helpers/validation";
  * @param uid - The universal ID tied to a registered user.
  * @returns - Promise of data. An undefined return means that the file does not exist or the user does not have permissions to access the document.
  */
-export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | undefined> => {
+export const getPublicUserData = async (uid: string = ""): Promise<PublicUserInfo | undefined> => {
+    if (!auth.currentUser?.uid) {
+        throw new Error("Authentication Error", { cause: "User uid is undefined" });
+    }
+
+    if (!uid) {
+        uid = auth.currentUser?.uid;
+    }
+
     return getDoc(doc(db, "users", uid))
         .then(async (res) => {
             const responseData = res.data()
@@ -32,13 +40,37 @@ export const getPublicUserData = async (uid: string): Promise<PublicUserInfo | u
 
 
 /**
+ * Sets the public data of the currently logged-in user. This data is readable by anyone.
+ * 
+ * @param data - The data to be stored as public data. Any pre-existing fields in Firestore will not be removed.
+ */
+export const setPublicUserData = async (data: PublicUserInfo, uid: string = "") => {
+    if (!auth.currentUser?.uid) {
+        throw new Error("Authentication Error", { cause: "Current user uid is undefined" });
+    }
+
+    if (!uid) {
+        uid = auth.currentUser?.uid;
+    }
+
+    await setDoc(doc(db, "users", uid), data, { merge: true })
+        .catch(err => console.error(err));
+};
+
+
+/**
  * Obtains the private data of a user given their UID. Returns undefined if the currently logged-in user does not have permissions.
  * 
  * @param uid - Universal ID tied to a registered user.
  * @returns - Promise of data. An undefined return means that the file does not exist or the user does not have permissions to access the document.
  */
-export const getPrivateUserData = async (uid: string): Promise<PrivateUserInfo | undefined> => {
-    if (auth.currentUser?.uid != uid) return undefined;
+export const getPrivateUserData = async (uid: string = ""): Promise<PrivateUserInfo | undefined> => {
+    if (!auth.currentUser?.uid) {
+        throw new Error("Authentication Error", { cause: "User uid is undefined" });
+    }
+    else if (!uid) {
+        uid = auth.currentUser?.uid;
+    }
 
     return await getDoc(doc(db, `users/${uid}/private`, "privateInfo"))
         .then((res) => {
@@ -51,6 +83,18 @@ export const getPrivateUserData = async (uid: string): Promise<PrivateUserInfo |
         });
 };
 
+
+/**
+ * Sets the private data of the currently logged-in user. This data is readable only by the user.
+ * 
+ * @param data - The data to be stored as private data. Any pre-existing fields in Firestore will not be removed.
+ */
+export const setPrivateUserData = async (data: PrivateUserInfo) => {
+    await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), data, { merge: true })
+        .catch(err => console.error(err));
+};
+
+
 /**
  * Obtains all data related to a user. Any undefined fields mean the currently logged-in user does not have permissions to those fields.
  * 
@@ -58,6 +102,9 @@ export const getPrivateUserData = async (uid: string): Promise<PrivateUserInfo |
  * @returns - User data formatted according to User interface defined in "./src/types/User.tsx".
  */
 export const getUser = async (uid: string): Promise<User | undefined> => {
+    if (!auth.currentUser?.uid) {
+        throw new Error("Authentication Error", { cause: "User uid is undefined" });
+    }
     const publicData = await getPublicUserData(uid);
     const privateData = await getPrivateUserData(uid);
     if (publicData == undefined) {
@@ -72,6 +119,7 @@ export const getUser = async (uid: string): Promise<User | undefined> => {
         };
     }
 };
+
 
 /**
  * Obtains user data and UID by the given email.
@@ -101,6 +149,7 @@ export const getUserByEmail = async (email: string): Promise<{ userData: PublicU
     }
 }
 
+
 export const getOfficers = async (): Promise<PublicUserInfoUID[]> => {
     try {
         const userRef = collection(db, 'users');
@@ -128,6 +177,7 @@ export const getOfficers = async (): Promise<PublicUserInfoUID[]> => {
         throw new Error("Internal Server Error.");
     }
 }
+
 
 export const getMembersExcludeOfficers = async (): Promise<PublicUserInfoUID[]> => {
     try {
@@ -157,26 +207,6 @@ export const getMembersExcludeOfficers = async (): Promise<PublicUserInfoUID[]> 
     }
 }
 
-/**
- * Sets the public data of the currently logged-in user. This data is readable by anyone.
- * 
- * @param data - The data to be stored as public data. Any pre-existing fields in Firestore will not be removed.
- */
-export const setPublicUserData = async (data: PublicUserInfo) => {
-    await setDoc(doc(db, "users", auth.currentUser?.uid!), data, { merge: true })
-        .catch(err => console.error(err));
-};
-
-/**
- * Sets the private data of the currently logged-in user. This data is readable only by the user.
- * 
- * @param data - The data to be stored as private data. Any pre-existing fields in Firestore will not be removed.
- */
-export const setPrivateUserData = async (data: PrivateUserInfo) => {
-    await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), data, { merge: true })
-        .catch(err => console.error(err));
-};
-
 
 /**
  * Appends an Expo push token to the current user's private data.
@@ -192,6 +222,7 @@ export const appendExpoPushToken = async (expoPushToken: string) => {
         .catch(err => console.error(err));
 };
 
+
 /**
  * Obtains information on the current user.
  * 
@@ -200,7 +231,7 @@ export const appendExpoPushToken = async (expoPushToken: string) => {
  * 
  * @returns - User data formatted according to User interface defined in "./src/types/User.tsx".
  */
-export const initializeCurrentUserData = async (): Promise<User> => { 
+export const initializeCurrentUserData = async (): Promise<User> => {
 
     /**
      * Both defaultPublicInfo and defaultPrivateInfo contain critical information used for the app to work as intended.
@@ -267,9 +298,9 @@ export const initializeCurrentUserData = async (): Promise<User> => {
  * @param path - Path name of the file in Firebase.
  * @returns - Task of file being uploaded.
  */
-export const uploadFileToFirebase = (file: Blob, path: string, metadata?: UploadMetadata): UploadTask => {
+export const uploadFileToFirebase = (file: Uint8Array | ArrayBuffer | Blob, path: string, metadata?: UploadMetadata): UploadTask => {
     const storageRef = ref(storage, path);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    const uploadTask = uploadBytesResumable(storageRef, file, metadata);
     return uploadTask;
 };
 
@@ -319,11 +350,11 @@ export const createEvent = async (event: SHPEEvent) => {
             name: event.name,
             description: event.description,
             pointsCategory: event.pointsCategory,
-            notificationGroup: event.notificationGroup, 
+            notificationGroup: event.notificationGroup,
             startDate: event.startDate,
-            endDate: event.endDate, 
+            endDate: event.endDate,
             location: event.location,
-            attendance: 0, 
+            attendance: 0,
         });
 
         return docRef.id;
@@ -332,22 +363,22 @@ export const createEvent = async (event: SHPEEvent) => {
         return null;
     }
 };
-export const updateEvent = async (event:SHPEEventID) => {
+export const updateEvent = async (event: SHPEEventID) => {
     try {
-      const docRef = doc(db, "events", event.id!);
-      await updateDoc(docRef, {
-        name: event.name,
-        description: event.description,
-        pointsCategory: event.pointsCategory || [],
-        notificationGroup: event.notificationGroup || [],
-        startDate: event.startDate,
-        endDate: event.endDate,
-        location: event.location,
-      });
-      return event.id;
+        const docRef = doc(db, "events", event.id!);
+        await updateDoc(docRef, {
+            name: event.name,
+            description: event.description,
+            pointsCategory: event.pointsCategory || [],
+            notificationGroup: event.notificationGroup || [],
+            startDate: event.startDate,
+            endDate: event.endDate,
+            location: event.location,
+        });
+        return event.id;
     } catch (error) {
-      console.error("Error updating document: ", error);
-      return null;
+        console.error("Error updating document: ", error);
+        return null;
     }
 }
 
@@ -374,19 +405,19 @@ export const getUpcomingEvents = async () => {
     const querySnapshot = await getDocs(q);
     const events: SHPEEventID[] = [];
     querySnapshot.forEach((doc) => {
-      events.push({ id: doc.id, ...doc.data() });
+        events.push({ id: doc.id, ...doc.data() });
     });
 
     events.sort((a, b) => {
         const dateA = a.startDate ? a.startDate.toDate() : undefined;
         const dateB = b.startDate ? b.startDate.toDate() : undefined;
-      
+
         if (dateA && dateB) {
-          return dateA.getTime() - dateB.getTime();
+            return dateA.getTime() - dateB.getTime();
         }
         return -1; // error
-      });
-      
+    });
+
     return events;
 };
 
@@ -397,18 +428,18 @@ export const getPastEvents = async () => {
     const querySnapshot = await getDocs(q);
     const events: SHPEEventID[] = [];
     querySnapshot.forEach((doc) => {
-      events.push({ id: doc.id, ...doc.data() });
+        events.push({ id: doc.id, ...doc.data() });
     });
     events.sort((a, b) => {
         const dateA = a.startDate ? a.startDate.toDate() : undefined;
         const dateB = b.startDate ? b.startDate.toDate() : undefined;
-      
+
         if (dateA && dateB) {
-          return dateA.getTime() - dateB.getTime();
+            return dateA.getTime() - dateB.getTime();
         }
         return -1; // error
-      });
-      
+    });
+
     return events;
 };
 
@@ -416,37 +447,37 @@ export const getPastEvents = async () => {
 
 export const destroyEvent = async (eventID: string) => {
     try {
-      const eventRef = doc(db, "events", eventID);
-      const logRef = collection(db, `/events/${eventID}/logs`);
-      const logQuery = query(logRef);
-      const logSnapshot = await getDocs(logQuery);
-  
-      // Debug: Check if we received any logs
-      console.log("Received logs: ", logSnapshot.docs.length);
-  
-      // Delete logs if they exist
-      if (!logSnapshot.empty) {
-        const deleteLogPromises = logSnapshot.docs.map((logDoc) => {
-          return deleteDoc(logDoc.ref);
-        });
-  
-        await Promise.all(deleteLogPromises);
-      } else {
-        console.log("No logs to delete.");
-      }
-  
-      // Delete the event
-      await deleteDoc(eventRef);
-  
-      console.log("Event and logs deleted successfully");
-      return true;
-  
+        const eventRef = doc(db, "events", eventID);
+        const logRef = collection(db, `/events/${eventID}/logs`);
+        const logQuery = query(logRef);
+        const logSnapshot = await getDocs(logQuery);
+
+        // Debug: Check if we received any logs
+        console.log("Received logs: ", logSnapshot.docs.length);
+
+        // Delete logs if they exist
+        if (!logSnapshot.empty) {
+            const deleteLogPromises = logSnapshot.docs.map((logDoc) => {
+                return deleteDoc(logDoc.ref);
+            });
+
+            await Promise.all(deleteLogPromises);
+        } else {
+            console.log("No logs to delete.");
+        }
+
+        // Delete the event
+        await deleteDoc(eventRef);
+
+        console.log("Event and logs deleted successfully");
+        return true;
+
     } catch (error) {
-      console.error("Error deleting event and log: ", error);
-      return false;
+        console.error("Error deleting event and log: ", error);
+        return false;
     }
-  };
-  
+};
+
 
 
 const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
@@ -479,7 +510,7 @@ export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
     if (status != EventLogStatus.EVENT_ONGOING) {
         return status;
     }
-    
+
     try {
         const logDoc = doc(db, `events/${eventId}/logs/${auth.currentUser?.uid!}`);
         const logDocRef = await getDoc(logDoc);
@@ -487,10 +518,10 @@ export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
         const eventDoc = doc(db, `events/${eventId}`);
         const eventDocRef = await getDoc(eventDoc);
 
-        
+
         if (!logDocRef.exists()) {
             await setDoc(logDoc, { signedInTime: serverTimestamp() }, { merge: true });
-            
+
             const eventDoc = doc(db, 'events', eventId);
             const eventDocRef = await getDoc(eventDoc);
 
@@ -509,13 +540,13 @@ export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
     return EventLogStatus.ERROR;
 };
 
-export const isUserSignedIn = async (eventId: string, uid:string) => {
+export const isUserSignedIn = async (eventId: string, uid: string) => {
     const eventLogDocRef = doc(db, 'events', eventId, 'logs', uid);
     const docSnap = await getDoc(eventLogDocRef);
 
     if (docSnap.exists()) {
-      return true;
+        return true;
     } else {
-      return false;
+        return false;
     }
-  }
+}
