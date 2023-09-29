@@ -25,6 +25,7 @@ afterAll(async () => {
 
 describe("Verify user data can be created and modified in firestore", () => {
     test("Test setting and getting publicUserInfo", async () => {
+        expect(auth.currentUser).toBeTruthy();
         const publicData: PublicUserInfo = {
             email: randomStrRange(0, 80),
             tamuEmail: randomStrRange(0, 80),
@@ -54,6 +55,7 @@ describe("Verify user data can be created and modified in firestore", () => {
     });
 
     test("Test setting and getting privateUserInfo", async () => {
+        expect(auth.currentUser).toBeTruthy();
         const privateData: PrivateUserInfo = {
             completedAccountSetup: Math.random() < 0.5,
             settings: {
@@ -78,6 +80,7 @@ describe("Verify user data can be created and modified in firestore", () => {
 
 describe("Verify firestore cloud storage works", () => {
     test("Upload bytes and verify bytes are uploaded correctly", async () => {
+        expect(auth.currentUser).toBeTruthy();
         var URL = "";
         const byteBuffer: ArrayBuffer = randomUint8Array().buffer;
         const uploadTask = firebaseUtils.uploadFileToFirebase(byteBuffer, `user-docs/${auth.currentUser?.uid}/test-file`);
