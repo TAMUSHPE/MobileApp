@@ -1,125 +1,148 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Alert, TouchableWithoutFeedback } from 'react-native'
 import React, { useState } from 'react'
-import { getCommitteeInfo, setCommitteeInfo } from '../api/firebaseUtils'
-import { TouchableOpacity } from 'react-native-gesture-handler';
-import DropDownPicker from 'react-native-dropdown-picker';
-import { CommitteeConstants } from '../types/Committees';
+import { Committee, CommitteeConstants, CommitteeKey } from '../types/Committees';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Octicons } from '@expo/vector-icons';
+import { Images } from '../../assets';
+import { AdminDashboardParams } from '../types/Navigation';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Picker } from '@react-native-picker/picker';
+import { getCommitteeInfo } from '../api/firebaseUtils';
 
-const CommitteesEditor = () => {
-    const [openCommitteeNameDropMenu, setOpenCommitteeNameDropMenu] = useState<boolean>(false);
-    const [committeeName, setCommitteeName] = useState<string | null>(null);
-    const [committeeNames, setCommitteeNames] = useState([
-        { label: "Technical Affairs", value: CommitteeConstants.TECHNICALAFFAIRS },
-        { label: "Public Relations", value: CommitteeConstants.PUBLICRELATIONS },
-        { label: "MentorSHPE", value: CommitteeConstants.MENTORSHPE },
-        { label: "Scholastic", value: CommitteeConstants.SCHOLASTIC },
-        { label: "SHPEtinas", value: CommitteeConstants.SHPETINAS },
-        { label: "Secretary", value: CommitteeConstants.SECRETARY },
-        { label: "Internal Affairs", value: CommitteeConstants.INTERNALAFFAIRS },
-        { label: "Treasurer", value: CommitteeConstants.TREASURER },
+const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+    const [committeeData, setCommitteeData] = useState<Committee>();
+    const [committeeName, setCommitteeName] = useState<string>();
+    const [nameModalVisible, setNameModalVisible] = useState(false);
 
-    ]);
-    const [description, setDescription] = useState<string | null>(null);
-    const [headUID, setHeadUID] = useState<string | null>(null);
-    const [leadUIDs, setLeadUIDs] = useState<string[] | null>(null);
-    const [newLeadUID, setNewLeadUID] = useState<string | null>(null);
-    const [memberApplicationLink, setMemberApplicationLink] = useState<string | null>(null);
-    const [leadApplicationLink, setLeadApplicationLink] = useState<string | null>(null);
-
-    const clearData = () => {
-        setDescription("");
-        setHeadUID("");
-        setLeadUIDs([]);
-        setNewLeadUID("");
-        setMemberApplicationLink("");
-        setLeadApplicationLink("");
-        setCommitteeName("");
-    }
-
-    const updateCommitteeInfo = async () => {
-        if (!committeeName) {
-            return
+    console.log(committeeName)
+    console.log(committeeData)
+    const loadCommitteeData = async () => {
+        const loadCommitteeData = await getCommitteeInfo(CommitteeConstants[committeeName as CommitteeKey].firebaseDocName);
+        if (loadCommitteeData) {
+            setCommitteeData(loadCommitteeData);
+        } else {
+            setCommitteeData(undefined);
         }
-
-        // currently if something is not inputted then it will be default
-        // this will be changed later
-        setCommitteeInfo(committeeName, {
-            description: description ?? "",
-            headUID: headUID ?? "",
-            leadUIDs: leadUIDs ?? [],
-            memberApplicationLink: memberApplicationLink ?? "",
-            leadApplicationLink: leadApplicationLink ?? "",
-        })
-            .then((result) => {
-                if (result) {
-                    console.log("Data successfully written!");
-                } else {
-                    console.log("An error occurred.");
-                }
-            });
-
-        clearData();
     }
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            className='justify-center items-center h-[60%] mt-20 space-y-4'>
-            <View className="flex-row space-x-4">
-                <View className="w-28">
-                    <DropDownPicker
-                        dropDownDirection="TOP"
-                        open={openCommitteeNameDropMenu}
-                        value={committeeName}
-                        items={committeeNames}
-                        setOpen={setOpenCommitteeNameDropMenu}
-                        setValue={setCommitteeName}
-                        setItems={setCommitteeNames}
+        <SafeAreaView>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={nameModalVisible}
+                onRequestClose={() => {
+                    setNameModalVisible(false);
+                }}
+            >
+                <TouchableOpacity
+                    onPress={() => setNameModalVisible(false)}
+                    className="h-[100%] w-[100%]"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                >
+                    <View className='items-center justify-center h-full'>
+                        <TouchableWithoutFeedback>
+                            <View className='opacity-100 bg-white w-[70%] rounded-md items-center'>
+                                <Text className='text-xl mt-7'>Select a Committee</Text>
+                                <Picker
+                                    style={{ width: '100%' }}
+                                    selectedValue={committeeName}
+                                    onValueChange={(itemValue, itemIndex) => {
+                                        setCommitteeName(itemValue)
+                                    }}>
+                                    {Object.keys(CommitteeConstants).map((key, index) => (
+                                        <Picker.Item
+                                            key={index}
+                                            label={CommitteeConstants[key as CommitteeKey].name}
+                                            value={key}
+                                        />
+                                    ))}
+
+                                </Picker>
+                                <TouchableOpacity
+                                    className='mb-8 bg-pale-orange p-2 rounded-md mt-2'
+                                    onPress={() => {
+                                        setNameModalVisible(false)
+                                        loadCommitteeData()
+                                    }}>
+                                    <Text className='text-xl'> Select </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
+            <ScrollView>
+                {/* Header */}
+                <View className='flex-row items-center h-10'>
+                    <View className='w-screen absolute'>
+                        <Text className="text-2xl font-bold justify-center text-center">Committees Editor</Text>
+                    </View>
+                    <View className='pl-6'>
+                        <TouchableOpacity className="pr-4" onPress={navigation.goBack}>
+                            <Octicons name="chevron-left" size={30} color="black" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {/* Image */}
+                <View className='justify-center items-center'>
+                    <Image
+                        className="mt-2 h-60 w-[90%] bg-gray-700 rounded-xl"
+                        source={Images.COMMITTEE}
                     />
                 </View>
-                <TextInput
-                    value={description ?? ""}
-                    placeholder='Description'
-                    onChangeText={setDescription}
-                    className='border-2 border-black rounded-md p-2'
-                />
 
-                <TextInput
-                    value={memberApplicationLink ?? ""}
-                    placeholder='Member Application Link'
-                    onChangeText={setMemberApplicationLink}
-                    className='border-2 border-black rounded-md p-2'
-                />
-            </View>
-            <View className="flex-row space-x-4">
-                <TextInput
-                    value={leadApplicationLink ?? ""}
-                    placeholder='Lead Application Link'
-                    onChangeText={setLeadApplicationLink}
-                    className='border-2 border-black rounded-md p-2'
-                />
+                {/* Form */}
+                <View className='mt-9 p-6'>
+                    <View>
+                        <Text className='text-gray-500 mb-2'>Committee Name</Text>
+                        <View className='flex-row border-b-2 border-slate-400'>
+                            <TouchableOpacity onPress={() => setNameModalVisible(true)}>
+                                <Text className={`${!committeeName && "text-gray-500"} text-lg text-center`}>{CommitteeConstants[committeeName as CommitteeKey]?.name || "Select a Committee"} </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
 
-                <TextInput
-                    value={headUID ?? ""}
-                    placeholder='Head UID'
-                    onChangeText={setHeadUID}
-                    className='border-2 border-black rounded-md p-2'
-                />
-                <TextInput
-                    value={newLeadUID ?? ""}
-                    placeholder='Lead UIDs'
-                    onChangeText={setNewLeadUID}
-                    className='border-2 border-black rounded-md p-2'
-                />
-            </View>
+                    <View className='flex-row mt-4 w-full '>
+                        <View className='items-center flex-1'>
+                            <Text className='text-gray-500 text-lg text-center'>Head UID</Text>
+                            <TouchableOpacity>
+                                <Text className='text-lg text-center'>{committeeData?.headUID || "Select a Head"}</Text>
+                            </TouchableOpacity>
+                        </View>
 
-            <TouchableOpacity
-                onPress={() => updateCommitteeInfo()}
-                className='bg-blue-500 rounded-md p-2'
-            >
-                <Text>Update</Text>
-            </TouchableOpacity>
-        </KeyboardAvoidingView>
+                        <View className='items-center flex-1'>
+                            <Text className='text-gray-500 text-lg text-center'>Lead UIDs</Text>
+                        </View>
+                    </View>
+
+                    <View className='mt-20'>
+                        <Text className='text-gray-500 mb-2'>Description</Text>
+                        <TextInput
+                            className='w-full rounded-md text-lg px-2 py-1 bg-white h-32'
+                            value={committeeData?.description}
+                            onChangeText={(text) => setCommitteeData({ ...committeeData!, description: text })}
+                            placeholder="Add a description"
+                            multiline={true}
+                            style={{ textAlignVertical: 'top' }}
+                        />
+                    </View>
+
+                </View>
+
+
+                <View className='flex-row w-screen justify-center items-center pt-4 space-x-7'>
+                    <TouchableOpacity className='w-20 h-10 bg-blue-400 justify-center items-center rounded-md'
+                    // onPress={() => handleUpdateCommittee()}
+                    >
+                        <Text>Update Committee</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <View className='pb-32'></View>
+            </ScrollView >
+        </SafeAreaView >
     )
 }
 
