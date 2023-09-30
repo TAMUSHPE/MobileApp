@@ -22,8 +22,10 @@ let auth: Auth;
 
 if (getApps().length === 0) {
     app = initializeApp(firebaseConfig);
+
+    // For jest unit tests, getReactNativePersistence is not defined.
     auth = initializeAuth(app, {
-        persistence: getReactNativePersistence(AsyncStorage)
+        persistence: getReactNativePersistence ? getReactNativePersistence(AsyncStorage) : undefined,
     });
 }
 else {
