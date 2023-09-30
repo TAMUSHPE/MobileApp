@@ -18,6 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../components/SettingsComponents"
 import InteractButton from '../components/InteractButton';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
@@ -146,6 +147,10 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [major, setMajor] = useState<string | undefined>(userInfo?.publicInfo?.major);
     const [classYear, setClassYear] = useState<string | undefined>(userInfo?.publicInfo?.classYear);
     const [committees, setCommittees] = useState<Array<CommitteeKey | string> | undefined>(userInfo?.publicInfo?.committees);
+
+    // committee state before user enter committees modal
+    const [prevCommittees, setPrevCommittees] = useState<Array<CommitteeKey | string> | undefined>(userInfo?.publicInfo?.committees);
+
 
     // Modal options
     const [showNamesModal, setShowNamesModal] = useState<boolean>(false);
@@ -354,6 +359,29 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         setCommittees(modifiedCommittees);
     }
 
+    const updateCommitteeCounts = (newCommittees: CommitteeKey[], oldCommittees: CommitteeKey[]) => {
+        const changes = [];
+
+        for (const committee of oldCommittees) {
+            if (!newCommittees.includes(committee)) {
+                changes.push({ firebaseDocName: CommitteeConstants[committee as CommitteeKey].firebaseDocName, change: -1 });
+            }
+        }
+
+        for (const committee of newCommittees) {
+            if (!oldCommittees.includes(committee)) {
+                changes.push({ firebaseDocName: CommitteeConstants[committee as CommitteeKey].firebaseDocName, change: 1 });
+            }
+        }
+
+        if (changes.length === 0) {
+            return;
+        }
+        const functions = getFunctions();
+        const updateCommitteesCount = httpsCallable(functions, 'updateCommitteesCount');
+        updateCommitteesCount({ changes })
+    };
+
     return (
         <View className='items-center'>
             <StatusBar style={darkMode ? "light" : "dark"} />
@@ -493,6 +521,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 }}
                 onDone={() => {
                     saveChanges();
+                    updateCommitteeCounts(committees as CommitteeKey[] ?? defaultVals.committees, prevCommittees as CommitteeKey[] ?? defaultVals.committees);
                     setShowCommitteesModal(false)
                 }}
                 content={(
@@ -626,7 +655,13 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                 );
                             }
                         })}
-                        <TouchableHighlight onPress={() => setShowCommitteesModal(true)} className='p-2 w-1/4 rounded-full mb-2 bg-[#FD551A]' underlayColor={"#FCA788"}>
+                        <TouchableHighlight
+                            onPress={() => {
+                                setPrevCommittees(committees)
+                                setShowCommitteesModal(true)
+                            }}
+                            className='p-2 w-1/4 rounded-full mb-2 bg-[#FD551A]' underlayColor={"#FCA788"}
+                        >
                             <Text className='text-white text-center'>+</Text>
                         </TouchableHighlight>
                     </View>

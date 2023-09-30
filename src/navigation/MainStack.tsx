@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import HomeBottomTabs from "./HomeBottomTabs";
-import AdminDashboard from "../screens/AdminDashboard";
+import AdminDashboardStack from "./AdminDashboardStack";
 import EventVerification from "../screens/EventVerification";
 import { MainStackParams } from '../types/Navigation';
 import { SettingsScreen, SearchSettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen } from "../screens/Settings";
@@ -21,7 +21,7 @@ const MainStack = () => {
                 }}
             >
                 <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
-                <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
+                <Stack.Screen name="AdminDashboardStack" component={AdminDashboardStack} />
             </Stack.Group>
 
             {/* Settings Screens */}
