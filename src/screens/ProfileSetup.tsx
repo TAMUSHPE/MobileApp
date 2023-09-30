@@ -16,6 +16,7 @@ import { ProfileSetupStackParams } from '../types/Navigation';
 import { CommitteeConstants, CommitteeKey, CommitteeVal } from '../types/Committees';
 import { Images } from '../../assets';
 import { Octicons } from '@expo/vector-icons';
+import { httpsCallable, getFunctions } from 'firebase/functions';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
@@ -355,24 +356,24 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
  * Skipping and selecting "None For Now" will do the same thing and set their committees as ["None"]
  */
 const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
+
     // User Context
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
     const [canContinue, setCanContinue] = useState<boolean>(true);
     const [committees, setCommittees] = useState<Array<CommitteeKey>>([]);
     const [noneIsChecked, setNoneIsChecked] = useState<boolean>(false);
-
     /**
      * This function is called whenever a committee is toggled by the user.
      * Because of the way hooks work, we have to make a deep copy of committees.
      * @param name - name of the committee being selected/unselected
      */
     const handleCommitteeToggle = (name: CommitteeKey | "NONE") => {
-        if(name == "NONE"){
+        if (name == "NONE") {
             handleNonePressed();
             return;
         }
-        
+
         setNoneIsChecked(false);
         const index = committees?.indexOf(name) ?? -1;
         let modifiedCommittees = [...committees ?? []];
@@ -425,6 +426,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     useEffect(() => {
         setCanContinue(committees.length > 0);
     }, [committees]);
+
 
     return (
         <SafeAreaView className={safeAreaViewStyle}>
@@ -483,6 +485,20 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                                 const authUser = await getUser(auth.currentUser?.uid!)
                                 await AsyncStorage.setItem("@user", JSON.stringify(authUser));
                                 setUserInfo(authUser); // Navigates to Home
+
+                                // increment committees count
+                                const functions = getFunctions();
+                                const incrementCommitteesCount = httpsCallable(functions, 'incrementCommitteesCount');
+
+                                const committeeNames = committees.map(committee => CommitteeConstants[committee].firebaseDocName);
+                                console.log(committeeNames)
+                                incrementCommitteesCount({ committeeNames })
+                                    .then((result) => {
+                                        console.log(result);
+                                    })
+                                    .catch((error) => {
+                                        console.error(error);
+                                    });
                             }
                         }}
                         label='Continue'

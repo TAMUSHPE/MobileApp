@@ -20,3 +20,28 @@ export const updateCommitteeCount = functions.https.onCall(async (data, context)
         throw new functions.https.HttpsError('internal', 'Could not update committee count.');
     }
 });
+
+export const incrementCommitteesCount = functions.https.onCall(async (data, context) => {
+    const { committeeNames } = data; 
+    
+    if (!Array.isArray(committeeNames)) {
+        throw new functions.https.HttpsError('invalid-argument', 'committeeNames must be an array.');
+    }
+    
+    const updatePromises = committeeNames.map((committeeName) => {
+        console.log(committeeName)
+        const committeeRef = db.doc(`committees/${committeeName}`);
+        return committeeRef.update({ memberCount: admin.firestore.FieldValue.increment(1) })
+            .catch((error) => {
+                console.error(`Update failure for committee ${committeeName}:`, error);
+            });
+    });
+    try {
+        console.log("starting update")
+        await Promise.all(updatePromises);
+        return { success: true };
+    } catch (error) {
+        console.error('Update failure:', error);
+        throw new functions.https.HttpsError('internal', 'Could not update committee count.');
+    }
+});
