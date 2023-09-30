@@ -56,9 +56,9 @@ CommitteeConstants[epic];
 
 
 export type Committee = {
-    name: string;
-    firebaseDocName: string;
-    color: string,
+    name?: string;
+    firebaseDocName?: string;
+    color?: string,
     image?: ImageSourcePropType;
     description?: string;
     headUID?: string;
@@ -66,4 +66,5 @@ export type Committee = {
     memberCount?: number;
     memberApplicationLink?: string;
     leadApplicationLink?: string;
+    key?: CommitteeKey;
 }
