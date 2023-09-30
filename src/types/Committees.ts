@@ -66,4 +66,5 @@ export type Committee = {
     memberCount?: number;
     memberApplicationLink?: string;
     leadApplicationLink?: string;
+    key?: CommitteeKey;
 }
