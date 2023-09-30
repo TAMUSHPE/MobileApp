@@ -8,18 +8,22 @@ const CommitteesSlider: React.FC<CommitteesSlideProp> = ({ onCommitteeSelected, 
         {
             ...CommitteeConstants.TECHNICALAFFAIRS,
             image: Images.COMMITTEE_1,
+            key: "TECHNICALAFFAIRS",
         },
         {
             ...CommitteeConstants.PUBLICRELATIONS,
             image: Images.COMMITTEE_2,
+            key: "PUBLICRELATIONS",
         },
         {
             ...CommitteeConstants.MENTORSHPE,
             image: Images.COMMITTEE_3,
+            key: "MENTORSHPE",
         },
         {
             ...CommitteeConstants.SCHOLASTIC,
             image: Images.COMMITTEE_4,
+            key: "SCHOLASTIC",
         },
     ]
 

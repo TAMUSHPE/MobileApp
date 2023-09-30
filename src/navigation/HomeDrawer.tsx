@@ -9,7 +9,6 @@ import { auth, db } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import ProfileBadge from '../components/ProfileBadge';
 import HomeScreen from '../screens/Home';
-import AdminDashboardStack from './AdminDashboardStack';
 import { CommitteeConstants, CommitteeKey } from '../types/Committees';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
@@ -98,7 +97,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                 <DrawerItem label="Settings" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("SettingsScreen")} />
                 {
                     userInfo?.publicInfo?.roles?.officer?.valueOf() &&
-                    <DrawerItem label="Admin Dashboard" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("AdminDashboard")} />
+                    <DrawerItem label="Admin Dashboard" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("AdminDashboardStack")} />
                 }
                 <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
             </View>
@@ -144,7 +143,6 @@ const HomeDrawer = () => {
             }}
         >
             <Drawer.Screen name="HomeScreen" component={HomeScreen} />
-            <Drawer.Screen name="AdminDashboardStack" component={AdminDashboardStack} />
         </Drawer.Navigator>
     );
 };
