@@ -1,7 +1,9 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp, FirebaseApp, getApp, getApps } from 'firebase/app';
-import { getAuth } from "firebase/auth";
+import { getAuth, initializeAuth, getReactNativePersistence, Auth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+
 
 const firebaseConfig = {
     apiKey: "***REMOVED***",
@@ -15,10 +17,23 @@ const firebaseConfig = {
 // IOS OAuth: 600060629240-m7bu9ba9namtlmo9sii2s8qs2j9k5bt4.apps.googleusercontent.com
 // Android OAuth: 600060629240-bdfsdcfmbrjh5skdc9qufchrmcnm26fb.apps.googleusercontent.com
 
-let app: FirebaseApp = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+let app: FirebaseApp;
+let auth: Auth;
+
+if (getApps().length === 0) {
+    app = initializeApp(firebaseConfig);
+
+    // For jest unit tests, getReactNativePersistence is not defined.
+    auth = initializeAuth(app, {
+        persistence: getReactNativePersistence ? getReactNativePersistence(AsyncStorage) : undefined,
+    });
+}
+else {
+    app = getApp();
+    auth = getAuth(app);
+}
 
 const db = getFirestore(app);
-const auth = getAuth(app);
 const storage = getStorage(app);
 
 export { db, auth, storage };

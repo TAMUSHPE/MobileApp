@@ -11,12 +11,13 @@ export interface Roles {
     developer?: boolean;
 };
 
+export type RankChange = "decreased" | "same" | "increased";
+
 /**
  * This interface represents a user's public information as it is stored in firestore and google sheets.
  * This information is accessible by anyone in the app.
  * Each argument must have a value, however some of these values may be "empty". For example, if a string's value is "", this means that there is no value in the data.
- */
-export type RankChange = "decreased" | "same" | "increased";
+*/
 export interface PublicUserInfo {
     // Firestore parameters
     email?: string;
