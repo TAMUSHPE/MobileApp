@@ -144,13 +144,17 @@ const HomeDrawer = () => {
             initialRouteName="HomeScreen"
             drawerContent={(props) => <HomeDrawerContent {...props} />}
             screenOptions={{
-                header: HomeDrawerHeader,
+                header: () => null,
                 drawerPosition: "right",
             }}
         >
-            <Drawer.Screen name="HomeScreen" component={HomeScreen} />
-            <Drawer.Screen name="AdminDashboardStack" component={AdminDashboardStack} />
-            <Drawer.Screen name="PublicProfile" component={PublicProfileScreen} />
+            <Drawer.Screen
+                name="HomeScreen"
+                component={HomeScreen}
+                options={{
+                    header: HomeDrawerHeader,
+                }}
+            />
         </Drawer.Navigator>
     );
 };
