@@ -4,7 +4,7 @@ import { MembersProps } from '../types/Navigation'
 import { Images } from '../../assets'
 import { auth } from '../config/firebaseConfig'
 
-const MemberCard: React.FC<MembersProps> = ({ userData, handleOnPress, navigation }) => {
+const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigation }) => {
     if (!userData) {
         return
     }
@@ -12,7 +12,7 @@ const MemberCard: React.FC<MembersProps> = ({ userData, handleOnPress, navigatio
 
     return (
         <TouchableOpacity className='mb-8'
-            onPress={handleOnPress}
+            onPress={() => handleCardPress(uid!)}
         >
             <View className="flex-row">
 

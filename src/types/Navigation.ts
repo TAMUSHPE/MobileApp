@@ -11,7 +11,7 @@ import { SHPEEventID } from "./Events";
 export type MainStackParams = {
     HomeDrawer: HomeDrawerParams;
     HomeBottomTabs: undefined;
-    AdminDashboard: undefined;
+    AdminDashboardStack: undefined;
     SettingsScreen: undefined;
     SearchSettingsScreen: undefined;
     ProfileSettingsScreen: undefined;
@@ -81,7 +81,6 @@ export type AdminDashboardParams = {
 // Drawers
 export type HomeDrawerParams = {
     HomeScreen: undefined;
-    AdminDashboardStack: undefined;
     Logout: undefined;
     PublicProfile: {
         uid: string;
@@ -120,8 +119,8 @@ export type TestBankProps = {
 
 export type MembersProps = {
     userData?: PublicUserInfoUID
-    handleOnPress?: any
-    navigation: NativeStackNavigationProp<MembersStackParams>
+    handleCardPress: (uid: string) => string | void;
+    navigation?: NativeStackNavigationProp<MembersStackParams>
 }
 
 export type EventProps = {

@@ -6,13 +6,15 @@ export interface ColorValues {
     a?: number
 };
 
+
 /** Checks if a string is valid as a hexadecimal color code */
 export const validateHexColor = (hexColor: string): boolean => {
-    const hexRegex: RegExp = /^#?([\dA-Fa-f]{6}|[\dA-Fa-f]{3}|[\dA-Fa-f]{4}|[\dA-Fa-f]{8})$/i
+    const hexRegex: RegExp = /^#([\dA-Fa-f]{6}|[\dA-Fa-f]{3}|[\dA-Fa-f]{4}|[\dA-Fa-f]{8})$/i
     return typeof hexColor == 'string' && hexRegex.test(hexColor);
 };
 
-/** Converts a hex-code to a parsable object containing RGBA values */
+
+/** Converts a hex-code string to a parsable object containing RGBA values */
 export const hexToRGBA = (hexColor: string): ColorValues | undefined => {
     if (!validateHexColor(hexColor)) return undefined;
 
@@ -46,16 +48,29 @@ export const hexToRGBA = (hexColor: string): ColorValues | undefined => {
     }
 };
 
+
+/** Converts a parsable object containing RGBA values to a hex-code string */
+export const RGBAToHex = (color: ColorValues): string => {
+    var result = "#" + color.r.toString(16).padStart(2, '0') + color.g.toString(16).padStart(2, '0') + color.b.toString(16).padStart(2, '0');
+    if (color.a !== undefined) {
+        result = result + color.a.toString(16).padStart(2, '0');
+    }
+
+    return result;
+}
+
+
 /** Calculates a generally accepted perceived luminosity for a given set of RGB values according to https://www.w3.org/TR/WCAG20/#relativeluminancedef */
 export const calculateRGBLuminosity = (color: ColorValues): number => {
     return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
 };
 
+
 /** Calculates a generally accepted perceived luminosity for a given hex value according to Digital UTI BT.601.
  * @argument color - hex code of color being used in calculation
- * @returns perceived luminosity. returns 256 if color is not valid
+ * @returns perceived luminosity. returns 255 if color is not valid
  */
 export const calculateHexLuminosity = (color: string): number => {
     const colorRGBAVals = hexToRGBA(color);
-    return colorRGBAVals ? calculateRGBLuminosity(colorRGBAVals) : 256;
+    return colorRGBAVals ? calculateRGBLuminosity(colorRGBAVals) : 255;
 };
