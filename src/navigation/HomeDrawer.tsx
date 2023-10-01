@@ -100,6 +100,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                 </View>
             </View>
             <View className={`${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} flex-grow`}>
+                <DrawerItem label="My Profile" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("PublicProfile", { uid: auth.currentUser?.uid })} />
                 <DrawerItem label="Settings" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("SettingsScreen")} />
                 {
                     userInfo?.publicInfo?.roles?.officer?.valueOf() &&
@@ -144,7 +145,7 @@ const HomeDrawer = () => {
             initialRouteName="HomeScreen"
             drawerContent={(props) => <HomeDrawerContent {...props} />}
             screenOptions={{
-                header: () => null,
+                headerShown: false,
                 drawerPosition: "right",
             }}
         >
@@ -152,8 +153,13 @@ const HomeDrawer = () => {
                 name="HomeScreen"
                 component={HomeScreen}
                 options={{
+                    headerShown: true,
                     header: HomeDrawerHeader,
                 }}
+            />
+            <Drawer.Screen
+                name="PublicProfile"
+                component={PublicProfileScreen}
             />
         </Drawer.Navigator>
     );
