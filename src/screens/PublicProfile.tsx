@@ -17,7 +17,7 @@ const PublicProfileScreen = ({ navigation }: MembersProps) => {
 
     const [points, setPoints] = useState<number>();
     const [name, setName] = useState<string>();
-    const [loading, setLoading] = useState<boolean>();
+    const [loading, setLoading] = useState<boolean>(true);
     const [bio, setBio] = useState<string>();
     const [committees, setCommittees] = useState<string[]>();
     const [roles, setRoles] = useState<Roles>();
@@ -56,11 +56,13 @@ const PublicProfileScreen = ({ navigation }: MembersProps) => {
 
     if (loading) {
         return (
-            <ActivityIndicator
+            <View className='fixed top-1/2 -translate-y-1/2 '>
+                <ActivityIndicator
                 size="large"
                 animating={true}
                 color="rgba(137,232,207,100)"
-            />
+                /> 
+            </View>
         );
     }
 
