@@ -6,12 +6,15 @@ import MembersList from '../components/MembersList';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
+    const handleCardPress = (uid: string): string | void => {
+        navigation.navigate("PublicProfile", { uid });
+    };
     return (
         <SafeAreaView>
             <View className='w-full mt-4 justify-center items-center'>
                 <Text className='text-3xl h-10'>Users</Text>
             </View>
-            <MembersList navigation={navigation} />
+            <MembersList navigation={navigation} handleCardPress={handleCardPress} />
         </SafeAreaView >
     )
 }

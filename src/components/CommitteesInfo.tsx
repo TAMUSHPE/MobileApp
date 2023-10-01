@@ -1,42 +1,46 @@
 import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Images } from '../../assets';
-import { Committee } from '../types/Committees';
-import { getCommitteeInfo, getPublicUserData } from '../api/firebaseUtils';
+import { Committee, CommitteeKey } from '../types/Committees';
+import { getCommitteeInfo, getPublicUserData, getUser, setPublicUserData } from '../api/firebaseUtils';
 import { PublicUserInfoUID } from '../types/User';
 import { CommitteesInfoProp } from '../types/Navigation';
+import { httpsCallable, getFunctions } from 'firebase/functions';
+import { UserContext } from '../context/UserContext';
+import { auth } from '../config/firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { CommitteeConstants } from '../types/Committees';
 
 const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navigation }) => {
     if (!selectedCommittee) {
         return null; // replace with a proper empty screen
     }
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const [committees, setCommittees] = useState<Array<CommitteeKey | string> | undefined>(userInfo?.publicInfo?.committees);
     const [committeeInfo, setCommitteeInfo] = useState<Committee | null>(null);
     const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfoUID | null>(null);
     const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfoUID[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [isInCommittee, setIsInCommittee] = useState<boolean>();
+
+    // determine if user is in committee
+    useEffect(() => {
+        const mapCommitteesToFirebaseDocName = (committees: Array<CommitteeKey | string> | undefined) => {
+            if (!committees) return undefined;
+
+            return committees.map(committee => {
+                const committeeInfo = CommitteeConstants[committee as CommitteeKey];
+                return committeeInfo ? committeeInfo.firebaseDocName : committee;
+            });
+        };
+
+        if (committees !== undefined) {
+            const firebaseDocNames = mapCommitteesToFirebaseDocName(committees);
+            setIsInCommittee(firebaseDocNames?.includes(selectedCommittee.firebaseDocName!));
+        }
+    }, [committees, selectedCommittee.name]);
 
     useEffect(() => {
-        const fetchCommitteeInfo = async () => {
-            setCommitteeInfo(null);
-            setHeadUserInfo(null);
-            setLeadsUserInfo([]);
-
-            if (selectedCommittee.name) {
-                const fetchedInfo = await getCommitteeInfo(selectedCommittee.name);
-                if (fetchedInfo) {
-                    setCommitteeInfo(fetchedInfo);
-                    if (fetchedInfo.headUID) {
-                        fetchHeadUserData(fetchedInfo.headUID);
-                    }
-                    if (fetchedInfo.leadUIDs && fetchedInfo.leadUIDs.length > 0) {
-                        fetchedInfo.leadUIDs.forEach(uid => {
-                            fetchLeadUserData(uid);
-                        })
-                    }
-
-                }
-            }
-        }
-
         const fetchHeadUserData = async (uid: string) => {
             const fetchedInfo = await getPublicUserData(uid);
             if (fetchedInfo) {
@@ -54,8 +58,102 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
             }
         }
 
+        const fetchCommitteeInfo = async () => {
+            setCommitteeInfo(null);
+            setHeadUserInfo(null);
+            setLeadsUserInfo([]);
+            if (selectedCommittee.name) {
+                const fetchedInfo = await getCommitteeInfo(selectedCommittee.firebaseDocName!);
+                if (fetchedInfo) {
+                    setCommitteeInfo(fetchedInfo);
+                    if (fetchedInfo.headUID) {
+                        fetchHeadUserData(fetchedInfo.headUID);
+                    }
+                    if (fetchedInfo.leadUIDs && fetchedInfo.leadUIDs.length > 0) {
+                        fetchedInfo.leadUIDs.forEach(uid => {
+                            fetchLeadUserData(uid);
+                        })
+                    }
+
+                }
+            }
+        }
+
         fetchCommitteeInfo();
     }, [selectedCommittee.name]);
+
+
+    const updateMemberCountLocally = () => {
+        if (!committeeInfo) return;
+
+        setCommitteeInfo(prevState => {
+            if (prevState) {
+                const adjustment = isInCommittee ? -1 : 1;
+                return { ...prevState, memberCount: prevState.memberCount! + adjustment };
+            }
+            return prevState;
+        });
+    };
+
+
+    const updateUserCommittee = async () => {
+        let updatedCommittees: Array<CommitteeKey | string> | undefined = undefined;
+        if (committees) {
+            updatedCommittees = [...committees];
+
+            if (isInCommittee) {
+                const index = updatedCommittees.findIndex(
+                    committeeKey => CommitteeConstants[committeeKey as CommitteeKey]?.firebaseDocName === selectedCommittee.firebaseDocName
+                );
+                if (index !== -1) {
+                    updatedCommittees.splice(index, 1);
+                }
+            } else {
+                if (!updatedCommittees.some(
+                    committeeKey => CommitteeConstants[committeeKey as CommitteeKey]?.firebaseDocName === selectedCommittee.firebaseDocName
+                )) {
+                    updatedCommittees.push(selectedCommittee.key as string);
+                }
+            }
+        }
+
+        updateMemberCountLocally();
+        setCommittees(updatedCommittees);
+
+        await setPublicUserData({
+            ...(updatedCommittees !== undefined) && { committees: updatedCommittees },
+        })
+            .then(async () => {
+                if (auth.currentUser?.uid) {
+                    const firebaseUser = await getUser(auth.currentUser.uid);
+                    if (firebaseUser) {
+                        setUserInfo(firebaseUser);
+                        await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                    }
+                    else {
+                        console.warn("firebaseUser returned as undefined when attempting to sync. Sync will be skipped.");
+                    }
+                }
+            })
+            .catch(err => console.error("Error attempting to save changes: ", err))
+            .finally(() => {
+                setLoading(false);
+            });
+    };
+
+    const updateCommitteeCount = async () => {
+        updateUserCommittee();
+
+        const functions = getFunctions();
+        const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
+
+        try {
+            const result = await updateCommitteeCount({ committeeName: selectedCommittee?.firebaseDocName, change: isInCommittee ? -1 : 1 });
+            console.log(result)
+        } catch (error) {
+            console.error('Error calling function:', error);
+        }
+    }
 
     const handleLinkPress = async (url: string) => {
         if (!url) {
@@ -136,8 +234,9 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
             <View className='flex-row mx-4 mt-4 space-x-2'>
                 <TouchableOpacity
                     className='bg-white rounded-xl h-8 w-[8%] items-center justify-center border-gray-600 border'
+                    onPress={() => updateCommitteeCount()}
                 >
-                    <Text>+</Text>
+                    <Text>{isInCommittee ? "-" : "+"}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     className='bg-white rounded-xl h-8 w-[43%] items-center justify-center border-gray-600 border'

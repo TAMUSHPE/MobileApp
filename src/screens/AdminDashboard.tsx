@@ -3,6 +3,7 @@ import React from 'react'
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AdminDashboardParams } from '../types/Navigation';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const updateRanks = async () => {
@@ -12,7 +13,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
     }
 
     return (
-        <View className='items-center justify-center space-y-4'>
+        <SafeAreaView className='items-center justify-center space-y-4'>
             <Text className='font-bold text-xl mt-4'>AdminDashboard</Text>
             <TouchableOpacity
                 onPress={() => updateRanks()}
@@ -26,7 +27,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
             >
                 <Text>update committee info</Text>
             </TouchableOpacity>
-        </View>
+        </SafeAreaView>
     )
 }
 
