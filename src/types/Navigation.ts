@@ -82,6 +82,7 @@ export type AdminDashboardParams = {
 export type HomeDrawerParams = {
     HomeScreen: undefined;
     Logout: undefined;
+    AdminDashboardStack: undefined;
     PublicProfile: {
         uid: string;
     }
