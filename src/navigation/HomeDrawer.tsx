@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { Image, TouchableOpacity, View, Text } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,6 +14,7 @@ import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import { StatusBar } from 'expo-status-bar';
 import PublicProfileScreen from "../screens/PublicProfile";
+import AdminDashboardStack from './AdminDashboardStack';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
@@ -56,9 +57,9 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                         onPress={() => props.navigation.navigate("PublicProfile", { uid: auth.currentUser?.uid! })}
                     >
                         <Image
-                        className="flex w-16 h-16 rounded-full mr-2"
-                        defaultSource={Images.DEFAULT_USER_PICTURE}
-                        source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
+                            className="flex w-16 h-16 rounded-full mr-2"
+                            defaultSource={Images.DEFAULT_USER_PICTURE}
+                            source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
                         />
                     </TouchableOpacity>
                     <View className='flex-1 flex-col max-w-full'>
