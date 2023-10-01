@@ -56,9 +56,9 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                         onPress={() => props.navigation.navigate("PublicProfile", { uid: auth.currentUser?.uid! })}
                     >
                         <Image
-                        className="flex w-16 h-16 rounded-full mr-2"
-                        defaultSource={Images.DEFAULT_USER_PICTURE}
-                        source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
+                            className="flex w-16 h-16 rounded-full mr-2"
+                            defaultSource={Images.DEFAULT_USER_PICTURE}
+                            source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
                         />
                     </TouchableOpacity>
                     <View className='flex-1 flex-col max-w-full'>
@@ -143,13 +143,17 @@ const HomeDrawer = () => {
             initialRouteName="HomeScreen"
             drawerContent={(props) => <HomeDrawerContent {...props} />}
             screenOptions={{
-                header: HomeDrawerHeader,
+                header: () => null,
                 drawerPosition: "right",
             }}
         >
-            <Drawer.Screen name="HomeScreen" component={HomeScreen} />
-            <Drawer.Screen name="AdminDashboardStack" component={AdminDashboardStack} />
-            <Drawer.Screen name="PublicProfile" component={PublicProfileScreen} />
+            <Drawer.Screen
+                name="HomeScreen"
+                component={HomeScreen}
+                options={{
+                    header: HomeDrawerHeader,
+                }}
+            />
         </Drawer.Navigator>
     );
 };
