@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { Image, TouchableOpacity, View, Text } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -13,6 +13,8 @@ import { CommitteeConstants, CommitteeKey } from '../types/Committees';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import { StatusBar } from 'expo-status-bar';
+import PublicProfileScreen from "../screens/PublicProfile";
+import AdminDashboardStack from './AdminDashboardStack';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
@@ -51,11 +53,15 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             <StatusBar style='inverted' />
             <View className="flex-col bg-dark-navy w-full px-4 pb-4">
                 <View className='flex-row mb-2 items-center'>
-                    <Image
-                        className="flex w-16 h-16 rounded-full mr-2"
-                        defaultSource={Images.DEFAULT_USER_PICTURE}
-                        source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
-                    />
+                    <TouchableOpacity
+                        onPress={() => props.navigation.navigate("PublicProfile", { uid: auth.currentUser?.uid! })}
+                    >
+                        <Image
+                            className="flex w-16 h-16 rounded-full mr-2"
+                            defaultSource={Images.DEFAULT_USER_PICTURE}
+                            source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
+                        />
+                    </TouchableOpacity>
                     <View className='flex-1 flex-col max-w-full'>
                         <Text className='text-white text-xl break-words mb-1'>{userInfo?.publicInfo?.displayName ?? "Username"}</Text>
                         <Text className='text-white text-sm break-words'>{userInfo?.publicInfo?.name ?? "Name"}</Text>
@@ -138,11 +144,17 @@ const HomeDrawer = () => {
             initialRouteName="HomeScreen"
             drawerContent={(props) => <HomeDrawerContent {...props} />}
             screenOptions={{
-                header: HomeDrawerHeader,
+                header: () => null,
                 drawerPosition: "right",
             }}
         >
-            <Drawer.Screen name="HomeScreen" component={HomeScreen} />
+            <Drawer.Screen
+                name="HomeScreen"
+                component={HomeScreen}
+                options={{
+                    header: HomeDrawerHeader,
+                }}
+            />
         </Drawer.Navigator>
     );
 };
