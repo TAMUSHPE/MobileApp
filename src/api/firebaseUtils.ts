@@ -239,7 +239,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
      */
     const defaultPublicInfo: PublicUserInfo = {
         email: auth.currentUser?.email ?? "",
-        tamuEmail: validateTamuEmail(auth.currentUser?.email) ? auth.currentUser!.email! : "",
+        tamuEmail: validateTamuEmail(auth.currentUser?.email, true) ? auth.currentUser!.email! : "",
         displayName: auth.currentUser?.displayName ?? "",
         photoURL: auth.currentUser?.photoURL ?? "",
         roles: {
