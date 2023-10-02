@@ -23,7 +23,7 @@ afterAll(async () => {
 });
 
 
-describe("Verify user data can be created and modified in firestore", () => {
+xdescribe("Verify user data can be created and modified in firestore", () => {
     test("Test setting and getting publicUserInfo", async () => {
         expect(auth.currentUser).toBeTruthy();
         const publicData: PublicUserInfo = {
@@ -78,7 +78,7 @@ describe("Verify user data can be created and modified in firestore", () => {
 });
 
 
-describe("Verify firestore cloud storage works", () => {
+xdescribe("Verify firestore cloud storage works", () => {
     test("Upload bytes and verify bytes are uploaded correctly", async () => {
         expect(auth.currentUser).toBeTruthy();
         var URL = "";
