@@ -1,4 +1,4 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator } from "react-native";
 import React, { useEffect, useState, useContext } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -12,11 +12,8 @@ import InteractButton from "../components/InteractButton";
 import { AuthStackParams } from "../types/Navigation";
 import { Images } from "../../assets";
 
-const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
-    const [email, setEmail] = useState<string>("");
-    const [password, setPassword] = useState<string>("");
+const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [loading, setLoading] = useState<boolean>(false);
-
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
 
@@ -35,7 +32,6 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
             navigation.navigate("ProfileSetup");
         }
     }, [userInfo]);
-
 
     const handleUserAuth = () => {
         setLoading(true);
@@ -56,15 +52,6 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
                 setLoading(false);
             });
     };
-
-    const emailSignIn = async () => {
-        signInWithEmailAndPassword(auth, email, password)
-            .then(handleUserAuth)
-            .catch((error: Error) => {
-                console.error("Error during email sign-in:", error);
-                alert(error.message);
-            })
-    }
 
     // Handle Google Sign-In
     useEffect(() => {
@@ -92,17 +79,20 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
                 />
                 <Text className="text-white text-center text-3xl">Welcome to SHPE</Text>
             </View>
-            <View className="flex-col mt-2">
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('LoginStudent')}
-                    >
-                    <Text className="text-white font-bold">Student</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('LoginGuest')}
-                    >
-                    <Text className="text-white font-bold">Guest</Text>
-                </TouchableOpacity>
+            <View className="flex-col w-4/5">
+                <View className="flex-col mt-2">
+                    <InteractButton
+                        onPress={() => googleSignIn()}
+                        label="Sign In with Google"
+                        buttonClassName="bg-white mt-2 rounded-xl"
+                        textClassName="text-[#3b3b3b] font-bold"
+                        iconSource={{ uri: "https://developers.google.com/static/identity/images/g-logo.png" }}
+                    />
+                    {loading && (
+                        <ActivityIndicator className="mt-4" size={"large"} />
+                    )}
+                </View>
+
             </View>
             <View className="my-5 w-11/12">
                 <Text className="text-right text-pale-orange mt-2">{"Society of Hispanic\nProfessional\nEngineers"}</Text>
@@ -111,4 +101,4 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
     );
 };
 
-export default LoginScreen;
+export default LoginStudent;
