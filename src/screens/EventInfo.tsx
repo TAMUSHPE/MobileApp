@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { EventProps, SHPEEventScreenRouteProp } from '../types/Navigation'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,6 +7,7 @@ import { Octicons } from '@expo/vector-icons';
 import { SHPEEventID, monthNames } from '../types/Events';
 import { getEvent, isUserSignedIn } from '../api/firebaseUtils';
 import { auth } from "../config/firebaseConfig";
+import { UserContext } from '../context/UserContext';
 
 
 const EventInfo = ({ navigation }: EventProps) => {
@@ -14,9 +15,12 @@ const EventInfo = ({ navigation }: EventProps) => {
     const { eventId } = route.params;
     const [event, setEvent] = useState<SHPEEventID>();
     const [userSignedIn, setUserSignedIn] = useState(false);
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
 
     const startDateAsDate = event?.startDate ? event?.startDate.toDate() : null;
     const endDateAsDate = event?.endDate ? event?.endDate.toDate() : null;
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
     useFocusEffect(
         useCallback(() => {
@@ -80,12 +84,15 @@ const EventInfo = ({ navigation }: EventProps) => {
                     <View className='justify-center items-center  w-[33%]'>
                         <Text className="text-3xl h-10 text-center">{event.name}</Text>
                     </View>
+                    {
+                        hasPrivileges &&
                     <View className='justify-center items-end w-[33%]'>
                         <TouchableOpacity className='bg-blue-400 w-16 h-10 items-center justify-center rounded-md mr-4'
                             onPress={() => navigation.navigate("UpdateEvent", { event: event })}>
                             <Text className='font-bold'>Edit</Text>
                         </TouchableOpacity>
                     </View>
+    }
                 </View>
 
                 <View className='w-screen h-[80%] items-center justify-center'>
