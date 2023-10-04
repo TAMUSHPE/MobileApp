@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { ScrollView } from 'react-native';
+import { ScrollView, Text, TouchableOpacity } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUser } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
@@ -10,6 +10,8 @@ import OfficeHours from '../components/OfficeHours';
 import OfficeSignIn from '../components/OfficeSignIn';
 import { User } from '../types/User';
 import { StatusBar } from 'expo-status-bar';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { HomeStackParams } from "../types/Navigation"
 
 /**
  * Renders the home screen of the application.
@@ -18,7 +20,7 @@ import { StatusBar } from 'expo-status-bar';
  *
  * @returns The rendered home screen.
  */
-const HomeScreen = () => {
+const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const { setUserInfo } = useContext(UserContext)!;
 
@@ -60,6 +62,12 @@ const HomeScreen = () => {
     return (
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
+            <TouchableOpacity 
+                className=''
+                onPress={() => navigation.navigate("GoogleCalendar")}
+            >
+                    <Text className='font-bold'>General Meeting</Text>
+            </TouchableOpacity>
             <HighlightSlider />
             <OfficeHours />
             {localUser?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}

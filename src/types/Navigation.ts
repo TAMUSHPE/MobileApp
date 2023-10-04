@@ -73,6 +73,11 @@ export type EventsStackParams = {
     QRCode: { event: SHPEEventID };
 }
 
+export type HomeStackParams = {
+    Home: undefined;
+    GoogleCalendar: undefined;
+}
+
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
     CommitteesEditor: undefined;
@@ -80,7 +85,7 @@ export type AdminDashboardParams = {
 
 // Drawers
 export type HomeDrawerParams = {
-    HomeScreen: undefined;
+    HomeStack: HomeStackParams;
     Logout: undefined;
     AdminDashboardStack: undefined;
     PublicProfile: {

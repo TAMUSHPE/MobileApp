@@ -15,6 +15,7 @@ import { Images } from '../../assets';
 import { StatusBar } from 'expo-status-bar';
 import PublicProfileScreen from "../screens/PublicProfile";
 import AdminDashboardStack from './AdminDashboardStack';
+import { HomeStack } from './HomeStack'
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
@@ -142,7 +143,7 @@ const HomeDrawer = () => {
     const Drawer = createDrawerNavigator<HomeDrawerParams>();
     return (
         <Drawer.Navigator
-            initialRouteName="HomeScreen"
+            initialRouteName="HomeStack"
             drawerContent={(props) => <HomeDrawerContent {...props} />}
             screenOptions={{
                 headerShown: false,
@@ -150,8 +151,8 @@ const HomeDrawer = () => {
             }}
         >
             <Drawer.Screen
-                name="HomeScreen"
-                component={HomeScreen}
+                name="HomeStack"
+                component={HomeStack}
                 options={{
                     headerShown: true,
                     header: HomeDrawerHeader,
