@@ -1,3 +1,4 @@
+import { randomStrRange } from '../unitTestUtils';
 import * as validation from '../validation';
 import fs from 'fs';
 
@@ -87,11 +88,11 @@ describe("String validation", () => {
                 expect(validation.validatePassword(password)).toBe(true);
             });
         });
-        
+
         test("Invalid passwords", () => {
             const passwordJSON = fs.readFileSync("./src/helpers/__tests__/test_data/invalidPasswords.json").toString();
             const passwords = JSON.parse(passwordJSON);
-    
+
             passwords.forEach((password: string) => {
                 expect(validation.validatePassword(password)).toBe(false);
             });
@@ -107,4 +108,58 @@ describe("String validation", () => {
             expect(validation.validatePassword(null)).toBe(false);
         });
     });
+
+    describe("Password Strength", () => {
+        test("Valid Paswords", () => {
+            const passwordJSON = fs.readFileSync("./src/helpers/__tests__/test_data/validPasswords.json").toString();
+            const passwords = JSON.parse(passwordJSON);
+
+            passwords.forEach((password: string) => {
+                const evaluation = validation.evaluatePasswordStrength(password);
+                expect(evaluation == validation.PasswordStrength.WEAK || evaluation == validation.PasswordStrength.AVERAGE || evaluation == validation.PasswordStrength.STRONG).toBe(true);
+            });
+        });
+
+        test("Invalid passwords", () => {
+            const passwordJSON = fs.readFileSync("./src/helpers/__tests__/test_data/invalidPasswords.json").toString();
+            const passwords = JSON.parse(passwordJSON);
+
+            passwords.forEach((password: string) => {
+                expect(validation.evaluatePasswordStrength(password) == validation.PasswordStrength.INVALID).toBe(true);
+            });
+        });
+    });
+
+    describe("Display Name Validation", () => {
+        test("Valid Display Names", () => {
+            expect(validation.validateDisplayName("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")).toBe(true);
+            expect(validation.validateDisplayName("A")).toBe(true);
+            for (let i = 0; i < 100; i++) {
+                expect(validation.validateDisplayName(randomStrRange(1, 80))).toBe(true);
+            }
+        });
+
+        test("Invalid Display Names", () => {
+            expect(validation.validateDisplayName("")).toBe(false);
+            expect(validation.validateDisplayName("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"))
+            for (let i = 0; i < 100; i++) {
+                expect(validation.validateDisplayName(randomStrRange(81, 500))).toBe(false);
+            }
+        });
+    });
+
+    describe("Name Validation", () => {
+        test("Valid Names", () => {
+            expect(validation.validateName("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")).toBe(true);
+            for (let i = 0; i < 100; i++) {
+                expect(validation.validateName(randomStrRange(1, 255))).toBe(true);
+            }
+        });
+
+        test("Invalid Names", () => {
+            expect(validation.validateName("")).toBe(false);
+            expect(validation.validateName("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")).toBe(false);
+        });
+    });
+
 });
