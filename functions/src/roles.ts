@@ -15,10 +15,8 @@ export const modifyUserRole = functions.https.onCall(async (data, context) => {
     }
 
     const token = context.auth.token;
-    const uid = context.auth.uid;
-
-    if (uid !== "tQ8HjD9XErbDGIwFRh5t7tBVYJP2" || (token.admin !== true && token.officer !== true && token.developer !== true)) {
-        throw new functions.https.HttpsError("permission-denied", "Invalid credentials");
+    if (token.admin !== true && token.officer !== true && token.developer !== true) {
+        throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
     }
 
     return auth.getUser(data.uid).then((user) => {
@@ -26,7 +24,7 @@ export const modifyUserRole = functions.https.onCall(async (data, context) => {
     }).then(() => {
         return {
             status: 'success',
-            message: `Success! User with uid ${data.uid} role has been updated to ${data.roles}`,
+            message: `Success! User with uid ${data.uid} role has been updated to:\n ${JSON.stringify(data.roles)}`,
         };
     });
 });
