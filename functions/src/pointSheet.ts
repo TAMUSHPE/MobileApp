@@ -33,12 +33,11 @@ const updateRanks = async () => {
     try {
         const snapshot = await db.collection('users').orderBy("points").get();
 
-        var currentRank = 1;
+        let currentRank = 1;
         snapshot.forEach((doc) => {
             updateUserRank(doc.id, currentRank);
             currentRank++;
-        })
-        
+        });
     } catch (error) {
         console.error("Error in updateRanks:", error);
         throw new Error("Internal Server error");
