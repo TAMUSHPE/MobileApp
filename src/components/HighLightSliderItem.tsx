@@ -1,6 +1,6 @@
 import { View, Image } from 'react-native'
 import React from 'react'
-import { Slide } from './slides'
+import { Slide } from '../types/slides'
 
 /**
  * This component renders a slider item based on the provided item prop.
@@ -16,7 +16,7 @@ const HighLightSliderItem: React.FC<{ item: Slide }> = ({ item }) => {
             <View className="pt-5 pb-4 ml-7">
                 <Image
                     className="h-48 w-[92%] rounded-2xl"
-                    source={item.image}
+                    source={{ uri: item.url }}
                 />
             </View>
         </View>

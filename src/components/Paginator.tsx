@@ -1,6 +1,6 @@
 import { View, Animated, useWindowDimensions } from 'react-native'
 import React from 'react'
-import { Slide } from './slides'
+import { Slide } from '../types/slides'
 
 /**
  * This component displays a horizontal row of dots, corresponding to each slide in the slideshow.

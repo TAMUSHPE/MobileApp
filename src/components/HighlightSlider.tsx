@@ -1,10 +1,11 @@
 import { View, FlatList, Animated, ViewToken } from 'react-native';
-import React, { useState, useRef, RefObject } from 'react';
+import React, { useState, useRef, RefObject, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import HighLightSliderItem from './HighLightSliderItem';
 import Paginator from './Paginator';
-import { slides } from './slides'
-import { Slide } from './slides'
+import { Slide } from '../types/slides'
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../config/firebaseConfig';
 
 /**
  * This component renders a horizontal list of slides with pagination.
@@ -15,6 +16,7 @@ import { Slide } from './slides'
  */
 const HighlightSlider = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [slides, setSlides] = useState<Slide[]>([]);
     const slideListRef: RefObject<FlatList<Slide>> = useRef(null);
     const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -25,6 +27,22 @@ const HighlightSlider = () => {
     }).current;
 
     const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+
+    useEffect(() => {
+        const unsubscribe = onSnapshot(collection(db, "featured-slides"), (snapshot) => {
+            snapshot.docChanges().forEach((change) => {
+                if (change.type === "added") {
+                    console.log("New file", change.doc.data());
+                    setSlides((prevFiles) => [...prevFiles, change.doc.data() as Slide]);
+
+                }
+            });
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+
 
     return (
         <View className='mt-0'>
