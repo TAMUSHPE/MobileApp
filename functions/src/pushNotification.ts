@@ -15,8 +15,8 @@ const getOfficerTokens = async (officerUId: string) => {
     if (docSnap.exists) {
         return docSnap.data()?.expoPushTokens;
     } else {
-      console.error("User does not exist");
-      return null;
+        console.error("User does not exist");
+        return null;
     }
 };
 
@@ -26,7 +26,7 @@ const getOfficerTokens = async (officerUId: string) => {
  * @returns A promise that resolves with an array of push tokens for signed-in officers.
  */
 const getAvailableOfficersTokens = async (): Promise<string[]> => {
-    const signedInOfficersTokens: string[] = [];   
+    const signedInOfficersTokens: string[] = [];
     const snapshot = await db.collection('office-hours/officers-status/officers').where('signedIn', '==', true).get();
 
     for (const doc of snapshot.docs) {
@@ -47,7 +47,7 @@ const getAvailableOfficersTokens = async (): Promise<string[]> => {
  *
  * @param token The token to check.
  * @returns True if the token conforms to the Expo push token structure, false otherwise.
- */ 
+ */
 const isExpoPushToken = (token: any): boolean => {
     return token && typeof token.data === 'string' && typeof token.type === 'string';
 }
@@ -56,7 +56,7 @@ const isExpoPushToken = (token: any): boolean => {
 export const sendNotificationOfficeHours = functions.https.onCall(async (data, context) => {
     const expo = new Expo();
     const officerTokens = await getAvailableOfficersTokens();
-    
+
     const messages: ExpoPushMessage[] = [];
     for (const pushToken of officerTokens) {
         if (!isExpoPushToken) {
@@ -73,14 +73,13 @@ export const sendNotificationOfficeHours = functions.https.onCall(async (data, c
     }
 
     const chunks = expo.chunkPushNotifications(messages);
-    (async () => {
-        for (const chunk of chunks) {
-            try {
-                const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
-                console.log(ticketChunk);
-            } catch (error) {
-                console.error('Sent chunk error', error);
-            }
+    
+    for (const chunk of chunks) {
+        try {
+            const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+            console.log(ticketChunk);
+        } catch (error) {
+            console.error('Sent chunk error', error);
         }
-    })();
+    }
 });

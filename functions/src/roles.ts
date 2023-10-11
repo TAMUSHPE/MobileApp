@@ -24,7 +24,7 @@ export const modifyUserRole = functions.https.onCall(async (data, context) => {
     }).then(() => {
         return {
             status: 'success',
-            message: `Success! User with uid ${data.uid} role has been updated to:\n ${JSON.stringify(data.roles)}`,
+            message: `Success! User with uid ${data.uid} role has been updated to: ${JSON.stringify(data.roles)}`,
         };
     });
 });
