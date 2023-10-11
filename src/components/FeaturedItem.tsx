@@ -11,7 +11,7 @@ import { Slide } from '../types/slides'
  * @returns The rendered slider item component.
  */
 
-const HighLightSliderItem: React.FC<HighLightSliderItemProps> = ({ item, route, getDelete }) => {
+const FeaturedItem: React.FC<FeaturedItemProps> = ({ item, route, getDelete }) => {
     return (
         <View className='w-screen'>
             <View className="pt-5 pb-4 ml-7">
@@ -32,10 +32,10 @@ const HighLightSliderItem: React.FC<HighLightSliderItemProps> = ({ item, route, 
     )
 }
 
-interface HighLightSliderItemProps {
+interface FeaturedItemProps {
     item: Slide;
     route: any;
     getDelete?: (id: Slide) => void;
 }
 
-export default HighLightSliderItem
+export default FeaturedItem

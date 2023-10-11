@@ -1,7 +1,7 @@
 import { View, FlatList, Animated, ViewToken } from 'react-native';
 import React, { useState, useRef, RefObject, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import HighLightSliderItem from './HighLightSliderItem';
+import FeaturedItem from './FeaturedItem';
 import Paginator from './Paginator';
 import { Slide } from '../types/slides'
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
@@ -9,13 +9,13 @@ import { db } from '../config/firebaseConfig';
 
 /**
  * This component renders a horizontal list of slides with pagination.
- * It utilizes the `HighLightSliderItem` component to render each individual slide.
+ * It utilizes the `FeaturedItem` component to render each individual slide.
  * Additionally, it uses the `Paginator` component for the pagination of slides.
  * 
- * @returns The rendered highlight slider component.
+ * @returns The rendered featured slider component.
  */
 
-const HighlightSlider: React.FC<HighlightSliderProps> = ({ route, getDelete }) => {
+const FeaturedSlider: React.FC<FeaturedSliderProps> = ({ route, getDelete }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [slides, setSlides] = useState<Slide[]>([]);
     const slideListRef: RefObject<FlatList<Slide>> = useRef(null);
@@ -50,7 +50,7 @@ const HighlightSlider: React.FC<HighlightSliderProps> = ({ route, getDelete }) =
                 />
                 <FlatList
                     data={slides}
-                    renderItem={({ item }) => <HighLightSliderItem item={item} route={route} getDelete={getDelete} />}
+                    renderItem={({ item }) => <FeaturedItem item={item} route={route} getDelete={getDelete} />}
                     {...flatListProps}
                     onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
                         useNativeDriver: false,
@@ -74,9 +74,9 @@ const flatListProps = {
     scrollEventThrottle: 32
 };
 
-interface HighlightSliderProps {
+interface FeaturedSliderProps {
     route: any;
     getDelete?: (id: Slide) => void;
 }
 
-export default HighlightSlider;
+export default FeaturedSlider;

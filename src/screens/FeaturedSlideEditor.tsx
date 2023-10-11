@@ -10,7 +10,7 @@ import { db, storage } from '../config/firebaseConfig';
 import { uploadFileToFirebase } from '../api/firebaseUtils';
 import { getBlobFromURI, selectImage } from '../api/fileSelection';
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
-import HighlightSlider from '../components/HighlightSlider';
+import FeaturedSlider from '../components/FeaturedSlider';
 import { Slide } from '../types/slides';
 
 const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<AdminDashboardParams>) => {
@@ -145,7 +145,7 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
             </View>
             <View>
                 <Text>Home Screen View:</Text>
-                <HighlightSlider route={route} getDelete={getDelete} />
+                <FeaturedSlider route={route} getDelete={getDelete} />
             </View>
 
             <View className='justify-center items-center '>
