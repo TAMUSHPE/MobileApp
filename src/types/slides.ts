@@ -1,6 +1,8 @@
 export interface Slide {
-    id: string;
-    title: string;
+    eventName: string;
     url: string;
+    createdAt: string;
+    id: string;
+    fireStoreLocation: string;
 }
 

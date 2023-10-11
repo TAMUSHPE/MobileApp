@@ -1,4 +1,4 @@
-import { View, Image } from 'react-native'
+import { View, Image, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { Slide } from '../types/slides'
 
@@ -10,7 +10,8 @@ import { Slide } from '../types/slides'
  * @param item - The slide data containing information like type, image, title, and description.
  * @returns The rendered slider item component.
  */
-const HighLightSliderItem: React.FC<{ item: Slide }> = ({ item }) => {
+
+const HighLightSliderItem: React.FC<HighLightSliderItemProps> = ({ item, route, getDelete }) => {
     return (
         <View className='w-screen'>
             <View className="pt-5 pb-4 ml-7">
@@ -18,9 +19,23 @@ const HighLightSliderItem: React.FC<{ item: Slide }> = ({ item }) => {
                     className="h-48 w-[92%] rounded-2xl"
                     source={{ uri: item.url }}
                 />
+                {route.name === "FeaturedSlideEditor" &&
+                    <View className='w-full justify-center items-center pr-7'>
+                        <TouchableOpacity className='bg-blue-500 p-4 rounded-md mt-4'
+                            onPress={() => getDelete!(item)}>
+                            <Text>Delete</Text>
+                        </TouchableOpacity>
+                    </View>
+                }
             </View>
         </View>
     )
+}
+
+interface HighLightSliderItemProps {
+    item: Slide;
+    route: any;
+    getDelete?: (id: Slide) => void;
 }
 
 export default HighLightSliderItem

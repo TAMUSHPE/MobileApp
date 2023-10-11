@@ -1,20 +1,55 @@
-import { View, Text, TouchableOpacity, Animated } from 'react-native'
-import React, { useRef, useState } from 'react'
+import { View, Text, TouchableOpacity, Image, TextInput } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { AdminDashboardParams } from '../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from "expo-image-picker";
-import { getDownloadURL } from "firebase/storage";
-import { db } from '../config/firebaseConfig';
+import { deleteObject, getDownloadURL, ref } from "firebase/storage";
+import { db, storage } from '../config/firebaseConfig';
 import { uploadFileToFirebase } from '../api/firebaseUtils';
 import { getBlobFromURI, selectImage } from '../api/fileSelection';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
 import HighlightSlider from '../components/HighlightSlider';
+import { Slide } from '../types/slides';
 
-const FeaturedSlideEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [image, setImage] = useState<Blob | null>(null);
     const [imageName, setImageName] = useState<string | null | undefined>();
+    const [localImageURI, setLocalImageURI] = useState<string>("");
+    const [eventName, setEventName] = useState<string>("");
+    const [slideDelete, setSlideDelete] = useState<Slide | null>(null);
+    const [imageLocation, setImageLocation] = useState<string | null>(null);
+
+    const getDelete = async (id: Slide) => {
+        setSlideDelete(id);
+    };
+
+    useEffect(() => {
+        const deleteData = async () => {
+            if (slideDelete) {
+                try {
+                    const slidesSnapshot = await getDocs(collection(db, "featured-slides"));
+                    if (slidesSnapshot.size > 1) {
+                        const deleteDocRef = doc(db, "featured-slides", slideDelete.id);
+                        await deleteDoc(deleteDocRef);
+
+                        const storageRef = ref(storage, slideDelete.fireStoreLocation);
+                        await deleteObject(storageRef);
+                    } else {
+                        alert("cannot delete last slide");
+                    }
+
+                    setSlideDelete(null);
+                } catch (error) {
+                    console.error("Error in deletion process:", error);
+                }
+            }
+        };
+
+        deleteData();
+    }, [slideDelete]);
+
 
     /**
      * This will launch the native image picker of the user's device and allow the user to crop it to an aspect ratio of 1:1.
@@ -31,14 +66,15 @@ const FeaturedSlideEditor = ({ navigation }: NativeStackScreenProps<AdminDashboa
         if (result) {
             const imageBlob = await getBlobFromURI(result.assets![0].uri);
             setImage(imageBlob);
+            setLocalImageURI(result.assets![0].uri);
             setImageName(result.assets![0].fileName);
+            setImageLocation(`${Date.now()}_${result.assets![0].fileName}`);
         }
-        uploadFeaturedImage();
     };
 
     const uploadFeaturedImage = () => {
         if (image) {
-            const uploadTask = uploadFileToFirebase(image, `/featured-slides/${Date.now()}_${imageName}`);
+            const uploadTask = uploadFileToFirebase(image, `/featured-slides/${imageLocation}`);
 
             uploadTask.on("state_changed",
                 (snapshot) => {
@@ -61,6 +97,11 @@ const FeaturedSlideEditor = ({ navigation }: NativeStackScreenProps<AdminDashboa
                 async () => {
                     await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
                         console.log("File available at", URL);
+                        setLocalImageURI("");
+                        setImage(null);
+                        setEventName("");
+                        setImageName("");
+                        setImageLocation(null);
                         saveRecord(URL, Date.now());
                     });
                 });
@@ -70,9 +111,17 @@ const FeaturedSlideEditor = ({ navigation }: NativeStackScreenProps<AdminDashboa
     const saveRecord = async (url: string, createdAt: number) => {
         try {
             const docRef = await addDoc(collection(db, "featured-slides"), {
+                eventName,
                 url,
                 createdAt,
+                fireStoreLocation: `/featured-slides/${imageLocation}`
+
             });
+
+            await updateDoc(docRef, {
+                id: docRef.id
+            });
+
             console.log("document saved correctly", docRef.id);
         } catch (e) {
             console.log(e);
@@ -94,29 +143,44 @@ const FeaturedSlideEditor = ({ navigation }: NativeStackScreenProps<AdminDashboa
                     </TouchableOpacity>
                 </View>
             </View>
-
-            <HighlightSlider />
-
-
-
+            <View>
+                <Text>Home Screen View:</Text>
+                <HighlightSlider route={route} getDelete={getDelete} />
+            </View>
 
             <View className='justify-center items-center '>
+                {localImageURI != "" &&
+                    <Image
+                        className="h-48 w-[92%] rounded-2xl"
+                        source={{ uri: localImageURI as string }}
+                    />
+                }
                 <TouchableOpacity
                     className='bg-blue-400 h-10 w-16 items-center justify-center'
                     onPress={() => selectFeaturedImage()}
                 >
-                    <Text>Upload Image</Text>
+                    <Text>Select Image</Text>
                 </TouchableOpacity>
-            </View>
-            {/* <View className='absolute h-screen w-screen justify-center items-center'>
-                <View className='h-[15%] px-6 justify-center items-center bg-gray-500 '>
-                    <Text className='text-lg'>Uploading...</Text>
-                    <ProgressBar progress={50} />
-                    <TouchableOpacity>
-                        <Text>Cancel</Text>
-                    </TouchableOpacity>
+                <View>
+                    <View>
+                        <View className='mt-20'>
+                            <Text className='text-gray-500 mb-2'>Event Name</Text>
+                            <TextInput
+                                className='w-full rounded-md text-lg px-2 py-1 bg-white'
+                                value={eventName}
+                                onChangeText={(text) => setEventName(text)}
+                                placeholder="Event Name"
+                            />
+                        </View>
+                        <TouchableOpacity
+                            className='bg-blue-400 h-10 w-16 items-center justify-center'
+                            onPress={() => uploadFeaturedImage()}
+                        >
+                            <Text>Upload Image</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
-            </View> */}
+            </View>
         </SafeAreaView>
     )
 }

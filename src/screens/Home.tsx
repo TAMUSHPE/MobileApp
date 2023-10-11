@@ -20,7 +20,7 @@ import { HomeStackParams } from "../types/Navigation"
  *
  * @returns The rendered home screen.
  */
-const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const { setUserInfo } = useContext(UserContext)!;
 
@@ -62,13 +62,13 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
     return (
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
-            <TouchableOpacity 
+            <TouchableOpacity
                 className=''
                 onPress={() => navigation.navigate("GoogleCalendar")}
             >
-                    <Text className='font-bold'>General Meeting</Text>
+                <Text className='font-bold'>General Meeting</Text>
             </TouchableOpacity>
-            <HighlightSlider />
+            <HighlightSlider route={route} />
             <OfficeHours />
             {localUser?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
         </ScrollView>
