@@ -27,6 +27,12 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
             >
                 <Text>update committee info</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => navigation.navigate('FeaturedSlideEditor')}
+                className='bg-blue-500 rounded-md p-2'
+            >
+                <Text>Home Featured Slider</Text>
+            </TouchableOpacity>
         </SafeAreaView>
     )
 }
