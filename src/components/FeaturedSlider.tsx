@@ -1,20 +1,23 @@
 import { View, FlatList, Animated, ViewToken } from 'react-native';
-import React, { useState, useRef, RefObject } from 'react';
+import React, { useState, useRef, RefObject, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import HighLightSliderItem from './HighLightSliderItem';
+import FeaturedItem from './FeaturedItem';
 import Paginator from './Paginator';
-import { slides } from './slides'
-import { Slide } from './slides'
+import { Slide } from '../types/slides'
+import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import { db } from '../config/firebaseConfig';
 
 /**
  * This component renders a horizontal list of slides with pagination.
- * It utilizes the `HighLightSliderItem` component to render each individual slide.
+ * It utilizes the `FeaturedItem` component to render each individual slide.
  * Additionally, it uses the `Paginator` component for the pagination of slides.
  * 
- * @returns The rendered highlight slider component.
+ * @returns The rendered featured slider component.
  */
-const HighlightSlider = () => {
+
+const FeaturedSlider: React.FC<FeaturedSliderProps> = ({ route, getDelete }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [slides, setSlides] = useState<Slide[]>([]);
     const slideListRef: RefObject<FlatList<Slide>> = useRef(null);
     const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -26,6 +29,18 @@ const HighlightSlider = () => {
 
     const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
+    useEffect(() => {
+        const slidesCollection = collection(db, "featured-slides");
+        const slideQuery = query(slidesCollection, orderBy("createdAt", "desc"));
+
+        const unsubscribe = onSnapshot(slideQuery, (snapshot) => {
+            const newSlides = snapshot.docs.map(doc => doc.data() as Slide);
+            setSlides(newSlides);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
     return (
         <View className='mt-0'>
             <View>
@@ -35,7 +50,7 @@ const HighlightSlider = () => {
                 />
                 <FlatList
                     data={slides}
-                    renderItem={({ item }) => <HighLightSliderItem item={item} />}
+                    renderItem={({ item }) => <FeaturedItem item={item} route={route} getDelete={getDelete} />}
                     {...flatListProps}
                     onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
                         useNativeDriver: false,
@@ -59,4 +74,9 @@ const flatListProps = {
     scrollEventThrottle: 32
 };
 
-export default HighlightSlider;
+interface FeaturedSliderProps {
+    route: any;
+    getDelete?: (id: Slide) => void;
+}
+
+export default FeaturedSlider;
