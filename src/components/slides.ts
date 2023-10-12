@@ -23,12 +23,5 @@ export const slides: Slide[] = [
         image: Images.CAROUSEL_2,
         type: "event",
         description: "lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla vitae elit libero, a pharetra augue. Nullam id dolor id nibh ultricies vehicula ut id elit."
-    },
-    {
-        id: "3",
-        title: "Member",  // Member Name
-        image: Images.CAROUSEL_3,
-        type: "member",
-        description: "This whole summer has been crazy. Crazy? I was crazy once. They locked me In a room. A rubber room. A rubber room full with rats. The rats made me crazy. Crazy?"
     }
 ];

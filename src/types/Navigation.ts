@@ -76,11 +76,15 @@ export type EventsStackParams = {
 export type HomeStackParams = {
     Home: undefined;
     GoogleCalendar: undefined;
+    PublicProfile: {
+        uid: string;
+    }
 }
 
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
     CommitteesEditor: undefined;
+    MemberOfTheMonthEditor: undefined;
 }
 
 // Drawers
