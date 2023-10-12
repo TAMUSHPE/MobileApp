@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TouchableHighlight } from 'react-native'
+import { Text, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
