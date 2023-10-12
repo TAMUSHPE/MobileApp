@@ -71,6 +71,13 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
             <HighlightSlider />
             <OfficeHours />
             {localUser?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
+            
+            <TouchableOpacity 
+                onPress = {() => navigation.navigate("PublicProfile", {uid: auth.currentUser?.uid!})}
+                className='bg-blue-500 rounded-md p-2'
+            > 
+                <Text className='font-bold'> MOTM button </Text>
+            </TouchableOpacity>
         </ScrollView>
     );
 }
