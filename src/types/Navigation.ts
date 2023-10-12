@@ -83,6 +83,7 @@ export type AdminDashboardParams = {
     AdminDashboard: undefined;
     CommitteesEditor: undefined;
     FeaturedSlideEditor: undefined;
+    ResumeDownloader: undefined;
 }
 
 // Drawers
