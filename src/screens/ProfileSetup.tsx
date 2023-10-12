@@ -351,13 +351,11 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
 
 const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
     const [resumeURL, setResumeURL] = useState<string | null>(null);
-    const [resume, setResume] = useState<Blob | null>(null);
 
     const selectResume = async () => {
         const result = await selectFile();
         if (result) {
             const resumeBlob = await getBlobFromURI(result.assets![0].uri);
-            setResume(resumeBlob);
             return resumeBlob;
         }
         return null;
@@ -407,7 +405,6 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                 onPress={async () => {
                     const selectedResume = await selectResume();
                     if (selectedResume) {
-                        console.log("test123")
                         uploadResume(selectedResume);
                     }
                 }}
@@ -416,7 +413,6 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
             <InteractButton
                 label='View Resume'
                 onPress={async () => {
-                    console.log(resumeURL);
                     if (resumeURL) {
                         await Linking.canOpenURL(resumeURL)
                             .then(async (supported) => {

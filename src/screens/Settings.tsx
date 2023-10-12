@@ -125,7 +125,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [loading, setLoading] = useState<boolean>(false);
     const [image, setImage] = useState<Blob | null>(null);
-    const [resume, setResume] = useState<Blob | null>(null);
     const [showSaveButton, setShowSaveButton] = useState<boolean>(false);
 
     const defaultVals = {
@@ -195,9 +194,9 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         console.log(result);
         if (result) {
             const resumeBlob = await getBlobFromURI(result.assets![0].uri);
-            setResume(resumeBlob);
-            saveChanges();
+            return resumeBlob;
         }
+        return null
     }
 
     const uploadProfilePicture = () => {
@@ -239,9 +238,9 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         }
     }
 
-    const uploadResume = () => {
-        if (resume) {
-            const uploadTask = uploadFileToFirebase(resume, `user-docs/${auth.currentUser?.uid}/user-resume`);
+    const uploadResume = (resumeBlob: Blob) => {
+        if (resumeBlob) {
+            const uploadTask = uploadFileToFirebase(resumeBlob, `user-docs/${auth.currentUser?.uid}/user-resume`);
 
             uploadTask.on("state_changed",
                 (snapshot) => {
@@ -278,7 +277,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const saveChanges = async () => {
         setLoading(true)
         uploadProfilePicture();
-        uploadResume();
+        // uploadResume();
 
         /**
          * This is some very weird syntax and very javascript specific, so here's an explanation for what's going on:
@@ -564,8 +563,11 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                         <InteractButton
                             label='Upload Resume'
                             onPress={async () => {
-                                await selectResume();
                                 saveChanges();
+                                const selectedResume = await selectResume();
+                                if (selectedResume) {
+                                    uploadResume(selectedResume);
+                                }
                             }}
                         />
                         <InteractButton
