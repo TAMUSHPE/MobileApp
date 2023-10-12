@@ -33,6 +33,12 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
             >
                 <Text>Home Featured Slider</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => navigation.navigate('ResumeDownloader')}
+                className='bg-blue-500 rounded-md p-2'
+            >
+                <Text>Resume Downloader</Text>
+            </TouchableOpacity>
         </SafeAreaView>
     )
 }
