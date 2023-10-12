@@ -1,4 +1,4 @@
-import { Text, View, KeyboardAvoidingView, Image, Animated, TouchableOpacity, ScrollView } from 'react-native';
+import { Text, View, KeyboardAvoidingView, Image, Animated, TouchableOpacity, ScrollView, Linking } from 'react-native';
 import React, { useEffect, useRef, useState, useContext } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
@@ -8,7 +8,7 @@ import { getDownloadURL } from "firebase/storage";
 import { signOut, updateProfile } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
 import { getUser, setPrivateUserData, setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
-import { getBlobFromURI, selectImage } from '../api/fileSelection';
+import { getBlobFromURI, selectFile, selectImage } from '../api/fileSelection';
 import { UserContext } from '../context/UserContext';
 import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
 import InteractButton from '../components/InteractButton';
@@ -331,7 +331,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                         classYear: classYear
                                     });
                                 }
-                                navigation.navigate("SetupCommittees")
+                                navigation.navigate("SetupResume")
                             }
                         }}
                         label='Continue'
@@ -348,6 +348,104 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
         </SafeAreaView>
     );
 };
+
+const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
+    const [resumeURL, setResumeURL] = useState<string | null>(null);
+    const [resume, setResume] = useState<Blob | null>(null);
+
+    const selectResume = async () => {
+        const result = await selectFile();
+        if (result) {
+            const resumeBlob = await getBlobFromURI(result.assets![0].uri);
+            setResume(resumeBlob);
+            return resumeBlob;
+        }
+        return null;
+    }
+
+    const uploadResume = (resumeBlob: Blob) => {
+        if (resumeBlob) {
+            console.log("test1243")
+            const uploadTask = uploadFileToFirebase(resumeBlob, `user-docs/${auth.currentUser?.uid}/user-resume`);
+
+            uploadTask.on("state_changed",
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                },
+                (error) => {
+                    switch (error.code) {
+                        case "storage/unauthorized":
+                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            break;
+                        case "storage/canceled":
+                            alert("File upload cancelled");
+                            break;
+                        default:
+                            alert("An unknown error has occured")
+                            break;
+                    }
+                },
+                async () => {
+                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
+                        console.log("File available at", URL);
+                        if (auth.currentUser) {
+                            setResumeURL(URL);
+                            await setPublicUserData({
+                                resumeURL: URL
+                            });
+                        }
+                    });
+                });
+        }
+    }
+
+    return (
+        <View className='items-center h-screen justify-center'>
+            <InteractButton
+                label='Upload Resume'
+                onPress={async () => {
+                    const selectedResume = await selectResume();
+                    if (selectedResume) {
+                        console.log("test123")
+                        uploadResume(selectedResume);
+                    }
+                }}
+            />
+
+            <InteractButton
+                label='View Resume'
+                onPress={async () => {
+                    console.log(resumeURL);
+                    if (resumeURL) {
+                        await Linking.canOpenURL(resumeURL)
+                            .then(async (supported) => {
+                                if (supported) {
+                                    await Linking.openURL(resumeURL!)
+                                        .catch((err) => console.error(`Issue opening url: ${err}`));
+                                } else {
+                                    console.warn(`Don't know how to open this URL: ${resumeURL}`);
+                                }
+                            })
+                            .catch((err) => {
+                                console.error(err);
+                            });
+                    }
+                    else {
+                        alert("No resume found")
+                    }
+                }
+                }
+            />
+            <InteractButton
+                onPress={() => navigation.navigate("SetupCommittees")}
+                label={`${resumeURL ? "Continue" : "Skip"}`}
+                buttonClassName='justify-center items-center bg-[#ddd] rounded-md w-10/12'
+                textClassName='text-[#3b3b3b] text-lg font-bold'
+            />
+        </View>
+    )
+}
 
 
 /**
@@ -533,4 +631,4 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     );
 };
 
-export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupCommittees };
+export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupCommittees, SetupResume };

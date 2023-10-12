@@ -44,6 +44,7 @@ export type ProfileSetupStackParams = {
     SetupCommittees: undefined;
     MainStack: undefined;
     SetupNotification: undefined;
+    SetupResume: undefined;
 }
 
 export type ResourcesStackParams = {
