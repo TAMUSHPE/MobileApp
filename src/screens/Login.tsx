@@ -92,17 +92,23 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
                 />
                 <Text className="text-white text-center text-3xl">Welcome to SHPE</Text>
             </View>
-            <View className="flex-col mt-2">
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('LoginStudent')}
-                    >
-                    <Text className="text-white font-bold">Student</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => navigation.navigate('LoginGuest')}
-                    >
-                    <Text className="text-white font-bold">Guest</Text>
-                </TouchableOpacity>
+            <View className="flex-col w-4/5">
+                <View className="flex-col mt-2">
+                    <InteractButton
+                        onPress={() => navigation.navigate('LoginStudent')}
+                        label="Student"
+                        buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
+                        textClassName="text-white font-bold"
+                        underlayColor="#A22E2B"
+                    />
+                    <InteractButton
+                        onPress={() => navigation.navigate('LoginGuest')}
+                        label="Guest"
+                        buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
+                        textClassName="text-white font-bold"
+                        underlayColor="#A22E2B"
+                    />
+                </View>
             </View>
             <View className="my-5 w-11/12">
                 <Text className="text-right text-pale-orange mt-2">{"Society of Hispanic\nProfessional\nEngineers"}</Text>

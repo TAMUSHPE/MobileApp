@@ -11,6 +11,7 @@ import { UserContext } from "../context/UserContext";
 import InteractButton from "../components/InteractButton";
 import { AuthStackParams } from "../types/Navigation";
 import { Images } from "../../assets";
+import { validateTamuEmail } from "../helpers/validation";
 
 const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [loading, setLoading] = useState<boolean>(false);
@@ -59,7 +60,14 @@ const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackPar
             const { id_token } = response.params;
             const credential = GoogleAuthProvider.credential(id_token);
             signInWithCredential(auth, credential)
-                .then(handleUserAuth)
+                .then((credential) => {
+                    if(!validateTamuEmail(credential.user.email)){
+                        auth.signOut();
+                        alert("Sign in with your Tamu email");
+                        return;
+                    }
+                    handleUserAuth();
+                })
                 .catch(error => {
                     console.error("Error during Google sign-in:", error);
                 });
