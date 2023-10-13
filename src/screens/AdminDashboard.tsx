@@ -13,7 +13,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
     }
 
     return (
-        <SafeAreaView className='items-center justify-center space-y-4'  edges={['right', 'top', 'left']}>
+        <SafeAreaView className='items-center justify-center space-y-4' edges={['right', 'top', 'left']}>
             <TouchableOpacity
                 onPress={() => updateRanks()}
                 className='bg-blue-500 rounded-md p-2'
@@ -31,6 +31,12 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                 className='bg-blue-500 rounded-md p-2'
             >
                 <Text>Update Member of the Month</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => navigation.navigate('FeaturedSlideEditor')}
+                className='bg-blue-500 rounded-md p-2'
+            >
+                <Text>Home Featured Slider</Text>
             </TouchableOpacity>
         </SafeAreaView>
     )
