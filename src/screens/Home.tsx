@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { ScrollView, Text, TouchableOpacity, Image, View, StyleSheet } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getUser, setMemberOfTheMonth } from '../api/firebaseUtils';
+import { getUser } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
 import manageNotificationPermissions from '../helpers/pushNotification';
 import { UserContext } from '../context/UserContext';
@@ -105,20 +105,22 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
             </TouchableOpacity>
             <FeaturedSlider route={route} />
             <View className='flex-row justify-center mt-4'>
-                <View className='bg-gray-100 rounded-md items-center flex-1 px-4'>
-                    <Text className='text-2xl text-pale-blue font-bold'>Upcoming Events</Text>
+                <View className='bg-gray-100 rounded-md items-center w-1/2 p-4'>
+                    <Text className='text-2xl text-pale-blue font-bold pb-2 text-center'>Upcoming Events</Text>
                     <Text>TODO: This is the content of column 1.</Text>
                 </View>
                 {MemberOfTheMonth && (
-                    <View className="items-center px-4 flex-1">
-                        <Text className='text-2xl text-pale-blue font-bold'>Member of the Month </Text>
-                        <View className='items-center justify-center'>
+                    <View className="items-center p-4 w-1/2">
+                        <Text className='text-2xl text-pale-blue font-bold text-center'>Member of the Month </Text>
+                        <View className='w-full items-center justify-center'>
                             <TouchableOpacity
                                 disabled={MemberOfTheMonth.uid === ""}
                                 onPress={() => navigation.navigate("PublicProfile", { uid: MemberOfTheMonth?.uid! })}
+                                className='w-full p-4'
                             >
                                 <Image
-                                    source={MemberOfTheMonth?.photoURL ? { uri: MemberOfTheMonth?.photoURL } : Images.DEFAULT_USER_PICTURE} className='rounded-lg w-24 h-24'
+                                    className='rounded-lg aspect-square'
+                                    source={MemberOfTheMonth?.photoURL ? { uri: MemberOfTheMonth?.photoURL } : Images.DEFAULT_USER_PICTURE}
                                 />
                             </TouchableOpacity>
                             <Text className='font-bold'>{MemberOfTheMonth?.name}</Text>
