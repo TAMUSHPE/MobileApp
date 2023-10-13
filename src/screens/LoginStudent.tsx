@@ -1,4 +1,4 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator } from "react-native";
 import React, { useEffect, useState, useContext } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -11,12 +11,10 @@ import { UserContext } from "../context/UserContext";
 import InteractButton from "../components/InteractButton";
 import { AuthStackParams } from "../types/Navigation";
 import { Images } from "../../assets";
+import { validateTamuEmail } from "../helpers/validation";
 
-const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
-    const [email, setEmail] = useState<string>("");
-    const [password, setPassword] = useState<string>("");
+const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [loading, setLoading] = useState<boolean>(false);
-
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
 
@@ -35,7 +33,6 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
             navigation.navigate("ProfileSetup");
         }
     }, [userInfo]);
-
 
     const handleUserAuth = () => {
         setLoading(true);
@@ -57,22 +54,20 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
             });
     };
 
-    const emailSignIn = async () => {
-        signInWithEmailAndPassword(auth, email, password)
-            .then(handleUserAuth)
-            .catch((error: Error) => {
-                console.error("Error during email sign-in:", error);
-                alert(error.message);
-            })
-    }
-
     // Handle Google Sign-In
     useEffect(() => {
         if (response?.type === "success") {
             const { id_token } = response.params;
             const credential = GoogleAuthProvider.credential(id_token);
             signInWithCredential(auth, credential)
-                .then(handleUserAuth)
+                .then((credential) => {
+                    if(!validateTamuEmail(credential.user.email)){
+                        auth.signOut();
+                        alert("Sign in with your Tamu email");
+                        return;
+                    }
+                    handleUserAuth();
+                })
                 .catch(error => {
                     console.error("Error during Google sign-in:", error);
                 });
@@ -95,20 +90,17 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
             <View className="flex-col w-4/5">
                 <View className="flex-col mt-2">
                     <InteractButton
-                        onPress={() => navigation.navigate('LoginStudent')}
-                        label="Student"
-                        buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
-                        textClassName="text-white font-bold"
-                        underlayColor="#A22E2B"
+                        onPress={() => googleSignIn()}
+                        label="Sign In with Google"
+                        buttonClassName="bg-white mt-2 rounded-xl"
+                        textClassName="text-[#3b3b3b] font-bold"
+                        iconSource={{ uri: "https://developers.google.com/static/identity/images/g-logo.png" }}
                     />
-                    <InteractButton
-                        onPress={() => navigation.navigate('LoginGuest')}
-                        label="Guest"
-                        buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
-                        textClassName="text-white font-bold"
-                        underlayColor="#A22E2B"
-                    />
+                    {loading && (
+                        <ActivityIndicator className="mt-4" size={"large"} />
+                    )}
                 </View>
+
             </View>
             <View className="my-5 w-11/12">
                 <Text className="text-right text-pale-orange mt-2">{"Society of Hispanic\nProfessional\nEngineers"}</Text>
@@ -117,4 +109,4 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
     );
 };
 
-export default LoginScreen;
+export default LoginStudent;
