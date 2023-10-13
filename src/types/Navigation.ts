@@ -28,6 +28,8 @@ export type AuthStackParams = {
     RegisterScreen: undefined;
     ProfileSetup: undefined;
     MainStack: undefined;
+    LoginStudent: undefined;
+    LoginGuest: undefined;
 };
 
 export type MembersStackParams = {
