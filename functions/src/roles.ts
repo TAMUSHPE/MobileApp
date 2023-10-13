@@ -7,7 +7,7 @@ import * as functions from 'firebase-functions';
  * @throws `unauthenticated` if request does not contain authentication data.
  * @throws `permission-denied` if user does not have a custom claim for `admin`, `officer`, or `developer`.
 */
-export const modifyUserRole = functions.https.onCall(async (data, context) => {
+export const updateUserRole = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
     } else if (typeof data.roles !== "object" || typeof data.uid !== "string") {
