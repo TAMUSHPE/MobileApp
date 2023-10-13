@@ -46,6 +46,7 @@ export type ProfileSetupStackParams = {
     SetupCommittees: undefined;
     MainStack: undefined;
     SetupNotification: undefined;
+    SetupResume: undefined;
 }
 
 export type ResourcesStackParams = {
@@ -88,6 +89,7 @@ export type AdminDashboardParams = {
     CommitteesEditor: undefined;
     MemberOfTheMonthEditor: undefined;
     FeaturedSlideEditor: undefined;
+    ResumeDownloader: undefined;
 }
 
 // Drawers
