@@ -5,7 +5,7 @@ import { getUser } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
 import manageNotificationPermissions from '../helpers/pushNotification';
 import { UserContext } from '../context/UserContext';
-import HighlightSlider from '../components/HighlightSlider';
+import FeaturedSlider from '../components/FeaturedSlider';
 import OfficeHours from '../components/OfficeHours';
 import OfficeSignIn from '../components/OfficeSignIn';
 import { User } from '../types/User';
@@ -15,12 +15,12 @@ import { HomeStackParams } from "../types/Navigation"
 
 /**
  * Renders the home screen of the application.
- * It includes the highlight slider, office hours, and office sign-in components.
+ * It includes the feature slider, office hours, and office sign-in components.
  * It also manages the user's local and context state.
  *
  * @returns The rendered home screen.
  */
-const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const { setUserInfo } = useContext(UserContext)!;
 
@@ -68,7 +68,7 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
             >
                     <Text className='font-semibold'>General Meeting</Text>
             </TouchableOpacity>
-            <HighlightSlider />
+            <FeaturedSlider route={route} />
             <OfficeHours />
             {localUser?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
         </ScrollView>
