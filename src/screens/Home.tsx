@@ -28,6 +28,7 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
     const { setUserInfo } = useContext(UserContext)!;
     const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfoUID | null>(null);
 
+    {/* For Member of the month content */}
     const styles = StyleSheet.create({
         container: {
           flexDirection: 'row', // Arrange the columns horizontally
@@ -62,7 +63,6 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                         if (loadedMemberOfTheMonth?.uid) {
                             await getLocalMemberOfTheMonthUser(loadedMemberOfTheMonth.uid);
                         }
-                        console.log("loadedMemberOfTheMonth", loadedMemberOfTheMonth);
                     };
                     setLocalMemberOfTheMonth(null);
                     loadData();
@@ -126,20 +126,22 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
             </View>
 
 
-            <View style={styles.container}>
+            <View style={styles.container} className='justify-center'>
                 <View style={styles.column} className='bg-gray-100 rounded-md'>
                     <Text style={styles.text} className='text-2xl text-pale-blue font-bold'>Upcoming Events</Text>
                     <Text>TODO: This is the content of column 1.</Text>
                 </View>
-                <View style={styles.column}>
-                    <Text style={styles.text} className='text-2xl text-pale-blue font-bold'> Member of the Month </Text>
-                    <TouchableOpacity 
-                        onPress = {() => navigation.navigate("PublicProfile", {uid: MemberOfTheMonth?.uid!})}
-                    > 
-                        <Image source={MemberOfTheMonth?.photoURL ? { uri: MemberOfTheMonth?.photoURL } : Images.DEFAULT_USER_PICTURE} className='rounded-lg w-24 h-24' />
-                    </TouchableOpacity>
-                    <Text className='font-bold'> {MemberOfTheMonth?.name} </Text>
-                </View>
+                {MemberOfTheMonth ? (
+                    <View style={styles.column}>
+                        <Text style={styles.text} className='text-2xl text-pale-blue font-bold'> Member of the Month </Text>
+                        <View  className='items-center justify-center'>
+                            <TouchableOpacity onPress={() => navigation.navigate("PublicProfile", { uid: MemberOfTheMonth?.uid! })} > 
+                                <Image source={MemberOfTheMonth?.photoURL ? { uri: MemberOfTheMonth?.photoURL } : Images.DEFAULT_USER_PICTURE} className='rounded-lg w-24 h-24' />
+                            </TouchableOpacity>
+                            <Text className='font-bold'>{MemberOfTheMonth?.name}</Text>
+                        </View>
+                    </View>
+                    ) : (<View></View>)}
             </View>
         </ScrollView>
     );

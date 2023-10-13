@@ -1,4 +1,4 @@
-import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Alert, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Alert, TouchableWithoutFeedback , StyleSheet} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
@@ -16,7 +16,7 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
     const [headModalVisible, setHeadModalVisible] = useState(false);
     const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfoUID | null>(null);
     const [updated, setUpdated] = useState(false);
-    const [localMemberOfTheMonth, setlocalMemberOfTheMonth] = useState<{uid: string, name: string} | null>(null);
+    const [localMemberOfTheMonth, setLocalMemberOfTheMonth] = useState<{uid: string, name: string} | null>(null);
 
     const insets = useSafeAreaInsets();
 
@@ -35,9 +35,9 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
             const loadedMemberOfTheMonth = await getMemberOfTheMonth();
             if (loadedMemberOfTheMonth?.uid) {
                 await fetchHeadUserData(loadedMemberOfTheMonth.uid);
-                setlocalMemberOfTheMonth({ uid: loadedMemberOfTheMonth.uid, name: headUserInfo?.name! });
+                setLocalMemberOfTheMonth({ uid: loadedMemberOfTheMonth.uid, name: headUserInfo?.name! });
             } else {
-                setlocalMemberOfTheMonth(null);
+                setLocalMemberOfTheMonth(null);
             }
         };
 
@@ -69,23 +69,37 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                 </View>
 
                 {/* Form */}
-                <View className='mt-9 p-6'>
-                    <View className='flex-row mt-4 w-full '>
-                        <View className='items-center flex-1'>
-                            <Text className='text-gray-500 text-lg text-center'>Member of the Month</Text>
-                            <TouchableOpacity onPress={() => setHeadModalVisible(true)}>
-                                <Text className='text-lg text-center'>{headUserInfo?.name || "Select a Member"}</Text>
-                            </TouchableOpacity>
-                        </View>
+                <View className='mt-9 p-6 items-center flex-1'>
+                    <View className='items-center flex-1'>
+                        <Text className='text-gray-500 text-lg text-center'>Current Member of the Month</Text>
+                        <Text className='text-lg text-center'>{localMemberOfTheMonth?.name}</Text>
                     </View>
+                    <View className='items-center flex-1'>
+                        <Text className='text-gray-500 text-lg text-center'>Select Existing Member</Text>
+                        <TouchableOpacity 
+                            onPress={() => setHeadModalVisible(true)} 
+                            activeOpacity={0.5}
+                            className='bg-[#e4e4e4] justify-center items-center rounded-md pr-9 pl-9'
+                        >
+                            <Text className='text-lg text-center'>Click</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <Text className='text-gray-500 text-lg text-center'>Enter New Member's Name</Text>
+                    <TextInput
+                        placeholder="Full Name"
+                        className="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1"
+                        onChangeText={(name: string) => setLocalMemberOfTheMonth({uid:"", name:name})}
+                    />
 
                 </View>
 
 
                 <View className='w-screen justify-center items-center pt-4 space-x-7'>
-                    <TouchableOpacity className='bg-blue-400 justify-center items-center rounded-md p-2'
+                    <TouchableOpacity 
+                        activeOpacity={0.5} 
+                        className='bg-blue-400 justify-center items-center rounded-md p-2'
                         onPress={() => {
-                            setMemberOfTheMonth(headUserInfo?.uid!, headUserInfo?.name!),
+                            setMemberOfTheMonth(localMemberOfTheMonth?.uid!, localMemberOfTheMonth?.name!),
                             setUpdated(true)
                         }}
                     >
@@ -112,10 +126,10 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
 
                     <View className='flex-row items-center h-10 mb-4'>
                         <View className='w-screen absolute'>
-                            <Text className="text-2xl font-bold justify-center text-center">Select a Head</Text>
+                            <Text className="text-2xl font-bold justify-center text-center">Select a Member</Text>
                         </View>
                         <View className='pl-6'>
-                            <TouchableOpacity className=" bg-pale-orange p-2 rounded-md" onPress={() => setHeadModalVisible(false)} >
+                            <TouchableOpacity activeOpacity={0.5}  className=" bg-pale-orange p-2 rounded-md" onPress={() => setHeadModalVisible(false)} >
                                 <Text className='text-xl font-semibol'>Cancel</Text>
                             </TouchableOpacity>
                         </View>
@@ -127,6 +141,7 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                             setHeadModalVisible(false)
                             fetchHeadUserData(uid)
                         }} />
+                        
                     </View>
                 </View>
             </Modal>
