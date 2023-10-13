@@ -81,6 +81,7 @@ export type HomeStackParams = {
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
     CommitteesEditor: undefined;
+    FeaturedSlideEditor: undefined;
 }
 
 // Drawers
