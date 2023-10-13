@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, TextInput } from 'react-native'
+import { View, Text, TouchableOpacity, Image, TextInput, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { AdminDashboardParams } from '../types/Navigation';
@@ -132,55 +132,58 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
 
     return (
         <SafeAreaView>
-            {/* Header */}
-            <View className='flex-row items-center h-10'>
-                <View className='w-screen absolute'>
-                    <Text className="text-2xl font-bold justify-center text-center">Featured Slide Editor</Text>
-                </View>
-                <View className='pl-6'>
-                    <TouchableOpacity className="pr-4" onPress={navigation.goBack}>
-                        <Octicons name="chevron-left" size={30} color="black" />
-                    </TouchableOpacity>
-                </View>
-            </View>
-            <View>
-                <Text>Home Screen View:</Text>
-                <FeaturedSlider route={route} getDelete={getDelete} />
-            </View>
+            <ScrollView>
 
-            <View className='justify-center items-center '>
-                {localImageURI != "" &&
-                    <Image
-                        className="h-48 w-[92%] rounded-2xl"
-                        source={{ uri: localImageURI as string }}
-                    />
-                }
-                <TouchableOpacity
-                    className='bg-blue-400 h-10 w-16 items-center justify-center'
-                    onPress={() => selectFeaturedImage()}
-                >
-                    <Text>Select Image</Text>
-                </TouchableOpacity>
-                <View>
-                    <View>
-                        <View className='mt-20'>
-                            <Text className='text-gray-500 mb-2'>Event Name</Text>
-                            <TextInput
-                                className='w-full rounded-md text-lg px-2 py-1 bg-white'
-                                value={eventName}
-                                onChangeText={(text) => setEventName(text)}
-                                placeholder="Event Name"
-                            />
-                        </View>
-                        <TouchableOpacity
-                            className='bg-blue-400 h-10 w-16 items-center justify-center'
-                            onPress={() => uploadFeaturedImage()}
-                        >
-                            <Text>Upload Image</Text>
+                {/* Header */}
+                <View className='flex-row items-center h-10'>
+                    <View className='w-screen absolute'>
+                        <Text className="text-2xl font-bold justify-center text-center">Featured Slide Editor</Text>
+                    </View>
+                    <View className='pl-6'>
+                        <TouchableOpacity className="pr-4" onPress={navigation.goBack}>
+                            <Octicons name="chevron-left" size={30} color="black" />
                         </TouchableOpacity>
                     </View>
                 </View>
-            </View>
+                <View>
+                    <Text>Home Screen View:</Text>
+                    <FeaturedSlider route={route} getDelete={getDelete} />
+                </View>
+
+                <View className='justify-center items-center '>
+                    {localImageURI != "" &&
+                        <Image
+                            className="h-48 w-[92%] rounded-2xl"
+                            source={{ uri: localImageURI as string }}
+                        />
+                    }
+                    <TouchableOpacity
+                        className='bg-blue-400 h-10 w-16 items-center justify-center'
+                        onPress={() => selectFeaturedImage()}
+                    >
+                        <Text>Select Image</Text>
+                    </TouchableOpacity>
+                    <View>
+                        <View>
+                            <View className='mt-20'>
+                                <Text className='text-gray-500 mb-2'>Event Name</Text>
+                                <TextInput
+                                    className='w-full rounded-md text-lg px-2 py-1 bg-white'
+                                    value={eventName}
+                                    onChangeText={(text) => setEventName(text)}
+                                    placeholder="Event Name"
+                                />
+                            </View>
+                            <TouchableOpacity
+                                className='bg-blue-400 h-10 w-16 items-center justify-center'
+                                onPress={() => uploadFeaturedImage()}
+                            >
+                                <Text>Upload Image</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </ScrollView>
         </SafeAreaView>
     )
 }
