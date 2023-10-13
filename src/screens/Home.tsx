@@ -62,11 +62,11 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
     return (
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
-            <TouchableOpacity
-                className=''
+            <TouchableOpacity 
+                className='bg-pale-orange justify-center items-center py-1'
                 onPress={() => navigation.navigate("GoogleCalendar")}
             >
-                <Text className='font-bold'>General Meeting</Text>
+                    <Text className='font-semibold'>General Meeting</Text>
             </TouchableOpacity>
             <FeaturedSlider route={route} />
             <OfficeHours />
