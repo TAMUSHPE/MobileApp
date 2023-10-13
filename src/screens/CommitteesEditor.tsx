@@ -40,10 +40,8 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
             setLeadsUserInfo(prevState => [...prevState, { ...fetchedInfo, uid }]);
         }
     }
-    console.log(committeeName)
 
     useEffect(() => {
-        console.log(committeeName)
         const loadData = async () => {
             const loadedCommitteeData = await getCommitteeInfo(CommitteeConstants[committeeName as CommitteeKey].firebaseDocName);
             if (loadedCommitteeData) {
