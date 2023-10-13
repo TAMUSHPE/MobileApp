@@ -76,6 +76,7 @@ export type EventsStackParams = {
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
     CommitteesEditor: undefined;
+    RestrictionsEditor: undefined;
 }
 
 // Drawers
