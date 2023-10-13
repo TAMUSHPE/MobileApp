@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { ScrollView, Text, TouchableOpacity, Image, View, StyleSheet } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getUser } from '../api/firebaseUtils';
+import { getUser, setMemberOfTheMonth } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
 import manageNotificationPermissions from '../helpers/pushNotification';
 import { UserContext } from '../context/UserContext';
@@ -43,12 +43,13 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
                     };
 
                     const loadData = async () => {
-                        const loadedMemberOfTheMonth = await getMemberOfTheMonth();
-                        if (loadedMemberOfTheMonth?.uid) {
-                            await getLocalMemberOfTheMonthUser(loadedMemberOfTheMonth.uid);
+                        const { uid, name } = await getMemberOfTheMonth() || {};
+                        if (uid) {
+                            await getLocalMemberOfTheMonthUser(uid);
+                        } else {
+                            setLocalMemberOfTheMonth({ uid: "", name: name });
                         }
                     };
-                    setLocalMemberOfTheMonth(null);
                     loadData();
                 } catch (error) {
                     console.error('An error occurred while fetching events:', error);
@@ -112,8 +113,13 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
                     <View className="items-center px-4 flex-1">
                         <Text className='text-2xl text-pale-blue font-bold'>Member of the Month </Text>
                         <View className='items-center justify-center'>
-                            <TouchableOpacity onPress={() => navigation.navigate("PublicProfile", { uid: MemberOfTheMonth?.uid! })} >
-                                <Image source={MemberOfTheMonth?.photoURL ? { uri: MemberOfTheMonth?.photoURL } : Images.DEFAULT_USER_PICTURE} className='rounded-lg w-24 h-24' />
+                            <TouchableOpacity
+                                disabled={MemberOfTheMonth.uid === ""}
+                                onPress={() => navigation.navigate("PublicProfile", { uid: MemberOfTheMonth?.uid! })}
+                            >
+                                <Image
+                                    source={MemberOfTheMonth?.photoURL ? { uri: MemberOfTheMonth?.photoURL } : Images.DEFAULT_USER_PICTURE} className='rounded-lg w-24 h-24'
+                                />
                             </TouchableOpacity>
                             <Text className='font-bold'>{MemberOfTheMonth?.name}</Text>
                         </View>
