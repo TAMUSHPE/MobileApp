@@ -28,6 +28,8 @@ export type AuthStackParams = {
     RegisterScreen: undefined;
     ProfileSetup: undefined;
     MainStack: undefined;
+    LoginStudent: undefined;
+    LoginGuest: undefined;
 };
 
 export type MembersStackParams = {
@@ -85,6 +87,7 @@ export type AdminDashboardParams = {
     AdminDashboard: undefined;
     CommitteesEditor: undefined;
     MemberOfTheMonthEditor: undefined;
+    FeaturedSlideEditor: undefined;
 }
 
 // Drawers

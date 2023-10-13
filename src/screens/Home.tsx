@@ -5,7 +5,7 @@ import { getUser } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
 import manageNotificationPermissions from '../helpers/pushNotification';
 import { UserContext } from '../context/UserContext';
-import HighlightSlider from '../components/HighlightSlider';
+import FeaturedSlider from '../components/FeaturedSlider';
 import OfficeHours from '../components/OfficeHours';
 import OfficeSignIn from '../components/OfficeSignIn';
 import { User, PublicUserInfoUID } from '../types/User';
@@ -18,12 +18,12 @@ import { Images } from '../../assets';
 
 /**
  * Renders the home screen of the application.
- * It includes the highlight slider, office hours, and office sign-in components.
+ * It includes the feature slider, office hours, and office sign-in components.
  * It also manages the user's local and context state.
  *
  * @returns The rendered home screen.
  */
-const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const { setUserInfo } = useContext(UserContext)!;
     const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfoUID | null>(null);
@@ -97,13 +97,12 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
             <TouchableOpacity
-                className=''
+                className='bg-pale-orange justify-center items-center py-1'
                 onPress={() => navigation.navigate("GoogleCalendar")}
             >
-                <Text className='font-bold'>General Meeting</Text>
+                <Text className='font-semibold'>General Meeting</Text>
             </TouchableOpacity>
-
-            <HighlightSlider />
+            <FeaturedSlider route={route} />
             <View className='flex-row justify-center mt-4'>
                 <View className='bg-gray-100 rounded-md items-center flex-1 px-4'>
                     <Text className='text-2xl text-pale-blue font-bold'>Upcoming Events</Text>
