@@ -5,6 +5,7 @@ import CommitteesEditor from "../screens/CommitteesEditor";
 import AdminDashboard from "../screens/AdminDashboard";
 import MemberOfTheMonthEditor from "../screens/MemberOfTheMonthEditor";
 import FeaturedSlideEditor from "../screens/FeaturedSlideEditor";
+import ResumeDownloader from "../screens/ResumeDownloader";
 
 const AdminDashboardStack = () => {
     const Stack = createNativeStackNavigator<AdminDashboardParams>();
@@ -30,6 +31,7 @@ const AdminDashboardStack = () => {
                 />
                 <Stack.Screen name="CommitteesEditor" component={CommitteesEditor} />
                 <Stack.Screen name="FeaturedSlideEditor" component={FeaturedSlideEditor} />
+                <Stack.Screen name="ResumeDownloader" component={ResumeDownloader} />
             </Stack.Group>
         </Stack.Navigator >
     );
