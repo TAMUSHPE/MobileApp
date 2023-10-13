@@ -28,22 +28,6 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
     const { setUserInfo } = useContext(UserContext)!;
     const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfoUID | null>(null);
 
-    {/* For Member of the month content */}
-    const styles = StyleSheet.create({
-        container: {
-          flexDirection: 'row', // Arrange the columns horizontally
-        },
-        column: {
-            alignItems: 'center',
-            flex: 1, // Make each column take up an equal amount of space (50%)
-            padding: 10,
-            margin: 10,
-        },
-        text: {
-            fontWeight: 'bold',
-        },
-    });
-
     useFocusEffect(
         useCallback(() => {
             const fetchEvents = async () => {
@@ -57,7 +41,7 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                             });
                         }
                     };
-                
+
                     const loadData = async () => {
                         const loadedMemberOfTheMonth = await getMemberOfTheMonth();
                         if (loadedMemberOfTheMonth?.uid) {
@@ -112,36 +96,35 @@ const HomeScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
     return (
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
-            <TouchableOpacity 
+            <TouchableOpacity
                 className=''
                 onPress={() => navigation.navigate("GoogleCalendar")}
             >
-                    <Text className='font-bold'>General Meeting</Text>
+                <Text className='font-bold'>General Meeting</Text>
             </TouchableOpacity>
+
             <HighlightSlider />
-            <OfficeHours />
-            {localUser?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
-            
-            <View className='my-10 py-6 mx-7 justify-center items-center rounded-md'>
-            </View>
-
-
-            <View style={styles.container} className='justify-center'>
-                <View style={styles.column} className='bg-gray-100 rounded-md'>
-                    <Text style={styles.text} className='text-2xl text-pale-blue font-bold'>Upcoming Events</Text>
+            <View className='flex-row justify-center mt-4'>
+                <View className='bg-gray-100 rounded-md items-center flex-1 px-4'>
+                    <Text className='text-2xl text-pale-blue font-bold'>Upcoming Events</Text>
                     <Text>TODO: This is the content of column 1.</Text>
                 </View>
-                {MemberOfTheMonth ? (
-                    <View style={styles.column}>
-                        <Text style={styles.text} className='text-2xl text-pale-blue font-bold'> Member of the Month </Text>
-                        <View  className='items-center justify-center'>
-                            <TouchableOpacity onPress={() => navigation.navigate("PublicProfile", { uid: MemberOfTheMonth?.uid! })} > 
+                {MemberOfTheMonth && (
+                    <View className="items-center px-4 flex-1">
+                        <Text className='text-2xl text-pale-blue font-bold'>Member of the Month </Text>
+                        <View className='items-center justify-center'>
+                            <TouchableOpacity onPress={() => navigation.navigate("PublicProfile", { uid: MemberOfTheMonth?.uid! })} >
                                 <Image source={MemberOfTheMonth?.photoURL ? { uri: MemberOfTheMonth?.photoURL } : Images.DEFAULT_USER_PICTURE} className='rounded-lg w-24 h-24' />
                             </TouchableOpacity>
                             <Text className='font-bold'>{MemberOfTheMonth?.name}</Text>
                         </View>
                     </View>
-                    ) : (<View></View>)}
+                )}
+            </View>
+            <OfficeHours />
+            {localUser?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
+
+            <View className='my-10 py-6 mx-7 justify-center items-center rounded-md'>
             </View>
         </ScrollView>
     );
