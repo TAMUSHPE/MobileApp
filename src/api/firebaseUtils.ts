@@ -556,7 +556,7 @@ export const getMemberOfTheMonth = async () => {
         .then((res) => {
             const responseData = res.data()
             if (responseData) {
-                return { uid: responseData?.uid };
+                return { uid: responseData?.uid, name: responseData?.name };
             }
             else {
                 return undefined;
