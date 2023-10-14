@@ -37,5 +37,11 @@ module.exports = {
     "require-jsdoc": 0,
     "valid-jsdoc": 0,
     "@typescript-eslint/no-non-null-assertion": 0,
+    "brace-style": 0,
+    "arrow-parens": 0,
+    "key-spacing": 0,
+    "keyword-spacing": 0,
+    "comma-dangle": 0,
+
   },
 };
