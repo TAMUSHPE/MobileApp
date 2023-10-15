@@ -19,7 +19,7 @@ const SettingsSectionTitle = ({ text, darkMode }: { text: string, darkMode?: boo
  * @param darkMode - Whether or not the button should display in dark mode. Will default to false
  * @param onPress  - Function that is called when button is pressed. Defaults to logging "Button Pressed"
  */
-const SettingsButton = ({ iconName, mainText, subText, darkMode, onPress }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string, subText?: string, darkMode?: boolean, onPress?: Function }) => {
+const SettingsButton = ({ iconName, mainText, subText, darkMode, onPress }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string | null, subText?: string | null, darkMode?: boolean, onPress?: Function }) => {
     return (
         <TouchableHighlight
             onPress={() => onPress ? onPress() : console.log(`${mainText} Button Pressed`)}
@@ -46,7 +46,7 @@ const SettingsButton = ({ iconName, mainText, subText, darkMode, onPress }: { ic
  * @param onPress            - Function that is called when button is pressed. Defaults to logging "Button Pressed"
  * @param isToggled          - Sets whether or not the button is toggled on/off. If this doesn't have a value, the button will stay off.
  */
-const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, isToggled }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string, subText?: string, darkMode?: boolean, onPress?: () => any | Promise<any>, isToggled?: boolean }) => {
+const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, isToggled }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string | null, subText?: string | null, darkMode?: boolean, onPress?: () => any | Promise<any>, isToggled?: boolean }) => {
     // Used to guard button from being spammed
     const [buttonLocked, setButtonLocked] = useState<boolean>(false);
 
@@ -58,8 +58,8 @@ const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, 
             onPress ? await onPress() : console.log("Toggle Button Pressed");
             resolve();
         })
-        .catch((err) => console.error(`Issue with toggle button with mainText ${mainText}: ${err}`))
-        .finally(() => setButtonLocked(false));
+            .catch((err) => console.error(`Issue with toggle button with mainText ${mainText}: ${err}`))
+            .finally(() => setButtonLocked(false));
     }
 
     return (
@@ -92,7 +92,7 @@ const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, 
  * @param subText  - The smaller text to be displayed on the button. This should add more details to what the button does
  * @param darkMode - Whether or not the button should display in dark mode. Will default to false
  */
-const SettingsListItem = ({ iconName, mainText, subText, darkMode }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string, subText?: string, darkMode?: boolean }) => {
+const SettingsListItem = ({ iconName, mainText, subText, darkMode }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string | null, subText?: string | null, darkMode?: boolean }) => {
     return (
         <View className='w-full h-24 justify-center px-3'>
             <View className='flex-row my-2 items-center'>
@@ -126,7 +126,7 @@ const SettingsSaveButton = ({ onPress }: { onPress?: () => any }) => {
     );
 };
 
-const SettingsModal = ({ visible, onCancel, onDone, title, content, darkMode }: { visible: boolean, onCancel: () => any, onDone: () => any, title?: string, content?: React.JSX.Element, darkMode?: boolean }) => {
+const SettingsModal = ({ visible, onCancel, onDone, title, content, darkMode }: { visible: boolean, onCancel: () => any, onDone: () => any, title?: string | null, content?: React.JSX.Element, darkMode?: boolean }) => {
     return (
         <Modal
             visible={visible}

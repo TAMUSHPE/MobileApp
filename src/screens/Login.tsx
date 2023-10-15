@@ -1,4 +1,4 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator, TouchableOpacity } from "react-native";
 import React, { useEffect, useState, useContext } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -18,10 +18,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
     const [loading, setLoading] = useState<boolean>(false);
 
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext ?? {};
-    if (!setUserInfo) {
-        return null;
-    }
+    const { userInfo, setUserInfo } = userContext!;
 
     const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
         iosClientId: "600060629240-m7bu9ba9namtlmo9sii2s8qs2j9k5bt4.apps.googleusercontent.com",
@@ -38,6 +35,7 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
             navigation.navigate("ProfileSetup");
         }
     }, [userInfo]);
+
 
     const handleUserAuth = () => {
         setLoading(true);
@@ -95,52 +93,20 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
                 <Text className="text-white text-center text-3xl">Welcome to SHPE</Text>
             </View>
             <View className="flex-col w-4/5">
-                <KeyboardAvoidingView className="flex-col my-2">
-                    <TextInput
-                        placeholder="Email"
-                        className="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1"
-                        onChangeText={(text: string) => setEmail(text)}
-                        value={email}
-                        inputMode="email"
-                        keyboardType="email-address"
-                    />
-                    <TextInput
-                        placeholder="Password"
-                        className="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mt-2"
-                        secureTextEntry
-                        onChangeText={(text) => setPassword(text)}
-                        value={password}
-                        inputMode="text"
-                        onSubmitEditing={() => emailSignIn()}
-                        textContentType="password"
-                    />
-                    {loading && (
-                        <ActivityIndicator className="mt-4" size={"large"} />
-                    )}
-                </KeyboardAvoidingView>
                 <View className="flex-col mt-2">
                     <InteractButton
-                        onPress={() => emailSignIn()}
-                        label="Sign In"
+                        onPress={() => navigation.navigate('LoginStudent')}
+                        label="Student"
                         buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
                         textClassName="text-white font-bold"
                         underlayColor="#A22E2B"
                     />
-                    <View className="items-center my-4">
-                        <Text className="text-white">Or</Text>
-                    </View>
                     <InteractButton
-                        onPress={() => navigation.navigate("RegisterScreen")}
-                        label="Register Account"
-                        buttonClassName="justify-center items-center bg-white rounded-xl"
-                        textClassName="text-[#3b3b3b] font-bold"
-                    />
-                    <InteractButton
-                        onPress={() => googleSignIn()}
-                        label="Sign In with Google"
-                        buttonClassName="justify-center items-center bg-white mt-2 rounded-xl"
-                        textClassName="text-[#3b3b3b] font-bold"
-                        iconSource={{ uri: "https://developers.google.com/static/identity/images/g-logo.png" }}
+                        onPress={() => navigation.navigate('LoginGuest')}
+                        label="Guest"
+                        buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
+                        textClassName="text-white font-bold"
+                        underlayColor="#A22E2B"
                     />
                 </View>
             </View>

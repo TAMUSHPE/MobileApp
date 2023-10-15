@@ -11,7 +11,7 @@ export default function App() {
     const responseListener = useRef<Subscription | null>();
     useEffect(() => {
         notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-            Alert.alert('A new FCM message arrived!', JSON.stringify(notification));
+            Alert.alert('Someone at the door!');
         });
 
         responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {

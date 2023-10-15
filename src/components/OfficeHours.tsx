@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable, getFunctions } from 'firebase/functions';
@@ -13,6 +13,7 @@ import { MemberStatus } from '../types/User';
  */
 const OfficeHours = () => {
     const [officeCount, setOfficeCount] = useState<number>(0);
+    const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
 
     useEffect(() => {
         const officeCountRef = doc(db, "office-hours/officer-count");
@@ -65,13 +66,41 @@ const OfficeHours = () => {
             </View>
 
             <TouchableOpacity
-                onPress={() => handleKnock()}
+                onPress={() => setConfirmVisible(!confirmVisible)}
                 className="py-4 px-10 mt-10 border-white border-2 rounded-2xl"
                 activeOpacity={0.7}
                 disabled={officeCount === 0}
             >
-                <Text className="text-2xl text-white font-extrabold">{officeCount > 0 ? "Knock on Wall" : "Unavailable"}</Text>
+                <Text className="text-white text-xl font-extrabold"> {officeCount > 0 ? "Knock on Wall" : "Unavailable"} </Text>
             </TouchableOpacity>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={confirmVisible}
+                onRequestClose={() => setConfirmVisible(!confirmVisible)}
+            >
+                <TouchableOpacity
+                    onPress={() => setConfirmVisible(false)}
+                    className="h-[100%] w-[100%]"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                >
+                    <View className='items-center justify-center h-full'>
+                        <TouchableWithoutFeedback>
+                            <View className='opacity-100 bg-white w-[70%] rounded-md items-center'>
+                                <TouchableOpacity
+                                    onPress={async () => {
+                                        setConfirmVisible(false)
+                                        handleKnock()
+                                    }}
+                                >
+                                    <Text className='text-xl font-bold py-3 px-8'> Notify </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </View>
     )
 }
