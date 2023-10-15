@@ -6,11 +6,11 @@ import { AdminDashboardParams } from '../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { setMemberOfTheMonth, getPublicUserData, getMemberOfTheMonth } from '../api/firebaseUtils';
 import MembersList from '../components/MembersList';
-import { PublicUserInfoUID } from '../types/User';
+import { PublicUserInfo } from '../types/User';
 
 const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [memberModalVisible, setMemberModalVisible] = useState(false);
-    const [memberInfo, setMemberInfo] = useState<PublicUserInfoUID | null>(null);
+    const [memberInfo, setMemberInfo] = useState<PublicUserInfo | null>(null);
     const [updated, setUpdated] = useState(false);
     const [localMemberOfTheMonth, setLocalMemberOfTheMonth] = useState<string | null>(null);
 

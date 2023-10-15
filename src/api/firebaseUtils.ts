@@ -2,7 +2,7 @@ import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
-import { PrivateUserInfo, PublicUserInfo, PublicUserInfoUID, User } from "../types/User";
+import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
 import { Committee } from "../types/Committees";
 import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
 import { validateTamuEmail } from "../helpers/validation";
@@ -150,7 +150,7 @@ export const getUserByEmail = async (email: string): Promise<{ userData: PublicU
 }
 
 
-export const getOfficers = async (): Promise<PublicUserInfoUID[]> => {
+export const getOfficers = async (): Promise<PublicUserInfo[]> => {
     try {
         const userRef = collection(db, 'users');
         const q = query(
@@ -179,7 +179,7 @@ export const getOfficers = async (): Promise<PublicUserInfoUID[]> => {
 }
 
 
-export const getMembersExcludeOfficers = async (): Promise<PublicUserInfoUID[]> => {
+export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => {
     try {
         const userRef = collection(db, 'users');
         const q = query(
