@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { ScrollView, Text, TouchableOpacity, Image, View, StyleSheet } from 'react-native';
+import { ScrollView, Text, TouchableOpacity, Image, View, StyleSheet, Dimensions } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getUser } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
@@ -27,6 +27,9 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const { setUserInfo } = useContext(UserContext)!;
     const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfoUID | null>(null);
+
+    const screenWidth = Dimensions.get('window').width;
+    const imageHeight = screenWidth * 0.4;
 
     useFocusEffect(
         useCallback(() => {
@@ -119,8 +122,10 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
                                 className='w-full p-4'
                             >
                                 <Image
-                                    className='rounded-lg aspect-square'
+                                    style={{ height: imageHeight }}
+                                    className='rounded-lg w-full'
                                     source={MemberOfTheMonth?.photoURL ? { uri: MemberOfTheMonth?.photoURL } : Images.DEFAULT_USER_PICTURE}
+
                                 />
                             </TouchableOpacity>
                             <Text className='font-bold'>{MemberOfTheMonth?.name}</Text>
