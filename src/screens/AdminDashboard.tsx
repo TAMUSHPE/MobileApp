@@ -44,6 +44,12 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
             >
                 <Text>Resume Downloader</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => navigation.navigate('ResetOfficeHours')}
+                className='bg-blue-500 rounded-md p-2'
+            >
+                <Text>Test Reset Office Hour</Text>
+            </TouchableOpacity>
         </SafeAreaView>
     )
 }
