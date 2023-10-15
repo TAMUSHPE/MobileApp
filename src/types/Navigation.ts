@@ -5,18 +5,22 @@ import type { RouteProp } from '@react-navigation/native';
 import { PublicUserInfoUID } from "./User";
 import { Test } from '../types/GoogleSheetsTypes';
 import { Committee } from "./Committees";
+import { SHPEEventID } from "./Events";
 
 // Stacks
 export type MainStackParams = {
     HomeDrawer: HomeDrawerParams;
     HomeBottomTabs: undefined;
-    AdminDashboard: undefined;
+    AdminDashboardStack: undefined;
     SettingsScreen: undefined;
     SearchSettingsScreen: undefined;
     ProfileSettingsScreen: undefined;
     DisplaySettingsScreen: undefined;
     AccountSettingsScreen: undefined;
     AboutSettingsScreen: undefined;
+    EventVerificationScreen: {
+        id: string;
+    };
 };
 
 export type AuthStackParams = {
@@ -24,6 +28,8 @@ export type AuthStackParams = {
     RegisterScreen: undefined;
     ProfileSetup: undefined;
     MainStack: undefined;
+    LoginStudent: undefined;
+    LoginGuest: undefined;
 };
 
 export type MembersStackParams = {
@@ -40,6 +46,7 @@ export type ProfileSetupStackParams = {
     SetupCommittees: undefined;
     MainStack: undefined;
     SetupNotification: undefined;
+    SetupResume: undefined;
 }
 
 export type ResourcesStackParams = {
@@ -61,16 +68,38 @@ export type CommitteesStackParams = {
     };
 }
 
+export type EventsStackParams = {
+    EventsScreen: undefined;
+    CreateEvent: undefined;
+    UpdateEvent: { event: SHPEEventID };
+    EventInfo: { eventId: string };
+    QRCode: { event: SHPEEventID };
+}
+
+export type HomeStackParams = {
+    Home: undefined;
+    GoogleCalendar: undefined;
+    PublicProfile: {
+        uid: string;
+    }
+}
+
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
     CommitteesEditor: undefined;
+    MemberOfTheMonthEditor: undefined;
+    FeaturedSlideEditor: undefined;
+    ResumeDownloader: undefined;
 }
 
 // Drawers
 export type HomeDrawerParams = {
-    HomeScreen: undefined;
-    AdminDashboardStack: undefined;
+    HomeStack: HomeStackParams;
     Logout: undefined;
+    AdminDashboardStack: undefined;
+    PublicProfile: {
+        uid: string;
+    }
 };
 
 
@@ -105,8 +134,13 @@ export type TestBankProps = {
 
 export type MembersProps = {
     userData?: PublicUserInfoUID
-    handleOnPress?: any
-    navigation: NativeStackNavigationProp<MembersStackParams>
+    handleCardPress: (uid: string) => string | void;
+    navigation?: NativeStackNavigationProp<MembersStackParams>
+}
+
+export type EventProps = {
+    event?: SHPEEventID;
+    navigation: NativeStackNavigationProp<EventsStackParams>
 }
 
 export type CommitteesInfoProp = {
@@ -114,8 +148,23 @@ export type CommitteesInfoProp = {
     navigation: NativeStackNavigationProp<CommitteesStackParams>
 }
 
+export type EventVerificationProps = {
+    id?: string;
+    navigation?: NativeStackNavigationProp<MainStackParams>
+}
+
+export type QRCodeProps = {
+    event?: SHPEEventID;
+    navigation: NativeStackNavigationProp<EventsStackParams>
+}
+
 export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScreen">;
 
-// routes prop for screens (not components) 
+// routes prop for screens
 export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
+export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;
+export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "EventInfo">;
+export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;
+export type QRCodeScreenRouteProp = RouteProp<EventsStackParams, "QRCode">;
+

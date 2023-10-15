@@ -1,5 +1,5 @@
 /**
- * IMPORTATN NOTE
+ * IMPORTANT NOTE
  * When a change is made to a user then the following 
  * changes to our data management system must be made:
  * 

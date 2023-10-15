@@ -1,24 +1,25 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { Image, TouchableOpacity, View, Text } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { signOut } from 'firebase/auth';
 import { doc, setDoc, arrayRemove } from 'firebase/firestore';
 import { auth, db } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import ProfileBadge from '../components/ProfileBadge';
 import HomeScreen from '../screens/Home';
-import AdminDashboardStack from './AdminDashboardStack';
-import { User, committeesList } from '../types/User';
+import { CommitteeConstants, CommitteeKey } from '../types/Committees';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import { StatusBar } from 'expo-status-bar';
+import PublicProfileScreen from "../screens/PublicProfile";
+import AdminDashboardStack from './AdminDashboardStack';
+import { HomeStack } from './HomeStack'
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
-    const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext ?? {};
+    const { userInfo, setUserInfo } = userContext!;
 
     const removeExpoPushToken = async () => {
         const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
@@ -33,24 +34,10 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             .then(() => {
                 // Once signed out, forces user to login screen by setting the current user info to "undefined"
                 AsyncStorage.removeItem('@user')
-                setUserInfo ? setUserInfo(undefined) : console.warn("setUserInfo is undefined.");
+                setUserInfo(undefined);
             })
             .catch((error) => console.error(error));
     };
-
-    useEffect(() => {
-        const getLocalUser = () => {
-            AsyncStorage.getItem("@user")
-                .then(userJSON => {
-                    const userData = userJSON ? JSON.parse(userJSON) : undefined;
-                    setLocalUser(userData);
-                })
-                .catch(error => {
-                    console.error(error);
-                });
-        };
-        getLocalUser();
-    }, [])
 
     const drawerItemLabelStyle = {
         color: userInfo?.private?.privateInfo?.settings?.darkMode ? "#EEE" : "#000"
@@ -67,11 +54,15 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             <StatusBar style='inverted' />
             <View className="flex-col bg-dark-navy w-full px-4 pb-4">
                 <View className='flex-row mb-2 items-center'>
-                    <Image
-                        className="flex w-16 h-16 rounded-full mr-2"
-                        defaultSource={Images.DEFAULT_USER_PICTURE}
-                        source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
-                    />
+                    <TouchableOpacity
+                        onPress={() => props.navigation.navigate("PublicProfile", { uid: auth.currentUser?.uid! })}
+                    >
+                        <Image
+                            className="flex w-16 h-16 rounded-full mr-2"
+                            defaultSource={Images.DEFAULT_USER_PICTURE}
+                            source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
+                        />
+                    </TouchableOpacity>
                     <View className='flex-1 flex-col max-w-full'>
                         <Text className='text-white text-xl break-words mb-1'>{userInfo?.publicInfo?.displayName ?? "Username"}</Text>
                         <Text className='text-white text-sm break-words'>{userInfo?.publicInfo?.name ?? "Name"}</Text>
@@ -94,25 +85,52 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                         badgeColor='#72A9EF'
                         textClassName='text-center text-xs'
                     />
-                    {userInfo?.publicInfo?.committees?.map((committeeName: string) => {
-                        const committeeInfo = committeesList.find(element => element.name == committeeName);
-                        return (
-                            <ProfileBadge
-                                key={committeeName}
-                                text={committeeName}
-                                badgeColor={committeeInfo ? committeeInfo?.color : ""}
-                                textClassName='text-black text-center text-xs'
-                            />
-                        );
+                    {userInfo?.publicInfo?.committees?.map((key: string) => {
+                        const committeeInfo = CommitteeConstants[key as CommitteeKey];
+                        if (committeeInfo) {
+                            return (
+                                <ProfileBadge
+                                    key={key}
+                                    text={committeeInfo.name}
+                                    badgeColor={committeeInfo ? committeeInfo?.color : ""}
+                                    textClassName='text-black text-center text-xs'
+                                />
+                            );
+                        }
                     })}
                 </View>
             </View>
             <View className={`${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} flex-grow`}>
-                <DrawerItem label="Settings" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("SettingsScreen")} />
-                {
-                    localUser?.publicInfo?.roles?.officer?.valueOf() &&
-                    <DrawerItem label="Admin Dashboard" labelStyle={drawerItemLabelStyle} onPress={() => props.navigation.navigate("AdminDashboard")} />
+                <DrawerItem
+                    label="My Profile"
+                    labelStyle={drawerItemLabelStyle}
+                    onPress={() => {
+                        props.navigation.navigate("PublicProfile", { uid: auth.currentUser?.uid });
+                        props.navigation.closeDrawer();
+                    }}
+                />
+
+
+                <DrawerItem
+                    label="Settings"
+                    labelStyle={drawerItemLabelStyle}
+                    onPress={() => {
+                        props.navigation.navigate("SettingsScreen");
+                        props.navigation.closeDrawer();
+                    }}
+                />
+
+                {userInfo?.publicInfo?.roles?.officer?.valueOf() &&
+                    <DrawerItem
+                        label="Admin Dashboard"
+                        labelStyle={drawerItemLabelStyle}
+                        onPress={() => {
+                            props.navigation.navigate("AdminDashboardStack");
+                            props.navigation.closeDrawer();
+                        }}
+                    />
                 }
+
                 <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
             </View>
         </DrawerContentScrollView>
@@ -120,28 +138,32 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
 };
 
 const HomeDrawerHeader = (props: DrawerHeaderProps) => {
+    const insets = useSafeAreaInsets();
     return (
-        <SafeAreaView className="bg-offwhite h-18 shadow-black drop-shadow-lg flex-row px-5 pb-2 pt-3">
-            <View
-                className='flex-1 justify-center items-start'
-            >
-                <Image
-                    className="h-10 w-52"
-                    source={Images.LOGO_LIGHT}
-                />
-            </View>
+        <View
+            style={{ paddingTop: insets.top }}
+            className='bg-white'
+        >
+            <View className='shadow-black drop-shadow-lg flex-row px-5 pb-4'>
+                <View className='flex-1 justify-center items-start'>
+                    <Image
+                        className="h-10 w-52"
+                        source={Images.LOGO_LIGHT}
+                    />
+                </View>
 
-            <TouchableOpacity
-                activeOpacity={0.6}
-                onPress={() => props.navigation.openDrawer()}
-            >
-                <Image
-                    className="flex w-12 h-12 rounded-full"
-                    defaultSource={Images.DEFAULT_USER_PICTURE}
-                    source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL as string } : Images.DEFAULT_USER_PICTURE}
-                />
-            </TouchableOpacity>
-        </SafeAreaView>
+                <TouchableOpacity
+                    activeOpacity={0.6}
+                    onPress={() => props.navigation.openDrawer()}
+                >
+                    <Image
+                        className="flex w-12 h-12 rounded-full"
+                        defaultSource={Images.DEFAULT_USER_PICTURE}
+                        source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL as string } : Images.DEFAULT_USER_PICTURE}
+                    />
+                </TouchableOpacity>
+            </View>
+        </View>
     );
 }
 
@@ -149,15 +171,25 @@ const HomeDrawer = () => {
     const Drawer = createDrawerNavigator<HomeDrawerParams>();
     return (
         <Drawer.Navigator
-            initialRouteName="HomeScreen"
+            initialRouteName="HomeStack"
             drawerContent={(props) => <HomeDrawerContent {...props} />}
             screenOptions={{
-                header: HomeDrawerHeader,
+                headerShown: false,
                 drawerPosition: "right",
             }}
         >
-            <Drawer.Screen name="HomeScreen" component={HomeScreen} />
-            <Drawer.Screen name="AdminDashboardStack" component={AdminDashboardStack} />
+            <Drawer.Screen
+                name="HomeStack"
+                component={HomeStack}
+                options={{
+                    headerShown: true,
+                    header: HomeDrawerHeader,
+                }}
+            />
+            <Drawer.Screen
+                name="PublicProfile"
+                component={PublicProfileScreen}
+            />
         </Drawer.Navigator>
     );
 };

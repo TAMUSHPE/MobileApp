@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
 import { getUser, initializeCurrentUserData } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
-import { evaluatePasswordStrength, validateEmail, validatePassword } from '../helpers/validation';
+import { evaluatePasswordStrength, validateEmail, validatePassword, validateTamuEmail } from '../helpers/validation';
 import InteractButton from '../components/InteractButton';
 import { AuthStackParams } from '../types/Navigation';
 import { UserContext } from '../context/UserContext';
@@ -22,10 +22,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     const inputStyle = "bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1";
 
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext ?? {};
-    if (!setUserInfo) {
-        return null;
-    }
+    const { userInfo, setUserInfo } = userContext!;
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -42,7 +39,10 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
             alert("Invalid Email.")
             return;
         }
-        else if (!validatePassword(password)) {
+        else if(validateTamuEmail(email)){
+            alert("Guests must register with their personal email")
+            return;
+        } else if (!validatePassword(password)) {
             alert("Password must meet specifications:\n- 4-64 characters\n- Spaces are allowed\n- Valid characters: A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~")
             return;
         }
@@ -74,7 +74,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
         const passwordStrengthValues = [
             {
                 color: "text-[#f00]",
-                text: "INVALID\n- Minimum 4 characters\n- Valid characters: : A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~"
+                text: "INVALID\n- Minimum 6 characters\n- Valid characters: : A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~"
             },
             {
                 color: "text-[#f90]",
@@ -110,9 +110,9 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                     />
                 </View>
                 <View className='mt-2'>
-                    <Text className='text-white'>Enter your TAMU email address:</Text>
+                    <Text className='text-white'>Enter your email address:</Text>
                     <TextInput
-                        placeholder="Email (eg. bob@tamu.edu)"
+                        placeholder="Email (eg. bob@gmail.com)"
                         className={inputStyle}
                         onChangeText={(text: string) => setEmail(text)}
                         value={email}

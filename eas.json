@@ -20,8 +20,20 @@
     "production": {
       "autoIncrement": true,
       "channel": "production"
+    },
+    "development-sim": {
+      "distribution": "internal",
+      "developmentClient": true,
+      "ios": {
+        "simulator": false,
+        "image": "latest",
+        "resourceClass": "m-medium"
+      }
     }
   },
+
+  
+
   "submit": {
     "production": {}
   }

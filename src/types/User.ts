@@ -1,49 +1,36 @@
 import { Timestamp, FieldValue } from 'firebase/firestore';
-
-export type CommitteeData = {
-    id: number,
-    name: string,
-    color: string,
-};
-
-export const committeesList: Array<CommitteeData> = [
-    { id: 1, name: "Technical Affairs", color: "#777", },
-    { id: 2, name: "MentorSHPE", color: "#404e5a", },
-    { id: 3, name: "Scholastic", color: "#F2CC10", },
-    { id: 4, name: "SHPEtinas", color: "#1EFF42", },
-    { id: 5, name: "Secretary", color: "#FFA0D5", },
-    { id: 6, name: "Public Relations", color: "#9337FF", },
-    { id: 7, name: "Internal Affairs", color: "#051DDB", },
-];
+import { CommitteeKey } from './Committees';
 
 /**
  * This interface represents the roles a user has. These values will only determine what the app looks like and **not** firebase read/write/edit/delete permissions.
  */
 export interface Roles {
-    reader: boolean;
+    reader?: boolean;
     officer?: boolean;
     admin?: boolean;
     developer?: boolean;
 };
 
+export type RankChange = "decreased" | "same" | "increased";
+
 /**
  * This interface represents a user's public information as it is stored in firestore and google sheets.
  * This information is accessible by anyone in the app.
  * Each argument must have a value, however some of these values may be "empty". For example, if a string's value is "", this means that there is no value in the data.
- */
-export type RankChange = "decreased" | "same" | "increased";
+*/
 export interface PublicUserInfo {
     // Firestore parameters
     email?: string;
     tamuEmail?: string;
     displayName?: string;
     photoURL?: string;
+    resumeURL?: string;
     roles?: Roles;
     name?: string;
     bio?: string;
     major?: string;
     classYear?: string;
-    committees?: Array<string>;
+    committees?: Array<CommitteeKey | string>;
     pointsRank?: number;
     rankChange?: RankChange;
     // Google Sheets parameters

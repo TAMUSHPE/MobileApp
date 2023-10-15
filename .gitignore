@@ -1,9 +1,14 @@
+# Auto-Generated directories
 node_modules/
+.vscode/
 .expo/
-dist/
 functions/node_modules/
+dist/
 android/
 ios/
+web-build/
+coverage/
+
 npm-debug.*
 *.jks
 *.p8
@@ -11,8 +16,6 @@ npm-debug.*
 *.key
 *.mobileprovision
 *.orig.*
-web-build/
-.vscode/
 *.log
 
 
