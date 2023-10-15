@@ -29,7 +29,7 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
     const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfoUID | null>(null);
 
     const screenWidth = Dimensions.get('window').width;
-    const imageHeight = screenWidth * 0.4;
+    const imageHeight = screenWidth * 0.34;
 
     useFocusEffect(
         useCallback(() => {
@@ -125,7 +125,6 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
                                     style={{ height: imageHeight }}
                                     className='rounded-lg w-full'
                                     source={MemberOfTheMonth?.photoURL ? { uri: MemberOfTheMonth?.photoURL } : Images.DEFAULT_USER_PICTURE}
-
                                 />
                             </TouchableOpacity>
                             <Text className='font-bold'>{MemberOfTheMonth?.name}</Text>
