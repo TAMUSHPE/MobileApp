@@ -1,5 +1,5 @@
 export { sendNotificationOfficeHours } from "./pushNotification";
 export { updateRanksScheduled, updateRanksOnCall } from "./pointSheet";
 export { updateCommitteeCount, updateCommitteesCount, incrementCommitteesCount } from "./committees";
-export {resetOffice, testReset} from "./officeReset";
+export {resetOfficeScheduler, resetOfficeOnCall} from "./officeReset";
 export { zipResume } from "./resumeZip";
