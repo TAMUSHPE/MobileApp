@@ -90,6 +90,7 @@ export type AdminDashboardParams = {
     MemberOfTheMonthEditor: undefined;
     FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
+    ResetOfficeHours: undefined;
 }
 
 // Drawers
