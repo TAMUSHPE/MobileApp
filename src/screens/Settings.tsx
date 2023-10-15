@@ -397,8 +397,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     setShowNamesModal(false);
                 }}
                 onDone={() => {
-                    // TODO Make alert messages more verbose
-                    if (validateDisplayName(displayName) && validateName(name)) {
+                    if (validateDisplayName(displayName, true) && validateName(name, true)) {
                         saveChanges();
                         setShowNamesModal(false);
                     }
