@@ -17,6 +17,9 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [isLoading, setIsLoading] = useState(true);
     const { userInfo, setUserInfo } = userContext!;
 
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+
+
     useFocusEffect(
         useCallback(() => {
             const fetchEvents = async () => {
@@ -43,7 +46,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
             fetchEvents();
         }, [])
     );
-
+    console.log(userInfo?.publicInfo?.roles)
     return (
         <SafeAreaView
             edges={["top", "left", "right"]}>
@@ -53,52 +56,55 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     <View className='w-full justify-center items-center'>
                         <Text className="text-3xl h-10">Events</Text>
                     </View>
-                    <View className='absolute w-full items-end justify-center'>
-                        <TouchableOpacity className='bg-blue-400 w-16 h-10 items-center justify-center rounded-md mr-4'
-                            onPress={() => navigation.navigate("CreateEvent")}>
-                            <Text className='font-bold'>Create</Text>
-                        </TouchableOpacity>
-                    </View>
+                    {
+                        hasPrivileges &&
+                        < View className='absolute w-full items-end justify-center'>
+                    <TouchableOpacity className='bg-blue-400 w-16 h-10 items-center justify-center rounded-md mr-4'
+                        onPress={() => navigation.navigate("CreateEvent")}>
+                        <Text className='font-bold'>Create</Text>
+                    </TouchableOpacity>
                 </View>
+                    }
+            </View>
 
-                {isLoading && upcomingEvents.length == 0 && pastEvents.length == 0 &&
-                    <View className='h-64 justify-center items-center'>
-                        <ActivityIndicator size="large" />
-                    </View>
+            {isLoading && upcomingEvents.length == 0 && pastEvents.length == 0 &&
+                <View className='h-64 justify-center items-center'>
+                    <ActivityIndicator size="large" />
+                </View>
+            }
+
+            {upcomingEvents.length == 0 && pastEvents.length == 0 && !isLoading &&
+                <View className='h-64 w-full justify-center items-center'>
+                    <Text>No Events</Text>
+                </View>
+            }
+            <View className='ml-2 mt-4'>
+                {upcomingEvents.length != 0 &&
+                    <Text className='text-xl mb-4 text-bold'>Upcoming Events</Text>
                 }
 
-                {upcomingEvents.length == 0 && pastEvents.length == 0 && !isLoading &&
-                    <View className='h-64 w-full justify-center items-center'>
-                        <Text>No Events</Text>
-                    </View>
+                {upcomingEvents.map((event) => {
+                    return (
+                        <View key={event.id}>
+                            <EventCard key={event.id} event={event} navigation={navigation} />
+                        </View>
+                    )
+                })}
+
+                {pastEvents.length != 0 &&
+                    <Text className='text-xl mb-4 text-bold '>Past Events</Text>
                 }
-                <View className='ml-2 mt-4'>
-                    {upcomingEvents.length != 0 &&
-                        <Text className='text-xl mb-4 text-bold'>Upcoming Events</Text>
-                    }
 
-                    {upcomingEvents.map((event) => {
-                        return (
-                            <View key={event.id}>
-                                <EventCard key={event.id} event={event} navigation={navigation} />
-                            </View>
-                        )
-                    })}
-
-                    {pastEvents.length != 0 &&
-                        <Text className='text-xl mb-4 text-bold '>Past Events</Text>
-                    }
-
-                    {pastEvents.map((event) => {
-                        return (
-                            <View key={event.id}>
-                                <EventCard event={event} navigation={navigation} />
-                            </View>
-                        )
-                    })}
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+                {pastEvents.map((event) => {
+                    return (
+                        <View key={event.id}>
+                            <EventCard event={event} navigation={navigation} />
+                        </View>
+                    )
+                })}
+            </View>
+        </ScrollView>
+        </SafeAreaView >
     )
 }
 
