@@ -344,6 +344,50 @@ export const setCommitteeInfo = async (committeeName: string, committeeData: Com
     }
 };
 
+export const getWatchlist = async () => {
+    return getDoc(doc(db, `restrictions/watchlist`))
+        .then((res) => {
+            const responseData = res.data()
+            return responseData?.UIDs;
+        })
+        .catch(err => {
+            console.error(err);
+            return undefined;
+        });
+}
+
+export const getBlacklist = async () => {
+    return getDoc(doc(db, `restrictions/blacklist`))
+        .then((res) => {
+            const responseData = res.data()
+            return responseData?.UIDs;
+        })
+        .catch(err => {
+            console.error(err);
+            return undefined;
+        });
+}
+
+export const setWatchlist = async (watchlist: string[]) => {
+    try {
+        await setDoc(doc(db, `restrictions/watchlist`), {UIDs: watchlist}, { merge: true });
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+};
+
+export const setBlacklist = async (blacklist: string[]) => {
+    try {
+        await setDoc(doc(db, `restrictions/blacklist`), {UIDs: blacklist}, { merge: true });
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+};
+
 export const createEvent = async (event: SHPEEvent) => {
     try {
         const docRef = await addDoc(collection(db, "events"), {
