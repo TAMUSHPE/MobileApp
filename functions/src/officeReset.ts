@@ -12,7 +12,7 @@ const resetOffice = async () => {
         officersRef.get().then(async (snapshot) => {
             snapshot.forEach(doc => {
                 doc.ref.update({
-                    signIn: false,
+                    signedIn: false,
                 });
             });
         });
@@ -25,7 +25,7 @@ const resetOffice = async () => {
 
 }
 
-export const resetOfficeScheduler = functions.pubsub.schedule('0 19 * * *') .onRun(async (context) => {
+export const resetOfficeScheduler = functions.pubsub.schedule('0 21 * * *') .onRun(async (context) => {
     resetOffice()
 });
 
