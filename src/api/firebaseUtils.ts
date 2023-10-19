@@ -590,7 +590,12 @@ export const setMemberOfTheMonth = async (uid: string, name: string) => {
  * @throws FirebaseError if an issue occurs while attempting to call the firebase function 
  * @example
  * const uid = "H0ywaA729AkC8s2Km29" // Example UID
- * const roles = {developer: true};  // Makes the given user a developer
+ * 
+ * // Makes the given user a developer, but removes their admin permissions. All other permissions are untouched.
+ * const roles = {
+ *   developer: true,
+ *   admin: false
+ * };  
  * 
  * await setUserRoles(uid, roles);
  */
