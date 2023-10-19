@@ -1,11 +1,12 @@
-import { auth, db, storage } from "../config/firebaseConfig";
+import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
-import { PrivateUserInfo, PublicUserInfo, User } from "../types/User";
+import { PrivateUserInfo, PublicUserInfo, Roles, User } from "../types/User";
 import { Committee } from "../types/Committees";
 import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
 import { validateTamuEmail } from "../helpers/validation";
+import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 
 
 /**
@@ -229,7 +230,7 @@ export const appendExpoPushToken = async (expoPushToken: string) => {
  * defaultPublicInfo and defaultPrivateInfo are what a user object should initialize as should either be undefined.
  * If any fields are undefined in the returned user from getUser(), values from defaultPublicInfo and defaultPrivateInfo will be pulled
  * 
- * @returns - User data formatted according to User interface defined in "./src/types/User.tsx".
+ * @returns User data formatted according to User interface defined in "./src/types/User.tsx".
  */
 export const initializeCurrentUserData = async (): Promise<User> => {
 
@@ -579,4 +580,40 @@ export const setMemberOfTheMonth = async (uid: string, name: string) => {
         console.error(err);
         return false;
     }
+};
+
+/**
+ * This function sets the user roles
+ * @param uid UID of user which will have their roles modified
+ * @param roles Object containing roles which will be modified
+ * @returns Response from firebase. If there is a communication error, it will return undefined.
+ * @throws FirebaseError if an issue occurs while attempting to call the firebase function 
+ * @example
+ * const uid = "H0ywaA729AkC8s2Km29" // Example UID
+ * const roles = {developer: true};  // Makes the given user a developer
+ * 
+ * await setUserRoles(uid, roles);
+ */
+export const setUserRoles = async (uid: string, roles: Roles): Promise<HttpsCallableResult | undefined> => {
+    const claims = (await auth.currentUser?.getIdTokenResult())?.claims;
+
+    // Guards so the app will not call the function without authentication or permissions
+    // updateUserRole() also checks for these when it is called in the case of a foreign request
+    if (!claims) {
+        throw new Error("setUserRoles() requires authentication", { cause: "auth.currentUser?.getIdTokenResult() evaluates as undefined" });
+    }
+    else if (!(claims.admin || claims.developer || claims.officer)) {
+        throw new Error("setUserRoles() called with Invalid Permissions", { cause: "" })
+    }
+
+    // Updates given user's custom claims by calling 
+    return httpsCallable(functions, "updateUserRole").call({}, { uid, roles })
+        .then(async (res) => {
+            // Sets given user's publicUserInfo firestore document to reflect change in claims
+            const currentRoles = (await getPublicUserData())?.roles ?? {};
+            await setPublicUserData({
+                roles: Object.assign(currentRoles, roles)
+            }, uid);
+            return res;
+        });
 };
