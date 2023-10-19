@@ -254,7 +254,7 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                 <View className='pb-32'></View>
             </ScrollView >
             <Modal
-                animationType="slide"
+                animationType="none"
                 transparent={true}
                 visible={nameModalVisible}
                 onRequestClose={() => {
