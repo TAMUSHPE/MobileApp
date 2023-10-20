@@ -47,7 +47,12 @@ export const validateDisplayName = (displayName: any, alertUser: boolean = false
     return isValid;
 };
 
-/** Checks if a name is both within a length. Alerts user of issue should it arise. */
+/**
+ * Checks if a name is both within a length.
+ * @param name 
+ * @param alertUser Whether or not to alert the user of any issues
+ * @returns 
+ */
 export const validateName = (name: any, alertUser: boolean = false): boolean => {
     const isValid = typeof name == 'string' && name.length > 0 && name.length <= 255;
 
@@ -56,6 +61,36 @@ export const validateName = (name: any, alertUser: boolean = false): boolean => 
     }
 
     return isValid;
+}
+
+/**
+ * Validates whether or not a given file blob matches a given list
+ * @param file File blob 
+ * @param allowedMimeTypes List of mime types to allow
+ * @param maxSize The largest size file allowed in bytes. Defaults to 8MB (8388608 or 2^23)
+ * @param alertUser Whether or not to alert the user of any issues
+ * @returns true if file is valid else false
+ * @example
+ * const userFile: Blob;
+ * const allowedMimeTypes = ["image/png", "image/jpeg", "image/gif"];
+ * 
+ * if (validateFileBlob(userFile, allowedMimeTypes)) {
+ *     console.log("Valid File");
+ * }
+ */
+export const validateFileBlob = (file: Blob, allowedMimeTypes: Array<string>, maxSize: number = 8388608, alertUser: boolean = false): boolean => {
+    const isValidMimeType = allowedMimeTypes.includes(file.type)
+    const isValidSize = file.size < maxSize;
+    const bytesInMegabyte = 1048576;
+
+    if (!isValidMimeType && alertUser) {
+        Alert.alert("Invalid File Type", `${file.type} is not a supported file type for this action.`);
+    }
+    else if(!isValidSize && alertUser){
+        Alert.alert("Your File is Too Big", `Your file is ${file.size / bytesInMegabyte} MB where a maximum of ${maxSize / bytesInMegabyte} MB is allowed.`);
+    }
+
+    return isValidMimeType && isValidSize;
 }
 
 /** Values used for password strength calculation */
