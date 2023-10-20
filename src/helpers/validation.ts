@@ -4,7 +4,7 @@ import { Alert } from "react-native";
  * Matches generic email pattern. {name}@{second-level domain}.{top-level domain}
  * @param email Email of user
  * @param alertUser 
- * @returns Ff email is a valid email according to firebase's standards
+ * @returns If email is a valid email according to firebase's standards
  */
 export const validateEmail = (email: any, alertUser: boolean = false): boolean => {
     const emailRegex: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
@@ -21,7 +21,7 @@ export const validateEmail = (email: any, alertUser: boolean = false): boolean =
  * Matches TAMU email pattern. {name}@tamu.edu
  * @param email Email of user
  * @param alertUser Whether or not to alert the user of any issues
- * @returns Ff email is a valid tamu email
+ * @returns If email is a valid tamu email
  */
 export const validateTamuEmail = (email: any, alertUser: boolean = false): boolean => {
     const emailRegex: RegExp = /^[A-Z0-9._%+-]+@(tamu.edu)$/i;
@@ -38,7 +38,7 @@ export const validateTamuEmail = (email: any, alertUser: boolean = false): boole
  * Matches passwords with 6-64 characters with characters being alphanumeric or any special characters on a standard qwerty keyboard
  * @param password Password of user
  * @param alertUser Whether or not to alert the user of any issues
- * @returns Ff password is valid
+ * @returns If password is valid
  */
 export const validatePassword = (password: any, alertUser: boolean = false): boolean => {
     const passwordRegex: RegExp = /^[A-Z0-9 !"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{6,64}$/i;
@@ -55,7 +55,7 @@ export const validatePassword = (password: any, alertUser: boolean = false): boo
  * Checks if a display name is within a length of 1-80
  * @param displayName Name that is displayed on user's profile
  * @param alertUser Whether or not to alert the user of any issues
- * @returns Ff the display name is valid
+ * @returns If the display name is valid
  */
 export const validateDisplayName = (displayName: any, alertUser: boolean = false): boolean => {
     const isValid = typeof displayName == 'string' && displayName.length > 0 && displayName.length <= 80
@@ -71,7 +71,7 @@ export const validateDisplayName = (displayName: any, alertUser: boolean = false
  * Checks if a name is both within a length of 1-255.
  * @param name Name that is displayed as user's real name
  * @param alertUser Whether or not to alert the user of any issues
- * @returns Ff the name is valid
+ * @returns If the name is valid
  */
 export const validateName = (name: any, alertUser: boolean = false): boolean => {
     const isValid = typeof name == 'string' && name.length > 0 && name.length <= 255;
@@ -89,7 +89,7 @@ export const validateName = (name: any, alertUser: boolean = false): boolean => 
  * @param allowedMimeTypes List of mime types to allow
  * @param maxSize The largest size file allowed in bytes. Defaults to 8MB (8388608 or 2^23)
  * @param alertUser Whether or not to alert the user of any issues
- * @returns Ff file is valid
+ * @returns If file is valid
  * @example
  * const userFile: Blob;
  * const allowedMimeTypes = ["image/png", "image/jpeg", "image/gif"];
