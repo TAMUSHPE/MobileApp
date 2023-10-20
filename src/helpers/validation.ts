@@ -131,7 +131,7 @@ export abstract class CommonMimeTypes {
  *     console.log("Valid File");
  * }
  */
-export const validateFileBlob = (file: Blob, allowedMimeTypes: Array<string>, maxSize: number = 8388608, alertUser: boolean = false): boolean => {
+export const validateFileBlob = (file: Blob, allowedMimeTypes: Array<string>, alertUser: boolean = false, maxSize: number = 8388608): boolean => {
     const isValidMimeType = allowedMimeTypes.includes(file.type)
     const isValidSize = file.size < maxSize;
     const bytesInMegabyte = 1048576;

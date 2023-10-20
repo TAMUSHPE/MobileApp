@@ -13,7 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import { getBlobFromURI, selectFile, selectImage } from '../api/fileSelection';
 import ProfileBadge from '../components/ProfileBadge';
 import { CommitteeConstants, CommitteeKey, CommitteeVal } from '../types/Committees';
-import { validateDisplayName, validateName, validateTamuEmail } from '../helpers/validation';
+import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../helpers/validation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../components/SettingsComponents"
@@ -84,14 +84,14 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
                 mainText='Feedback'
                 subText='Help us by sending app feedback!'
                 darkMode={darkMode}
-                onPress={() => Alert.alert("Unimplemented","Feature Unimplemented")}
+                onPress={() => Alert.alert("Unimplemented", "Feature Unimplemented")}
             />
             <SettingsButton
                 iconName='frequently-asked-questions'
                 mainText='FAQ'
                 subText='Frequently asked questions'
                 darkMode={darkMode}
-                onPress={() => Alert.alert("Unimplemented","Screen does not currently exist")}
+                onPress={() => Alert.alert("Unimplemented", "Screen does not currently exist")}
             />
             <SettingsButton
                 iconName='information-outline'
@@ -176,17 +176,25 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     }, [photoURL]);
 
     const selectProfilePicture = async () => {
-        const result = await selectImage({
+        await selectImage({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [1, 1],
             quality: 1,
+        }).then(async (result) => {
+            if (result) {
+                const imageBlob = await getBlobFromURI(result.assets![0].uri);
+                if (imageBlob && validateFileBlob(imageBlob, CommonMimeTypes.IMAGE_FILES, true)) {
+                    setPhotoURL(result.assets![0].uri);
+                    setImage(imageBlob);
+                }
+            }
+        }).catch((err) => {
+            // TypeError means user did not select an image
+            if (err.name != "TypeError") {
+                console.error(err);
+            }
         });
-
-        if (result) {
-            const imageBlob = await getBlobFromURI(result.assets![0].uri);
-            setImage(imageBlob);
-        }
     }
 
     const selectResume = async () => {
@@ -240,7 +248,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     }
 
     const uploadResume = (resumeBlob: Blob) => {
-        if (resumeBlob) {
+        if (resumeBlob && validateFileBlob(resumeBlob, ["application/pdf"], true)) {
             const uploadTask = uploadFileToFirebase(resumeBlob, `user-docs/${auth.currentUser?.uid}/user-resume`);
 
             uploadTask.on("state_changed",
