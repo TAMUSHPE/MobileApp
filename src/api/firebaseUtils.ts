@@ -594,3 +594,33 @@ export const isUserSignedIn = async (eventId: string, uid: string) => {
         return false;
     }
 }
+
+export const getMemberOfTheMonth = async () => {
+    return getDoc(doc(db, `member-of-the-month/member`))
+        .then((res) => {
+            const responseData = res.data()
+            if (responseData) {
+                return { uid: responseData?.uid, name: responseData?.name };
+            }
+            else {
+                return undefined;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            return undefined;
+        });
+}
+
+export const setMemberOfTheMonth = async (uid: string, name: string) => {
+    try {
+        await setDoc(doc(db, `member-of-the-month/member`), {
+            uid: uid,
+            name: name
+        }, { merge: true });
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+};

@@ -5,6 +5,8 @@ import { useNavigationState } from '@react-navigation/native';
 import { ProfileSetupStack } from "./ProfileSetupStack";
 import LoginScreen from "../screens/Login";
 import RegisterScreen from "../screens/Register";
+import LoginStudent from "../screens/LoginStudent";
+import LoginGuest from "../screens/LoginGuest";
 import { AuthStackParams } from '../types/Navigation';
 
 const AuthStackWarning = () => {
@@ -38,6 +40,8 @@ const AuthStack = () => {
                 <Stack.Group screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="LoginScreen" component={LoginScreen} />
                     <Stack.Screen name="ProfileSetup" component={ProfileSetupStack} />
+                    <Stack.Screen name="LoginStudent" component={LoginStudent} />
+                    <Stack.Screen name="LoginGuest" component={LoginGuest} />
                 </Stack.Group>
 
                 <Stack.Screen

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../config/firebaseConfig';
 import { addDoc, collection, doc, serverTimestamp, setDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
@@ -92,22 +92,26 @@ const OfficeSignIn = () => {
                 visible={confirmVisible}
                 onRequestClose={() => setConfirmVisible(!confirmVisible)}
             >
-                <View className='flex-1 justify-end items-center'>
-                    <View className='flex-row justify-between items-center text-center bg-pale-orange w-full px-16 h-16'>
-                        <TouchableOpacity
-                            onPress={async () => {
-                                setConfirmVisible(false)
-                                signInOut()
-                            }}
-                        >
-                            <Text className='text-xl font-bold'> {isSignedIn ? "Sign Out" : "Sign In"} </Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={() => { setConfirmVisible(false) }}>
-                            <Text className='text-xl font-bold'>Cancel</Text>
-                        </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setConfirmVisible(false)}
+                    className="h-[100%] w-[100%]"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                >
+                    <View className='items-center justify-center h-full'>
+                        <TouchableWithoutFeedback>
+                            <View className='opacity-100 bg-white w-[70%] rounded-md items-center'>
+                                <TouchableOpacity
+                                    onPress={async () => {
+                                        setConfirmVisible(false)
+                                        signInOut()
+                                    }}
+                                >
+                                    <Text className='text-xl font-bold py-3 px-8'> {isSignedIn ? "Sign Out" : "Sign In"} </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
                     </View>
-                </View>
+                </TouchableOpacity>
             </Modal>
         </View>
     )

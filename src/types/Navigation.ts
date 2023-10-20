@@ -28,6 +28,8 @@ export type AuthStackParams = {
     RegisterScreen: undefined;
     ProfileSetup: undefined;
     MainStack: undefined;
+    LoginStudent: undefined;
+    LoginGuest: undefined;
 };
 
 export type MembersStackParams = {
@@ -44,6 +46,7 @@ export type ProfileSetupStackParams = {
     SetupCommittees: undefined;
     MainStack: undefined;
     SetupNotification: undefined;
+    SetupResume: undefined;
 }
 
 export type ResourcesStackParams = {
@@ -73,15 +76,27 @@ export type EventsStackParams = {
     QRCode: { event: SHPEEventID };
 }
 
+export type HomeStackParams = {
+    Home: undefined;
+    GoogleCalendar: undefined;
+    PublicProfile: {
+        uid: string;
+    }
+}
+
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
     CommitteesEditor: undefined;
+    MemberOfTheMonthEditor: undefined;
+    FeaturedSlideEditor: undefined;
+    ResumeDownloader: undefined;
+    ResetOfficeHours: undefined;
     RestrictionsEditor: undefined;
 }
 
 // Drawers
 export type HomeDrawerParams = {
-    HomeScreen: undefined;
+    HomeStack: HomeStackParams;
     Logout: undefined;
     AdminDashboardStack: undefined;
     PublicProfile: {

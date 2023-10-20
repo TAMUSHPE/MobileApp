@@ -1,4 +1,4 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator } from "react-native";
 import React, { useEffect, useState, useContext } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -12,7 +12,7 @@ import InteractButton from "../components/InteractButton";
 import { AuthStackParams } from "../types/Navigation";
 import { Images } from "../../assets";
 
-const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
+const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
@@ -35,7 +35,6 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
             navigation.navigate("ProfileSetup");
         }
     }, [userInfo]);
-
 
     const handleUserAuth = () => {
         setLoading(true);
@@ -93,20 +92,45 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
                 <Text className="text-white text-center text-3xl">Welcome to SHPE</Text>
             </View>
             <View className="flex-col w-4/5">
+                <KeyboardAvoidingView className="flex-col my-2">
+                    <TextInput
+                        placeholder="Email"
+                        className="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1"
+                        onChangeText={(text: string) => setEmail(text)}
+                        value={email}
+                        inputMode="email"
+                        keyboardType="email-address"
+                    />
+                    <TextInput
+                        placeholder="Password"
+                        className="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mt-2"
+                        secureTextEntry
+                        onChangeText={(text) => setPassword(text)}
+                        value={password}
+                        inputMode="text"
+                        onSubmitEditing={() => emailSignIn()}
+                        textContentType="password"
+                    />
+                    {loading && (
+                        <ActivityIndicator className="mt-4" size={"large"} />
+                    )}
+                </KeyboardAvoidingView>
                 <View className="flex-col mt-2">
                     <InteractButton
-                        onPress={() => navigation.navigate('LoginStudent')}
-                        label="Student"
+                        onPress={() => emailSignIn()}
+                        label="Sign In"
                         buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
                         textClassName="text-white font-bold"
                         underlayColor="#A22E2B"
                     />
+                    <View className="items-center my-4">
+                        <Text className="text-white">Or</Text>
+                    </View>
                     <InteractButton
-                        onPress={() => navigation.navigate('LoginGuest')}
-                        label="Guest"
-                        buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
-                        textClassName="text-white font-bold"
-                        underlayColor="#A22E2B"
+                        onPress={() => navigation.navigate("RegisterScreen")}
+                        label="Register Account"
+                        buttonClassName="justify-center items-center bg-white rounded-xl"
+                        textClassName="text-[#3b3b3b] font-bold"
                     />
                 </View>
             </View>
@@ -117,4 +141,4 @@ const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackPara
     );
 };
 
-export default LoginScreen;
+export default LoginGuest;
