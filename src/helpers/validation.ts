@@ -1,6 +1,11 @@
 import { Alert } from "react-native";
 
-/**  Matches generic email pattern. {name}@{second-level domain}.{top-level domain} */
+/**
+ * Matches generic email pattern. {name}@{second-level domain}.{top-level domain}
+ * @param email Email of user
+ * @param alertUser 
+ * @returns Ff email is a valid email according to firebase's standards
+ */
 export const validateEmail = (email: any, alertUser: boolean = false): boolean => {
     const emailRegex: RegExp = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i;
     const isValid = typeof email == 'string' && emailRegex.test(email);
@@ -12,7 +17,12 @@ export const validateEmail = (email: any, alertUser: boolean = false): boolean =
     return isValid;
 };
 
-/**  Matches TAMU email pattern. {name}@tamu.edu */
+/**
+ * Matches TAMU email pattern. {name}@tamu.edu
+ * @param email Email of user
+ * @param alertUser Whether or not to alert the user of any issues
+ * @returns Ff email is a valid tamu email
+ */
 export const validateTamuEmail = (email: any, alertUser: boolean = false): boolean => {
     const emailRegex: RegExp = /^[A-Z0-9._%+-]+@(tamu.edu)$/i;
     const isValid = typeof email == 'string' && emailRegex.test(email);
@@ -24,7 +34,12 @@ export const validateTamuEmail = (email: any, alertUser: boolean = false): boole
     return isValid;
 };
 
-/** Matches passwords with 6-64 characters with characters being alphanumeric or any special characters on a standard qwerty keyboard */
+/**
+ * Matches passwords with 6-64 characters with characters being alphanumeric or any special characters on a standard qwerty keyboard
+ * @param password Password of user
+ * @param alertUser Whether or not to alert the user of any issues
+ * @returns Ff password is valid
+ */
 export const validatePassword = (password: any, alertUser: boolean = false): boolean => {
     const passwordRegex: RegExp = /^[A-Z0-9 !"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~]{6,64}$/i;
     const isValid = typeof password == 'string' && passwordRegex.test(password);
@@ -36,7 +51,12 @@ export const validatePassword = (password: any, alertUser: boolean = false): boo
     return isValid;
 };
 
-/** Checks if a display name is both within a length and unique. Alerts user of issue should it arise. */
+/**
+ * Checks if a display name is within a length of 1-80
+ * @param displayName Name that is displayed on user's profile
+ * @param alertUser Whether or not to alert the user of any issues
+ * @returns Ff the display name is valid
+ */
 export const validateDisplayName = (displayName: any, alertUser: boolean = false): boolean => {
     const isValid = typeof displayName == 'string' && displayName.length > 0 && displayName.length <= 80
 
@@ -48,10 +68,10 @@ export const validateDisplayName = (displayName: any, alertUser: boolean = false
 };
 
 /**
- * Checks if a name is both within a length.
- * @param name 
+ * Checks if a name is both within a length of 1-255.
+ * @param name Name that is displayed as user's real name
  * @param alertUser Whether or not to alert the user of any issues
- * @returns 
+ * @returns Ff the name is valid
  */
 export const validateName = (name: any, alertUser: boolean = false): boolean => {
     const isValid = typeof name == 'string' && name.length > 0 && name.length <= 255;
@@ -64,12 +84,12 @@ export const validateName = (name: any, alertUser: boolean = false): boolean => 
 }
 
 /**
- * Validates whether or not a given file blob matches a given list
+ * Validates whether or not a given file blob matches a given list of mime types
  * @param file File blob 
  * @param allowedMimeTypes List of mime types to allow
  * @param maxSize The largest size file allowed in bytes. Defaults to 8MB (8388608 or 2^23)
  * @param alertUser Whether or not to alert the user of any issues
- * @returns true if file is valid else false
+ * @returns Ff file is valid
  * @example
  * const userFile: Blob;
  * const allowedMimeTypes = ["image/png", "image/jpeg", "image/gif"];
@@ -86,7 +106,7 @@ export const validateFileBlob = (file: Blob, allowedMimeTypes: Array<string>, ma
     if (!isValidMimeType && alertUser) {
         Alert.alert("Invalid File Type", `${file.type} is not a supported file type for this action.`);
     }
-    else if(!isValidSize && alertUser){
+    else if (!isValidSize && alertUser) {
         Alert.alert("Your File is Too Big", `Your file is ${file.size / bytesInMegabyte} MB where a maximum of ${maxSize / bytesInMegabyte} MB is allowed.`);
     }
 
@@ -107,6 +127,8 @@ export enum PasswordStrength {
  *   - Weak passwords are less than 7 characters long
  *   - Average passwords are either less than 10 characters long or are just a collection of letters or numbers that are less than 14 characters long
  *   - Strong passwords are greater than 10 characters and contain special characters or are greater than 14 characters
+ * @param password User's password to check strength
+ * @returns PasswordStrength enumerated value INVALID, WEAK, AVERAGE, or STRONG.
  */
 export const evaluatePasswordStrength = (password: string): number => {
     const averagePasswordRegex: RegExp = /^[A-Z ]{7,14}$|^[0-9]{7,14}$/i;
