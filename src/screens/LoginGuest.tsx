@@ -19,12 +19,6 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
 
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
-
-    const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-        iosClientId: "600060629240-m7bu9ba9namtlmo9sii2s8qs2j9k5bt4.apps.googleusercontent.com",
-        androidClientId: "600060629240-bdfsdcfmbrjh5skdc9qufchrmcnm26fb.apps.googleusercontent.com",
-    });
-
     /**
      * Due to asynchronous problem, the value of completedAccountSetup may
      * initially be undefined. This function will check the value when userInfo
@@ -65,22 +59,6 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
             })
     }
 
-    // Handle Google Sign-In
-    useEffect(() => {
-        if (response?.type === "success") {
-            const { id_token } = response.params;
-            const credential = GoogleAuthProvider.credential(id_token);
-            signInWithCredential(auth, credential)
-                .then(handleUserAuth)
-                .catch(error => {
-                    console.error("Error during Google sign-in:", error);
-                });
-        }
-    }, [response]);
-
-    const googleSignIn = async () => {
-        promptAsync();
-    }
 
     return (
         <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
@@ -95,7 +73,7 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
                 <KeyboardAvoidingView className="flex-col my-2">
                     <TextInput
                         placeholder="Email"
-                        className="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1"
+                        className="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
                         onChangeText={(text: string) => setEmail(text)}
                         value={email}
                         inputMode="email"
@@ -103,7 +81,7 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
                     />
                     <TextInput
                         placeholder="Password"
-                        className="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1 mt-2"
+                        className="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 mt-2 py-2"
                         secureTextEntry
                         onChangeText={(text) => setPassword(text)}
                         value={password}
