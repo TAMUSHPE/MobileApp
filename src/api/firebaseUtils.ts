@@ -354,7 +354,10 @@ export const createEvent = async (event: SHPEEvent) => {
             startDate: event.startDate,
             endDate: event.endDate,
             location: event.location,
-            attendance: 0,
+        });
+
+        await setDoc(doc(db, `events/${docRef.id}/summaries/default`), {
+            attendance: 0
         });
 
         return docRef.id;
@@ -363,6 +366,7 @@ export const createEvent = async (event: SHPEEvent) => {
         return null;
     }
 };
+
 export const updateEvent = async (event: SHPEEventID) => {
     try {
         const docRef = doc(db, "events", event.id!);
@@ -504,6 +508,23 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     return EventLogStatus.ERROR;
 };
 
+export const  getAttendanceNumber = async (eventId: string): Promise<number | null> => {
+    try {
+        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
+        const summaryDocRef = await getDoc(summaryDoc);
+
+        if (summaryDocRef.exists()) {
+            const data = summaryDocRef.data();
+            return data?.attendance || 0;
+        } else {
+            return null;
+        }
+    } catch (e) {
+        console.error("Error fetching attendance number: ", e);
+        return null;
+    }
+}
+
 
 export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
     const status = await getEventStatus(eventId);
@@ -515,24 +536,25 @@ export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
         const logDoc = doc(db, `events/${eventId}/logs/${auth.currentUser?.uid!}`);
         const logDocRef = await getDoc(logDoc);
 
-        const eventDoc = doc(db, `events/${eventId}`);
-        const eventDocRef = await getDoc(eventDoc);
+        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
+        const summaryDocRef = await getDoc(summaryDoc);
 
 
         if (!logDocRef.exists()) {
             await setDoc(logDoc, { signedInTime: serverTimestamp() }, { merge: true });
 
-            const eventDoc = doc(db, 'events', eventId);
-            const eventDocRef = await getDoc(eventDoc);
-
-            if (eventDocRef.exists()) {
-                const currentCount = eventDocRef.data().attendance || 0;
-                await updateDoc(eventDoc, { attendance: currentCount + 1 });
+            if (!summaryDocRef.exists()) {
+                await setDoc(summaryDoc, { attendance: 1 });
+                return EventLogStatus.SUCCESS;
+            } else {
+                const currentCount = summaryDocRef.data().attendance || 0;
+                await updateDoc(summaryDoc, { attendance: currentCount + 1 });
                 return EventLogStatus.SUCCESS;
             }
         } else {
             return EventLogStatus.ALREADY_LOGGED;
         }
+
     } catch (e) {
         console.error("Error adding log: ", e);
     }

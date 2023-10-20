@@ -8,7 +8,6 @@ export interface SHPEEvent {
     endDate?: Timestamp;
     location?: string; // temp
     notificationGroup?: string;
-    attendance?: number;
     image?: number; // temp
 }
 export interface SHPEEventID extends SHPEEvent {
