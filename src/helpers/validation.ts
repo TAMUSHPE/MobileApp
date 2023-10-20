@@ -84,6 +84,33 @@ export const validateName = (name: any, alertUser: boolean = false): boolean => 
 }
 
 /**
+ * Container of immutable constant lists of common mime types. These can be used along with validateFileBlob()
+ * for any non-specific blob validation.
+ */
+export abstract class CommonMimeTypes {
+    static readonly IMAGE_FILES = [
+        "image/bmp",
+        "image/gif",
+        "image/vnd.microsoft.icon", // .ico
+        "image/jpeg",
+        "image/png",
+        "image/avif",
+        "image/svg+xml",
+        "image/tiff",
+        "image/webp",
+        "image/cgm",
+        "image/heic",
+    ];
+    static readonly TEXT_FILES = [
+        "text/css",
+        "text/javascript",
+        "text/html",
+        "text/csv",
+        "text/plain",
+    ];
+};
+
+/**
  * Validates whether or not a given file blob matches a given list of mime types
  * @param file File blob 
  * @param allowedMimeTypes List of mime types to allow
@@ -95,6 +122,12 @@ export const validateName = (name: any, alertUser: boolean = false): boolean => 
  * const allowedMimeTypes = ["image/png", "image/jpeg", "image/gif"];
  * 
  * if (validateFileBlob(userFile, allowedMimeTypes)) {
+ *     console.log("Valid File");
+ * }
+ * @example
+ * const userFile: Blob;
+ * 
+ * if (validateFileBlob(userFile, CommonMimeTypes.TEXT_FILES)) {
  *     console.log("Valid File");
  * }
  */

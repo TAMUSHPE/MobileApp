@@ -171,10 +171,8 @@ describe("File Validation", () => {
     const pdf = new Blob([pdfBuffer], { type: "application/pdf" });
 
     test("Image Blobs", () => {
-        const allowedMimeTypes = ["image/png", "image/jpg", "image/gif"];
-
-        expect(validation.validateFileBlob(png, allowedMimeTypes)).toBe(true);
-        expect(validation.validateFileBlob(pdf, allowedMimeTypes)).toBe(false);
+        expect(validation.validateFileBlob(png, validation.CommonMimeTypes.IMAGE_FILES)).toBe(true);
+        expect(validation.validateFileBlob(pdf, validation.CommonMimeTypes.IMAGE_FILES)).toBe(false);
     });
 
     test("PDF Blobs", () => {
