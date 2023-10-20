@@ -161,5 +161,26 @@ describe("String validation", () => {
             expect(validation.validateName("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")).toBe(false);
         });
     });
+});
 
+describe("File Validation", () => {
+    const pngBuffer = fs.readFileSync("./src/helpers/__tests__/test_data/test.png").buffer;
+    const pdfBuffer = fs.readFileSync("./src/helpers/__tests__/test_data/test.png").buffer;
+
+    const png = new Blob([pngBuffer], { type: "image/png" });
+    const pdf = new Blob([pdfBuffer], { type: "application/pdf" });
+
+    test("Image Blobs", () => {
+        const allowedMimeTypes = ["image/png", "image/jpg", "image/gif"];
+
+        expect(validation.validateFileBlob(png, allowedMimeTypes)).toBe(true);
+        expect(validation.validateFileBlob(pdf, allowedMimeTypes)).toBe(false);
+    });
+
+    test("PDF Blobs", () => {
+        const allowedMimeTypes = ["application/pdf"];
+
+        expect(validation.validateFileBlob(png, allowedMimeTypes)).toBe(false);
+        expect(validation.validateFileBlob(pdf, allowedMimeTypes)).toBe(true);
+    });
 });
