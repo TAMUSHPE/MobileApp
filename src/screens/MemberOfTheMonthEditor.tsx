@@ -4,7 +4,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Images } from '../../assets';
 import { AdminDashboardParams } from '../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { setMemberOfTheMonth, getPublicUserData, getMemberOfTheMonth } from '../api/firebaseUtils';
+import { setMemberOfTheMonth, getPublicUserData, getMemberOfTheMonth, getOfficers, getMembersExcludeOfficers } from '../api/firebaseUtils';
 import MembersList from '../components/MembersList';
 import { PublicUserInfoUID } from '../types/User';
 
@@ -13,6 +13,9 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
     const [memberInfo, setMemberInfo] = useState<PublicUserInfoUID | null>(null);
     const [updated, setUpdated] = useState(false);
     const [localMemberOfTheMonth, setLocalMemberOfTheMonth] = useState<string | null>(null);
+    const [officers, setOfficers] = useState<PublicUserInfoUID[]>([])
+    const [members, setMembers] = useState<PublicUserInfoUID[]>([])
+
 
     const insets = useSafeAreaInsets();
     console.log(localMemberOfTheMonth)
@@ -50,6 +53,16 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
             clearTimeout(timerId);
         };
     }, [updated]);
+
+    useEffect(() => {
+        getOfficers().then((officers) => {
+            setOfficers(officers)
+        })
+        getMembersExcludeOfficers().then((members) => {
+            setMembers(members)
+        })
+    }, [])
+
 
     return (
         <SafeAreaView>
@@ -149,11 +162,15 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                     </View>
 
                     <View className="h-[100%] w-[100%] bg-white">
-                        <MembersList handleCardPress={(uid) => {
-                            setLocalMemberOfTheMonth(uid)
-                            setMemberModalVisible(false)
-                            fetchMemberData(uid)
-                        }} />
+                        <MembersList
+                            handleCardPress={(uid) => {
+                                setLocalMemberOfTheMonth(uid)
+                                setMemberModalVisible(false)
+                                fetchMemberData(uid)
+                            }}
+                            membersList={members}
+                            officersList={officers}
+                        />
 
                     </View>
                 </View>

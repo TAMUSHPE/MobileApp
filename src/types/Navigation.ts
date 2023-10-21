@@ -2,7 +2,7 @@
 import { ImageSourcePropType } from "react-native";
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from '@react-navigation/native';
-import { PublicUserInfoUID } from "./User";
+import { PublicUserInfo, PublicUserInfoUID, User } from "./User";
 import { Test } from '../types/GoogleSheetsTypes';
 import { Committee } from "./Committees";
 import { SHPEEventID } from "./Events";
@@ -141,6 +141,8 @@ export type MembersProps = {
     userData?: PublicUserInfoUID
     handleCardPress: (uid: string) => string | void;
     navigation?: NativeStackNavigationProp<MembersStackParams>
+    officersList? : PublicUserInfo[]
+    membersList? : PublicUserInfo[]
 }
 
 export type EventProps = {

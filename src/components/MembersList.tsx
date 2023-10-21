@@ -7,61 +7,62 @@ import { PublicUserInfoUID } from '../types/User'
 import MemberCard from './MemberCard'
 import { TouchableOpacity } from 'react-native';
 
-const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress }) => {
+const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList }) => {
+    const [search, setSearch] = useState<string>("")
+    const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [officers, setOfficers] = useState<PublicUserInfoUID[]>([])
     const [members, setMembers] = useState<PublicUserInfoUID[]>([])
-    const [showFilterMenu, setShowFilterMenu] = useState(false);
-    const [search, setSearch] = useState<string>("")
-    const [filteredOfficers, setFilteredOfficers] = useState<PublicUserInfoUID[]>([])
-    const [filteredMembers, setFilteredMembers] = useState<PublicUserInfoUID[]>([])
 
     useEffect(() => {
-        getOfficers().then((officers) => {
-            setOfficers(officers)
-            setFilteredOfficers(officers)
-        })
-        getMembersExcludeOfficers().then((members) => {
-            setMembers(members)
-            setFilteredMembers(members)
-        })
-    }, [])
+        setMembers(membersList || [])
+        setOfficers(officersList || [])
+    }, [membersList, officersList])
 
     const searchFilterFunction = (text: string) => {
         if (text) {
-            const newOfficerData = officers.filter(
-                function (item) {
-                    const itemData = item.name
-                        ? item.name.toUpperCase()
-                        : ''.toUpperCase();
-                    const textData = text.toUpperCase();
-                    return itemData.indexOf(textData) > -1;
-                }
-            );
+            let newOfficerData: PublicUserInfoUID[] = [];
+            if (officers != undefined && officers.length > 0) {
+                newOfficerData = officers.filter(
+                    function (item) {
+                        const itemData = item.name
+                            ? item.name.toUpperCase()
+                            : ''.toUpperCase();
+                        const textData = text.toUpperCase();
+                        return itemData.indexOf(textData) > -1;
+                    }
+                );
+            }
 
-            const newMemberData = members.filter(
-                function (item) {
-                    const itemData = item.name
-                        ? item.name.toUpperCase()
-                        : ''.toUpperCase();
-                    const textData = text.toUpperCase();
-                    return itemData.indexOf(textData) > -1;
-                }
-            );
-            setFilteredOfficers(newOfficerData);
-            setFilteredMembers(newMemberData);
+            let newMemberData: PublicUserInfoUID[] = [];
+            if (members != undefined && members.length > 0) {
+                newMemberData = members.filter(
+                    function (item) {
+                        const itemData = item.name
+                            ? item.name.toUpperCase()
+                            : ''.toUpperCase();
+                        const textData = text.toUpperCase();
+                        return itemData.indexOf(textData) > -1;
+                    }
+                );
+            }
+
+            setOfficers(newOfficerData);
+            setMembers(newMemberData);
 
             setSearch(text);
         } else {
-            setFilteredOfficers(officers);
-            setFilteredMembers(members);
-            setSearch(text);
+            if (officersList != undefined && officersList.length > 0) {
+                setOfficers(officersList);
+            }
+            if (membersList != undefined && membersList.length > 0) {
+                setMembers(membersList);
+            }
         }
     };
 
     return (
         <ScrollView>
             <View className='mx-4'>
-
                 <View className='flex-row  mb-4'>
                     <View className=' flex-1'>
                         <View className='bg-gray-300 rounded-xl px-4 py-2 flex-row'>
@@ -93,16 +94,16 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress }) =>
 
 
 
-                {filteredOfficers.length === 0 && filteredMembers.length === 0 &&
+                {officers.length === 0 && members.length === 0 &&
                     <Text className='text-xl mb-4 text-bold'>No users found</Text>
                 }
-                {filteredOfficers.length != 0 &&
+                {officers.length != 0 &&
                     <View className='flex-row mb-4'>
                         <Text className='text-xl text-bold'>Officers </Text>
-                        <Text className='text-lg  text-grey'>({filteredOfficers.length})</Text>
+                        <Text className='text-lg  text-grey'>({officers.length})</Text>
                     </View>
                 }
-                {filteredOfficers.map((userData, index) => {
+                {officers.map((userData, index) => {
                     return (
                         <MemberCard
                             key={index}
@@ -112,13 +113,13 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress }) =>
                     )
                 })}
 
-                {filteredMembers.length != 0 &&
+                {members.length != 0 &&
                     <View className='flex-row mb-4'>
                         <Text className='text-xl text-bold'>Members </Text>
-                        <Text className='text-lg  text-grey'>({filteredMembers.length})</Text>
+                        <Text className='text-lg  text-grey'>({members.length})</Text>
                     </View>
                 }
-                {filteredMembers.map((userData, index) => {
+                {members.map((userData, index) => {
 
                     const handleOnPress = () => {
                         navigation!.navigate("PublicProfile", { uid: userData.uid! })
