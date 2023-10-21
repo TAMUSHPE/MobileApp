@@ -22,22 +22,32 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const { userInfo, setUserInfo } = userContext!;
 
     const removeExpoPushToken = async () => {
-        const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
-        const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
-        await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true })
-        await AsyncStorage.removeItem('@expoPushToken');
+        try {
+            const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
+            if (expoPushToken) {
+                const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
+                await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true });
+            }
+        } catch (error) {
+            console.error("Error removing token from Firestore: ", error);
+        } finally {
+            await AsyncStorage.removeItem('@expoPushToken');
+        }
     }
 
+
     const signOutUser = async () => {
-        await removeExpoPushToken();
-        signOut(auth)
-            .then(() => {
-                // Once signed out, forces user to login screen by setting the current user info to "undefined"
-                AsyncStorage.removeItem('@user')
-                setUserInfo(undefined);
-            })
-            .catch((error) => console.error(error));
+        try {
+            await removeExpoPushToken();
+            await signOut(auth);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            await AsyncStorage.removeItem('@user');
+            setUserInfo(undefined);
+        }
     };
+
 
     const drawerItemLabelStyle = {
         color: userInfo?.private?.privateInfo?.settings?.darkMode ? "#EEE" : "#000"
