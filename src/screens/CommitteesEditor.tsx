@@ -7,7 +7,7 @@ import { Images } from '../../assets';
 import { AdminDashboardParams } from '../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Picker } from '@react-native-picker/picker';
-import { getCommitteeInfo, getPublicUserData, setCommitteeInfo } from '../api/firebaseUtils';
+import { getCommitteeInfo, getMembersExcludeOfficers, getOfficers, getPublicUserData, setCommitteeInfo } from '../api/firebaseUtils';
 import MembersList from '../components/MembersList';
 import { PublicUserInfoUID } from '../types/User';
 
@@ -21,6 +21,8 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfoUID | null>(null);
     const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfoUID[]>([]);
     const [updated, setUpdated] = useState(false);
+    const [officers, setOfficers] = useState<PublicUserInfoUID[]>([])
+    const [members, setMembers] = useState<PublicUserInfoUID[]>([])
 
     const insets = useSafeAreaInsets();
 
@@ -93,8 +95,6 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         };
     }, [updated]);
 
-
-
     const addUIDToList = (uid: string) => {
         const currentUIDList = committeeData?.leadUIDs || [];
         if (currentUIDList.includes(uid)) {
@@ -122,6 +122,15 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         const updatedLeadsUserInfo = leadsUserInfo.filter(userInfo => userInfo.uid !== uid);
         setLeadsUserInfo(updatedLeadsUserInfo);
     };
+
+    useEffect(() => {
+        getOfficers().then((officers) => {
+            setOfficers(officers)
+        })
+        getMembersExcludeOfficers().then((members) => {
+            setMembers(members)
+        })
+    }, [])
 
 
     return (
@@ -313,11 +322,15 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
 
 
                     <View className="h-[100%] w-[100%] bg-white">
-                        <MembersList handleCardPress={(uid) => {
-                            setCommitteeData({ ...committeeData!, headUID: uid })
-                            setHeadModalVisible(false)
-                            fetchHeadUserData(uid)
-                        }} />
+                        <MembersList
+                            handleCardPress={(uid) => {
+                                setCommitteeData({ ...committeeData!, headUID: uid })
+                                setHeadModalVisible(false)
+                                fetchHeadUserData(uid)
+                            }}
+                            officersList={officers}
+                            membersList={members}
+                        />
                     </View>
                 </View>
             </Modal>
@@ -347,10 +360,14 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
 
 
                     <View className="h-[100%] w-[100%] bg-white">
-                        <MembersList handleCardPress={(uid) => {
-                            addUIDToList(uid)
-                            setLeadsModalVisible(false)
-                        }} />
+                        <MembersList
+                            handleCardPress={(uid) => {
+                                addUIDToList(uid)
+                                setLeadsModalVisible(false)
+                            }}
+                            officersList={officers}
+                            membersList={members}
+                        />
                     </View>
                 </View>
             </Modal>
