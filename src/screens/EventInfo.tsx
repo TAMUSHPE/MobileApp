@@ -87,16 +87,15 @@ const EventInfo = ({ navigation }: EventProps) => {
             <SafeAreaView>
                 <View className='flex-row mt-4 w-screen'>
                     <View className='justify-center w-[33%]'>
-                        <TouchableOpacity className="pr-4 ml-4" onPress={() => navigation.navigate("EventsScreen")} >
+                        <TouchableOpacity className="ml-4" onPress={() => navigation.navigate("EventsScreen")} >
                             <Octicons name="chevron-left" size={30} color="black" />
                         </TouchableOpacity>
                     </View>
-                    <View className='justify-center items-center  w-[33%]'>
+                    <View className='justify-center items-center '>
                         <Text className="text-3xl h-10 text-center">{event.name}</Text>
                     </View>
-                    {
-                        hasPrivileges &&
-                        <View className='justify-center items-end w-[33%]'>
+                    {hasPrivileges &&
+                        <View className='justify-center items-end'>
                             <TouchableOpacity className='bg-blue-400 w-16 h-10 items-center justify-center rounded-md mr-4'
                                 onPress={() => navigation.navigate("UpdateEvent", { event: event })}>
                                 <Text className='font-bold'>Edit</Text>
@@ -106,13 +105,14 @@ const EventInfo = ({ navigation }: EventProps) => {
                 </View>
 
                 <View className='w-screen h-[80%] items-center justify-center'>
-                    <Text className='text-lg font-bold'>Attendance: {attendance}</Text>
+                    {hasPrivileges &&
+                        <Text className='text-lg font-bold'>Attendance: {attendance}</Text>
+                    }
                     <Text className='text-lg font-bold'>Description: {event.description}</Text>
                     <Text className='text-lg font-bold'>Location: {event.location}</Text>
                     {startDateAsDate &&
                         <Text className='text-lg font-bold'>Start Date: {formatDate(startDateAsDate)}</Text>
                     }
-
                     {endDateAsDate &&
                         <Text className='text-lg font-bold'>End Date: {formatDate(endDateAsDate)}</Text>
                     }

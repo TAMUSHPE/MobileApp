@@ -134,7 +134,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
             {/* Header */}
             <View className='flex-row items-center h-10'>
                 <View className='pl-6'>
-                    <TouchableHighlight onPress={() => navigation.goBack()} underlayColor="#EF9260">
+                    <TouchableHighlight className="px-2" onPress={() => navigation.goBack()} underlayColor="#EF9260">
                         <Octicons name="chevron-left" size={30} color="black" />
                     </TouchableHighlight>
                 </View>

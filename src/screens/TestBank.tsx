@@ -180,7 +180,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
             {/* Header */}
             < View className={`bg-offwhite ${testCards.length === 0 && "h-screen"}`} >
                 <View className='flex-row items-center justify-between px-6 mt-4 pt-4 pb-2'>
-                    <TouchableHighlight onPress={() => navigation.goBack()} underlayColor="offwhite">
+                    <TouchableHighlight className="px-2" onPress={() => navigation.goBack()} underlayColor="offwhite">
                         <Octicons name="chevron-left" size={30} color="black" />
                     </TouchableHighlight>
                     <Text className='text-2xl font-semibold'>Test Bank</Text>
