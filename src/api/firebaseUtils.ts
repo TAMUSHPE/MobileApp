@@ -1,11 +1,13 @@
 import { auth, db, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, PublicUserInfoUID, User } from "../types/User";
 import { Committee } from "../types/Committees";
 import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
 import { validateTamuEmail } from "../helpers/validation";
+import { DocumentData, QueryDocumentSnapshot } from "@google-cloud/firestore";
+import { useId } from "react";
 
 
 /**
@@ -150,63 +152,66 @@ export const getUserByEmail = async (email: string): Promise<{ userData: PublicU
 }
 
 
-export const getOfficers = async (): Promise<PublicUserInfoUID[]> => {
-    try {
-        const userRef = collection(db, 'users');
-        const q = query(
-            userRef,
-            where("roles.officer", "==", true),
-            orderBy("name")
-        );
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            return [];
-        }
 
-        const officers = querySnapshot.docs.map((doc) => {
-            return {
-                ...doc.data(),
-                uid: doc.id
-            }
+type UserFilter = {
+    classYear: string,
+    major: string,
+    orderByField: string
+}
+type FetchMembersOptions = {
+    lastUserSnapshot?: any,
+    isOfficer?: boolean,
+    numLimit?: number | null, 
+    filter: UserFilter,
+};
+
+
+
+export const fetchUserForList = async (options: FetchMembersOptions) => {
+    const {
+        lastUserSnapshot = null,
+        isOfficer = false,
+        numLimit = null, 
+        filter,
+    } = options;
+    console.log("test", filter?.classYear)
+
+    let userQuery: Query<DocumentData, DocumentData> = collection(db, 'users');
+
+    userQuery = query(userQuery, where("roles.officer", "==", isOfficer));
+
+    if (filter.classYear != "") {
+        userQuery = query(userQuery, where("classYear", "==", filter.classYear));
+    }
+
+    if (filter.major != "") {
+        userQuery = query(userQuery, where("major", "==", filter.major));
+    }
+
+    userQuery = query(userQuery, orderBy(filter.orderByField));
+    
+    if (numLimit !== null) {
+        userQuery = query(userQuery, limit(numLimit));
+    }
+
+    if (lastUserSnapshot) {
+        userQuery = query(userQuery, startAfter(lastUserSnapshot));
+    }   
+
+    try {
+        const snapshot = await getDocs(userQuery);
+        let hasMoreUser = numLimit !== null ? snapshot.docs.length === numLimit : false;
+        
+        const memberUID = snapshot.docs.map(doc => {
+            return doc.id 
         });
 
-        return officers;
-
+        return { members: snapshot.docs, uid: memberUID, hasMoreUser };
     } catch (error) {
-        console.error("Error fetching officers:", error);
-        throw new Error("Internal Server Error.");
+        console.error("Error fetching users:", error);
+        return { members: [], hasMoreUser: false };
     }
 }
-
-
-export const getMembersExcludeOfficers = async (): Promise<PublicUserInfoUID[]> => {
-    try {
-        const userRef = collection(db, 'users');
-        const q = query(
-            userRef,
-            where("roles.officer", "==", false),
-            orderBy("name")
-        );
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            return [];
-        }
-
-        const members = querySnapshot.docs.map((doc) => {
-            return {
-                ...doc.data(),
-                uid: doc.id
-            }
-        });
-
-        return members;
-
-    } catch (error) {
-        console.error("Error fetching members:", error);
-        throw new Error("Internal Server Error.");
-    }
-}
-
 
 /**
  * Appends an Expo push token to the current user's private data.
