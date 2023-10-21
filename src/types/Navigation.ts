@@ -6,6 +6,8 @@ import { PublicUserInfo, PublicUserInfoUID, User } from "./User";
 import { Test } from '../types/GoogleSheetsTypes';
 import { Committee } from "./Committees";
 import { SHPEEventID } from "./Events";
+import { MutableRefObject, SetStateAction } from "react";
+import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 
 // Stacks
 export type MainStackParams = {
@@ -137,12 +139,21 @@ export type TestBankProps = {
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 
+type UserFilter = {
+    classYear: string,
+    major: string,
+    orderByField: string
+}
 export type MembersProps = {
     userData?: PublicUserInfoUID
     handleCardPress: (uid: string) => string | void;
     navigation?: NativeStackNavigationProp<MembersStackParams>
-    officersList? : PublicUserInfo[]
-    membersList? : PublicUserInfo[]
+    officersList? : PublicUserInfoUID[]
+    membersList? : PublicUserInfoUID[]
+    loadMoreUsers?: () => void;
+    hasMoreUserRef?:  MutableRefObject<boolean>;
+    filterRef?: MutableRefObject<UserFilter>;
+    setLastUserSnapshot?: React.Dispatch<SetStateAction<QueryDocumentSnapshot<DocumentData> | null>>;
 }
 
 export type EventProps = {
