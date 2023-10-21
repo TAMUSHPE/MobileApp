@@ -583,7 +583,7 @@ export const setMemberOfTheMonth = async (uid: string, name: string) => {
 };
 
 /**
- * This function sets the user roles
+ * This function sets a given user's roles and custom claims on firebase.
  * @param uid UID of user which will have their roles modified
  * @param roles Object containing roles which will be modified
  * @returns Response from firebase. If there is a communication error, it will return undefined.
