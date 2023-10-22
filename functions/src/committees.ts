@@ -29,7 +29,6 @@ export const incrementCommitteesCount = functions.https.onCall(async (data, cont
     }
     
     const updatePromises = committeeNames.map((committeeName) => {
-        console.log(committeeName)
         const committeeRef = db.doc(`committees/${committeeName}`);
         return committeeRef.update({ memberCount: admin.firestore.FieldValue.increment(1) })
             .catch((error) => {
@@ -37,7 +36,7 @@ export const incrementCommitteesCount = functions.https.onCall(async (data, cont
             });
     });
     try {
-        console.log("starting update")
+
         await Promise.all(updatePromises);
         return { success: true };
     } catch (error) {

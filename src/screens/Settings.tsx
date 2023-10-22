@@ -199,7 +199,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
     const selectResume = async () => {
         const result = await selectFile();
-        console.log(result);
         if (result) {
             const resumeBlob = await getBlobFromURI(result.assets![0].uri);
             return resumeBlob;

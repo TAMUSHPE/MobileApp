@@ -96,7 +96,6 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
                 },
                 async () => {
                     await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
-                        console.log("File available at", URL);
                         setLocalImageURI("");
                         setImage(null);
                         setEventName("");
@@ -121,8 +120,6 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
             await updateDoc(docRef, {
                 id: docRef.id
             });
-
-            console.log("document saved correctly", docRef.id);
         } catch (e) {
             console.log(e);
         }

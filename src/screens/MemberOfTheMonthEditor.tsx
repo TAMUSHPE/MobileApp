@@ -13,12 +13,11 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
     const [memberInfo, setMemberInfo] = useState<PublicUserInfo | null>(null);
     const [updated, setUpdated] = useState(false);
     const [localMemberOfTheMonth, setLocalMemberOfTheMonth] = useState<string | null>(null);
-    const [officers, setOfficers] = useState<PublicUserInfoUID[]>([])
-    const [members, setMembers] = useState<PublicUserInfoUID[]>([])
+    const [officers, setOfficers] = useState<PublicUserInfo[]>([])
+    const [members, setMembers] = useState<PublicUserInfo[]>([])
 
 
     const insets = useSafeAreaInsets();
-    console.log(localMemberOfTheMonth)
     const fetchMemberData = async (uid: string) => {
         const fetchedInfo = await getPublicUserData(uid);
         if (fetchedInfo) {

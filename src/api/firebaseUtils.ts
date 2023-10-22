@@ -173,7 +173,6 @@ export const fetchUserForList = async (options: FetchMembersOptions) => {
         numLimit = null, 
         filter,
     } = options;
-    console.log("test", filter?.classYear)
 
     let userQuery: Query<DocumentData, DocumentData> = collection(db, 'users');
 
@@ -397,11 +396,11 @@ export const getEvent = async (eventID: string) => {
         if (eventDoc.exists()) {
             return eventDoc.data() as SHPEEventID;
         } else {
-            console.log("No such document!");
+            console.error("No such document!");
             return null;
         }
     } catch (error) {
-        console.log("Error getting document:", error);
+        console.error("Error getting document:", error);
         return null;
     }
 }
@@ -460,10 +459,6 @@ export const destroyEvent = async (eventID: string) => {
         const logQuery = query(logRef);
         const logSnapshot = await getDocs(logQuery);
 
-        // Debug: Check if we received any logs
-        console.log("Received logs: ", logSnapshot.docs.length);
-
-        // Delete logs if they exist
         if (!logSnapshot.empty) {
             const deleteLogPromises = logSnapshot.docs.map((logDoc) => {
                 return deleteDoc(logDoc.ref);
@@ -471,13 +466,10 @@ export const destroyEvent = async (eventID: string) => {
 
             await Promise.all(deleteLogPromises);
         } else {
-            console.log("No logs to delete.");
+            console.error("No logs to delete.");
         }
 
-        // Delete the event
         await deleteDoc(eventRef);
-
-        console.log("Event and logs deleted successfully");
         return true;
 
     } catch (error) {
@@ -485,8 +477,6 @@ export const destroyEvent = async (eventID: string) => {
         return false;
     }
 };
-
-
 
 const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     try {
@@ -647,3 +637,60 @@ export const setUserRoles = async (uid: string, roles: Roles): Promise<HttpsCall
             return res;
         });
 };
+
+export const getOfficers = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const q = query(
+            userRef,
+            where("roles.officer", "==", true),
+            orderBy("name")
+        );
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const officers = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            }
+        });
+
+        return officers;
+
+    } catch (error) {
+        console.error("Error fetching officers:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
+
+export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const q = query(
+            userRef,
+            where("roles.officer", "==", false),
+            orderBy("name")
+        );
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const members = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            }
+        });
+
+        return members;
+
+    } catch (error) {
+        console.error("Error fetching members:", error);
+        throw new Error("Internal Server Error.");
+    }
+}

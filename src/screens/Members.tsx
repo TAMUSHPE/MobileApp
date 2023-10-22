@@ -4,13 +4,13 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MembersStackParams } from '../types/Navigation';
 import MembersList from '../components/MembersList';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { PublicUserInfoUID } from '../types/User';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { fetchUserForList } from '../api/firebaseUtils';
+import { PublicUserInfo } from '../types/User';
 
 const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
-    const [officers, setOfficers] = useState<PublicUserInfoUID[]>([])
-    const [members, setMembers] = useState<PublicUserInfoUID[]>([])
+    const [officers, setOfficers] = useState<PublicUserInfo[]>([])
+    const [members, setMembers] = useState<PublicUserInfo[]>([])
     const [lastUserSnapshot, setLastUserSnapshot] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
     const lastUserSnapshotRef = useRef<QueryDocumentSnapshot<DocumentData> | null>(null);
     const filterRef = useRef<UserFilter>({ classYear: "", major: "", orderByField: "name" });
@@ -40,7 +40,6 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
     }, [filterRef.current]);
 
     const loadMoreUsers = async () => {
-        console.log("before Load", filterRef.current)
         const newMembers = await fetchUserForList({ lastUserSnapshot: lastUserSnapshotRef.current, numLimit: 10, filter: filterRef.current });
         if (newMembers.members.length > 0) {
             const lastMember = newMembers.members[newMembers.members.length - 1];

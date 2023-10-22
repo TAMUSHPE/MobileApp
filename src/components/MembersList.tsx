@@ -20,47 +20,6 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
         setOfficers(officersList || [])
     }, [membersList, officersList])
 
-    const searchFilterFunction = (text: string) => {
-        if (text) {
-            let newOfficerData: PublicUserInfo[] = [];
-            if (officers != undefined && officers.length > 0) {
-                newOfficerData = officers.filter(
-                    function (item) {
-                        const itemData = item.name
-                            ? item.name.toUpperCase()
-                            : ''.toUpperCase();
-                        const textData = text.toUpperCase();
-                        return itemData.indexOf(textData) > -1;
-                    }
-                );
-            }
-
-            let newMemberData: PublicUserInfo[] = [];
-            if (members != undefined && members.length > 0) {
-                newMemberData = members.filter(
-                    function (item) {
-                        const itemData = item.name
-                            ? item.name.toUpperCase()
-                            : ''.toUpperCase();
-                        const textData = text.toUpperCase();
-                        return itemData.indexOf(textData) > -1;
-                    }
-                );
-            }
-
-            setOfficers(newOfficerData);
-            setMembers(newMemberData);
-
-            setSearch(text);
-        } else {
-            if (officersList != undefined && officersList.length > 0) {
-                setOfficers(officersList);
-            }
-            if (membersList != undefined && membersList.length > 0) {
-                setMembers(membersList);
-            }
-        }
-    };
 
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (loadMoreUsers == undefined) return;
@@ -117,7 +76,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                                     <Octicons name="search" size={24} color="grey" />
                                 </View>
                                 <TextInput
-                                    onChangeText={(text) => searchFilterFunction(text)}
+                                    // onChangeText={(text) => searchFilterFunction(text)}
                                     value={search}
                                     underlineColorAndroid="transparent"
                                     placeholder="Search"
