@@ -1,9 +1,9 @@
-import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
+import { View, Text, Image, Modal, TouchableOpacity, Linking, TouchableWithoutFeedback } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { Images } from '../../assets';
 import { Committee, CommitteeKey } from '../types/Committees';
 import { getCommitteeInfo, getPublicUserData, getUser, setPublicUserData } from '../api/firebaseUtils';
-import { PublicUserInfoUID } from '../types/User';
+import { PublicUserInfo } from '../types/User';
 import { CommitteesInfoProp } from '../types/Navigation';
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { UserContext } from '../context/UserContext';
@@ -18,10 +18,11 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [committees, setCommittees] = useState<Array<CommitteeKey | string> | undefined>(userInfo?.publicInfo?.committees);
     const [committeeInfo, setCommitteeInfo] = useState<Committee | null>(null);
-    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfoUID | null>(null);
-    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfoUID[]>([]);
+    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfo | null>(null);
+    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfo[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
+    const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
 
     // determine if user is in committee
     useEffect(() => {
@@ -234,7 +235,7 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
             <View className='flex-row mx-4 mt-4 space-x-2'>
                 <TouchableOpacity
                     className='bg-white rounded-xl h-8 w-[8%] items-center justify-center border-gray-600 border'
-                    onPress={() => updateCommitteeCount()}
+                    onPress={() => setConfirmVisible(!confirmVisible)}
                 >
                     <Text>{isInCommittee ? "-" : "+"}</Text>
                 </TouchableOpacity>
@@ -252,6 +253,34 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
                 </TouchableOpacity>
             </View>
 
+            <Modal
+                animationType="none"
+                transparent={true}
+                visible={confirmVisible}
+                onRequestClose={() => setConfirmVisible(!confirmVisible)}
+            >
+                <TouchableOpacity
+                    onPress={() => setConfirmVisible(false)}
+                    className="h-[100%] w-[100%]"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                >
+                    <View className='items-center justify-center h-full'>
+                        <TouchableWithoutFeedback>
+                            <View className='opacity-100 bg-white w-[70%] rounded-md items-center'>
+                                <TouchableOpacity
+                                    onPress={async () => {
+                                        setConfirmVisible(false)
+                                        updateCommitteeCount()
+                                        
+                                    }}
+                                >
+                                    <Text className='text-xl font-bold py-3 px-8'> {isInCommittee ? "Leave" : "Join"} </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableOpacity>
+            </Modal>
         </View>
     )
 }
