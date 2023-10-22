@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Images } from '../../assets';
 import { Committee, CommitteeKey } from '../types/Committees';
 import { getCommitteeInfo, getPublicUserData, getUser, setPublicUserData } from '../api/firebaseUtils';
-import { PublicUserInfoUID } from '../types/User';
+import { PublicUserInfo } from '../types/User';
 import { CommitteesInfoProp } from '../types/Navigation';
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { UserContext } from '../context/UserContext';
@@ -18,8 +18,8 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [committees, setCommittees] = useState<Array<CommitteeKey | string> | undefined>(userInfo?.publicInfo?.committees);
     const [committeeInfo, setCommitteeInfo] = useState<Committee | null>(null);
-    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfoUID | null>(null);
-    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfoUID[]>([]);
+    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfo | null>(null);
+    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfo[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);

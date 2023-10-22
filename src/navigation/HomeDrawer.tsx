@@ -51,7 +51,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                 height: "100%"
             }}
         >
-            <StatusBar style='inverted' />
             <View className="flex-col bg-dark-navy w-full px-4 pb-4">
                 <View className='flex-row mb-2 items-center'>
                     <TouchableOpacity
