@@ -95,18 +95,6 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
     return (
         <SafeAreaView>
             <ScrollView>
-                {/* Header */}
-                <View className='flex-row items-center h-10'>
-                    <View className='w-screen absolute'>
-                        <Text className="text-2xl font-bold justify-center text-center">Restrictions Editor</Text>
-                    </View>
-                    <View className='pl-6'>
-                        <TouchableOpacity className="pr-4" onPress={navigation.goBack}>
-                            <Octicons name="chevron-left" size={30} color="black" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
                 {/* Image */}
                 <View className='justify-center items-center'>
                     <Image
