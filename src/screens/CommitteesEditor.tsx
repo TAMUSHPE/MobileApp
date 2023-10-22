@@ -21,8 +21,8 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfo | null>(null);
     const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfo[]>([]);
     const [updated, setUpdated] = useState(false);
-    const [officers, setOfficers] = useState<PublicUserInfoUID[]>([])
-    const [members, setMembers] = useState<PublicUserInfoUID[]>([])
+    const [officers, setOfficers] = useState<PublicUserInfo[]>([])
+    const [members, setMembers] = useState<PublicUserInfo[]>([])
 
     const insets = useSafeAreaInsets();
 
@@ -42,10 +42,8 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
             setLeadsUserInfo(prevState => [...prevState, { ...fetchedInfo, uid }]);
         }
     }
-    console.log(committeeName)
 
     useEffect(() => {
-        console.log(committeeName)
         const loadData = async () => {
             const loadedCommitteeData = await getCommitteeInfo(CommitteeConstants[committeeName as CommitteeKey].firebaseDocName);
             if (loadedCommitteeData) {

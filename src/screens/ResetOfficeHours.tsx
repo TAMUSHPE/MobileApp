@@ -10,7 +10,7 @@ const ResetOfficeHours = () => {
             const resetOfficeOnCall = httpsCallable(functions, 'resetOfficeOnCall');
             await resetOfficeOnCall();
         } catch (err) {
-            console.log("Error resetting office hours:", err)
+            console.error("Error resetting office hours:", err)
         }
     }
 
