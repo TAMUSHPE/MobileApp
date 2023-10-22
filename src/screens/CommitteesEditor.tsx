@@ -9,7 +9,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Picker } from '@react-native-picker/picker';
 import { getCommitteeInfo, getPublicUserData, setCommitteeInfo } from '../api/firebaseUtils';
 import MembersList from '../components/MembersList';
-import { PublicUserInfoUID } from '../types/User';
+import { PublicUserInfo } from '../types/User';
 
 const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [committeeData, setCommitteeData] = useState<Committee>();
@@ -18,8 +18,8 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     const [nameModalVisible, setNameModalVisible] = useState(false);
     const [headModalVisible, setHeadModalVisible] = useState(false);
     const [leadsModalVisible, setLeadsModalVisible] = useState(false);
-    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfoUID | null>(null);
-    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfoUID[]>([]);
+    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfo | null>(null);
+    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfo[]>([]);
     const [updated, setUpdated] = useState(false);
 
     const insets = useSafeAreaInsets();

@@ -3,17 +3,17 @@ import React, { useEffect, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { getMembersExcludeOfficers, getOfficers } from '../api/firebaseUtils'
 import { MembersProps } from '../types/Navigation'
-import { PublicUserInfoUID } from '../types/User'
+import { PublicUserInfo } from '../types/User'
 import MemberCard from './MemberCard'
 import { TouchableOpacity } from 'react-native';
 
 const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress }) => {
-    const [officers, setOfficers] = useState<PublicUserInfoUID[]>([])
-    const [members, setMembers] = useState<PublicUserInfoUID[]>([])
+    const [officers, setOfficers] = useState<PublicUserInfo[]>([])
+    const [members, setMembers] = useState<PublicUserInfo[]>([])
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [search, setSearch] = useState<string>("")
-    const [filteredOfficers, setFilteredOfficers] = useState<PublicUserInfoUID[]>([])
-    const [filteredMembers, setFilteredMembers] = useState<PublicUserInfoUID[]>([])
+    const [filteredOfficers, setFilteredOfficers] = useState<PublicUserInfo[]>([])
+    const [filteredMembers, setFilteredMembers] = useState<PublicUserInfo[]>([])
 
     useEffect(() => {
         getOfficers().then((officers) => {
