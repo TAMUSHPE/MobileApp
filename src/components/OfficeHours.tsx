@@ -43,7 +43,7 @@ const OfficeHours = () => {
     }
 
     const handleKnock = () => {
-        if (auth.currentUser) {
+        if (auth.currentUser?.email?.split("@")[1] === "tamu.edu") {
             const data: MemberStatus = {
                 uid: auth.currentUser.uid,
                 timestamp: serverTimestamp()

@@ -270,8 +270,9 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
                                 <TouchableOpacity
                                     onPress={async () => {
                                         setConfirmVisible(false)
-                                        updateCommitteeCount()
-                                        
+                                        if(auth.currentUser?.email?.split("@")[1] === "tamu.edu"){
+                                            updateCommitteeCount()
+                                        }
                                     }}
                                 >
                                     <Text className='text-xl font-bold py-3 px-8'> {isInCommittee ? "Leave" : "Join"} </Text>
