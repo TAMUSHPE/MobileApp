@@ -8,7 +8,7 @@ import { UserContext } from '../context/UserContext';
 import FeaturedSlider from '../components/FeaturedSlider';
 import OfficeHours from '../components/OfficeHours';
 import OfficeSignIn from '../components/OfficeSignIn';
-import { User, PublicUserInfoUID } from '../types/User';
+import { User, PublicUserInfo } from '../types/User';
 import { StatusBar } from 'expo-status-bar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackParams } from "../types/Navigation"
@@ -26,7 +26,7 @@ import { Images } from '../../assets';
 const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const { setUserInfo } = useContext(UserContext)!;
-    const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfoUID | null>(null);
+    const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfo | null>(null);
 
     const screenWidth = Dimensions.get('window').width;
     const imageHeight = screenWidth * 0.34;

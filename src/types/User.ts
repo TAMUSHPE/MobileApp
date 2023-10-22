@@ -20,6 +20,7 @@ export type RankChange = "decreased" | "same" | "increased";
 */
 export interface PublicUserInfo {
     // Firestore parameters
+    uid?: string
     email?: string;
     tamuEmail?: string;
     displayName?: string;
@@ -36,14 +37,6 @@ export interface PublicUserInfo {
     // Google Sheets parameters
     points?: number;
 };
-
-/**
- * This is seperate from PublicUserInfo because the UID is not stored in the document.
- * This is used when the UID is needed that is not the currently logged in user.
- */
-export interface PublicUserInfoUID extends PublicUserInfo {
-    uid?: string
-}
 
 /**
  * This interface represents the settings for the application.

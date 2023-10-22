@@ -2,15 +2,15 @@ import { Text, ScrollView, View, TextInput, NativeSyntheticEvent, NativeScrollEv
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { MembersProps } from '../types/Navigation'
-import { PublicUserInfoUID } from '../types/User'
+import { PublicUserInfo } from '../types/User'
 import MemberCard from './MemberCard'
 import { TouchableOpacity } from 'react-native';
 
 const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUserRef, filterRef, setLastUserSnapshot }) => {
     const [search, setSearch] = useState<string>("")
     const [showFilterMenu, setShowFilterMenu] = useState(false);
-    const [officers, setOfficers] = useState<PublicUserInfoUID[]>([])
-    const [members, setMembers] = useState<PublicUserInfoUID[]>([])
+    const [officers, setOfficers] = useState<PublicUserInfo[]>([])
+    const [members, setMembers] = useState<PublicUserInfo[]>([])
     const [loading, setLoading] = useState(false);
     const [localFilter, setLocalFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "name" });
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -22,7 +22,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
 
     const searchFilterFunction = (text: string) => {
         if (text) {
-            let newOfficerData: PublicUserInfoUID[] = [];
+            let newOfficerData: PublicUserInfo[] = [];
             if (officers != undefined && officers.length > 0) {
                 newOfficerData = officers.filter(
                     function (item) {
@@ -35,7 +35,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                 );
             }
 
-            let newMemberData: PublicUserInfoUID[] = [];
+            let newMemberData: PublicUserInfo[] = [];
             if (members != undefined && members.length > 0) {
                 newMemberData = members.filter(
                     function (item) {

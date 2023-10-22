@@ -1,19 +1,6 @@
 import * as functions from 'firebase-functions';
-import { db, auth } from "./firebaseConfig"
-import { queryGoogleSpreadsheet, GoogleSheetsIDs } from "../../src/api/fetchGoogleSheets"
-import { RankChange } from "../../src/types/User";
-
-
-/** Fetches UID associated with an email from Firebase Authentication */
-const getUIDbyEmail = async (email: string): Promise<string | null> => {
-    try {
-        const usersSnapshot = await auth.getUserByEmail(email);
-        return usersSnapshot?.uid ?? null;
-    } catch (error) {   
-        console.error("Error fetching UID by email:", error);
-        return null;
-    }
-}
+import { db } from "./firebaseConfig"
+import { RankChange } from "./types";
 
 /** Determines rank change based on current and new ranks. */
 const getRankChange = (userData: any, newRank: number): RankChange => {
@@ -23,10 +10,7 @@ const getRankChange = (userData: any, newRank: number): RankChange => {
 }
 
 /** Updates the rank and rank change status of a user in Firestore database */
-const updateUserRank = async (email: string, newRank: number) => {
-    if (!email) return;
-
-    const uid = await getUIDbyEmail(email);
+const updateUserRank = async (uid: string, newRank: number) => {
     if (!uid) return;
 
     const userDocRef = db.collection('users').doc(uid);
@@ -47,18 +31,16 @@ const updateUserRank = async (email: string, newRank: number) => {
 /** Fetches data from Google Spreadsheet and updates users' ranks in Firestore */
 const updateRanks = async () => {
     try {
-        const response = await queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID);
-        const rows = response?.table.rows;
+        const snapshot = await db.collection('users').orderBy("points").get();
 
-        if (!rows) return "No rows to update.";
-
-        const updatePromises = rows.map((row, i) => updateUserRank(row.c[2]?.v, i + 1));
-        await Promise.all(updatePromises);
-
-        return "Successfully updated ranks!";
+        let currentRank = 1;
+        snapshot.forEach((doc) => {
+            updateUserRank(doc.id, currentRank);
+            currentRank++;
+        });
     } catch (error) {
-        console.error("Error in updateRanksLogic:", error);
-        throw new Error("Internal Server Error.");
+        console.error("Error in updateRanks:", error);
+        throw new Error("Internal Server error");
     }
 }
 
@@ -69,6 +51,9 @@ export const updateRanksScheduled = functions.pubsub.schedule('0 5 * * *').timeZ
 
 /** Callable function to manually update ranks */
 export const updateRanksOnCall = functions.https.onCall(async (data, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
+    }
     try {
         const result = await updateRanks();
         return {

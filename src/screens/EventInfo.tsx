@@ -32,7 +32,6 @@ const EventInfo = ({ navigation }: EventProps) => {
             };
 
             const fetchEventData = async () => {
-                console.log("fetching");
                 try {
                     const eventData = await getEvent(eventId);
                     if (eventData) {

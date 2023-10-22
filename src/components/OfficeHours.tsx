@@ -75,7 +75,7 @@ const OfficeHours = () => {
             </TouchableOpacity>
 
             <Modal
-                animationType="slide"
+                animationType="none"
                 transparent={true}
                 visible={confirmVisible}
                 onRequestClose={() => setConfirmVisible(!confirmVisible)}
