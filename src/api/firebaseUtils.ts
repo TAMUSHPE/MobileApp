@@ -638,34 +638,6 @@ export const setUserRoles = async (uid: string, roles: Roles): Promise<HttpsCall
         });
 };
 
-export const getOfficers = async (): Promise<PublicUserInfo[]> => {
-    try {
-        const userRef = collection(db, 'users');
-        const q = query(
-            userRef,
-            where("roles.officer", "==", true),
-            orderBy("name")
-        );
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            return [];
-        }
-
-        const officers = querySnapshot.docs.map((doc) => {
-            return {
-                ...doc.data(),
-                uid: doc.id
-            }
-        });
-
-        return officers;
-
-    } catch (error) {
-        console.error("Error fetching officers:", error);
-        throw new Error("Internal Server Error.");
-    }
-}
-
 
 export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => {
     try {
