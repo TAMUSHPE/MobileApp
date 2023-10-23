@@ -154,6 +154,8 @@ export type MembersProps = {
     hasMoreUserRef?:  MutableRefObject<boolean>;
     filterRef?: MutableRefObject<UserFilter>;
     setLastUserSnapshot?: React.Dispatch<SetStateAction<QueryDocumentSnapshot<DocumentData> | null>>;
+    canSearch?: boolean;
+    setNumLimit?: React.Dispatch<SetStateAction<number | null>>;
 }
 
 export type EventProps = {

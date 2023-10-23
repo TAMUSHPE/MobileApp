@@ -16,7 +16,7 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
     const filterRef = useRef<UserFilter>({ classYear: "", major: "", orderByField: "name" });
     const hasMoreUserRef = useRef(false);
     const [initialLoad, setInitialLoad] = useState(true);
-
+    const [numLimit, setNumLimit] = useState<number | null>(10);
 
     const handleCardPress = (uid: string): string | void => {
         navigation.navigate("PublicProfile", { uid });
@@ -37,10 +37,11 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
         if (!initialLoad) {
             loadData();
         }
-    }, [filterRef.current]);
+    }, [filterRef.current, numLimit]);
 
     const loadMoreUsers = async () => {
-        const newMembers = await fetchUserForList({ lastUserSnapshot: lastUserSnapshotRef.current, numLimit: 10, filter: filterRef.current });
+        console.log("loading more users", lastUserSnapshotRef.current, numLimit, filterRef.current)
+        const newMembers = await fetchUserForList({ lastUserSnapshot: lastUserSnapshotRef.current, numLimit: numLimit, filter: filterRef.current });
         if (newMembers.members.length > 0) {
             const lastMember = newMembers.members[newMembers.members.length - 1];
             setLastUserSnapshot(lastMember);
@@ -80,6 +81,8 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
                 hasMoreUserRef={hasMoreUserRef}
                 filterRef={filterRef}
                 setLastUserSnapshot={setLastUserSnapshot}
+                canSearch={true}
+                setNumLimit={setNumLimit}
             />
         </SafeAreaView >
     )
