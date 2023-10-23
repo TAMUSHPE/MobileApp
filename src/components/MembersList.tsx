@@ -1,4 +1,4 @@
-import { Text, ScrollView, View, TextInput, NativeSyntheticEvent, NativeScrollEvent, ActivityIndicator } from 'react-native'
+import { Text, ScrollView, View, TextInput, NativeSyntheticEvent, NativeScrollEvent, ActivityIndicator, TouchableHighlight, TouchableWithoutFeedback } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { MembersProps } from '../types/Navigation'
@@ -6,7 +6,7 @@ import { PublicUserInfo } from '../types/User'
 import MemberCard from './MemberCard'
 import { TouchableOpacity } from 'react-native';
 
-const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUserRef, filterRef, setLastUserSnapshot }) => {
+const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUserRef, filterRef, setLastUserSnapshot, canSearch, setNumLimit }) => {
     const [search, setSearch] = useState<string>("")
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [officers, setOfficers] = useState<PublicUserInfo[]>([])
@@ -14,16 +14,75 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
     const [loading, setLoading] = useState(false);
     const [localFilter, setLocalFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "name" });
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const inputRef = useRef<TextInput>(null);
 
     useEffect(() => {
-        setMembers(membersList || [])
-        setOfficers(officersList || [])
-    }, [membersList, officersList])
+        if (search) {
+            searchFilterFunction(search);
+        } else {
+            setMembers(membersList || []);
+            setOfficers(officersList || []);
+        }
+    }, [membersList, officersList]);
 
+    useEffect(() => {
+        if (search == "")
+            if (setLastUserSnapshot)
+                setLastUserSnapshot(null);
+        if (filterRef)
+            filterRef.current = localFilter;
+        setShowFilterMenu(false);
+        if (setNumLimit)
+            setNumLimit(10);
+    }, [search])
+
+    const resetList = () => {
+        if (setLastUserSnapshot)
+            setLastUserSnapshot(null);
+        if (filterRef)
+            filterRef.current = { classYear: "", major: "", orderByField: "name" };
+        setLocalFilter({ classYear: "", major: "", orderByField: "name" });
+        setShowFilterMenu(false);
+        if (setNumLimit)
+            setNumLimit(10);
+    }
+
+    const searchFilterFunction = (text: string) => {
+        let newOfficerData: PublicUserInfo[] = [];
+        if (officersList != undefined && officersList.length > 0) {
+            newOfficerData = officersList.filter(
+                function (item) {
+                    const itemData = item.name
+                        ? item.name.toUpperCase()
+                        : ''.toUpperCase();
+                    const textData = text.toUpperCase();
+                    return itemData.indexOf(textData) > -1;
+                }
+            );
+        }
+
+        let newMemberData: PublicUserInfo[] = [];
+        if (membersList != undefined && membersList.length > 0) {
+            newMemberData = membersList.filter(
+                function (item) {
+                    const itemData = item.name
+                        ? item.name.toUpperCase()
+                        : ''.toUpperCase();
+                    const textData = text.toUpperCase();
+                    return itemData.indexOf(textData) > -1;
+                }
+            );
+        }
+
+        setOfficers(newOfficerData);
+        setMembers(newMemberData);
+    };
 
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (loadMoreUsers == undefined) return;
         if (!hasMoreUserRef?.current) return;
+        if (search != "") return;
+        console.log("doscrollingstuff")
         const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
             const paddingToBottom = 20;
             return layoutMeasurement.height + contentOffset.y >=
@@ -52,14 +111,6 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
         setShowFilterMenu(false);
     }
 
-    const handleCLearFilter = () => {
-        if (setLastUserSnapshot)
-            setLastUserSnapshot(null);
-        if (filterRef)
-            filterRef.current = { classYear: "", major: "", orderByField: "name" };
-        setShowFilterMenu(false);
-
-    }
 
     return (
         <ScrollView
@@ -67,72 +118,80 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
             scrollEventThrottle={400}
         >
             <View className='mx-4'>
-                <View>
-
-                    <View className='flex-row  mb-4'>
-                        <View className=' flex-1'>
-                            <View className='bg-gray-300 rounded-xl px-4 py-2 flex-row'>
+                {canSearch && (
+                    <View>
+                        <View className='flex-row  mb-4'>
+                            <TouchableOpacity
+                                activeOpacity={1} // doing this b/c Touchablewithoutfeedback acts weird 
+                                className='bg-gray-300 rounded-xl px-4 py-2 flex-row flex-1'
+                                onPress={() => inputRef.current?.focus()}
+                            >
                                 <View className='mr-3'>
                                     <Octicons name="search" size={24} color="grey" />
                                 </View>
                                 <TextInput
-                                    // onChangeText={(text) => searchFilterFunction(text)}
+                                    ref={inputRef}
+                                    onChangeText={(text) => {
+                                        setSearch(text);
+                                        if (setNumLimit)
+                                            setNumLimit(null);
+                                    }}
                                     value={search}
                                     underlineColorAndroid="transparent"
                                     placeholder="Search"
                                     className='text-lg text-center justify-center'
                                 />
-                            </View>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setShowFilterMenu(!showFilterMenu)}
+                                className='pl-4 items-center justify-center'
+                            >
+                                <Octicons name="filter" size={27} color="black" />
+                            </TouchableOpacity>
                         </View>
-                        <TouchableOpacity
-                            onPress={() => setShowFilterMenu(!showFilterMenu)}
-                            className='pl-4 items-center justify-center'
-                        >
-                            <Octicons name="filter" size={27} color="black" />
-                        </TouchableOpacity>
+                        {showFilterMenu && (
+                            <View className='flex-row p-4'>
+                                <View>
+                                    <TextInput
+                                        value={localFilter?.classYear}
+                                        onChangeText={(text) => setLocalFilter({ ...localFilter, classYear: text })}
+                                        placeholder="classYear"
+                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4 mb-4'
+                                    />
+                                    <TextInput
+                                        value={localFilter?.major}
+                                        onChangeText={(text) => setLocalFilter({ ...localFilter, major: text })}
+                                        placeholder="Major"
+                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4 mb-4'
+                                    />
+
+                                    <Text>OrderBy:(name/points)</Text>
+                                    <TextInput
+                                        value={localFilter?.orderByField}
+                                        onChangeText={(text) => setLocalFilter({ ...localFilter, orderByField: text })}
+                                        placeholder="OrderBy"
+                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2'
+                                    />
+                                </View>
+                                <View>
+                                    <TouchableOpacity
+                                        onPress={() => handleApplyFilter()}
+                                        className='items-center justify-center bg-pale-blue w-14 h-10 rounded-lg'>
+                                        <Text className='text-bold text-xl'>Apply</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            resetList()
+                                            setSearch("");
+                                        }}
+                                        className='items-center justify-center bg-red-600 w-14 h-10 rounded-lg'>
+                                        <Text className='text-bold text-xl'>Clear</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
                     </View>
-
-                    {showFilterMenu && (
-                        <View className='flex-row p-4'>
-                            <View>
-                                <TextInput
-                                    value={localFilter?.classYear}
-                                    onChangeText={(text) => setLocalFilter({ ...localFilter, classYear: text })}
-                                    placeholder="classYear"
-                                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4 mb-4'
-                                />
-                                <TextInput
-                                    value={localFilter?.major}
-                                    onChangeText={(text) => setLocalFilter({ ...localFilter, major: text })}
-                                    placeholder="Major"
-                                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4 mb-4'
-                                />
-
-                                <Text>OrderBy:(name/points)</Text>
-                                <TextInput
-                                    value={localFilter?.orderByField}
-                                    onChangeText={(text) => setLocalFilter({ ...localFilter, orderByField: text })}
-                                    placeholder="OrderBy"
-                                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2'
-                                />
-                            </View>
-                            <View>
-                                <TouchableOpacity
-                                    onPress={() => handleApplyFilter()}
-                                    className='items-center justify-center bg-pale-blue w-14 h-10 rounded-lg'>
-                                    <Text className='text-bold text-xl'>Apply</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => handleCLearFilter()}
-                                    className='items-center justify-center bg-red-600 w-14 h-10 rounded-lg'>
-                                    <Text className='text-bold text-xl'>Clear</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    )}
-                </View>
-
-
+                )}
 
                 {officers.length === 0 && members.length === 0 &&
                     <Text className='text-xl mb-4 text-bold'>No users found</Text>
