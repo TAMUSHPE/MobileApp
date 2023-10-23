@@ -2,49 +2,51 @@ import { Text, ScrollView, View, TextInput, NativeSyntheticEvent, NativeScrollEv
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { MembersProps } from '../types/Navigation'
-import { PublicUserInfo } from '../types/User'
+import { PublicUserInfo, UserFilter } from '../types/User'
 import MemberCard from './MemberCard'
 import { TouchableOpacity } from 'react-native';
 
-const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUserRef, filterRef, setLastUserSnapshot, canSearch, setNumLimit }) => {
+
+const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUser, filter, setFilter, setLastUserSnapshot, canSearch, setNumLimit }) => {
     const [search, setSearch] = useState<string>("")
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [officers, setOfficers] = useState<PublicUserInfo[] | null>(null)
     const [members, setMembers] = useState<PublicUserInfo[] | null>(null)
     const [loading, setLoading] = useState(false);
-    const [localFilter, setLocalFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "name" });
+    const [localFilter, setLocalFilter] = useState<UserFilter>(filter!);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const inputRef = useRef<TextInput>(null);
+    const [wait, setWait] = useState(false);
+    const DEFAULT_NUM_LIMIT = 10;
 
     useEffect(() => {
-        if (search) {
-            searchFilterFunction(search);
-        } else {
-            setMembers(membersList || null);
-            setOfficers(officersList || null);
-        }
+        searchFilterFunction(search);
+
+        setLoading(false);
+
     }, [membersList, officersList]);
-    console.log(membersList)
+
     useEffect(() => {
-        if (search == "")
+        if (search == "") {
             if (setLastUserSnapshot)
                 setLastUserSnapshot(null);
-        if (filterRef)
-            filterRef.current = localFilter;
-        setShowFilterMenu(false);
-        if (setNumLimit)
-            setNumLimit(10);
+            if (setFilter)
+                setFilter(localFilter)
+            setShowFilterMenu(false);
+            if (setNumLimit)
+                setNumLimit(DEFAULT_NUM_LIMIT);
+        }
     }, [search])
 
     const resetList = () => {
         if (setLastUserSnapshot)
             setLastUserSnapshot(null);
-        if (filterRef)
-            filterRef.current = { classYear: "", major: "", orderByField: "name" };
+        if (setFilter)
+            setFilter({ classYear: "", major: "", orderByField: "name" })
         setLocalFilter({ classYear: "", major: "", orderByField: "name" });
         setShowFilterMenu(false);
         if (setNumLimit)
-            setNumLimit(10);
+            setNumLimit(DEFAULT_NUM_LIMIT);
     }
 
     const searchFilterFunction = (text: string) => {
@@ -73,14 +75,13 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                 }
             );
         }
-
         setOfficers(newOfficerData);
         setMembers(newMemberData);
     };
 
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (loadMoreUsers == undefined) return;
-        if (!hasMoreUserRef?.current) return;
+        if (!hasMoreUser) return;
         if (search != "") return;
 
         const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
@@ -92,25 +93,29 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
         if (!isCloseToBottom(nativeEvent)) return;
         setLoading(true);
 
-        if (debounceTimer.current) {
-            clearTimeout(debounceTimer.current);
-        }
+        setWait(true);
+    }, [search, loadMoreUsers, setLoading]);
 
-        debounceTimer.current = setTimeout(() => {
-            loadMoreUsers()
-            debounceTimer.current = null;
-        }, 300);
-    }, [search]);
+    useEffect(() => {
+        if (wait) {
+            const timer = setTimeout(() => {
+                if (loadMoreUsers)
+                    loadMoreUsers();
+                setWait(false);
+            }, 600);
+
+            return () => clearTimeout(timer);
+        }
+    }, [wait, loadMoreUsers]);
 
 
     const handleApplyFilter = () => {
         if (setLastUserSnapshot)
             setLastUserSnapshot(null);
-        if (filterRef)
-            filterRef.current = localFilter;
+        if (setFilter)
+            setFilter(localFilter)
         setShowFilterMenu(false);
     }
-
 
     return (
         <ScrollView
@@ -206,6 +211,9 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                             </View>
                         }
                         {officers?.map((userData, index) => {
+                            console.log(userData.displayName, "displayname")
+                            console.log(userData.name, "name")
+
                             return (
                                 <MemberCard
                                     key={index}
@@ -221,24 +229,30 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                                 <Text className='text-xl text-bold'>Members </Text>
                             </View>
                         }
-                        {members?.map((userData, index) => {
-                            return (
-                                <MemberCard
-                                    key={index}
-                                    userData={userData}
-                                    navigation={navigation}
-                                    handleCardPress={() => handleCardPress(userData.uid!)} />
-                            )
-                        })}
+                        {
+                            members?.map((userData, index) => {
+                                if (!userData.name) {
+                                    return null; // this is a hacky fix for user that have not completed registration
+                                }
+                                return (
+                                    <MemberCard
+                                        key={index}
+                                        userData={userData}
+                                        navigation={navigation}
+                                        handleCardPress={() => handleCardPress(userData.uid!)}
+                                    />
+                                );
+                            })
+                        }
 
                     </>
                 }
 
-                {hasMoreUserRef?.current && loading && (
+                {hasMoreUser && loading && (
                     <ActivityIndicator size={"large"} />
                 )}
 
-                {!hasMoreUserRef?.current && (
+                {!hasMoreUser && (
                     <View className='pb-6 items-center justify-center'>
                         <Text>
                             End of Users
@@ -249,12 +263,6 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
             </View>
         </ScrollView>
     )
-}
-
-type UserFilter = {
-    classYear: string,
-    major: string,
-    orderByField: string
 }
 
 export default MembersList

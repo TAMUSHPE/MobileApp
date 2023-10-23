@@ -86,3 +86,9 @@ export interface OfficerStatus extends MemberStatus {
     signedIn: boolean;
 }
 
+
+export type UserFilter = {
+    classYear: string,
+    major: string,
+    orderByField: string
+}
