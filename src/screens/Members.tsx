@@ -6,15 +6,16 @@ import MembersList from '../components/MembersList';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { fetchUserForList } from '../api/firebaseUtils';
-import { PublicUserInfo } from '../types/User';
+import { PublicUserInfo, UserFilter } from '../types/User';
 
 const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
     const [officers, setOfficers] = useState<PublicUserInfo[]>([])
     const [members, setMembers] = useState<PublicUserInfo[]>([])
     const [lastUserSnapshot, setLastUserSnapshot] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
     const lastUserSnapshotRef = useRef<QueryDocumentSnapshot<DocumentData> | null>(null);
-    const filterRef = useRef<UserFilter>({ classYear: "", major: "", orderByField: "name" });
-    const hasMoreUserRef = useRef(false);
+    const [filter, setFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "name" });
+    const [hasMoreUser, setHasMoreUser] = useState<boolean>(false);
+
     const [initialLoad, setInitialLoad] = useState(true);
     const [numLimit, setNumLimit] = useState<number | null>(10);
 
@@ -23,25 +24,41 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
     };
 
     useEffect(() => {
+        const initializeData = async () => {
+
+            console.log("loadmoreusers on initial load")
+            await loadMoreUsers();
+            await loadOfficers();
+        };
+
+        initializeData().then(() => {
+            setInitialLoad(false);
+        });
+    }, []);
+
+    useEffect(() => {
         lastUserSnapshotRef.current = lastUserSnapshot;
     }, [lastUserSnapshot]);
 
     useEffect(() => {
-        const loadData = async () => {
+        const resetData = async () => {
             setMembers([]);
             setOfficers([]);
-
-            await loadMoreUsers();
-            await loadOfficers();
+            setLastUserSnapshot(null);
         };
+
         if (!initialLoad) {
-            loadData();
+            resetData().then(() => {
+                console.log("loadmoreusers on filter change and numLimit change")
+                loadMoreUsers();
+                loadOfficers();
+            });
         }
-    }, [filterRef.current, numLimit]);
+
+    }, [filter, numLimit]);
 
     const loadMoreUsers = async () => {
-        console.log("loading more users", lastUserSnapshotRef.current, numLimit, filterRef.current)
-        const newMembers = await fetchUserForList({ lastUserSnapshot: lastUserSnapshotRef.current, numLimit: numLimit, filter: filterRef.current });
+        const newMembers = await fetchUserForList({ lastUserSnapshot: lastUserSnapshotRef.current, numLimit: numLimit, filter: filter });
         if (newMembers.members.length > 0) {
             const lastMember = newMembers.members[newMembers.members.length - 1];
             setLastUserSnapshot(lastMember);
@@ -50,22 +67,17 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
                 ...newMembers.members.map(doc => ({ ...doc.data(), uid: doc.id }))
             ]);
         }
-        hasMoreUserRef.current = newMembers.hasMoreUser!;
+        console.log('setting userref')
+        setHasMoreUser(newMembers.hasMoreUser!);
+
     }
 
     const loadOfficers = async () => {
-        const officers = await fetchUserForList({ isOfficer: true, filter: filterRef.current });
+        const officers = await fetchUserForList({ isOfficer: true, filter: filter });
         if (officers.members.length > 0) {
             setOfficers(officers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
-
         }
     }
-
-    useEffect(() => {
-        loadOfficers();
-        loadMoreUsers();
-        setInitialLoad(false);
-    }, [])
 
     return (
         <SafeAreaView>
@@ -78,8 +90,9 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
                 officersList={officers}
                 membersList={members}
                 loadMoreUsers={loadMoreUsers}
-                hasMoreUserRef={hasMoreUserRef}
-                filterRef={filterRef}
+                hasMoreUser={hasMoreUser}
+                setFilter={setFilter}
+                filter={filter}
                 setLastUserSnapshot={setLastUserSnapshot}
                 canSearch={true}
                 setNumLimit={setNumLimit}
@@ -88,10 +101,6 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
     )
 }
 
-type UserFilter = {
-    classYear: string,
-    major: string,
-    orderByField: string
-}
+
 
 export default MembersScreen;

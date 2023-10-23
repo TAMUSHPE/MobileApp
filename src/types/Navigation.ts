@@ -2,7 +2,7 @@
 import { ImageSourcePropType } from "react-native";
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from '@react-navigation/native';
-import { PublicUserInfo } from "./User";
+import { PublicUserInfo, UserFilter } from "./User";
 import { Test } from '../types/GoogleSheetsTypes';
 import { Committee } from "./Committees";
 import { SHPEEventID } from "./Events";
@@ -139,11 +139,6 @@ export type TestBankProps = {
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 
-type UserFilter = {
-    classYear: string,
-    major: string,
-    orderByField: string
-}
 export type MembersProps = {
     userData?: PublicUserInfo
     handleCardPress: (uid: string) => string | void;
@@ -151,8 +146,9 @@ export type MembersProps = {
     officersList? : PublicUserInfo[]
     membersList? : PublicUserInfo[]
     loadMoreUsers?: () => void;
-    hasMoreUserRef?:  MutableRefObject<boolean>;
-    filterRef?: MutableRefObject<UserFilter>;
+    hasMoreUser?:  boolean;
+    setFilter?: React.Dispatch<SetStateAction<UserFilter>>;
+    filter?: UserFilter;
     setLastUserSnapshot?: React.Dispatch<SetStateAction<QueryDocumentSnapshot<DocumentData> | null>>;
     canSearch?: boolean;
     setNumLimit?: React.Dispatch<SetStateAction<number | null>>;
