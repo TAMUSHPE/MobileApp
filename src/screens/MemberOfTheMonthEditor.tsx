@@ -64,7 +64,6 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
     }, []);
 
     useEffect(() => {
-        console.log("loadmoreusers on filter change and numLimit change")
         const resetData = async () => {
             setMembers([]);
         };

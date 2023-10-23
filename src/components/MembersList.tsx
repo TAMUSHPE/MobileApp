@@ -211,9 +211,6 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                             </View>
                         }
                         {officers?.map((userData, index) => {
-                            console.log(userData.displayName, "displayname")
-                            console.log(userData.name, "name")
-
                             return (
                                 <MemberCard
                                     key={index}
