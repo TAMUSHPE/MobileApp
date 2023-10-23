@@ -9,8 +9,8 @@ import { TouchableOpacity } from 'react-native';
 const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUserRef, filterRef, setLastUserSnapshot, canSearch, setNumLimit }) => {
     const [search, setSearch] = useState<string>("")
     const [showFilterMenu, setShowFilterMenu] = useState(false);
-    const [officers, setOfficers] = useState<PublicUserInfo[]>([])
-    const [members, setMembers] = useState<PublicUserInfo[]>([])
+    const [officers, setOfficers] = useState<PublicUserInfo[] | null>(null)
+    const [members, setMembers] = useState<PublicUserInfo[] | null>(null)
     const [loading, setLoading] = useState(false);
     const [localFilter, setLocalFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "name" });
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -20,11 +20,11 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
         if (search) {
             searchFilterFunction(search);
         } else {
-            setMembers(membersList || []);
-            setOfficers(officersList || []);
+            setMembers(membersList || null);
+            setOfficers(officersList || null);
         }
     }, [membersList, officersList]);
-
+    console.log(membersList)
     useEffect(() => {
         if (search == "")
             if (setLastUserSnapshot)
@@ -82,7 +82,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
         if (loadMoreUsers == undefined) return;
         if (!hasMoreUserRef?.current) return;
         if (search != "") return;
-        console.log("doscrollingstuff")
+
         const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
             const paddingToBottom = 20;
             return layoutMeasurement.height + contentOffset.y >=
@@ -100,7 +100,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
             loadMoreUsers()
             debounceTimer.current = null;
         }, 300);
-    }, []);
+    }, [search]);
 
 
     const handleApplyFilter = () => {
@@ -193,39 +193,46 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                     </View>
                 )}
 
-                {officers.length === 0 && members.length === 0 &&
-                    <Text className='text-xl mb-4 text-bold'>No users found</Text>
-                }
-                {officers.length != 0 &&
-                    <View className='flex-row mb-4'>
-                        <Text className='text-xl text-bold'>Officers </Text>
-                    </View>
-                }
-                {officers.map((userData, index) => {
-                    return (
-                        <MemberCard
-                            key={index}
-                            userData={userData}
-                            navigation={navigation}
-                            handleCardPress={() => { handleCardPress(userData.uid!) }}
-                        />
-                    )
-                })}
+                {officers != null && members != null &&
+                    <>
+                        {officers?.length === 0 && members?.length === 0 &&
+                            <Text className='text-xl mb-4 text-bold'>No users found</Text>
+                        }
 
-                {members.length != 0 &&
-                    <View className='flex-row mb-4'>
-                        <Text className='text-xl text-bold'>Members </Text>
-                    </View>
+
+                        {officers?.length != 0 &&
+                            <View className='flex-row mb-4'>
+                                <Text className='text-xl text-bold'>Officers </Text>
+                            </View>
+                        }
+                        {officers?.map((userData, index) => {
+                            return (
+                                <MemberCard
+                                    key={index}
+                                    userData={userData}
+                                    navigation={navigation}
+                                    handleCardPress={() => { handleCardPress(userData.uid!) }}
+                                />
+                            )
+                        })}
+
+                        {members?.length != 0 &&
+                            <View className='flex-row mb-4'>
+                                <Text className='text-xl text-bold'>Members </Text>
+                            </View>
+                        }
+                        {members?.map((userData, index) => {
+                            return (
+                                <MemberCard
+                                    key={index}
+                                    userData={userData}
+                                    navigation={navigation}
+                                    handleCardPress={() => handleCardPress(userData.uid!)} />
+                            )
+                        })}
+
+                    </>
                 }
-                {members.map((userData, index) => {
-                    return (
-                        <MemberCard
-                            key={index}
-                            userData={userData}
-                            navigation={navigation}
-                            handleCardPress={() => handleCardPress(userData.uid!)} />
-                    )
-                })}
 
                 {hasMoreUserRef?.current && loading && (
                     <ActivityIndicator size={"large"} />
