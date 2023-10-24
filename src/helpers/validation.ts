@@ -108,6 +108,9 @@ export abstract class CommonMimeTypes {
         "text/csv",
         "text/plain",
     ];
+    static readonly RESUME_FILES = [
+        "application/pdf"
+    ];
 };
 
 /**
