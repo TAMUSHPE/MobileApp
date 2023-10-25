@@ -270,7 +270,6 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
                                     onPress={async () => {
                                         setConfirmVisible(false)
                                         updateCommitteeCount()
-
                                     }}
                                 >
                                     <Text className='text-xl font-bold py-3 px-8'> {isInCommittee ? "Leave" : "Join"} </Text>

@@ -93,6 +93,7 @@ export type AdminDashboardParams = {
     FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
     ResetOfficeHours: undefined;
+    RestrictionsEditor: undefined;
     HomeBottomTabs: {
         screen: keyof HomeBottomTabParams;
     };

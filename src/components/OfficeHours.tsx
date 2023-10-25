@@ -43,13 +43,12 @@ const OfficeHours = () => {
     }
 
     const handleKnock = () => {
-        if (auth.currentUser) {
-            const data: MemberStatus = {
-                uid: auth.currentUser.uid,
-                timestamp: serverTimestamp()
-            };
-            knockOnWall(data);
-        }
+        const data: MemberStatus = {
+            uid: auth.currentUser?.uid!,
+            timestamp: serverTimestamp()
+        };
+        knockOnWall(data);
+
     };
 
     return (
