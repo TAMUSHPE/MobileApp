@@ -25,6 +25,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
     const [showEndDate, setShowEndDate] = useState(false);
     const [showEndTime, setShowEndTime] = useState(false);
     const [isInitialDatePicked, setIsInitialDatePicked] = useState(false);
+    const [isStartDatePicked, setIsStartDatePicked] = useState(false);
 
     const startDate = (newEvent.startDate ? newEvent.startDate.toDate() : new Date());
     const endDate = (newEvent.endDate ? newEvent.endDate.toDate() : new Date());
@@ -37,7 +38,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
     }
 
     useEffect(() => {
-        if (isInitialDatePicked) {
+        if (isInitialDatePicked && isStartDatePicked) {
             const newStartDate = newEvent.startDate!.toDate();
             const updatedEndDate = new Date(newStartDate);
             updatedEndDate.setHours(endDate.getHours());
@@ -136,6 +137,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                                         mode={"datetime"}
                                         onChange={(event, selectedDate) => {
                                             setIsInitialDatePicked(true);
+                                            setIsStartDatePicked(true);
                                             setNewEvent({
                                                 ...newEvent,
                                                 startDate: Timestamp.fromDate(selectedDate!)
