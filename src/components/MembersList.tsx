@@ -12,7 +12,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [officers, setOfficers] = useState<PublicUserInfo[] | null>(null)
     const [members, setMembers] = useState<PublicUserInfo[] | null>(null)
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [localFilter, setLocalFilter] = useState<UserFilter>(filter!);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const inputRef = useRef<TextInput>(null);
@@ -21,9 +21,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
 
     useEffect(() => {
         searchFilterFunction(search);
-
         setLoading(false);
-
     }, [membersList, officersList]);
 
     useEffect(() => {
@@ -38,7 +36,13 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
         }
     }, [search])
 
+    // useEffect(() => {
+    //     console.log(members)
+    //     console.log(officers)
+    // }, [members, officers])
+
     const resetList = () => {
+        setLoading(true)
         if (setLastUserSnapshot)
             setLastUserSnapshot(null);
         if (setFilter)
@@ -110,13 +114,13 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
 
 
     const handleApplyFilter = () => {
+        setLoading(true)
         if (setLastUserSnapshot)
             setLastUserSnapshot(null);
         if (setFilter)
             setFilter(localFilter)
         setShowFilterMenu(false);
     }
-
     return (
         <ScrollView
             onScroll={handleScroll}
@@ -198,58 +202,41 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                     </View>
                 )}
 
-                {officers != null && members != null &&
-                    <>
-                        {officers?.length === 0 && members?.length === 0 &&
-                            <Text className='text-xl mb-4 text-bold'>No users found</Text>
-                        }
 
-
-                        {officers?.length != 0 &&
-                            <View className='flex-row mb-4'>
-                                <Text className='text-xl text-bold'>Officers </Text>
-                            </View>
-                        }
-                        {officers?.map((userData, index) => {
-                            return (
-                                <MemberCard
-                                    key={index}
-                                    userData={userData}
-                                    navigation={navigation}
-                                    handleCardPress={() => { handleCardPress(userData.uid!) }}
-                                />
-                            )
-                        })}
-
-                        {members?.length != 0 &&
-                            <View className='flex-row mb-4'>
-                                <Text className='text-xl text-bold'>Members </Text>
-                            </View>
-                        }
-                        {
-                            members?.map((userData, index) => {
-                                if (!userData.name) {
-                                    return null; // this is a hacky fix for user that have not completed registration
-                                }
-                                return (
-                                    <MemberCard
-                                        key={index}
-                                        userData={userData}
-                                        navigation={navigation}
-                                        handleCardPress={() => handleCardPress(userData.uid!)}
-                                    />
-                                );
-                            })
-                        }
-
-                    </>
+                {officers?.length === 0 && members?.length === 0 &&
+                    <Text className='text-xl mb-4 text-bold'>No users found</Text>
                 }
 
-                {hasMoreUser && loading && (
-                    <ActivityIndicator size={"large"} />
-                )}
+                {officers?.map((userData, index) => {
+                    return (
+                        <MemberCard
+                            key={index}
+                            userData={userData}
+                            navigation={navigation}
+                            handleCardPress={() => { handleCardPress(userData.uid!) }}
+                        />
+                    )
+                })}
+                {
+                    members?.map((userData, index) => {
+                        if (!userData.name) {
+                            return null; // this is a hacky fix for user that have not completed registration
+                        }
+                        return (
+                            <MemberCard
+                                key={index}
+                                userData={userData}
+                                navigation={navigation}
+                                handleCardPress={() => handleCardPress(userData.uid!)}
+                            />
+                        );
+                    })
+                }
 
-                {!hasMoreUser && (
+                {hasMoreUser ? (
+                    <ActivityIndicator size={"large"} />
+
+                ) : (
                     <View className='pb-6 items-center justify-center'>
                         <Text>
                             End of Users
