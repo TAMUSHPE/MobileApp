@@ -50,6 +50,12 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
             >
                 <Text>Test Reset Office Hour</Text>
             </TouchableOpacity>
+            <TouchableOpacity
+                onPress={() => navigation.navigate('RestrictionsEditor')}
+                className='bg-blue-500 rounded-md p-2'
+            >
+                <Text>Update Restrictions</Text>
+            </TouchableOpacity>
         </SafeAreaView>
     )
 }
