@@ -1,4 +1,4 @@
-import { View, Text, TextInput, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, KeyboardAvoidingView, Alert } from 'react-native';
 import React, { useContext, useLayoutEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -32,7 +32,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
 
     const registerUser = () => {
         if (password !== confirmationPassword) {
-            alert("Original password and re-entered password do not match!");
+            Alert.alert("Password Mismatch", "Original password and re-entered password do not match!");
             return;
         }
         else if (!validateEmail(email)) {

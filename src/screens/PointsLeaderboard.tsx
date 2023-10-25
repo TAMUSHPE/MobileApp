@@ -7,13 +7,13 @@ import { auth } from "../config/firebaseConfig"
 import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../api/fetchGoogleSheets'
 import { getUserByEmail, getPublicUserData } from '../api/firebaseUtils'
 import RankCard from '../components/RankCard';
-import { RankChange, PublicUserInfoUID } from '../types/User';
+import { RankChange, PublicUserInfo } from '../types/User';
 import { GoogleSheetsResponse } from '../types/GoogleSheetsTypes';
 import { ResourcesStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
 
 const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
-    const [rankCards, setRankCards] = useState<PublicUserInfoUID[]>([])
+    const [rankCards, setRankCards] = useState<PublicUserInfo[]>([])
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [initLoading, setInitLoading] = useState(true);
     const [loading, setLoading] = useState(true);
@@ -29,7 +29,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
     const [userRank, setUserRank] = useState(-1);
     const [userRankChange, setUserRankChange] = useState<RankChange>('same');
 
-    const prepPointSheet = async (data: GoogleSheetsResponse, offset: number): Promise<PublicUserInfoUID[]> => {
+    const prepPointSheet = async (data: GoogleSheetsResponse, offset: number): Promise<PublicUserInfo[]> => {
         const dataRow = data.table?.rows;
         if (!dataRow || dataRow.length === 0) {
             setEndOfData(true);
@@ -58,7 +58,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
         });
 
         const usersData = await Promise.all(usersDataPromises);
-        return usersData.filter(user => user !== null) as PublicUserInfoUID[];
+        return usersData.filter(user => user !== null) as PublicUserInfo[];
     }
 
     const queryAndSetRanks = async (limit: number, offset: number) => {
@@ -134,7 +134,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
             {/* Header */}
             <View className='flex-row items-center h-10'>
                 <View className='pl-6'>
-                    <TouchableHighlight onPress={() => navigation.goBack()} underlayColor="#EF9260">
+                    <TouchableHighlight className="px-2" onPress={() => navigation.goBack()} underlayColor="#EF9260">
                         <Octicons name="chevron-left" size={30} color="black" />
                     </TouchableHighlight>
                 </View>

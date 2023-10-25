@@ -7,9 +7,9 @@ import { Images } from '../../assets';
 import { AdminDashboardParams } from '../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Picker } from '@react-native-picker/picker';
-import { getCommitteeInfo, getPublicUserData, setCommitteeInfo } from '../api/firebaseUtils';
+import { fetchUserForList, getCommitteeInfo, getPublicUserData, setCommitteeInfo } from '../api/firebaseUtils';
 import MembersList from '../components/MembersList';
-import { PublicUserInfoUID } from '../types/User';
+import { PublicUserInfo, UserFilter } from '../types/User';
 
 const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [committeeData, setCommitteeData] = useState<Committee>();
@@ -18,9 +18,15 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     const [nameModalVisible, setNameModalVisible] = useState(false);
     const [headModalVisible, setHeadModalVisible] = useState(false);
     const [leadsModalVisible, setLeadsModalVisible] = useState(false);
-    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfoUID | null>(null);
-    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfoUID[]>([]);
+    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfo | null>(null);
+    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfo[]>([]);
     const [updated, setUpdated] = useState(false);
+    const [officers, setOfficers] = useState<PublicUserInfo[]>([])
+    const [members, setMembers] = useState<PublicUserInfo[]>([])
+
+    const [numLimit, setNumLimit] = useState<number | null>(null);
+    const [filter, setFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "name" });
+    const [initialLoad, setInitialLoad] = useState(true);
 
     const insets = useSafeAreaInsets();
 
@@ -40,6 +46,35 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
             setLeadsUserInfo(prevState => [...prevState, { ...fetchedInfo, uid }]);
         }
     }
+
+    const loadUsers = async () => {
+        const getMembers = await fetchUserForList({ filter: filter });
+        if (getMembers.members.length > 0) {
+            setMembers(getMembers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
+        }
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            loadUsers();
+        };
+        fetchData().then(() => {
+            setInitialLoad(false);
+        });
+    }, []);
+
+    useEffect(() => {
+        const resetData = async () => {
+            setMembers([]);
+        };
+
+        if (!initialLoad) {
+            resetData().then(() => {
+                loadUsers();
+            });
+        }
+
+    }, [filter]);
 
     useEffect(() => {
         const loadData = async () => {
@@ -91,8 +126,6 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         };
     }, [updated]);
 
-
-
     const addUIDToList = (uid: string) => {
         const currentUIDList = committeeData?.leadUIDs || [];
         if (currentUIDList.includes(uid)) {
@@ -121,22 +154,23 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         setLeadsUserInfo(updatedLeadsUserInfo);
     };
 
+    const loadOfficers = async () => {
+        const officers = await fetchUserForList({ isOfficer: true, filter: { classYear: "", major: "", orderByField: "name" } });
+        if (officers.members.length > 0) {
+            setOfficers(officers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
+        }
+    }
+
+
+    useEffect(() => {
+        loadOfficers()
+        loadUsers()
+    }, [])
+
 
     return (
         <SafeAreaView>
             <ScrollView>
-                {/* Header */}
-                <View className='flex-row items-center h-10'>
-                    <View className='w-screen absolute'>
-                        <Text className="text-2xl font-bold justify-center text-center">Committees Editor</Text>
-                    </View>
-                    <View className='pl-6'>
-                        <TouchableOpacity className="pr-4" onPress={navigation.goBack}>
-                            <Octicons name="chevron-left" size={30} color="black" />
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
                 {/* Image */}
                 <View className='justify-center items-center'>
                     <Image
@@ -323,11 +357,15 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
 
 
                     <View className="h-[100%] w-[100%] bg-white">
-                        <MembersList handleCardPress={(uid) => {
-                            setCommitteeData({ ...committeeData!, headUID: uid })
-                            setHeadModalVisible(false)
-                            fetchHeadUserData(uid)
-                        }} />
+                        <MembersList
+                            handleCardPress={(uid) => {
+                                setCommitteeData({ ...committeeData!, headUID: uid })
+                                setHeadModalVisible(false)
+                                fetchHeadUserData(uid)
+                            }}
+                            officersList={officers}
+                            membersList={[]}
+                        />
                     </View>
                 </View>
             </Modal>
@@ -357,10 +395,18 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
 
 
                     <View className="h-[100%] w-[100%] bg-white">
-                        <MembersList handleCardPress={(uid) => {
-                            addUIDToList(uid)
-                            setLeadsModalVisible(false)
-                        }} />
+                        <MembersList
+                            handleCardPress={(uid) => {
+                                addUIDToList(uid)
+                                setLeadsModalVisible(false)
+                            }}
+                            membersList={members}
+                            officersList={[]}
+                            filter={filter}
+                            setFilter={setFilter}
+                            canSearch={true}
+                            setNumLimit={setNumLimit}
+                        />
                     </View>
                 </View>
             </Modal>

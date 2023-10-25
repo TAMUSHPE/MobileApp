@@ -11,7 +11,6 @@ const CommitteesTab: React.FC<CommitteesInfoProp> = ({ navigation }) => {
 
     // This reset the selected committee when user switch off the tab
     const isFocused = useIsFocused();
-    console.log(isFocused)
     const handleFocus = useCallback(() => {
         setSelectedCommittee(null);
     }, [setSelectedCommittee]);
