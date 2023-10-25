@@ -1,4 +1,4 @@
-import { Text, ScrollView, View, TextInput, NativeSyntheticEvent, NativeScrollEvent, ActivityIndicator, TouchableHighlight, TouchableWithoutFeedback } from 'react-native'
+import { Text, ScrollView, View, TextInput, NativeSyntheticEvent, NativeScrollEvent, ActivityIndicator, TouchableHighlight, TouchableWithoutFeedback, Alert } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { MembersProps } from '../types/Navigation'
@@ -133,12 +133,15 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                             <TouchableOpacity
                                 activeOpacity={1} // doing this b/c Touchablewithoutfeedback acts weird 
                                 className='bg-gray-300 rounded-xl px-4 py-2 flex-row flex-1'
-                                onPress={() => inputRef.current?.focus()}
-                            >
+                                onPress={() => {
+                                    Alert.alert("Search is currently disabled due to performance issues.")
+                                    // inputRef.current?.focus()
+                                }}>
                                 <View className='mr-3'>
                                     <Octicons name="search" size={24} color="grey" />
                                 </View>
-                                <TextInput
+                                <Text className='text-lg text-center justify-center'>Search</Text>
+                                {/* <TextInput
                                     ref={inputRef}
                                     onChangeText={(text) => {
                                         setSearch(text);
@@ -149,7 +152,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                                     underlineColorAndroid="transparent"
                                     placeholder="Search"
                                     className='text-lg text-center justify-center'
-                                />
+                                /> */}
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => setShowFilterMenu(!showFilterMenu)}
