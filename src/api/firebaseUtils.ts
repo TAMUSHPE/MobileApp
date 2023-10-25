@@ -1,6 +1,6 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, Roles, User } from "../types/User";
 import { Committee } from "../types/Committees";
@@ -151,63 +151,65 @@ export const getUserByEmail = async (email: string): Promise<{ userData: PublicU
 }
 
 
-export const getOfficers = async (): Promise<PublicUserInfo[]> => {
-    try {
-        const userRef = collection(db, 'users');
-        const q = query(
-            userRef,
-            where("roles.officer", "==", true),
-            orderBy("name")
-        );
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            return [];
-        }
 
-        const officers = querySnapshot.docs.map((doc) => {
-            return {
-                ...doc.data(),
-                uid: doc.id
-            }
+type UserFilter = {
+    classYear: string,
+    major: string,
+    orderByField: string
+}
+type FetchMembersOptions = {
+    lastUserSnapshot?: any,
+    isOfficer?: boolean,
+    numLimit?: number | null, 
+    filter: UserFilter,
+};
+
+
+
+export const fetchUserForList = async (options: FetchMembersOptions) => {
+    const {
+        lastUserSnapshot = null,
+        isOfficer = false,
+        numLimit = null, 
+        filter,
+    } = options;
+
+    let userQuery: Query<DocumentData, DocumentData> = collection(db, 'users');
+
+    userQuery = query(userQuery, where("roles.officer", "==", isOfficer));
+
+    if (filter.classYear != "") {
+        userQuery = query(userQuery, where("classYear", "==", filter.classYear));
+    }
+
+    if (filter.major != "") {
+        userQuery = query(userQuery, where("major", "==", filter.major));
+    }
+
+    userQuery = query(userQuery, orderBy(filter.orderByField));
+    
+    if (numLimit !== null) {
+        userQuery = query(userQuery, limit(numLimit));
+    }
+
+    if (lastUserSnapshot) {
+        userQuery = query(userQuery, startAfter(lastUserSnapshot));
+    }   
+
+    try {
+        const snapshot = await getDocs(userQuery);
+        let hasMoreUser = numLimit !== null ? snapshot.docs.length === numLimit : false;
+        
+        const memberUID = snapshot.docs.map(doc => {
+            return doc.id 
         });
 
-        return officers;
-
+        return { members: snapshot.docs, uid: memberUID, hasMoreUser };
     } catch (error) {
-        console.error("Error fetching officers:", error);
-        throw new Error("Internal Server Error.");
+        console.error("Error fetching users:", error);
+        return { members: [], hasMoreUser: false };
     }
 }
-
-
-export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => {
-    try {
-        const userRef = collection(db, 'users');
-        const q = query(
-            userRef,
-            where("roles.officer", "==", false),
-            orderBy("name")
-        );
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            return [];
-        }
-
-        const members = querySnapshot.docs.map((doc) => {
-            return {
-                ...doc.data(),
-                uid: doc.id
-            }
-        });
-
-        return members;
-
-    } catch (error) {
-        console.error("Error fetching members:", error);
-        throw new Error("Internal Server Error.");
-    }
-}
-
 
 /**
  * Appends an Expo push token to the current user's private data.
@@ -355,7 +357,10 @@ export const createEvent = async (event: SHPEEvent) => {
             startDate: event.startDate,
             endDate: event.endDate,
             location: event.location,
-            attendance: 0,
+        });
+
+        await setDoc(doc(db, `events/${docRef.id}/summaries/default`), {
+            attendance: 0
         });
 
         return docRef.id;
@@ -364,6 +369,7 @@ export const createEvent = async (event: SHPEEvent) => {
         return null;
     }
 };
+
 export const updateEvent = async (event: SHPEEventID) => {
     try {
         const docRef = doc(db, "events", event.id!);
@@ -390,11 +396,11 @@ export const getEvent = async (eventID: string) => {
         if (eventDoc.exists()) {
             return eventDoc.data() as SHPEEventID;
         } else {
-            console.log("No such document!");
+            console.error("No such document!");
             return null;
         }
     } catch (error) {
-        console.log("Error getting document:", error);
+        console.error("Error getting document:", error);
         return null;
     }
 }
@@ -453,10 +459,6 @@ export const destroyEvent = async (eventID: string) => {
         const logQuery = query(logRef);
         const logSnapshot = await getDocs(logQuery);
 
-        // Debug: Check if we received any logs
-        console.log("Received logs: ", logSnapshot.docs.length);
-
-        // Delete logs if they exist
         if (!logSnapshot.empty) {
             const deleteLogPromises = logSnapshot.docs.map((logDoc) => {
                 return deleteDoc(logDoc.ref);
@@ -464,13 +466,10 @@ export const destroyEvent = async (eventID: string) => {
 
             await Promise.all(deleteLogPromises);
         } else {
-            console.log("No logs to delete.");
+            console.error("No logs to delete.");
         }
 
-        // Delete the event
         await deleteDoc(eventRef);
-
-        console.log("Event and logs deleted successfully");
         return true;
 
     } catch (error) {
@@ -478,8 +477,6 @@ export const destroyEvent = async (eventID: string) => {
         return false;
     }
 };
-
-
 
 const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     try {
@@ -505,6 +502,23 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     return EventLogStatus.ERROR;
 };
 
+export const  getAttendanceNumber = async (eventId: string): Promise<number | null> => {
+    try {
+        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
+        const summaryDocRef = await getDoc(summaryDoc);
+
+        if (summaryDocRef.exists()) {
+            const data = summaryDocRef.data();
+            return data?.attendance || 0;
+        } else {
+            return null;
+        }
+    } catch (e) {
+        console.error("Error fetching attendance number: ", e);
+        return null;
+    }
+}
+
 
 export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
     const status = await getEventStatus(eventId);
@@ -516,24 +530,25 @@ export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
         const logDoc = doc(db, `events/${eventId}/logs/${auth.currentUser?.uid!}`);
         const logDocRef = await getDoc(logDoc);
 
-        const eventDoc = doc(db, `events/${eventId}`);
-        const eventDocRef = await getDoc(eventDoc);
+        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
+        const summaryDocRef = await getDoc(summaryDoc);
 
 
         if (!logDocRef.exists()) {
             await setDoc(logDoc, { signedInTime: serverTimestamp() }, { merge: true });
 
-            const eventDoc = doc(db, 'events', eventId);
-            const eventDocRef = await getDoc(eventDoc);
-
-            if (eventDocRef.exists()) {
-                const currentCount = eventDocRef.data().attendance || 0;
-                await updateDoc(eventDoc, { attendance: currentCount + 1 });
+            if (!summaryDocRef.exists()) {
+                await setDoc(summaryDoc, { attendance: 1 });
+                return EventLogStatus.SUCCESS;
+            } else {
+                const currentCount = summaryDocRef.data().attendance || 0;
+                await updateDoc(summaryDoc, { attendance: currentCount + 1 });
                 return EventLogStatus.SUCCESS;
             }
         } else {
             return EventLogStatus.ALREADY_LOGGED;
         }
+
     } catch (e) {
         console.error("Error adding log: ", e);
     }
@@ -622,3 +637,32 @@ export const setUserRoles = async (uid: string, roles: Roles): Promise<HttpsCall
             return res;
         });
 };
+
+
+export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const q = query(
+            userRef,
+            where("roles.officer", "==", false),
+            orderBy("name")
+        );
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const members = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            }
+        });
+
+        return members;
+
+    } catch (error) {
+        console.error("Error fetching members:", error);
+        throw new Error("Internal Server Error.");
+    }
+}

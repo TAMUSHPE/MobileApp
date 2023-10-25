@@ -585,11 +585,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                                 const incrementCommitteesCount = httpsCallable(functions, 'incrementCommitteesCount');
 
                                 const committeeNames = committees.map(committee => CommitteeConstants[committee].firebaseDocName);
-                                console.log(committeeNames)
                                 incrementCommitteesCount({ committeeNames })
-                                    .then((result) => {
-                                        console.log(result);
-                                    })
                                     .catch((error) => {
                                         console.error(error);
                                     });

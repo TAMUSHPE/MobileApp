@@ -2,10 +2,12 @@
 import { ImageSourcePropType } from "react-native";
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from '@react-navigation/native';
-import { PublicUserInfo } from "./User";
+import { PublicUserInfo, UserFilter } from "./User";
 import { Test } from '../types/GoogleSheetsTypes';
 import { Committee } from "./Committees";
 import { SHPEEventID } from "./Events";
+import { MutableRefObject, SetStateAction } from "react";
+import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 
 // Stacks
 export type MainStackParams = {
@@ -91,6 +93,10 @@ export type AdminDashboardParams = {
     FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
     ResetOfficeHours: undefined;
+    HomeBottomTabs: {
+        screen: keyof HomeBottomTabParams;
+    };
+
 }
 
 // Drawers
@@ -137,6 +143,15 @@ export type MembersProps = {
     userData?: PublicUserInfo
     handleCardPress: (uid: string) => string | void;
     navigation?: NativeStackNavigationProp<MembersStackParams>
+    officersList? : PublicUserInfo[]
+    membersList? : PublicUserInfo[]
+    loadMoreUsers?: () => void;
+    hasMoreUser?:  boolean;
+    setFilter?: React.Dispatch<SetStateAction<UserFilter>>;
+    filter?: UserFilter;
+    setLastUserSnapshot?: React.Dispatch<SetStateAction<QueryDocumentSnapshot<DocumentData> | null>>;
+    canSearch?: boolean;
+    setNumLimit?: React.Dispatch<SetStateAction<number | null>>;
 }
 
 export type EventProps = {
