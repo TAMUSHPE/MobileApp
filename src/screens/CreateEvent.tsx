@@ -17,12 +17,14 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
         location: "",
         pointsCategory: "General Meeting",
         notificationGroup: "All",
+        startDate: Timestamp.now(),
+        endDate: Timestamp.now(),
     });
-
     const [showStartDate, setShowStartDate] = useState(false);
     const [showStartTime, setShowStartTime] = useState(false);
     const [showEndDate, setShowEndDate] = useState(false);
     const [showEndTime, setShowEndTime] = useState(false);
+    const [isInitialDatePicked, setIsInitialDatePicked] = useState(false);
 
     const startDate = (newEvent.startDate ? newEvent.startDate.toDate() : new Date());
     const endDate = (newEvent.endDate ? newEvent.endDate.toDate() : new Date());
@@ -33,6 +35,21 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
 
         return `${month} ${day}`;
     }
+
+    useEffect(() => {
+        if (isInitialDatePicked) {
+            const newStartDate = newEvent.startDate!.toDate();
+            const updatedEndDate = new Date(newStartDate);
+            updatedEndDate.setHours(endDate.getHours());
+            updatedEndDate.setMinutes(endDate.getMinutes());
+            updatedEndDate.setSeconds(endDate.getSeconds());
+
+            setNewEvent(prevEvent => ({
+                ...prevEvent,
+                endDate: Timestamp.fromDate(updatedEndDate)
+            }));
+        }
+    }, [isInitialDatePicked])
 
     const formatTime = (date: Date) => {
         const hours = date.getHours();
@@ -49,15 +66,6 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
     const handleCreateEvent = async () => {
         if (!newEvent.name) {
             alert("Please enter a name for the event.");
-            return;
-        }
-
-        if (!newEvent.startDate) {
-            alert("Please select a start date");
-            return;
-        }
-        if (!newEvent.endDate) {
-            alert("Please select an end date");
             return;
         }
 
@@ -127,6 +135,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                                         value={startDate}
                                         mode={"datetime"}
                                         onChange={(event, selectedDate) => {
+                                            setIsInitialDatePicked(true);
                                             setNewEvent({
                                                 ...newEvent,
                                                 startDate: Timestamp.fromDate(selectedDate!)
@@ -144,6 +153,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                                         value={endDate}
                                         mode={"datetime"}
                                         onChange={(event, selectedDate) => {
+                                            setIsInitialDatePicked(true);
                                             setNewEvent({
                                                 ...newEvent,
                                                 endDate: Timestamp.fromDate(selectedDate!)
@@ -256,6 +266,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                     onChange={
                         (event, selectedDate) => {
                             setShowStartDate(false);
+                            setIsInitialDatePicked(true);
                             setNewEvent({
                                 ...newEvent,
                                 startDate: Timestamp.fromDate(selectedDate!)
@@ -272,6 +283,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                     onChange={
                         (event, selectedDate) => {
                             setShowStartTime(false);
+                            setIsInitialDatePicked(true);
                             setNewEvent({
                                 ...newEvent,
                                 startDate: Timestamp.fromDate(selectedDate!)
@@ -288,6 +300,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                     mode={"date"}
                     onChange={
                         (event, selectedDate) => {
+                            setIsInitialDatePicked(true);
                             setNewEvent({
                                 ...newEvent,
                                 endDate: Timestamp.fromDate(selectedDate!)
@@ -305,6 +318,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                     mode={"time"}
                     onChange={
                         (event, selectedDate) => {
+                            setIsInitialDatePicked(true);
                             setNewEvent({
                                 ...newEvent,
                                 endDate: Timestamp.fromDate(selectedDate!)
