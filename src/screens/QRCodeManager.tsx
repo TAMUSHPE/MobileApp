@@ -27,7 +27,6 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                     const sanitizedEventName = event.name?.replace(/[\/\\:\*\?"<>\|#]/g, '_');
 
                     const fileUri = FileSystem.documentDirectory + `${currentDate}_${sanitizedEventName}.png`;
-                    console.log(FileSystem.documentDirectory);
 
                     // Save to file
                     await FileSystem.writeAsStringAsync(fileUri, data, {
@@ -38,8 +37,6 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                     // Check if file exists
                     const fileInfo = await FileSystem.getInfoAsync(fileUri);
                     if (fileInfo.exists) {
-                        console.log(fileInfo);
-
                         // Share the file
                         if (await Sharing.isAvailableAsync()) {
                             await Sharing.shareAsync(fileUri);

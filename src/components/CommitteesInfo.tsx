@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { Images } from '../../assets';
 import { Committee, CommitteeKey } from '../types/Committees';
 import { getCommitteeInfo, getPublicUserData, getUser, setPublicUserData } from '../api/firebaseUtils';
-import { PublicUserInfoUID } from '../types/User';
+import { PublicUserInfo } from '../types/User';
 import { CommitteesInfoProp } from '../types/Navigation';
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { UserContext } from '../context/UserContext';
@@ -18,8 +18,8 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [committees, setCommittees] = useState<Array<CommitteeKey | string> | undefined>(userInfo?.publicInfo?.committees);
     const [committeeInfo, setCommitteeInfo] = useState<Committee | null>(null);
-    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfoUID | null>(null);
-    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfoUID[]>([]);
+    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfo | null>(null);
+    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfo[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
@@ -149,8 +149,7 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
         const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
 
         try {
-            const result = await updateCommitteeCount({ committeeName: selectedCommittee?.firebaseDocName, change: isInCommittee ? -1 : 1 });
-            console.log(result)
+            await updateCommitteeCount({ committeeName: selectedCommittee?.firebaseDocName, change: isInCommittee ? -1 : 1 });
         } catch (error) {
             console.error('Error calling function:', error);
         }
@@ -270,9 +269,7 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
                                 <TouchableOpacity
                                     onPress={async () => {
                                         setConfirmVisible(false)
-                                        if(auth.currentUser?.email?.split("@")[1] === "tamu.edu"){
-                                            updateCommitteeCount()
-                                        }
+                                        updateCommitteeCount()
                                     }}
                                 >
                                     <Text className='text-xl font-bold py-3 px-8'> {isInCommittee ? "Leave" : "Join"} </Text>

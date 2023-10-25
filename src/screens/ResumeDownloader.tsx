@@ -14,7 +14,6 @@ const ResumeDownloader = () => {
             const result = await zipResumesFunction();
             if (result && result.data) {
                 const responseData = result.data as ZipResult;
-                console.log(responseData.url);
                 return responseData.url;
             }
         } catch (error) {
