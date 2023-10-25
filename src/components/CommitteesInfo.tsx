@@ -149,8 +149,7 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
         const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
 
         try {
-            const result = await updateCommitteeCount({ committeeName: selectedCommittee?.firebaseDocName, change: isInCommittee ? -1 : 1 });
-            console.log(result)
+            await updateCommitteeCount({ committeeName: selectedCommittee?.firebaseDocName, change: isInCommittee ? -1 : 1 });
         } catch (error) {
             console.error('Error calling function:', error);
         }
@@ -271,7 +270,7 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
                                     onPress={async () => {
                                         setConfirmVisible(false)
                                         updateCommitteeCount()
-                                        
+
                                     }}
                                 >
                                     <Text className='text-xl font-bold py-3 px-8'> {isInCommittee ? "Leave" : "Join"} </Text>

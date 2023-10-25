@@ -1,34 +1,58 @@
-import { Text, ScrollView, View, TextInput } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { Text, ScrollView, View, TextInput, NativeSyntheticEvent, NativeScrollEvent, ActivityIndicator, TouchableHighlight, TouchableWithoutFeedback } from 'react-native'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
-import { getMembersExcludeOfficers, getOfficers } from '../api/firebaseUtils'
 import { MembersProps } from '../types/Navigation'
-import { PublicUserInfo } from '../types/User'
+import { PublicUserInfo, UserFilter } from '../types/User'
 import MemberCard from './MemberCard'
 import { TouchableOpacity } from 'react-native';
 
-const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress }) => {
-    const [officers, setOfficers] = useState<PublicUserInfo[]>([])
-    const [members, setMembers] = useState<PublicUserInfo[]>([])
-    const [showFilterMenu, setShowFilterMenu] = useState(false);
+
+const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUser, filter, setFilter, setLastUserSnapshot, canSearch, setNumLimit }) => {
     const [search, setSearch] = useState<string>("")
-    const [filteredOfficers, setFilteredOfficers] = useState<PublicUserInfo[]>([])
-    const [filteredMembers, setFilteredMembers] = useState<PublicUserInfo[]>([])
+    const [showFilterMenu, setShowFilterMenu] = useState(false);
+    const [officers, setOfficers] = useState<PublicUserInfo[] | null>(null)
+    const [members, setMembers] = useState<PublicUserInfo[] | null>(null)
+    const [loading, setLoading] = useState(false);
+    const [localFilter, setLocalFilter] = useState<UserFilter>(filter!);
+    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const inputRef = useRef<TextInput>(null);
+    const [wait, setWait] = useState(false);
+    const DEFAULT_NUM_LIMIT = 10;
 
     useEffect(() => {
-        getOfficers().then((officers) => {
-            setOfficers(officers)
-            setFilteredOfficers(officers)
-        })
-        getMembersExcludeOfficers().then((members) => {
-            setMembers(members)
-            setFilteredMembers(members)
-        })
-    }, [])
+        searchFilterFunction(search);
+
+        setLoading(false);
+
+    }, [membersList, officersList]);
+
+    useEffect(() => {
+        if (search == "") {
+            if (setLastUserSnapshot)
+                setLastUserSnapshot(null);
+            if (setFilter)
+                setFilter(localFilter)
+            setShowFilterMenu(false);
+            if (setNumLimit)
+                setNumLimit(DEFAULT_NUM_LIMIT);
+        }
+    }, [search])
+
+    const resetList = () => {
+        if (setLastUserSnapshot)
+            setLastUserSnapshot(null);
+        if (setFilter)
+            setFilter({ classYear: "", major: "", orderByField: "name" })
+        setLocalFilter({ classYear: "", major: "", orderByField: "name" });
+        setShowFilterMenu(false);
+        if (setNumLimit)
+            setNumLimit(DEFAULT_NUM_LIMIT);
+    }
 
     const searchFilterFunction = (text: string) => {
-        if (text) {
-            const newOfficerData = officers.filter(
+        let newOfficerData: PublicUserInfo[] = [];
+        if (officersList != undefined && officersList.length > 0) {
+            newOfficerData = officersList.filter(
                 function (item) {
                     const itemData = item.name
                         ? item.name.toUpperCase()
@@ -37,100 +61,202 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress }) =>
                     return itemData.indexOf(textData) > -1;
                 }
             );
-
-            const newMemberData = members.filter(
-                function (item) {
-                    const itemData = item.name
-                        ? item.name.toUpperCase()
-                        : ''.toUpperCase();
-                    const textData = text.toUpperCase();
-                    return itemData.indexOf(textData) > -1;
-                }
-            );
-            setFilteredOfficers(newOfficerData);
-            setFilteredMembers(newMemberData);
-
-            setSearch(text);
-        } else {
-            setFilteredOfficers(officers);
-            setFilteredMembers(members);
-            setSearch(text);
         }
+
+        let newMemberData: PublicUserInfo[] = [];
+        if (membersList != undefined && membersList.length > 0) {
+            newMemberData = membersList.filter(
+                function (item) {
+                    const itemData = item.name
+                        ? item.name.toUpperCase()
+                        : ''.toUpperCase();
+                    const textData = text.toUpperCase();
+                    return itemData.indexOf(textData) > -1;
+                }
+            );
+        }
+        setOfficers(newOfficerData);
+        setMembers(newMemberData);
     };
 
-    return (
-        <ScrollView>
-            <View className='mx-4'>
+    const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
+        if (loadMoreUsers == undefined) return;
+        if (!hasMoreUser) return;
+        if (search != "") return;
 
-                <View className='flex-row  mb-4'>
-                    <View className=' flex-1'>
-                        <View className='bg-gray-300 rounded-xl px-4 py-2 flex-row'>
-                            <View className='mr-3'>
-                                <Octicons name="search" size={24} color="grey" />
-                            </View>
-                            <TextInput
-                                onChangeText={(text) => searchFilterFunction(text)}
-                                value={search}
-                                underlineColorAndroid="transparent"
-                                placeholder="Search"
-                                className='text-lg text-center justify-center'
-                            />
+        const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
+            const paddingToBottom = 20;
+            return layoutMeasurement.height + contentOffset.y >=
+                contentSize.height - paddingToBottom;
+        };
+
+        if (!isCloseToBottom(nativeEvent)) return;
+        setLoading(true);
+
+        setWait(true);
+    }, [search, loadMoreUsers, setLoading]);
+
+    useEffect(() => {
+        if (wait) {
+            const timer = setTimeout(() => {
+                if (loadMoreUsers)
+                    loadMoreUsers();
+                setWait(false);
+            }, 600);
+
+            return () => clearTimeout(timer);
+        }
+    }, [wait, loadMoreUsers]);
+
+
+    const handleApplyFilter = () => {
+        if (setLastUserSnapshot)
+            setLastUserSnapshot(null);
+        if (setFilter)
+            setFilter(localFilter)
+        setShowFilterMenu(false);
+    }
+
+    return (
+        <ScrollView
+            onScroll={handleScroll}
+            scrollEventThrottle={400}
+        >
+            <View className='mx-4'>
+                {canSearch && (
+                    <View>
+                        <View className='flex-row  mb-4'>
+                            <TouchableOpacity
+                                activeOpacity={1} // doing this b/c Touchablewithoutfeedback acts weird 
+                                className='bg-gray-300 rounded-xl px-4 py-2 flex-row flex-1'
+                                onPress={() => inputRef.current?.focus()}
+                            >
+                                <View className='mr-3'>
+                                    <Octicons name="search" size={24} color="grey" />
+                                </View>
+                                <TextInput
+                                    ref={inputRef}
+                                    onChangeText={(text) => {
+                                        setSearch(text);
+                                        if (setNumLimit)
+                                            setNumLimit(null);
+                                    }}
+                                    value={search}
+                                    underlineColorAndroid="transparent"
+                                    placeholder="Search"
+                                    className='text-lg text-center justify-center'
+                                />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setShowFilterMenu(!showFilterMenu)}
+                                className='pl-4 items-center justify-center'
+                            >
+                                <Octicons name="filter" size={27} color="black" />
+                            </TouchableOpacity>
                         </View>
-                        {showFilterMenu &&
-                            <View className='bg-blue-400'>
-                                <Text>Test</Text>
+                        {showFilterMenu && (
+                            <View className='flex-row p-4'>
+                                <View>
+                                    <TextInput
+                                        value={localFilter?.classYear}
+                                        onChangeText={(text) => setLocalFilter({ ...localFilter, classYear: text })}
+                                        placeholder="classYear"
+                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4 mb-4'
+                                    />
+                                    <TextInput
+                                        value={localFilter?.major}
+                                        onChangeText={(text) => setLocalFilter({ ...localFilter, major: text })}
+                                        placeholder="Major"
+                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4 mb-4'
+                                    />
+
+                                    <Text>OrderBy:(name/points)</Text>
+                                    <TextInput
+                                        value={localFilter?.orderByField}
+                                        onChangeText={(text) => setLocalFilter({ ...localFilter, orderByField: text })}
+                                        placeholder="OrderBy"
+                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2'
+                                    />
+                                </View>
+                                <View>
+                                    <TouchableOpacity
+                                        onPress={() => handleApplyFilter()}
+                                        className='items-center justify-center bg-pale-blue w-14 h-10 rounded-lg'>
+                                        <Text className='text-bold text-xl'>Apply</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            resetList()
+                                            setSearch("");
+                                        }}
+                                        className='items-center justify-center bg-red-600 w-14 h-10 rounded-lg'>
+                                        <Text className='text-bold text-xl'>Clear</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+                    </View>
+                )}
+
+                {officers != null && members != null &&
+                    <>
+                        {officers?.length === 0 && members?.length === 0 &&
+                            <Text className='text-xl mb-4 text-bold'>No users found</Text>
+                        }
+
+
+                        {officers?.length != 0 &&
+                            <View className='flex-row mb-4'>
+                                <Text className='text-xl text-bold'>Officers </Text>
                             </View>
                         }
-                    </View>
-                    <TouchableOpacity
-                        onPress={() => setShowFilterMenu(!showFilterMenu)}
-                        className='pl-4 items-center justify-center'
-                    >
-                        <Octicons name="filter" size={27} color="black" />
-                    </TouchableOpacity>
-                </View>
+                        {officers?.map((userData, index) => {
+                            return (
+                                <MemberCard
+                                    key={index}
+                                    userData={userData}
+                                    navigation={navigation}
+                                    handleCardPress={() => { handleCardPress(userData.uid!) }}
+                                />
+                            )
+                        })}
 
+                        {members?.length != 0 &&
+                            <View className='flex-row mb-4'>
+                                <Text className='text-xl text-bold'>Members </Text>
+                            </View>
+                        }
+                        {
+                            members?.map((userData, index) => {
+                                if (!userData.name) {
+                                    return null; // this is a hacky fix for user that have not completed registration
+                                }
+                                return (
+                                    <MemberCard
+                                        key={index}
+                                        userData={userData}
+                                        navigation={navigation}
+                                        handleCardPress={() => handleCardPress(userData.uid!)}
+                                    />
+                                );
+                            })
+                        }
 
-
-
-                {filteredOfficers.length === 0 && filteredMembers.length === 0 &&
-                    <Text className='text-xl mb-4 text-bold'>No users found</Text>
+                    </>
                 }
-                {filteredOfficers.length != 0 &&
-                    <View className='flex-row mb-4'>
-                        <Text className='text-xl text-bold'>Officers </Text>
-                        <Text className='text-lg  text-grey'>({filteredOfficers.length})</Text>
-                    </View>
-                }
-                {filteredOfficers.map((userData, index) => {
-                    return (
-                        <MemberCard
-                            key={index}
-                            userData={userData}
-                            navigation={navigation}
-                            handleCardPress={() => handleCardPress(userData.uid!)} />
-                    )
-                })}
 
-                {filteredMembers.length != 0 &&
-                    <View className='flex-row mb-4'>
-                        <Text className='text-xl text-bold'>Members </Text>
-                        <Text className='text-lg  text-grey'>({filteredMembers.length})</Text>
-                    </View>
-                }
-                {filteredMembers.map((userData, index) => {
+                {hasMoreUser && loading && (
+                    <ActivityIndicator size={"large"} />
+                )}
 
-                    const handleOnPress = () => {
-                        navigation!.navigate("PublicProfile", { uid: userData.uid! })
-                    }
-                    return (
-                        <MemberCard
-                            key={index}
-                            userData={userData}
-                            navigation={navigation}
-                            handleCardPress={() => handleCardPress(userData.uid!)} />
-                    )
-                })}
+                {!hasMoreUser && (
+                    <View className='pb-6 items-center justify-center'>
+                        <Text>
+                            End of Users
+                        </Text>
+                    </View>
+                )}
+                <Text className='pb-20'></Text>
             </View>
         </ScrollView>
     )
