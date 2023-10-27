@@ -247,7 +247,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     }
 
     const uploadResume = (resumeBlob: Blob) => {
-        if (resumeBlob && validateFileBlob(resumeBlob, ["application/pdf"], true)) {
+        if (resumeBlob && validateFileBlob(resumeBlob, CommonMimeTypes.RESUME_FILES, true)) {
             const uploadTask = uploadFileToFirebase(resumeBlob, `user-docs/${auth.currentUser?.uid}/user-resume`);
 
             uploadTask.on("state_changed",
