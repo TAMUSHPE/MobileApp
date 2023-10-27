@@ -17,6 +17,7 @@ import { CommitteeConstants, CommitteeKey, CommitteeVal } from '../types/Committ
 import { Images } from '../../assets';
 import { Octicons } from '@expo/vector-icons';
 import { httpsCallable, getFunctions } from 'firebase/functions';
+import { CommonMimeTypes, validateFileBlob, validateName } from '../helpers/validation';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
@@ -25,8 +26,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
 
-    const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext!;
+    const { setUserInfo } = useContext(UserContext)!;
 
     const signOutUser = async () => {
         signOut(auth)
@@ -85,7 +85,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     />
                     <InteractButton
                         onPress={async () => {
-                            if (name !== "") {
+                            if (validateName(name, true)) {
                                 if (auth.currentUser) {
                                     await setPublicUserData({
                                         name: name,
@@ -166,7 +166,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
     };
 
     const uploadProfilePicture = () => {
-        if (image) {
+        if (image && validateFileBlob(image, CommonMimeTypes.IMAGE_FILES, true)) {
             const uploadTask = uploadFileToFirebase(image, `user-docs/${auth.currentUser?.uid}/user-profile-picture`);
 
             uploadTask.on("state_changed",
@@ -362,7 +362,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
     }
 
     const uploadResume = (resumeBlob: Blob) => {
-        if (resumeBlob) {
+        if (validateFileBlob(resumeBlob, CommonMimeTypes.RESUME_FILES, true)) {
             console.log("test1243")
             const uploadTask = uploadFileToFirebase(resumeBlob, `user-docs/${auth.currentUser?.uid}/user-resume`);
 
