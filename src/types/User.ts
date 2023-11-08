@@ -9,6 +9,9 @@ export interface Roles {
     officer?: boolean;
     admin?: boolean;
     developer?: boolean;
+    representative?: boolean;
+    lead?: boolean;
+    secretary?: boolean;
 };
 
 export type RankChange = "decreased" | "same" | "increased";
