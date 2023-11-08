@@ -4,15 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EventsStackParams } from '../types/Navigation';
 import { getUpcomingEvents, getPastEvents } from '../api/firebaseUtils';
-import { SHPEEventID } from '../types/Events';
+import { SHPEEvent } from '../types/Events';
 import EventCard from '../components/EventCard';
 import { useFocusEffect } from '@react-navigation/native';
 import { UserContext } from '../context/UserContext';
 
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
-    const [upcomingEvents, setUpcomingEvents] = useState<SHPEEventID[]>([]);
-    const [pastEvents, setPastEvents] = useState<SHPEEventID[]>([]);
+    const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
+    const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
     const userContext = useContext(UserContext);
     const [isLoading, setIsLoading] = useState(true);
     const { userInfo, setUserInfo } = userContext!;
