@@ -5,7 +5,7 @@ import type { RouteProp } from '@react-navigation/native';
 import { PublicUserInfo, UserFilter } from "./User";
 import { Test } from '../types/GoogleSheetsTypes';
 import { Committee } from "./Committees";
-import { SHPEEventID } from "./Events";
+import { SHPEEvent } from "./Events";
 import { MutableRefObject, SetStateAction } from "react";
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 
@@ -73,9 +73,9 @@ export type CommitteesStackParams = {
 export type EventsStackParams = {
     EventsScreen: undefined;
     CreateEvent: undefined;
-    UpdateEvent: { event: SHPEEventID };
+    UpdateEvent: { event: SHPEEvent };
     EventInfo: { eventId: string };
-    QRCode: { event: SHPEEventID };
+    QRCode: { event: SHPEEvent };
 }
 
 export type HomeStackParams = {
@@ -156,7 +156,7 @@ export type MembersProps = {
 }
 
 export type EventProps = {
-    event?: SHPEEventID;
+    event?: SHPEEvent;
     navigation: NativeStackNavigationProp<EventsStackParams>
 }
 
@@ -171,7 +171,7 @@ export type EventVerificationProps = {
 }
 
 export type QRCodeProps = {
-    event?: SHPEEventID;
+    event?: SHPEEvent;
     navigation: NativeStackNavigationProp<EventsStackParams>
 }
 

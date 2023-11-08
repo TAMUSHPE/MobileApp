@@ -4,7 +4,7 @@ import { EventProps, SHPEEventScreenRouteProp } from '../types/Navigation'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { SHPEEventID, monthNames } from '../types/Events';
+import { SHPEEvent, monthNames } from '../types/Events';
 import { getEvent, getAttendanceNumber, isUserSignedIn } from '../api/firebaseUtils';
 import { auth } from "../config/firebaseConfig";
 import { UserContext } from '../context/UserContext';
@@ -13,7 +13,7 @@ import { UserContext } from '../context/UserContext';
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<SHPEEventScreenRouteProp>();
     const { eventId } = route.params;
-    const [event, setEvent] = useState<SHPEEventID>();
+    const [event, setEvent] = useState<SHPEEvent>();
     const [userSignedIn, setUserSignedIn] = useState(false);
     const [attendance, setAttendance] = useState<number | null>(0);
     const userContext = useContext(UserContext);

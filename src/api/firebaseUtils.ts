@@ -4,7 +4,7 @@ import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, ord
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, Roles, User } from "../types/User";
 import { Committee } from "../types/Committees";
-import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
+import { SHPEEvent, EventLogStatus } from "../types/Events";
 import { validateTamuEmail } from "../helpers/validation";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 
@@ -414,7 +414,7 @@ export const createEvent = async (event: SHPEEvent) => {
     }
 };
 
-export const updateEvent = async (event: SHPEEventID) => {
+export const updateEvent = async (event: SHPEEvent) => {
     try {
         const docRef = doc(db, "events", event.id!);
         await updateDoc(docRef, {
@@ -438,7 +438,7 @@ export const getEvent = async (eventID: string) => {
         const eventRef = doc(db, "events", eventID);
         const eventDoc = await getDoc(eventRef);
         if (eventDoc.exists()) {
-            return eventDoc.data() as SHPEEventID;
+            return eventDoc.data() as SHPEEvent;
         } else {
             console.error("No such document!");
             return null;
@@ -454,7 +454,7 @@ export const getUpcomingEvents = async () => {
     const eventsRef = collection(db, "events");
     const q = query(eventsRef, where("endDate", ">", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEventID[] = [];
+    const events: SHPEEvent[] = [];
     querySnapshot.forEach((doc) => {
         events.push({ id: doc.id, ...doc.data() });
     });
@@ -477,7 +477,7 @@ export const getPastEvents = async () => {
     const eventsRef = collection(db, "events");
     const q = query(eventsRef, where("endDate", "<", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEventID[] = [];
+    const events: SHPEEvent[] = [];
     querySnapshot.forEach((doc) => {
         events.push({ id: doc.id, ...doc.data() });
     });
