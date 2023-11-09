@@ -1,4 +1,23 @@
 {
+  "emulators": {
+    "singleProjectMode": false,
+    "firestore": {
+      "port": "8080"
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4000
+    },
+    "auth": {
+      "port": "9099"
+    },
+    "storage": {
+      "port": "9199"
+    },
+    "functions": {
+      "port": "5001"
+    }
+  },
   "functions": [
     {
       "source": "functions",
@@ -14,5 +33,8 @@
         "npm --prefix \"$RESOURCE_DIR\" run build"
       ]
     }
-  ]
+  ],
+  "storage": {
+    "rules": "functions/storage.rules"
+  }
 }
