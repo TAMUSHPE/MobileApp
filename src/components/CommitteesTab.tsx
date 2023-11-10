@@ -25,7 +25,6 @@ const CommitteesTab: React.FC<CommitteesInfoProp> = ({ navigation }) => {
     return (
         <View>
             <CommitteesSlider onCommitteeSelected={setSelectedCommittee} selectedCommittee={selectedCommittee} />
-            <CommitteesInfo selectedCommittee={selectedCommittee} navigation={navigation} />
         </View>
     )
 }
