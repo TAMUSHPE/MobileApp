@@ -14,7 +14,7 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
     const [lastUserSnapshot, setLastUserSnapshot] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
     const lastUserSnapshotRef = useRef<QueryDocumentSnapshot<DocumentData> | null>(null);
     const [filter, setFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "name" });
-    const [hasMoreUser, setHasMoreUser] = useState<boolean>(false);
+    const [hasMoreUser, setHasMoreUser] = useState<boolean>(true);
 
     const [initialLoad, setInitialLoad] = useState(true);
     const [numLimit, setNumLimit] = useState<number | null>(10);
