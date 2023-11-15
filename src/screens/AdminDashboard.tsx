@@ -9,8 +9,15 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
     const updateRanks = async () => {
         const functions = getFunctions();
         const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
-        await updateRanksOnCall()
+        updateRanksOnCall()
     }
+
+    const getTrueCommittesCount = async () => {
+        const functions = getFunctions();
+        const callUpdateCommitteesCount = httpsCallable(functions, 'updateCommitteesCountOnCall');
+        callUpdateCommitteesCount()
+    }
+
 
     return (
         <SafeAreaView className='items-center justify-center space-y-4' edges={['right', 'top', 'left']}>
@@ -20,6 +27,15 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
             >
                 <Text>Update Points and Rank for all Users</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+                onPress={() => getTrueCommittesCount()}
+                className='bg-blue-500 rounded-md p-2'
+            >
+                <Text>Load Committee Membership Count</Text>
+            </TouchableOpacity>
+
+
             <TouchableOpacity
                 onPress={() => navigation.navigate('CommitteesEditor')}
                 className='bg-blue-500 rounded-md p-2'
