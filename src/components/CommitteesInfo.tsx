@@ -10,6 +10,7 @@ import { UserContext } from '../context/UserContext';
 import { auth } from '../config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommitteeConstants } from '../types/Committees';
+import { Octicons } from '@expo/vector-icons';
 
 const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navigation }) => {
     if (!selectedCommittee) {
@@ -265,20 +266,33 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
                 >
                     <View className='items-center justify-center h-full'>
                         <TouchableWithoutFeedback>
-                            <View className='opacity-100 bg-white w-[70%] rounded-md items-center'>
-                                <TouchableOpacity
-                                    onPress={async () => {
-                                        setConfirmVisible(false)
-                                        updateCommitteeCount()
-                                    }}
-                                >
-                                    <Text className='text-xl font-bold py-3 px-8'> {isInCommittee ? "Leave" : "Join"} </Text>
-                                </TouchableOpacity>
+                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
+                                <Octicons name="person" size={24} color="black" />
+                                <View className='flex items-center w-[80%] space-y-8'>
+                                    <Text className="text-center text-lg font-bold"> {isInCommittee ? "Are you sure you want leave?" : "Are you sure you want to join?"}</Text>
+                                    <View className="flex-row">
+                                        <TouchableOpacity
+                                            onPress={async () => {
+                                                setConfirmVisible(false)
+                                                updateCommitteeCount()
+                                            }}
+                                            className="bg-pale-blue rounded-xl justify-center items-center"
+                                        >
+                                            <Text className='text-xl font-bold text-white px-8'> {isInCommittee ? "Leave" : "Join"} </Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
+                                            <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
                             </View>
                         </TouchableWithoutFeedback>
                     </View>
-                </TouchableOpacity>
+                </TouchableOpacity >
             </Modal>
+
+
         </View>
     )
 }
