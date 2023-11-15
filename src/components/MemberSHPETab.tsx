@@ -1,6 +1,10 @@
 import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
 import React, { useState } from 'react'
 import { Images } from '../../assets';
+import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
+import { uploadFileToFirebase } from '../api/firebaseUtils';
+import { auth } from '../config/firebaseConfig';
+import { getBlobFromURI, selectFile } from '../api/fileSelection';
 
 type MemberSHPETabs = "TAMUChapter" | "SHPENational"
 
@@ -29,6 +33,50 @@ const MemberSHPETab = () => {
                 console.error(err);
             });
     };
+
+    const selectNational = async () => {
+        const result = await selectFile();
+        if (result) {
+            const nationalBlob = await getBlobFromURI(result.assets![0].uri);
+            return nationalBlob;
+        }
+        return null;
+    }
+    
+    const uploadNational = (nationalBlob: Blob) => {
+        if (validateFileBlob(nationalBlob, CommonMimeTypes.RESUME_FILES, true)) {
+            console.log("test1243")
+            const uploadTask = uploadFileToFirebase(nationalBlob, `user-docs/${auth.currentUser?.uid}/user-mational`);
+
+            uploadTask.on("state_changed",
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                },
+                (error) => {
+                    switch (error.code) {
+                        case "storage/unauthorized":
+                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            break;
+                        case "storage/canceled":
+                            alert("File upload cancelled");
+                            break;
+                        default:
+                            alert("An unknown error has occured")
+                            break;
+                    }
+                },
+                async () => {
+                     
+                });
+        }
+    }
+    
+
+    const uploadChapter = () => {
+
+    }
+
 
     return (
         <View className='h-screen'>
@@ -102,7 +150,29 @@ const MemberSHPETab = () => {
                 >
                     <Text className={`text-pale-orange text-md font-bold ${currentTab === "SHPENational" ? "text-black" : "text-white"} `}>NATIONAL</Text>
                 </TouchableOpacity>
+
             </View>
+
+                <View>
+                <TouchableOpacity
+                    onPress={async () => {
+                        const selectedNational = await selectNational();
+                        if (selectedNational) {
+                            uploadNational(selectedNational);
+                        }
+                    }}
+                >
+                    <Text>upload National</Text>
+                    
+                </TouchableOpacity>
+
+                {/* <TouchableOpacity
+                    onPress={() => uploadNational()}
+                >   
+                    <Text>upload Chapter</Text>
+                </TouchableOpacity> */}
+
+                </View>
 
 
         </View>
