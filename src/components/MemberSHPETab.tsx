@@ -1,18 +1,44 @@
 import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Images } from '../../assets';
 import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
-import { uploadFileToFirebase } from '../api/firebaseUtils';
-import { auth } from '../config/firebaseConfig';
+import { setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
+import { auth, db } from '../config/firebaseConfig';
 import { getBlobFromURI, selectFile } from '../api/fileSelection';
-
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
 type MemberSHPETabs = "TAMUChapter" | "SHPENational"
 
 const MemberSHPETab = () => {
-    const [currentTab, setCurrentTab] = useState<MemberSHPETabs>("TAMUChapter")
     const TAMU_GOOGLE_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSeJqnOMHljOHcMGVzkhQeVtPgt5eG5Iic8vZlmZjXCYT0qw3g/viewform"
     const TAMU_PAY_DUES = "https://tamu.estore.flywire.com/products/2023-2024-membershpe-shirt-127459"
     const NATIONALS = "https://www.shpeconnect.org/eweb/DynamicPage.aspx?WebCode=LoginRequired&expires=yes&Site=shpe"
+    const [currentTab, setCurrentTab] = useState<MemberSHPETabs>("TAMUChapter")
+    const [uploadedNational, setUploadedNational] = useState(false)
+    const [uploadedChapter, setUploadedChapter] = useState(false)
+
+    useEffect(() => {
+        const unsubscribe = () => {
+            if (auth.currentUser) {
+                const docRef = doc(db, `memberSHPE/${auth.currentUser?.uid}`);
+                const unsubscribe = onSnapshot(docRef, (doc) => {
+                    if (doc.exists()) {
+                        const data = doc.data();
+                        if (data?.nationalUploadDate) {
+                            setUploadedNational(true);
+                        }
+                        if (data?.chapterUploadDate) {
+                            setUploadedChapter(true);
+                        }
+                    }
+                });
+
+                return unsubscribe;
+            }
+        }
+
+        return unsubscribe();
+    }, [])
+
 
     const handleLinkPress = async (url: string) => {
         if (!url) {
@@ -34,19 +60,21 @@ const MemberSHPETab = () => {
             });
     };
 
-    const selectNational = async () => {
+    const fileSelector = async () => {
         const result = await selectFile();
         if (result) {
-            const nationalBlob = await getBlobFromURI(result.assets![0].uri);
-            return nationalBlob;
+            const blob = await getBlobFromURI(result.assets![0].uri);
+            return blob;
         }
         return null;
     }
-    
+
     const uploadNational = (nationalBlob: Blob) => {
+        if (uploadedNational) {
+            return;
+        }
         if (validateFileBlob(nationalBlob, CommonMimeTypes.RESUME_FILES, true)) {
-            console.log("test1243")
-            const uploadTask = uploadFileToFirebase(nationalBlob, `user-docs/${auth.currentUser?.uid}/user-mational`);
+            const uploadTask = uploadFileToFirebase(nationalBlob, `user-docs/${auth.currentUser?.uid}/national-verification`);
 
             uploadTask.on("state_changed",
                 (snapshot) => {
@@ -67,16 +95,61 @@ const MemberSHPETab = () => {
                     }
                 },
                 async () => {
-                     
+                    setPublicUserData({
+                        nationalVerification: false,
+                        nationalExpiration: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+                    })
+
+                    await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), { nationalUploadDate: new Date().toISOString() }, { merge: true });
                 });
         }
     }
-    
 
-    const uploadChapter = () => {
 
+    const uploadChapter = (chapterBlob: Blob) => {
+        if (uploadedChapter) {
+            return;
+        }
+        if (validateFileBlob(chapterBlob, CommonMimeTypes.RESUME_FILES, true)) {
+            const uploadTask = uploadFileToFirebase(chapterBlob, `user-docs/${auth.currentUser?.uid}/chapter-verification`);
+
+            uploadTask.on("state_changed",
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                },
+                (error) => {
+                    switch (error.code) {
+                        case "storage/unauthorized":
+                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            break;
+                        case "storage/canceled":
+                            alert("File upload cancelled");
+                            break;
+                        default:
+                            alert("An unknown error has occured")
+                            break;
+                    }
+                },
+                async () => {
+                    const today = new Date();
+                    let expirationYear = today.getFullYear();
+
+                    if (today > new Date(expirationYear, 7, 20)) { // Note: JavaScript months are 0-indexed
+                        expirationYear += 1;
+                    }
+
+                    const expirationDate = new Date(expirationYear, 7, 20).toISOString(); // August 20th of the determined year
+
+                    setPublicUserData({
+                        chapterVerification: false,
+                        chapterExpiration: expirationDate
+                    });
+                    await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), { chapterUploadDate: new Date().toISOString() }, { merge: true });
+
+                });
+        }
     }
-
 
     return (
         <View className='h-screen'>
@@ -136,7 +209,7 @@ const MemberSHPETab = () => {
             }
             <View className='flex-row items-center justify-center space-x-8 mt-8'>
                 <TouchableOpacity
-                    className={`px-6 py-4 rounded-lg  items-center ${currentTab === "TAMUChapter" ? "bg-gray-200" : "bg-maroon w-[40%]"}`}
+                    className={`px-6 py-4 rounded-lg  items-center ${currentTab === "TAMUChapter" ? "" : "bg-maroon w-[40%]"}`}
                     disabled={currentTab === "TAMUChapter"}
                     onPress={() => setCurrentTab("TAMUChapter")}
                 >
@@ -144,7 +217,7 @@ const MemberSHPETab = () => {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    className={`px-6 py-4 rounded-lg items-center w-[40%] ${currentTab === "SHPENational" ? "bg-gray-200" : "bg-pale-orange w-[40%]"}`}
+                    className={`px-6 py-4 rounded-lg items-center w-[40%] ${currentTab === "SHPENational" ? "" : "bg-pale-orange w-[40%]"}`}
                     disabled={currentTab === "SHPENational"}
                     onPress={() => setCurrentTab("SHPENational")}
                 >
@@ -153,26 +226,37 @@ const MemberSHPETab = () => {
 
             </View>
 
-                <View>
+            <View className='flex-row items-center justify-center space-x-8 mt-8'>
                 <TouchableOpacity
+                    className={`px-2 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-200" : "bg-maroon"}`}
                     onPress={async () => {
-                        const selectedNational = await selectNational();
-                        if (selectedNational) {
-                            uploadNational(selectedNational);
+                        const chapterFile = await fileSelector();
+                        if (chapterFile) {
+                            uploadChapter(chapterFile);
                         }
                     }}
+                    disabled={uploadedChapter}
                 >
-                    <Text>upload National</Text>
-                    
+
+                    <Text className={`${uploadedChapter ? "text-black" : "text-white"}`}>upload Chapter Proof</Text>
                 </TouchableOpacity>
 
-                {/* <TouchableOpacity
-                    onPress={() => uploadNational()}
-                >   
-                    <Text>upload Chapter</Text>
-                </TouchableOpacity> */}
+                <TouchableOpacity
+                    className={`px-2 py-2 rounded-lg items-center ${uploadedNational ? "bg-gray-200" : "bg-pale-orange"}`}
+                    onPress={async () => {
+                        const nationalFile = await fileSelector();
+                        if (nationalFile) {
+                            uploadNational(nationalFile);
+                        }
+                    }}
+                    disabled={uploadedNational}
+                >
 
-                </View>
+                    <Text className={`${uploadedNational ? "text-black" : "text-white"}`}>upload National Proof</Text>
+
+                </TouchableOpacity>
+
+            </View>
 
 
         </View>
