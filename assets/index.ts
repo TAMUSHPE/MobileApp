@@ -11,6 +11,7 @@ export const Images =  {
     LDMAIN: require("./LDMain.jpg"),
     MEMBERSHPE: require("./memberSHPEPic2.jpg"),
     TAMU_WHITE: require("./TAM-Logo-white.png"),
+    TAMU_MAROON: require("./TAM-Logo-maroon.png"),
     GENEVA: require("./geneva.png"),
     SHPE_LOGO_VERT:require("./SHPE_Logo_Vert.png"),
     COMMITTEE_1: require("./committee_1.png"),
