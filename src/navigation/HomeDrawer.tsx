@@ -38,7 +38,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
 
     const signOutUser = async () => {
         try {
-            await removeExpoPushToken();
+            if (process.env.NODE_ENV === "production") await removeExpoPushToken();
             await signOut(auth);
         } catch (error) {
             console.error(error);
