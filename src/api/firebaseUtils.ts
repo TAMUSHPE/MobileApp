@@ -418,13 +418,7 @@ export const updateEvent = async (event: SHPEEvent) => {
     try {
         const docRef = doc(db, "events", event.id!);
         await updateDoc(docRef, {
-            name: event.name,
-            description: event.description,
-            pointsCategory: event.pointsCategory || [],
-            notificationGroup: event.notificationGroup || [],
-            startDate: event.startDate,
-            endDate: event.endDate,
-            location: event.location,
+            ...event
         });
         return event.id;
     } catch (error) {
