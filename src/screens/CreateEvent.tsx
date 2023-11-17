@@ -160,9 +160,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                                     newEvent = new GeneralMeeting(generalMeetingArgs);
                                     break;
                                 case EventType.STUDY_HOURS:
-                                    const studyHourArgs = {};
-                                    const defaultHours = 3;
-                                    newEvent = new StudyHours(studyHourArgs, defaultHours);
+                                    newEvent = new StudyHours({});
                                     break;
                                 default:
                                     Alert.alert("Select an event type", "Please select an event type to continue.");
@@ -170,7 +168,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                             }
 
                             if (newEvent) {
-                                navigation.navigate();
+                                Alert.alert("Yay");
                             }
                             else {
                                 Alert.alert("Unimplemented", "Unfortunately, this event type is currently unimplemented.")

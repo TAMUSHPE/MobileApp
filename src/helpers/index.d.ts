@@ -8,7 +8,8 @@ export {
 } from './colorUtils';
 
 export {
-    MillisecondTimes
+    MillisecondTimes,
+    getNextHourMillis
 } from './timeUtils';
 
 export {
