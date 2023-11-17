@@ -122,7 +122,7 @@ export class StudyHours implements SHPEEvent {
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR * 4);
         this.signInPoints = 0;
         this.signOutPoints = 0;
-        this.pointsPerHour = 1
+        this.pointsPerHour = 1;
     }
 
     public copyFromObject({ name, description, tags, startTime, endTime, signInPoints, signOutPoints, pointsPerHour }: {
