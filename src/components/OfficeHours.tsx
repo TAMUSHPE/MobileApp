@@ -45,8 +45,9 @@ const OfficeHours = () => {
                 const functions = getFunctions();
                 const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
                 await sendNotificationOfficeHours();
-            } else {
-                console.log('Please wait 10 seconds before knocking again.');
+            } 
+            else {
+                //add the user to watchlist here
             }
         } catch (err) {
             console.error("Error sending knock:", err);
