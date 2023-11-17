@@ -1,16 +1,17 @@
 import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator, TouchableOpacity } from "react-native";
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from "../config/firebaseConfig";
-import { signInWithEmailAndPassword, signInWithCredential, GoogleAuthProvider } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithCredential, GoogleAuthProvider, signOut } from "firebase/auth";
 import { initializeCurrentUserData } from "../api/firebaseUtils";
 import { UserContext } from "../context/UserContext";
 import InteractButton from "../components/InteractButton";
 import { AuthStackParams } from "../types/Navigation";
 import { Images } from "../../assets";
 import { Octicons } from '@expo/vector-icons';
+import { useFocusEffect } from "@react-navigation/core";
 
 
 const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
@@ -25,6 +26,27 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
      * initially be undefined. This function will check the value when userInfo
      * is changed until it's either true or false.
      */
+    console.log("test", auth.currentUser?.uid)
+
+
+    const signOutUser = async () => {
+        try {
+            await signOut(auth);
+            await AsyncStorage.removeItem('@user');
+            setUserInfo(undefined);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    // Occurs when a user back swipe to this screen from the ProfileSetup screen
+    useFocusEffect(
+        useCallback(() => {
+            signOutUser();
+            return () => { };
+        }, [])
+    );
+
     useEffect(() => {
         if (userInfo?.private?.privateInfo?.completedAccountSetup === false) {
             navigation.navigate("ProfileSetup");
