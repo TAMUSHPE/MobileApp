@@ -1,6 +1,6 @@
 import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Platform, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { EventType, GeneralMeeting, SHPEEvent, StudyHours, monthNames } from '../types/Events'
+import { CommitteeMeeting, CustomEvent, EventType, GeneralMeeting, IntramuralEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop, monthNames } from '../types/Events'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Picker } from '@react-native-picker/picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -140,34 +140,39 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                         label='Next Step'
                         underlayColor='#123456'
                         onPress={() => {
-                            const startTime = Timestamp.fromDate(new Date());
-
-                            const laterDate = new Date();
-                            laterDate.setHours(laterDate.getHours() + 1);
-                            const endTime = Timestamp.fromDate(laterDate);
-
                             let newEvent: SHPEEvent | undefined = undefined;
 
                             switch (eventType) {
                                 case EventType.GENERAL_MEETING:
-                                    const generalMeetingArgs = {
-                                        name: "General Meeting",
-                                        description: "",
-                                        tags: [],
-                                        startTime,
-                                        endTime,
-                                    };
-                                    newEvent = new GeneralMeeting(generalMeetingArgs);
+                                    newEvent = new GeneralMeeting();
+                                    break;
+                                case EventType.COMMITTEE_MEETING:
+                                    newEvent = new CommitteeMeeting();
                                     break;
                                 case EventType.STUDY_HOURS:
-                                    newEvent = new StudyHours({});
+                                    newEvent = new StudyHours();
+                                    break;
+                                case EventType.WORKSHOP:
+                                    newEvent = new Workshop();
+                                    break;
+                                case EventType.VOLUNTEER_EVENT:
+                                    newEvent = new VolunteerEvent();
+                                    break;
+                                case EventType.SOCIAL_EVENT:
+                                    newEvent = new SocialEvent();
+                                    break;
+                                case EventType.INTRAMURAL_EVENT:
+                                    newEvent = new IntramuralEvent();
+                                    break;
+                                case EventType.CUSTOM_EVENT:
+                                    newEvent = new CustomEvent();
                                     break;
                                 default:
                                     Alert.alert("Select an event type", "Please select an event type to continue.");
                                     break;
                             }
 
-                            if (newEvent) {
+                            if (newEvent != undefined) {
                                 Alert.alert("Yay");
                             }
                             else {
