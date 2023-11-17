@@ -61,8 +61,42 @@ export class GeneralMeeting implements SHPEEvent {
         this.signInPoints = signInPoints ?? this.signInPoints;
         this.signOutPoints = signOutPoints ?? this.signOutPoints;
     }
+}
 
+export class CommitteeMeeting implements SHPEEvent {
+    public name: string;
+    public tags: string[];
+    public description: string;
+    public eventType: EventType;
+    public startTime: Timestamp;
+    public endTime: Timestamp;
+    public signInPoints: number;
 
+    public constructor() {
+        this.name = "Committee Meeting";
+        this.tags = [];
+        this.description = "";
+        this.eventType = EventType.COMMITTEE_MEETING;
+        this.startTime = Timestamp.fromMillis(getNextHourMillis());
+        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
+        this.signInPoints = 1;
+    }
+
+    public copyFromObject({ name, tags, description, startTime, endTime, signInPoints }: {
+        name: string,
+        tags: string[],
+        description: string,
+        startTime: Timestamp,
+        endTime: Timestamp,
+        signInPoints: number,
+    }) {
+        this.name = name ?? this.name;
+        this.tags = tags ?? this.tags;
+        this.description = description ?? this.description;
+        this.startTime = startTime ?? this.startTime;
+        this.endTime = endTime ?? this.endTime;
+        this.signInPoints = signInPoints ?? this.signInPoints;
+    }
 }
 
 /**
@@ -204,42 +238,6 @@ export class SocialEvent implements SHPEEvent {
         this.tags = [];
         this.description = "";
         this.eventType = EventType.SOCIAL_EVENT;
-        this.startTime = Timestamp.fromMillis(getNextHourMillis());
-        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.signInPoints = 1;
-    }
-
-    public copyFromObject({ name, tags, description, startTime, endTime, signInPoints }: {
-        name: string,
-        tags: string[],
-        description: string,
-        startTime: Timestamp,
-        endTime: Timestamp,
-        signInPoints: number,
-    }) {
-        this.name = name ?? this.name;
-        this.tags = tags ?? this.tags;
-        this.description = description ?? this.description;
-        this.startTime = startTime ?? this.startTime;
-        this.endTime = endTime ?? this.endTime;
-        this.signInPoints = signInPoints ?? this.signInPoints;
-    }
-}
-
-export class CommitteeMeeting implements SHPEEvent {
-    public name: string;
-    public tags: string[];
-    public description: string;
-    public eventType: EventType;
-    public startTime: Timestamp;
-    public endTime: Timestamp;
-    public signInPoints: number;
-
-    public constructor() {
-        this.name = "Committee Meeting";
-        this.tags = [];
-        this.description = "";
-        this.eventType = EventType.COMMITTEE_MEETING;
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
         this.signInPoints = 1;
