@@ -4,6 +4,8 @@ import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/f
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { auth, db } from '../config/firebaseConfig';
 import { MemberStatus } from '../types/User';
+import { getWatchlist, setWatchlist } from '../api/firebaseUtils';
+
 
 /**
  * This component displays the office hours information and provides an interface 
@@ -48,6 +50,7 @@ const OfficeHours = () => {
             } 
             else {
                 //add the user to watchlist here
+                setWatchlist((await getWatchlist()).append(auth.currentUser?.uid!))
             }
         } catch (err) {
             console.error("Error sending knock:", err);
