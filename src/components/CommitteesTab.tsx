@@ -3,9 +3,9 @@ import React from 'react'
 import CommitteeCard from './CommitteeCard'
 import { Committee, CommitteeConstants } from "../types/Committees"
 import { Images } from "../../assets"
-import { CommitteesInfoProp } from '../types/Navigation'
+import { CommitteesTabProps } from '../types/Navigation'
 
-const CommitteesTab: React.FC<CommitteesInfoProp> = ({ navigation }) => {
+const CommitteesTab: React.FC<CommitteesTabProps> = ({ navigation }) => {
     const committees: Committee[] = [
         {
             ...CommitteeConstants.TECHNICALAFFAIRS,
@@ -28,12 +28,16 @@ const CommitteesTab: React.FC<CommitteesInfoProp> = ({ navigation }) => {
             key: "SCHOLASTIC",
         },
     ]
+    
+    const handleCardPress = (committee: Committee): Committee | void => {
+        navigation.navigate("CommitteeInfoScreen", { committee });
+    };
 
     return (
         <View className=''>
             <ScrollView>
                 {committees.map((committee) => (
-                    <CommitteeCard key={committee.name} committee={committee}/>
+                    <CommitteeCard key={committee.name} committee={committee} handleCardPress={() => { handleCardPress(committee) }}/>
                 ))}
             </ScrollView>
         </View>

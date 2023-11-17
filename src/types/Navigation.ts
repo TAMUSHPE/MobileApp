@@ -65,6 +65,9 @@ export type ResourcesStackParams = {
 
 export type CommitteesStackParams = {
     CommitteesScreen: undefined;
+    CommitteeInfoScreen: {
+        committee: Committee;
+    };
     PublicProfile: {
         uid: string;
     };
@@ -160,8 +163,7 @@ export type EventProps = {
     navigation: NativeStackNavigationProp<EventsStackParams>
 }
 
-export type CommitteesInfoProp = {
-    selectedCommittee?: Committee | null
+export type CommitteesTabProps = {
     navigation: NativeStackNavigationProp<CommitteesStackParams>
 }
 
@@ -180,6 +182,7 @@ export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScr
 // routes prop for screens
 export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
+export type CommitteeInfoScreenRouteProp = RouteProp<CommitteesStackParams, "CommitteeInfoScreen">;
 export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;
 export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "EventInfo">;
 export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;
