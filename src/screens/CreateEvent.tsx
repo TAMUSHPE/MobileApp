@@ -84,6 +84,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                                     }}>
 
                                     {/* Can use mapping for this */}
+                                    <Picker.Item label="None" value={undefined} />
                                     <Picker.Item label="General Meeting" value={EventType.GENERAL_MEETING} />
                                     <Picker.Item label="Committee Meeting" value={EventType.COMMITTEE_MEETING} />
                                     <Picker.Item label="Study Hours" value={EventType.STUDY_HOURS} />
@@ -91,7 +92,6 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                                     <Picker.Item label="Volunteer" value={EventType.VOLUNTEER_EVENT} />
                                     <Picker.Item label="Social" value={EventType.SOCIAL_EVENT} />
                                     <Picker.Item label="Intramural" value={EventType.INTRAMURAL_EVENT} />
-                                    <Picker.Item label="None" value={undefined} />
                                 </Picker>
                             </View>
                         </View>
@@ -174,9 +174,6 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
 
                             if (newEvent != undefined) {
                                 Alert.alert("Yay");
-                            }
-                            else {
-                                Alert.alert("Unimplemented", "Unfortunately, this event type is currently unimplemented.")
                             }
                         }}
                     />
