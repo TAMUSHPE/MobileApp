@@ -263,9 +263,75 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({navigation}) => {
                                 </View>
                             </TouchableWithoutFeedback>
                         </View>
+
                     </TouchableOpacity>
+
+                    <Text className='mt-3 mx-4'>{committeeInfo?.description}</Text>
+
                 </Modal>
             </SafeAreaView>
+
+            <View className='flex-row mx-4 mt-4 space-x-2'>
+                <TouchableOpacity
+                    className='bg-white rounded-xl h-8 w-[8%] items-center justify-center border-gray-600 border'
+                    onPress={() => setConfirmVisible(!confirmVisible)}
+                >
+                    <Text>{isInCommittee ? "-" : "+"}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    className='bg-white rounded-xl h-8 w-[43%] items-center justify-center border-gray-600 border'
+                    onPress={() => handleLinkPress(committeeInfo?.memberApplicationLink || '')}
+                >
+                    <Text>Member Application</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    className='bg-white rounded-xl h-8 w-[43%] items-center justify-center border-gray-600 border'
+                    onPress={() => handleLinkPress(committeeInfo?.leadApplicationLink || '')}
+                >
+                    <Text>Leader Application</Text>
+                </TouchableOpacity>
+            </View>
+
+            <Modal
+                animationType="none"
+                transparent={true}
+                visible={confirmVisible}
+                onRequestClose={() => setConfirmVisible(!confirmVisible)}
+            >
+                <TouchableOpacity
+                    onPress={() => setConfirmVisible(false)}
+                    className="h-[100%] w-[100%]"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                >
+                    <View className='items-center justify-center h-full'>
+                        <TouchableWithoutFeedback>
+                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
+                                <Octicons name="person" size={24} color="black" />
+                                <View className='flex items-center w-[80%] space-y-8'>
+                                    <Text className="text-center text-lg font-bold"> {isInCommittee ? "Are you sure you want leave?" : "Are you sure you want to join?"}</Text>
+                                    <View className="flex-row">
+                                        <TouchableOpacity
+                                            onPress={async () => {
+                                                setConfirmVisible(false)
+                                                updateCommitteeCount()
+                                            }}
+                                            className="bg-pale-blue rounded-xl justify-center items-center"
+                                        >
+                                            <Text className='text-xl font-bold text-white px-8'> {isInCommittee ? "Leave" : "Join"} </Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
+                                            <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableOpacity >
+            </Modal>
+
+
         </ScrollView>
     )
 }
