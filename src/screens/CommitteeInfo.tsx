@@ -1,21 +1,33 @@
-import { View, Text, Image, Modal, TouchableOpacity, Linking, TouchableWithoutFeedback } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import { View, Text, Image, Modal, TouchableOpacity, Linking, TouchableWithoutFeedback, ScrollView, TouchableHighlight, FlatList} from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { PureComponent, useContext, useEffect, useState } from 'react'
+import { useRoute } from '@react-navigation/native';
 import { Images } from '../../assets';
+import { Octicons } from '@expo/vector-icons';
 import { Committee, CommitteeKey } from '../types/Committees';
 import { getCommitteeInfo, getPublicUserData, getUser, setPublicUserData } from '../api/firebaseUtils';
 import { PublicUserInfo } from '../types/User';
-import { CommitteesInfoProp } from '../types/Navigation';
+import { CommitteeInfoScreenRouteProp, CommitteesTabProps } from '../types/Navigation';
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { UserContext } from '../context/UserContext';
 import { auth } from '../config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommitteeConstants } from '../types/Committees';
-import { Octicons } from '@expo/vector-icons';
 
-const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navigation }) => {
-    if (!selectedCommittee) {
-        return null; // replace with a proper empty screen
-    }
+interface UserProfileProps {userInfo: PublicUserInfo | null}
+const UserProfile: React.FC<UserProfileProps> = ({userInfo}) => {
+    return (
+        <TouchableOpacity className='flex-col items-center w-40'>
+            <Image className='h-24 w-24 rounded-full' source={userInfo?.photoURL ? { uri: userInfo?.photoURL } : Images.DEFAULT_USER_PICTURE}/>
+            <Text className='text-lg'>{userInfo?.name}</Text>
+            <Text>{userInfo?.email}</Text>
+        </TouchableOpacity>
+    );
+}
+
+const CommitteesInfo: React.FC<CommitteesTabProps> = ({navigation}) => {
+    const route = useRoute<CommitteeInfoScreenRouteProp>();
+    const { committee } = route.params;
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [committees, setCommittees] = useState<Array<CommitteeKey | string> | undefined>(userInfo?.publicInfo?.committees);
     const [committeeInfo, setCommitteeInfo] = useState<Committee | null>(null);
@@ -38,9 +50,9 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
 
         if (committees !== undefined) {
             const firebaseDocNames = mapCommitteesToFirebaseDocName(committees);
-            setIsInCommittee(firebaseDocNames?.includes(selectedCommittee.firebaseDocName!));
+            setIsInCommittee(firebaseDocNames?.includes(committee.firebaseDocName!));
         }
-    }, [committees, selectedCommittee.name]);
+    }, [committees, committee.name]);
 
     useEffect(() => {
         const fetchHeadUserData = async (uid: string) => {
@@ -64,8 +76,8 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
             setCommitteeInfo(null);
             setHeadUserInfo(null);
             setLeadsUserInfo([]);
-            if (selectedCommittee.name) {
-                const fetchedInfo = await getCommitteeInfo(selectedCommittee.firebaseDocName!);
+            if (committee.name) {
+                const fetchedInfo = await getCommitteeInfo(committee.firebaseDocName!);
                 if (fetchedInfo) {
                     setCommitteeInfo(fetchedInfo);
                     if (fetchedInfo.headUID) {
@@ -82,7 +94,7 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
         }
 
         fetchCommitteeInfo();
-    }, [selectedCommittee.name]);
+    }, [committee.name]);
 
 
     const updateMemberCountLocally = () => {
@@ -105,16 +117,16 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
 
             if (isInCommittee) {
                 const index = updatedCommittees.findIndex(
-                    committeeKey => CommitteeConstants[committeeKey as CommitteeKey]?.firebaseDocName === selectedCommittee.firebaseDocName
+                    committeeKey => CommitteeConstants[committeeKey as CommitteeKey]?.firebaseDocName === committee.firebaseDocName
                 );
                 if (index !== -1) {
                     updatedCommittees.splice(index, 1);
                 }
             } else {
                 if (!updatedCommittees.some(
-                    committeeKey => CommitteeConstants[committeeKey as CommitteeKey]?.firebaseDocName === selectedCommittee.firebaseDocName
+                    committeeKey => CommitteeConstants[committeeKey as CommitteeKey]?.firebaseDocName === committee.firebaseDocName
                 )) {
-                    updatedCommittees.push(selectedCommittee.key as string);
+                    updatedCommittees.push(committee.key as string);
                 }
             }
         }
@@ -150,7 +162,7 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
         const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
 
         try {
-            await updateCommitteeCount({ committeeName: selectedCommittee?.firebaseDocName, change: isInCommittee ? -1 : 1 });
+            await updateCommitteeCount({ committeeName: committee?.firebaseDocName, change: isInCommittee ? -1 : 1 });
         } catch (error) {
             console.error('Error calling function:', error);
         }
@@ -177,60 +189,87 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
     };
 
     return (
-        <View>
-            <View className='flex-row justify-between mx-4 mt-10'>
-                {/* Committee Image */}
-                <View className='h-52 w-[40%] shadow-2xl rounded-3xl'>
-                    <Image source={selectedCommittee?.image || Images.COMMITTEE_4} className='h-full w-full bg-pale-blue rounded-3xl' />
-                    <View className='absolute items-center w-full'>
-                        <Text className='text-lg font-bold'>{selectedCommittee?.name}</Text>
+        <ScrollView style={{backgroundColor: committee.color}}>
+            <SafeAreaView className='h-full pb-2' edges={['right', 'top', 'left']}>
+                <TouchableHighlight className='py-3 px-6' onPress={() => navigation.goBack()} underlayColor="offwhite">
+                    <Octicons name="chevron-left" size={30} color="black" />
+                </TouchableHighlight>
+                <View className='flex-auto items-center gap-4'>
+                    <Text className='text-[32px] font-bold'>{committee.name}</Text>
+                    <Image className='h-48 w-80 bg-white' source={committee.image || Images.COMMITTEE_4}/>
+                    <Text className='text-lg pt-5 px-5'>{committeeInfo?.description || "No description provided"}</Text>
+                    <View className='flex-row py-2'>
+                        <Text className='text-3xl'>Members: </Text>
+                        <Text className='text-4xl'>{committeeInfo ? committeeInfo.memberCount : "0"}</Text>
+                    </View>
+                   <View className='flex-row space-x-2 pb-5'>
+                        <TouchableOpacity
+                            className='bg-white rounded-xl w-1/6 items-center justify-center'
+                            onPress={() => setConfirmVisible(!confirmVisible)}
+                        >
+                        <Text className='text-[45px]'>{isInCommittee ? "-" : "+"}</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            className='bg-white rounded-xl w-1/3 items-center justify-center'
+                            onPress={() => handleLinkPress(committeeInfo?.memberApplicationLink || '')}
+                        >
+                            <Text className='text-center text-[20px] font-medium'>Member Application</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            className='bg-white rounded-xl w-1/3 items-center justify-center border-gray-600 border'
+                            onPress={() => handleLinkPress(committeeInfo?.leadApplicationLink || '')}
+                        >
+                            <Text className='text-center text-[20px] font-medium'>Lead Application</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
+                <View className='ml-6'>
+                    <Text className='text-3xl font-semibold'>Officer</Text>
+                    <UserProfile userInfo={headUserInfo}/>
+                    <Text className='text-3xl font-semibold'>Leads</Text>
+                    <FlatList
+                        data={leadsUserInfo}
+                        horizontal={true}
+                        renderItem={({item, index}) => {
+                            return(
+                                <UserProfile userInfo={item} key={index}></UserProfile>
+                            )
+                        }}
+                    />
+                </View>
 
-                {/* Committee Info */}
-                <View className='w-[60%]'>
-                    <View className={`flex-row justify-between ${leadsUserInfo.length > 0 ? "mx-4" : "mx-10"} items-center`}>
-                        <View className={`${leadsUserInfo.length > 0 ? "w-[1/3]" : "w-[1/2] "} items-center`}>
-                            <Text>Head</Text>
-                            <TouchableOpacity
-                                onPress={() => navigation.navigate("PublicProfile", { uid: headUserInfo?.uid! })}
-                            >
-
-                                <Image source={headUserInfo?.photoURL ? { uri: headUserInfo?.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-8 w-8 mt-2 rounded-full' />
-                            </TouchableOpacity>
-                        </View>
-
-                        {leadsUserInfo.length > 0 &&
-                            <View className='w-[1/3] items-center'>
-                                <Text>Lead</Text>
-                                <View className='flex-row-reverse mt-2'>
-                                    {leadsUserInfo.map((lead, index) => (
-                                        <View className='w-4' key={index}>
-                                            <TouchableOpacity
-                                                onPress={() => navigation.navigate("PublicProfile", { uid: lead.uid! })}
-                                            >
-                                                <Image source={leadsUserInfo[index].photoURL ? { uri: leadsUserInfo[index].photoURL } : Images.DEFAULT_USER_PICTURE} className='h-8 w-8 rounded-full' />
-                                            </TouchableOpacity>
-                                        </View>
-                                    ))}
-
+                <Modal
+                    animationType="none"
+                    transparent={true}
+                    visible={confirmVisible}
+                    onRequestClose={() => setConfirmVisible(!confirmVisible)}
+                >
+                    <TouchableOpacity
+                        onPress={() => setConfirmVisible(false)}
+                        className="h-[100%] w-[100%]"
+                        style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                    >
+                        <View className='items-center justify-center h-full'>
+                            <TouchableWithoutFeedback>
+                                <View className='opacity-100 bg-white w-[70%] rounded-md items-center'>
+                                    <TouchableOpacity
+                                        onPress={async () => {
+                                            setConfirmVisible(false)
+                                            updateCommitteeCount()
+                                        }}
+                                    >
+                                        <Text className='text-xl font-bold py-3 px-8'> {isInCommittee ? "Leave" : "Join"} </Text>
+                                    </TouchableOpacity>
                                 </View>
-                            </View>
-                        }
-
-                        <View className={`${leadsUserInfo.length > 0 ? "w-[1/3]" : "w-[1/2]"} items-center h-full`}>
-                            <Text>Members</Text>
-                            <View className='mt-2'>
-                                <Text className=''>{committeeInfo?.memberCount}</Text>
-                            </View>
+                            </TouchableWithoutFeedback>
                         </View>
 
-                    </View>
+                    </TouchableOpacity>
 
                     <Text className='mt-3 mx-4'>{committeeInfo?.description}</Text>
 
-                </View>
-            </View>
+                </Modal>
+            </SafeAreaView>
 
             <View className='flex-row mx-4 mt-4 space-x-2'>
                 <TouchableOpacity
@@ -293,9 +332,8 @@ const CommitteesInfo: React.FC<CommitteesInfoProp> = ({ selectedCommittee, navig
             </Modal>
 
 
-        </View>
+        </ScrollView>
     )
 }
-
 
 export default CommitteesInfo
