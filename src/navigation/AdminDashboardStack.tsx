@@ -10,7 +10,7 @@ import ResumeDownloader from "../screens/ResumeDownloader";
 import ResetOfficeHours from "../screens/ResetOfficeHours";
 import { Button } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/core";
-import memberSHPEConfirm from "../screens/memberSHPEConfirm";
+import MemberSHPEConfirm from "../screens/MemberSHPEConfirm";
 
 const AdminDashboardStack = () => {
     const Stack = createNativeStackNavigator<AdminDashboardParams>();
@@ -52,7 +52,7 @@ const AdminDashboardStack = () => {
                 <Stack.Screen name="ResumeDownloader" component={ResumeDownloader} />
                 <Stack.Screen name="ResetOfficeHours" component={ResetOfficeHours} />
                 <Stack.Screen name="RestrictionsEditor" component={RestrictionsEditor} />
-                <Stack.Screen name="MemberSHPEConfirm" component={memberSHPEConfirm} />
+                <Stack.Screen name="MemberSHPEConfirm" component={MemberSHPEConfirm} />
             </Stack.Group>
         </Stack.Navigator >
     );
