@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Alert } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useNavigationState } from '@react-navigation/native';
+import { NavigationProp, useNavigation, useNavigationState } from '@react-navigation/native';
 import { ProfileSetupStack } from "./ProfileSetupStack";
 import LoginScreen from "../screens/Login";
 import RegisterScreen from "../screens/Register";
@@ -32,6 +32,11 @@ const AuthStackWarning = () => {
 
 const AuthStack = () => {
     const Stack = createNativeStackNavigator<AuthStackParams>();
+    const navigation = useNavigation<NavigationProp<AuthStackParams>>();
+
+    const navigateToLogin = () => {
+        navigation.navigate('LoginScreen');
+    };
 
     return (
         <>
@@ -39,7 +44,9 @@ const AuthStack = () => {
             <Stack.Navigator>
                 <Stack.Group screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="LoginScreen" component={LoginScreen} />
-                    <Stack.Screen name="ProfileSetup" component={ProfileSetupStack} />
+                    <Stack.Screen name="ProfileSetup">
+                        {() => <ProfileSetupStack navigateToLogin={navigateToLogin} />}
+                    </Stack.Screen>
                     <Stack.Screen name="LoginStudent" component={LoginStudent} />
                     <Stack.Screen name="LoginGuest" component={LoginGuest} />
                 </Stack.Group>
