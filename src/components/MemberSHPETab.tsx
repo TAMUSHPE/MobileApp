@@ -6,6 +6,8 @@ import { setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
 import { auth, db } from '../config/firebaseConfig';
 import { getBlobFromURI, selectFile } from '../api/fileSelection';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { getDownloadURL } from 'firebase/storage';
+
 type MemberSHPETabs = "TAMUChapter" | "SHPENational"
 
 const MemberSHPETab = () => {
@@ -23,10 +25,10 @@ const MemberSHPETab = () => {
                 const unsubscribe = onSnapshot(docRef, (doc) => {
                     if (doc.exists()) {
                         const data = doc.data();
-                        if (data?.nationalUploadDate) {
+                        if (data?.nationalURL) {
                             setUploadedNational(true);
                         }
-                        if (data?.chapterUploadDate) {
+                        if (data?.chapterURL) {
                             setUploadedChapter(true);
                         }
                     }
@@ -95,16 +97,24 @@ const MemberSHPETab = () => {
                     }
                 },
                 async () => {
-                    setPublicUserData({
-                        nationalVerification: false,
-                        nationalExpiration: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-                    })
+                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
+                        if (auth.currentUser) {
+                            const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year from now
+                            setPublicUserData({
+                                nationalVerification: false,
+                                nationalExpiration: expirationDate
+                            })
 
-                    await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), { nationalUploadDate: new Date().toISOString() }, { merge: true });
+                            await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
+                                nationalUploadDate: new Date().toISOString(),
+                                nationalExpiration: expirationDate,
+                                nationalURL: URL
+                            }, { merge: true });
+                        }
+                    });
                 });
         }
     }
-
 
     const uploadChapter = (chapterBlob: Blob) => {
         if (uploadedChapter) {
@@ -141,12 +151,20 @@ const MemberSHPETab = () => {
 
                     const expirationDate = new Date(expirationYear, 7, 20).toISOString(); // August 20th of the determined year
 
-                    setPublicUserData({
-                        chapterVerification: false,
-                        chapterExpiration: expirationDate
-                    });
-                    await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), { chapterUploadDate: new Date().toISOString() }, { merge: true });
+                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
+                        if (auth.currentUser) {
+                            setPublicUserData({
+                                chapterVerification: false,
+                                chapterExpiration: expirationDate
+                            });
 
+                            await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
+                                chapterUploadDate: new Date().toISOString(),
+                                chapterExpiration: expirationDate,
+                                chapterURL: URL
+                            }, { merge: true });
+                        }
+                    });
                 });
         }
     }
