@@ -37,12 +37,12 @@ export interface PublicUserInfo {
     committees?: Array<CommitteeKey | string>;
     pointsRank?: number;
     rankChange?: RankChange;
-    // Google Sheets parameters
-    points?: number;
     nationalVerification?: boolean;
     nationalExpiration?: string;
     chapterVerification?: boolean;
     chapterExpiration?: string;
+    // Google Sheets parameters
+    points?: number;
 };
 
 /**
