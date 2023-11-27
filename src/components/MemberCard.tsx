@@ -9,6 +9,7 @@ const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigat
         return
     }
     const { name, classYear, committees, roles, uid, displayName, photoURL, chapterVerification, nationalVerification } = userData
+    const isOfficer = roles ? roles.officer : false;
 
     return (
         <TouchableOpacity className='mb-8'
@@ -25,7 +26,13 @@ const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigat
                     <View>
                         <View className="flex-row items-center">
                             <Text className='font-semibold text-lg'>{name} {classYear}</Text>
-                            {(nationalVerification && chapterVerification) && (
+                            {isOfficer && (
+                                <View className="ml-2">
+                                    <Octicons name="star" size={15} color="gold" />
+                                </View>
+
+                            )}
+                            {(!isOfficer && nationalVerification && chapterVerification) && (
                                 <View className="ml-2">
                                     <Octicons name="check-circle" size={15} color="green" />
                                 </View>
