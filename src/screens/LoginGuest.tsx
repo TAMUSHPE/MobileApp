@@ -26,8 +26,6 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
      * initially be undefined. This function will check the value when userInfo
      * is changed until it's either true or false.
      */
-    console.log("test", auth.currentUser?.uid)
-
 
     const signOutUser = async () => {
         try {
