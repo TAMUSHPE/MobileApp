@@ -1,10 +1,11 @@
 import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { auth, db } from '../config/firebaseConfig';
 import { MemberStatus } from '../types/User';
 import { Octicons } from '@expo/vector-icons';
+import { UserContext } from '../context/UserContext';
 
 /**
  * This component displays the office hours information and provides an interface 
@@ -15,6 +16,9 @@ import { Octicons } from '@expo/vector-icons';
 const OfficeHours = () => {
     const [officeCount, setOfficeCount] = useState<number>(0);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
+
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
 
     useEffect(() => {
         const officeCountRef = doc(db, "office-hours/officer-count");
@@ -37,7 +41,11 @@ const OfficeHours = () => {
             // Send Notification to Officers using Firebase Functions
             const functions = getFunctions();
             const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
-            await sendNotificationOfficeHours();
+            await sendNotificationOfficeHours(
+                await sendNotificationOfficeHours({
+                    userData: userInfo?.publicInfo
+                })
+            );
         } catch (err) {
             console.error("Error sending knock:", err);
         }

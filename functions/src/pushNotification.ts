@@ -54,8 +54,13 @@ const isExpoPushToken = (token: any): boolean => {
 
 /** Sends notifications to all signed-in officers. */
 export const sendNotificationOfficeHours = functions.https.onCall(async (data, context) => {
+    const userData = data.userData;
     const expo = new Expo();
     const officerTokens = await getAvailableOfficersTokens();
+
+    if (userData === null || userData === undefined) {
+        return;
+    }
 
     const messages: ExpoPushMessage[] = [];
     for (const pushToken of officerTokens) {
@@ -67,8 +72,9 @@ export const sendNotificationOfficeHours = functions.https.onCall(async (data, c
         messages.push({
             to: parsedToken.data,
             sound: 'default',
-            body: 'Someone at the door',
-            data: { withSome: 'data' },
+            title: "Knock on Wall",
+            body: `${userData.name} is at the door!`,
+            data: { userData: userData },
         });
     }
 
