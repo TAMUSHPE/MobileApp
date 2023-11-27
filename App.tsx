@@ -11,7 +11,7 @@ export default function App() {
     const responseListener = useRef<Subscription | null>();
     useEffect(() => {
         notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-            Alert.alert('Someone at the door!');
+            Alert.alert(notification.request.content.body as string);
         });
 
         responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
