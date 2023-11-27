@@ -56,6 +56,14 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
             >
                 <Text>Update Restrictions</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+                onPress={() => navigation.navigate('MemberSHPEConfirm')}
+                className='bg-blue-500 rounded-md p-2'
+            >
+                <Text>Member SHPE Verifications</Text>
+            </TouchableOpacity>
+
         </SafeAreaView>
     )
 }
