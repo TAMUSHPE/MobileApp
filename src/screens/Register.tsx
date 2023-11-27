@@ -1,8 +1,8 @@
 import { View, Text, TextInput, KeyboardAvoidingView, Alert } from 'react-native';
-import React, { useContext, useLayoutEffect, useState } from 'react';
+import React, { useCallback, useContext, useLayoutEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, UserCredential, updateProfile, signOut } from "firebase/auth";
 import { getUser, initializeCurrentUserData } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
 import { evaluatePasswordStrength, validateEmail, validatePassword, validateTamuEmail } from '../helpers/validation';
@@ -10,6 +10,7 @@ import InteractButton from '../components/InteractButton';
 import { AuthStackParams } from '../types/Navigation';
 import { UserContext } from '../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/core';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [displayName, setDisplayName] = useState<string>("");
@@ -23,6 +24,24 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
 
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
+
+    const signOutUser = async () => {
+        try {
+            await signOut(auth);
+            await AsyncStorage.removeItem('@user');
+            setUserInfo(undefined);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    // Occurs when a user back swipe to this screen from the ProfileSetup screen
+    useFocusEffect(
+        useCallback(() => {
+            signOutUser();
+            return () => { };
+        }, [])
+    );
 
     useLayoutEffect(() => {
         navigation.setOptions({
@@ -39,7 +58,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
             alert("Invalid Email.")
             return;
         }
-        else if(validateTamuEmail(email)){
+        else if (validateTamuEmail(email)) {
             alert("Guests must register with their personal email")
             return;
         } else if (!validatePassword(password)) {
