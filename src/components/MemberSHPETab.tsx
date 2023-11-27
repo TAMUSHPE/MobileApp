@@ -5,7 +5,7 @@ import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
 import { setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
 import { auth, db } from '../config/firebaseConfig';
 import { getBlobFromURI, selectFile } from '../api/fileSelection';
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
 import { getDownloadURL } from 'firebase/storage';
 
 type MemberSHPETabs = "TAMUChapter" | "SHPENational"
@@ -17,6 +17,28 @@ const MemberSHPETab = () => {
     const [currentTab, setCurrentTab] = useState<MemberSHPETabs>("TAMUChapter")
     const [uploadedNational, setUploadedNational] = useState(false)
     const [uploadedChapter, setUploadedChapter] = useState(false)
+    const [isVerified, setIsVerified] = useState(true)
+
+    // for now doing fetch to firebase instead of using userContext b/c data syncing issue after admin approves stuff
+    const checkUserVerification = async () => {
+        const userDocRef = doc(db, 'users', auth.currentUser?.uid!);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            const isChapterVerified = userData.chapterVerification;
+            const isNationalVerified = userData.nationalVerification;
+
+            setIsVerified(isChapterVerified && isNationalVerified);
+        } else {
+            console.log('User document does not exist');
+            setIsVerified(false);
+        }
+    };
+
+    useEffect(() => {
+        checkUserVerification()
+    }, [])
 
     useEffect(() => {
         const unsubscribe = () => {
@@ -244,37 +266,39 @@ const MemberSHPETab = () => {
 
             </View>
 
-            <View className='flex-row items-center justify-center space-x-8 mt-8'>
-                <TouchableOpacity
-                    className={`px-2 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-200" : "bg-maroon"}`}
-                    onPress={async () => {
-                        const chapterFile = await fileSelector();
-                        if (chapterFile) {
-                            uploadChapter(chapterFile);
-                        }
-                    }}
-                    disabled={uploadedChapter}
-                >
 
-                    <Text className={`${uploadedChapter ? "text-black" : "text-white"}`}>upload Chapter Proof</Text>
-                </TouchableOpacity>
+            {!isVerified &&
+                (<View className='flex-row items-center justify-center space-x-8 mt-8'>
+                    <TouchableOpacity
+                        className={`px-2 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-200" : "bg-maroon"}`}
+                        onPress={async () => {
+                            const chapterFile = await fileSelector();
+                            if (chapterFile) {
+                                uploadChapter(chapterFile);
+                            }
+                        }}
+                        disabled={uploadedChapter}
+                    >
 
-                <TouchableOpacity
-                    className={`px-2 py-2 rounded-lg items-center ${uploadedNational ? "bg-gray-200" : "bg-pale-orange"}`}
-                    onPress={async () => {
-                        const nationalFile = await fileSelector();
-                        if (nationalFile) {
-                            uploadNational(nationalFile);
-                        }
-                    }}
-                    disabled={uploadedNational}
-                >
+                        <Text className={`${uploadedChapter ? "text-black" : "text-white"}`}>upload Chapter Proof</Text>
+                    </TouchableOpacity>
 
-                    <Text className={`${uploadedNational ? "text-black" : "text-white"}`}>upload National Proof</Text>
+                    <TouchableOpacity
+                        className={`px-2 py-2 rounded-lg items-center ${uploadedNational ? "bg-gray-200" : "bg-pale-orange"}`}
+                        onPress={async () => {
+                            const nationalFile = await fileSelector();
+                            if (nationalFile) {
+                                uploadNational(nationalFile);
+                            }
+                        }}
+                        disabled={uploadedNational}
+                    >
 
-                </TouchableOpacity>
+                        <Text className={`${uploadedNational ? "text-black" : "text-white"}`}>upload National Proof</Text>
 
-            </View>
+                    </TouchableOpacity>
+                </View>
+                )}
 
 
         </View>
