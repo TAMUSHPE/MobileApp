@@ -95,6 +95,7 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
         } catch (error) {
             console.error("Error managing notification permissions:", error);
         }
+
     }, []);
 
     return (

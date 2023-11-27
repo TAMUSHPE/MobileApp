@@ -710,3 +710,24 @@ export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => 
         throw new Error("Internal Server Error.");
     }
 }
+
+
+export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
+    const memberSHPERef = collection(db, 'memberSHPE');
+    const memberSHPEQuery = query(memberSHPERef);
+    const memberSHPESnapshot = await getDocs(memberSHPEQuery);
+    const memberSHPEUserIds = memberSHPESnapshot.docs.map(doc => doc.id);
+  
+    const members:PublicUserInfo[] = [];
+    for (const userId of memberSHPEUserIds) {
+      const userDocRef = doc(db, 'users', userId);
+      const userDocSnap = await getDoc(userDocRef);
+      if (userDocSnap.exists()) {
+        members.push({ uid: userId, ...userDocSnap.data() });
+      }
+    }
+    
+    return members;
+  };
+  
+  
