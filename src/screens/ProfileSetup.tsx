@@ -1,5 +1,5 @@
-import { Text, View, KeyboardAvoidingView, Image, Animated, TouchableOpacity, ScrollView, Linking } from 'react-native';
-import React, { useEffect, useRef, useState, useContext } from 'react';
+import { Text, View, KeyboardAvoidingView, Image, Animated, TouchableOpacity, ScrollView, Linking, BackHandler } from 'react-native';
+import React, { useEffect, useRef, useState, useContext, useLayoutEffect } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -21,8 +21,12 @@ import { CommonMimeTypes, validateFileBlob, validateName } from '../helpers/vali
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
+type SetupNameAndBioProps = NativeStackScreenProps<ProfileSetupStackParams> & {
+    navigateToLogin: () => void;
+};
+
 /** In this screen, the user will set their name and bio. The screen only let the user continue if their name is not empty. */
-const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
+const SetupNameAndBio = ({ navigation, navigateToLogin }: SetupNameAndBioProps) => {
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
 
@@ -42,7 +46,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
             <View>
                 <TouchableOpacity onPress={() => {
                     signOutUser();
-                    navigation.goBack()
+                    navigateToLogin();
                 }}>
                     <Octicons name="chevron-left" size={30} color="white" />
                 </TouchableOpacity>
