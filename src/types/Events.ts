@@ -1,6 +1,9 @@
 import { Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers';
 
+/**
+ * Generic Event Interface. All events must implement this type
+ */
 export interface SHPEEvent {
     id?: string;
     name: string;
@@ -16,13 +19,20 @@ export interface SHPEEvent {
     geoLocation?: Geolocation;
 }
 
+/**
+ * Log 
+ */
 export interface SHPEEventLog {
-    uid: number;
+    uid: string;
     points: number;
+    eventId?: string; // Used when data is copied to user collection
     signInTime?: Timestamp;
     signOutTime?: Timestamp;
 }
 
+/**
+ * Template class for General Meeting event.
+ */
 export class GeneralMeeting implements SHPEEvent {
     public name: string;
     public description: string;
@@ -63,6 +73,9 @@ export class GeneralMeeting implements SHPEEvent {
     }
 }
 
+/**
+ * Template class for Committee Meeting event 
+ */
 export class CommitteeMeeting implements SHPEEvent {
     public name: string;
     public tags: string[];
@@ -100,6 +113,8 @@ export class CommitteeMeeting implements SHPEEvent {
 }
 
 /**
+ * Template class for Study Hours event
+ * 
  * Note: Study hours only give points if a user has signed both in and out
  */
 export class StudyHours implements SHPEEvent {
@@ -146,8 +161,16 @@ export class StudyHours implements SHPEEvent {
     }
 }
 
+/**
+ * Type used specifically for Workshop events to differentiate the type of workshop
+ */
 export type WorkshopType = "Professional" | "Academic" | "None";
 
+/**
+ * Template class for Workshop event
+ * 
+ * Workshops have a field unique to them which specify what type of workshop they are
+ */
 export class Workshop implements SHPEEvent {
     public name: string;
     public description: string;
@@ -188,6 +211,9 @@ export class Workshop implements SHPEEvent {
     }
 }
 
+/**
+ * Template class for Volunteer event
+ */
 export class VolunteerEvent implements SHPEEvent {
     public name: string;
     public tags: string[];
@@ -224,6 +250,9 @@ export class VolunteerEvent implements SHPEEvent {
     }
 }
 
+/**
+ * Template class for Social event
+ */
 export class SocialEvent implements SHPEEvent {
     public name: string;
     public tags: string[];
@@ -260,6 +289,9 @@ export class SocialEvent implements SHPEEvent {
     }
 }
 
+/**
+ * Template class for Intramural event
+ */
 export class IntramuralEvent implements SHPEEvent {
     public name: string;
     public tags: string[];
@@ -296,6 +328,9 @@ export class IntramuralEvent implements SHPEEvent {
     }
 }
 
+/**
+ * Template class for a custom event. These events are purposefully generic for the creation of events that don't fit into another template.
+ */
 export class CustomEvent implements SHPEEvent {
     public name: string;
     public description: string;
@@ -316,11 +351,6 @@ export class CustomEvent implements SHPEEvent {
         this.tags = [];
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.signInPoints = undefined;
-        this.signOutPoints = undefined;
-        this.pointsPerHour = undefined;
-        this.locationName = undefined;
-        this.geoLocation = undefined;
     }
 
     public copyFromObject({ name, description, tags, startTime, endTime, signInPoints, signOutPoints, pointsPerHour, locationName, geoLocation }: {
@@ -350,6 +380,9 @@ export class CustomEvent implements SHPEEvent {
 
 }
 
+/**
+ * String constants for event type. These are strings for readability
+ */
 export enum EventType {
     GENERAL_MEETING = "General Meeting",
     COMMITTEE_MEETING = "Committee Meeting",
