@@ -12,10 +12,14 @@ const EventsStack = () => {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="EventsScreen" component={Events} />
-            <Stack.Screen name="CreateEvent" component={CreateEvent} />
             <Stack.Screen name="UpdateEvent" component={UpdateEvent} />
             <Stack.Screen name="EventInfo" component={EventInfo} />
             <Stack.Screen name="QRCode" component={QRCodeManager} />
+            
+            {/* Event Creation Screens */}
+            <Stack.Group>
+                <Stack.Screen name="CreateEvent" component={CreateEvent} />
+            </Stack.Group>
         </Stack.Navigator>
     );
 };
