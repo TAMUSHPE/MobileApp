@@ -12,6 +12,7 @@ export interface SHPEEvent {
     tags: string[];
     startTime: Timestamp;
     endTime: Timestamp;
+    coverImageURI?: string;
     signInPoints?: number;
     signOutPoints?: number;
     pointsPerHour?: number;
