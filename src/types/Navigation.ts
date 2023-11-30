@@ -75,10 +75,15 @@ export type CommitteesStackParams = {
 
 export type EventsStackParams = {
     EventsScreen: undefined;
-    CreateEvent: undefined;
     UpdateEvent: { event: SHPEEvent };
     EventInfo: { eventId: string };
     QRCode: { event: SHPEEvent };
+
+    // Screens related to event creation
+    CreateEvent: undefined;
+    SetGeneralEventDetails: { event: SHPEEvent };
+    SetSpecificEventDetails: { event: SHPEEvent };
+    FinalizeEvent: { event: SHPEEvent };
 }
 
 export type HomeStackParams = {
@@ -148,10 +153,10 @@ export type MembersProps = {
     userData?: PublicUserInfo
     handleCardPress: (uid: string) => string | void;
     navigation?: NativeStackNavigationProp<MembersStackParams>
-    officersList? : PublicUserInfo[]
-    membersList? : PublicUserInfo[]
+    officersList?: PublicUserInfo[]
+    membersList?: PublicUserInfo[]
     loadMoreUsers?: () => void;
-    hasMoreUser?:  boolean;
+    hasMoreUser?: boolean;
     setFilter?: React.Dispatch<SetStateAction<UserFilter>>;
     filter?: UserFilter;
     setLastUserSnapshot?: React.Dispatch<SetStateAction<QueryDocumentSnapshot<DocumentData> | null>>;

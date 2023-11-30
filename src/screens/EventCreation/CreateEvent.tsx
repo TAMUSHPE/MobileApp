@@ -1,16 +1,16 @@
 import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Platform, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { CommitteeMeeting, CustomEvent, EventType, GeneralMeeting, IntramuralEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop, monthNames } from '../types/Events'
+import { CommitteeMeeting, CustomEvent, EventType, GeneralMeeting, IntramuralEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop, monthNames } from '../../types/Events'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Picker } from '@react-native-picker/picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { EventsStackParams } from '../types/Navigation';
-import { createEvent } from '../api/firebaseUtils';
+import { EventsStackParams } from '../../types/Navigation';
+import { createEvent } from '../../api/firebaseUtils';
 import { Timestamp } from 'firebase/firestore';
 import { Octicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Images } from '../../assets';
-import InteractButton from '../components/InteractButton';
+import { Images } from '../../../assets';
+import InteractButton from '../../components/InteractButton';
 
 const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [showStartDatePicker, setShowStartDatePicker] = useState(false);
