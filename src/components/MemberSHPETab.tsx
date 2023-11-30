@@ -1,14 +1,68 @@
 import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Images } from '../../assets';
+import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
+import { setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
+import { auth, db } from '../config/firebaseConfig';
+import { getBlobFromURI, selectFile } from '../api/fileSelection';
+import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
+import { getDownloadURL } from 'firebase/storage';
 
 type MemberSHPETabs = "TAMUChapter" | "SHPENational"
 
 const MemberSHPETab = () => {
-    const [currentTab, setCurrentTab] = useState<MemberSHPETabs>("TAMUChapter")
     const TAMU_GOOGLE_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSeJqnOMHljOHcMGVzkhQeVtPgt5eG5Iic8vZlmZjXCYT0qw3g/viewform"
     const TAMU_PAY_DUES = "https://tamu.estore.flywire.com/products/2023-2024-membershpe-shirt-127459"
     const NATIONALS = "https://www.shpeconnect.org/eweb/DynamicPage.aspx?WebCode=LoginRequired&expires=yes&Site=shpe"
+    const [currentTab, setCurrentTab] = useState<MemberSHPETabs>("TAMUChapter")
+    const [uploadedNational, setUploadedNational] = useState(false)
+    const [uploadedChapter, setUploadedChapter] = useState(false)
+    const [isVerified, setIsVerified] = useState(true)
+
+    // for now doing fetch to firebase instead of using userContext b/c data syncing issue after admin approves stuff
+    const checkUserVerification = async () => {
+        const userDocRef = doc(db, 'users', auth.currentUser?.uid!);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            const isChapterVerified = userData.chapterVerification;
+            const isNationalVerified = userData.nationalVerification;
+
+            setIsVerified(isChapterVerified && isNationalVerified);
+        } else {
+            console.log('User document does not exist');
+            setIsVerified(false);
+        }
+    };
+
+    useEffect(() => {
+        checkUserVerification()
+    }, [])
+
+    useEffect(() => {
+        const unsubscribe = () => {
+            if (auth.currentUser) {
+                const docRef = doc(db, `memberSHPE/${auth.currentUser?.uid}`);
+                const unsubscribe = onSnapshot(docRef, (doc) => {
+                    if (doc.exists()) {
+                        const data = doc.data();
+                        if (data?.nationalURL) {
+                            setUploadedNational(true);
+                        }
+                        if (data?.chapterURL) {
+                            setUploadedChapter(true);
+                        }
+                    }
+                });
+
+                return unsubscribe;
+            }
+        }
+
+        return unsubscribe();
+    }, [])
+
 
     const handleLinkPress = async (url: string) => {
         if (!url) {
@@ -29,6 +83,113 @@ const MemberSHPETab = () => {
                 console.error(err);
             });
     };
+
+    const fileSelector = async () => {
+        const result = await selectFile();
+        if (result) {
+            const blob = await getBlobFromURI(result.assets![0].uri);
+            return blob;
+        }
+        return null;
+    }
+
+    const uploadNational = (nationalBlob: Blob) => {
+        if (uploadedNational) {
+            return;
+        }
+        if (validateFileBlob(nationalBlob, CommonMimeTypes.RESUME_FILES, true)) {
+            const uploadTask = uploadFileToFirebase(nationalBlob, `user-docs/${auth.currentUser?.uid}/national-verification`);
+
+            uploadTask.on("state_changed",
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                },
+                (error) => {
+                    switch (error.code) {
+                        case "storage/unauthorized":
+                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            break;
+                        case "storage/canceled":
+                            alert("File upload cancelled");
+                            break;
+                        default:
+                            alert("An unknown error has occured")
+                            break;
+                    }
+                },
+                async () => {
+                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
+                        if (auth.currentUser) {
+                            const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year from now
+                            setPublicUserData({
+                                nationalVerification: false,
+                                nationalExpiration: expirationDate
+                            })
+
+                            await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
+                                nationalUploadDate: new Date().toISOString(),
+                                nationalExpiration: expirationDate,
+                                nationalURL: URL
+                            }, { merge: true });
+                        }
+                    });
+                });
+        }
+    }
+
+    const uploadChapter = (chapterBlob: Blob) => {
+        if (uploadedChapter) {
+            return;
+        }
+        if (validateFileBlob(chapterBlob, CommonMimeTypes.RESUME_FILES, true)) {
+            const uploadTask = uploadFileToFirebase(chapterBlob, `user-docs/${auth.currentUser?.uid}/chapter-verification`);
+
+            uploadTask.on("state_changed",
+                (snapshot) => {
+                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    console.log('Upload is ' + progress + '% done');
+                },
+                (error) => {
+                    switch (error.code) {
+                        case "storage/unauthorized":
+                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            break;
+                        case "storage/canceled":
+                            alert("File upload cancelled");
+                            break;
+                        default:
+                            alert("An unknown error has occured")
+                            break;
+                    }
+                },
+                async () => {
+                    const today = new Date();
+                    let expirationYear = today.getFullYear();
+
+                    if (today > new Date(expirationYear, 7, 20)) { // Note: JavaScript months are 0-indexed
+                        expirationYear += 1;
+                    }
+
+                    const expirationDate = new Date(expirationYear, 7, 20).toISOString(); // August 20th of the determined year
+
+                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
+                        if (auth.currentUser) {
+                            setPublicUserData({
+                                chapterVerification: false,
+                                chapterExpiration: expirationDate
+                            });
+
+                            await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
+                                chapterUploadDate: new Date().toISOString(),
+                                chapterExpiration: expirationDate,
+                                chapterURL: URL
+                            }, { merge: true });
+                        }
+                    });
+                });
+        }
+    }
 
     return (
         <View className='h-screen'>
@@ -88,7 +249,7 @@ const MemberSHPETab = () => {
             }
             <View className='flex-row items-center justify-center space-x-8 mt-8'>
                 <TouchableOpacity
-                    className={`px-6 py-4 rounded-lg  items-center ${currentTab === "TAMUChapter" ? "bg-gray-200" : "bg-maroon w-[40%]"}`}
+                    className={`px-6 py-4 rounded-lg  items-center ${currentTab === "TAMUChapter" ? "" : "bg-maroon w-[40%]"}`}
                     disabled={currentTab === "TAMUChapter"}
                     onPress={() => setCurrentTab("TAMUChapter")}
                 >
@@ -96,13 +257,48 @@ const MemberSHPETab = () => {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                    className={`px-6 py-4 rounded-lg items-center w-[40%] ${currentTab === "SHPENational" ? "bg-gray-200" : "bg-pale-orange w-[40%]"}`}
+                    className={`px-6 py-4 rounded-lg items-center w-[40%] ${currentTab === "SHPENational" ? "" : "bg-pale-orange w-[40%]"}`}
                     disabled={currentTab === "SHPENational"}
                     onPress={() => setCurrentTab("SHPENational")}
                 >
                     <Text className={`text-pale-orange text-md font-bold ${currentTab === "SHPENational" ? "text-black" : "text-white"} `}>NATIONAL</Text>
                 </TouchableOpacity>
+
             </View>
+
+
+            {!isVerified &&
+                (<View className='flex-row items-center justify-center space-x-8 mt-8'>
+                    <TouchableOpacity
+                        className={`px-2 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-200" : "bg-maroon"}`}
+                        onPress={async () => {
+                            const chapterFile = await fileSelector();
+                            if (chapterFile) {
+                                uploadChapter(chapterFile);
+                            }
+                        }}
+                        disabled={uploadedChapter}
+                    >
+
+                        <Text className={`${uploadedChapter ? "text-black" : "text-white"}`}>upload Chapter Proof</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        className={`px-2 py-2 rounded-lg items-center ${uploadedNational ? "bg-gray-200" : "bg-pale-orange"}`}
+                        onPress={async () => {
+                            const nationalFile = await fileSelector();
+                            if (nationalFile) {
+                                uploadNational(nationalFile);
+                            }
+                        }}
+                        disabled={uploadedNational}
+                    >
+
+                        <Text className={`${uploadedNational ? "text-black" : "text-white"}`}>upload National Proof</Text>
+
+                    </TouchableOpacity>
+                </View>
+                )}
 
 
         </View>

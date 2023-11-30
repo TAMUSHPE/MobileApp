@@ -107,6 +107,8 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                                         value={startDate}
                                         mode={"datetime"}
                                         onChange={(event, selectedDate) => {
+                                            setIsInitialDatePicked(true);
+                                            setIsStartDatePicked(true);
                                             setNewEvent({
                                                 ...newEvent,
                                                 startDate: Timestamp.fromDate(selectedDate!)
@@ -124,6 +126,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                                         value={endDate}
                                         mode={"datetime"}
                                         onChange={(event, selectedDate) => {
+                                            setIsInitialDatePicked(true);
                                             setNewEvent({
                                                 ...newEvent,
                                                 endDate: Timestamp.fromDate(selectedDate!)
@@ -221,6 +224,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                     mode={"date"}
                     onChange={
                         (event, selectedDate) => {
+                            setIsInitialDatePicked(true);
                             setNewEvent({
                                 ...newEvent,
                                 endDate: Timestamp.fromDate(selectedDate!)
@@ -238,6 +242,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                     mode={"time"}
                     onChange={
                         (event, selectedDate) => {
+                            setIsInitialDatePicked(true);
                             setNewEvent({
                                 ...newEvent,
                                 endDate: Timestamp.fromDate(selectedDate!)
