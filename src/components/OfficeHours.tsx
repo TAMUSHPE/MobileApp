@@ -1,9 +1,11 @@
 import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { auth, db } from '../config/firebaseConfig';
 import { MemberStatus } from '../types/User';
+import { Octicons } from '@expo/vector-icons';
+import { UserContext } from '../context/UserContext';
 
 /**
  * This component displays the office hours information and provides an interface 
@@ -14,6 +16,9 @@ import { MemberStatus } from '../types/User';
 const OfficeHours = () => {
     const [officeCount, setOfficeCount] = useState<number>(0);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
+
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
 
     useEffect(() => {
         const officeCountRef = doc(db, "office-hours/officer-count");
@@ -36,7 +41,11 @@ const OfficeHours = () => {
             // Send Notification to Officers using Firebase Functions
             const functions = getFunctions();
             const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
-            await sendNotificationOfficeHours();
+            await sendNotificationOfficeHours(
+                await sendNotificationOfficeHours({
+                    userData: userInfo?.publicInfo
+                })
+            );
         } catch (err) {
             console.error("Error sending knock:", err);
         }
@@ -86,21 +95,32 @@ const OfficeHours = () => {
                 >
                     <View className='items-center justify-center h-full'>
                         <TouchableWithoutFeedback>
-                            <View className='opacity-100 bg-white w-[70%] rounded-md items-center'>
-                                <TouchableOpacity
-                                    onPress={async () => {
-                                        setConfirmVisible(false)
-                                        handleKnock()
-                                    }}
-                                >
-                                    <Text className='text-xl font-bold py-3 px-8'> Notify </Text>
-                                </TouchableOpacity>
+                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
+                                <Octicons name="bell" size={24} color="black" />
+                                <View className='flex items-center w-[80%] space-y-8'>
+                                    <Text className="text-center text-lg font-bold">Are you sure you want to send a notification to officers?</Text>
+                                    <View className="flex-row">
+                                        <TouchableOpacity
+                                            onPress={async () => {
+                                                setConfirmVisible(false)
+                                                handleKnock()
+                                            }}
+                                            className="bg-pale-blue rounded-xl justify-center items-center"
+                                        >
+                                            <Text className='text-xl font-bold text-white px-2'> Send Notification </Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
+                                            <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
                             </View>
                         </TouchableWithoutFeedback>
                     </View>
-                </TouchableOpacity>
-            </Modal>
-        </View>
+                </TouchableOpacity >
+            </Modal >
+        </View >
     )
 }
 

@@ -9,6 +9,9 @@ export interface Roles {
     officer?: boolean;
     admin?: boolean;
     developer?: boolean;
+    representative?: boolean;
+    lead?: boolean;
+    secretary?: boolean;
 };
 
 export type RankChange = "decreased" | "same" | "increased";
@@ -34,6 +37,10 @@ export interface PublicUserInfo {
     committees?: Array<CommitteeKey | string>;
     pointsRank?: number;
     rankChange?: RankChange;
+    nationalVerification?: boolean;
+    nationalExpiration?: string;
+    chapterVerification?: boolean;
+    chapterExpiration?: string;
     // Google Sheets parameters
     points?: number;
 };
