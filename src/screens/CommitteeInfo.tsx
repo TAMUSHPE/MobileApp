@@ -5,12 +5,12 @@ import { useRoute } from '@react-navigation/native';
 import { Images } from '../../assets';
 import { Octicons } from '@expo/vector-icons';
 import { Committee, CommitteeKey } from '../types/Committees';
-import { getCommitteeInfo, getPublicUserData, getUser, setPublicUserData } from '../api/firebaseUtils';
+import { getCommitteeInfo, getPublicUserData, getUser, getWatchlist, setPublicUserData, setWatchlist } from '../api/firebaseUtils';
 import { PublicUserInfo } from '../types/User';
 import { CommitteeInfoScreenRouteProp, CommitteesTabProps } from '../types/Navigation';
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { UserContext } from '../context/UserContext';
-import { auth } from '../config/firebaseConfig';
+import { auth, functions } from '../config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommitteeConstants } from '../types/Committees';
 
@@ -155,16 +155,27 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({navigation}) => {
             });
     };
 
+    const [lastPassTime, setLastPassTime] = useState(0) //hook
+
     const updateCommitteeCount = async () => {
-        updateUserCommittee();
+        const currentTime = Date.now();
 
-        const functions = getFunctions();
-        const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
+        if (currentTime - lastPassTime >= 10000) {
+            updateUserCommittee(); //Don't update count if user cannot leave/join
 
-        try {
-            await updateCommitteeCount({ committeeName: committee?.firebaseDocName, change: isInCommittee ? -1 : 1 });
-        } catch (error) {
-            console.error('Error calling function:', error);
+            const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
+
+            setLastPassTime(currentTime) //update time
+
+            try {
+                await updateCommitteeCount({ committeeName: committee?.firebaseDocName, change: isInCommittee ? -1 : 1 });
+            } catch (error) {
+                console.error('Error calling function:', error);
+            }
+        }
+        else {
+            //add the user to watchlist here
+            setWatchlist((await getWatchlist()).append(auth.currentUser?.uid!))
         }
     }
 
@@ -271,26 +282,6 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({navigation}) => {
                 </Modal>
             </SafeAreaView>
 
-            <View className='flex-row mx-4 mt-4 space-x-2'>
-                <TouchableOpacity
-                    className='bg-white rounded-xl h-8 w-[8%] items-center justify-center border-gray-600 border'
-                    onPress={() => setConfirmVisible(!confirmVisible)}
-                >
-                    <Text>{isInCommittee ? "-" : "+"}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    className='bg-white rounded-xl h-8 w-[43%] items-center justify-center border-gray-600 border'
-                    onPress={() => handleLinkPress(committeeInfo?.memberApplicationLink || '')}
-                >
-                    <Text>Member Application</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    className='bg-white rounded-xl h-8 w-[43%] items-center justify-center border-gray-600 border'
-                    onPress={() => handleLinkPress(committeeInfo?.leadApplicationLink || '')}
-                >
-                    <Text>Leader Application</Text>
-                </TouchableOpacity>
-            </View>
 
             <Modal
                 animationType="none"
