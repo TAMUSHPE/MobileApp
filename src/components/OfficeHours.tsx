@@ -6,6 +6,7 @@ import { auth, db } from '../config/firebaseConfig';
 import { MemberStatus } from '../types/User';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../context/UserContext';
+import { getWatchlist, setWatchlist } from '../api/firebaseUtils';
 
 /**
  * This component displays the office hours information and provides an interface 
@@ -31,6 +32,7 @@ const OfficeHours = () => {
         return () => unsubscribe();
     }, []);
 
+    let lastKnockTime: number = 0; //Creating the lastKnockTime
 
     const knockOnWall = async (data: MemberStatus) => {
         try {
@@ -46,20 +48,40 @@ const OfficeHours = () => {
                     userData: userInfo?.publicInfo
                 })
             );
+            const currentTime = Date.now();
+            //Checks if its been at least 10 seconds from the last knock
+            //Adjust as needed
+            if (currentTime - lastKnockTime >= 10000) {
+                // Log Member Knock in Firestore
+                const userDocCollection = collection(db, 'office-hours/member-log/log');
+                await addDoc(userDocCollection, data);
+    
+                //If the knock is valid, the previous knock time is updated
+                lastKnockTime = currentTime;
+    
+                // Send Notification to Officers using Firebase Functions
+                const functions = getFunctions();
+                const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
+                await sendNotificationOfficeHours();
+            } 
+            else {
+                //add the user to watchlist here
+                setWatchlist((await getWatchlist()).append(auth.currentUser?.uid!))
+            }
         } catch (err) {
             console.error("Error sending knock:", err);
         }
-    }
-
+    };
+    
     const handleKnock = () => {
         const data: MemberStatus = {
             uid: auth.currentUser?.uid!,
             timestamp: serverTimestamp()
         };
         knockOnWall(data);
-
     };
-
+    
+    
     return (
         <View className='my-10 py-6 mx-7 justify-center items-center bg-pale-blue rounded-md'>
             <Text className="text-2xl text-white">Office Hours</Text>
