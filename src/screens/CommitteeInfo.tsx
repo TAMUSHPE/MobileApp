@@ -270,28 +270,7 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({navigation}) => {
 
                 </Modal>
             </SafeAreaView>
-
-            <View className='flex-row mx-4 mt-4 space-x-2'>
-                <TouchableOpacity
-                    className='bg-white rounded-xl h-8 w-[8%] items-center justify-center border-gray-600 border'
-                    onPress={() => setConfirmVisible(!confirmVisible)}
-                >
-                    <Text>{isInCommittee ? "-" : "+"}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    className='bg-white rounded-xl h-8 w-[43%] items-center justify-center border-gray-600 border'
-                    onPress={() => handleLinkPress(committeeInfo?.memberApplicationLink || '')}
-                >
-                    <Text>Member Application</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    className='bg-white rounded-xl h-8 w-[43%] items-center justify-center border-gray-600 border'
-                    onPress={() => handleLinkPress(committeeInfo?.leadApplicationLink || '')}
-                >
-                    <Text>Leader Application</Text>
-                </TouchableOpacity>
-            </View>
-
+            
             <Modal
                 animationType="none"
                 transparent={true}
