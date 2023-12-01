@@ -5,12 +5,12 @@ import { useRoute } from '@react-navigation/native';
 import { Images } from '../../assets';
 import { Octicons } from '@expo/vector-icons';
 import { Committee, CommitteeKey } from '../types/Committees';
-import { getCommitteeInfo, getPublicUserData, getUser, setPublicUserData } from '../api/firebaseUtils';
+import { getCommitteeInfo, getPublicUserData, getUser, getWatchlist, setPublicUserData, setWatchlist } from '../api/firebaseUtils';
 import { PublicUserInfo } from '../types/User';
 import { CommitteeInfoScreenRouteProp, CommitteesTabProps } from '../types/Navigation';
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { UserContext } from '../context/UserContext';
-import { auth } from '../config/firebaseConfig';
+import { auth, functions } from '../config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CommitteeConstants } from '../types/Committees';
 
@@ -155,16 +155,27 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({navigation}) => {
             });
     };
 
+    const [lastPassTime, setLastPassTime] = useState(0) //hook
+
     const updateCommitteeCount = async () => {
-        updateUserCommittee();
+        const currentTime = Date.now();
 
-        const functions = getFunctions();
-        const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
+        if (currentTime - lastPassTime >= 10000) {
+            updateUserCommittee(); //Don't update count if user cannot leave/join
 
-        try {
-            await updateCommitteeCount({ committeeName: committee?.firebaseDocName, change: isInCommittee ? -1 : 1 });
-        } catch (error) {
-            console.error('Error calling function:', error);
+            const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
+
+            setLastPassTime(currentTime) //update time
+
+            try {
+                await updateCommitteeCount({ committeeName: committee?.firebaseDocName, change: isInCommittee ? -1 : 1 });
+            } catch (error) {
+                console.error('Error calling function:', error);
+            }
+        }
+        else {
+            //add the user to watchlist here
+            setWatchlist((await getWatchlist()).append(auth.currentUser?.uid!))
         }
     }
 
@@ -270,7 +281,7 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({navigation}) => {
 
                 </Modal>
             </SafeAreaView>
-            
+
             <Modal
                 animationType="none"
                 transparent={true}
