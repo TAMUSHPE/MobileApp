@@ -282,7 +282,6 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({navigation}) => {
                 </Modal>
             </SafeAreaView>
 
-
             <Modal
                 animationType="none"
                 transparent={true}
