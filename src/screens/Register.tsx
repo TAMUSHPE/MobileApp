@@ -188,6 +188,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                         <View className='mt-4'>
                             <TextInputWithFloatingTitle
                                 setTextFunction={(text) => setConfirmationPassword(text)}
+                                onSubmitEditing={() => registerUser()}
                                 inputValue={confirmationPassword}
                                 title='Confirm Password'
                                 placeholderText='Confirm Password'
