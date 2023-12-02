@@ -49,22 +49,9 @@ const AuthStack = () => {
                     </Stack.Screen>
                     <Stack.Screen name="LoginStudent" component={LoginStudent} />
                     <Stack.Screen name="LoginGuest" component={LoginGuest} />
+                    <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
                 </Stack.Group>
 
-                <Stack.Screen
-                    name="RegisterScreen"
-                    component={RegisterScreen}
-                    options={{
-                        title: 'Register Your Account',
-                        headerStyle: {
-                            backgroundColor: '#4957e6',
-                        },
-                        headerTintColor: '#fff',
-                        headerTitleStyle: {
-                            fontWeight: 'bold',
-                        },
-                    }}
-                />
             </Stack.Navigator>
         </>
     );

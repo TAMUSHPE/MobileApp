@@ -1,4 +1,4 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Alert } from 'react-native';
+import { View, Text, TextInput, KeyboardAvoidingView, Alert, TouchableOpacity, Image } from 'react-native';
 import React, { useCallback, useContext, useLayoutEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -11,6 +11,9 @@ import { AuthStackParams } from '../types/Navigation';
 import { UserContext } from '../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/core';
+import { Octicons } from '@expo/vector-icons';
+import { Images } from "../../assets";
+import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [displayName, setDisplayName] = useState<string>("");
@@ -18,7 +21,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     const [password, setPassword] = useState<string>("");
     const [confirmationPassword, setConfirmationPassword] = useState<string>("");
     const [passwordStrengthColor, setPasswordStrengthColor] = useState<string>("text-[#f00]");
-    const [passwordStrengthText, setPasswordStrengthText] = useState<string>("INVALID\n- Minimum 4 characters\n- Valid characters: : A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~");
+    const [passwordStrengthText, setPasswordStrengthText] = useState<string>();
 
     const inputStyle = "bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1";
 
@@ -42,12 +45,6 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
             return () => { };
         }, [])
     );
-
-    useLayoutEffect(() => {
-        navigation.setOptions({
-            headerBackTitle: "Back to Login Screen"
-        });
-    }, [navigation]);
 
     const registerUser = () => {
         if (password !== confirmationPassword) {
@@ -114,72 +111,106 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     }
 
     return (
-        <SafeAreaView className="flex-1 items-center justify-between bg-dark-navy">
-            <KeyboardAvoidingView className="flex-col w-10/12">
-                <View className='mt-2'>
-                    <Text className='text-white'>Enter a unique username:</Text>
-                    <TextInput
-                        placeholder="Display Name"
-                        className={inputStyle}
-                        onChangeText={(text: string) => setDisplayName(text)}
-                        autoFocus
-                        value={displayName}
-                        inputMode="text"
-                        keyboardType="default"
-                    />
-                </View>
-                <View className='mt-2'>
-                    <Text className='text-white'>Enter your email address:</Text>
-                    <TextInput
-                        placeholder="Email (eg. bob@gmail.com)"
-                        className={inputStyle}
-                        onChangeText={(text: string) => setEmail(text)}
-                        value={email}
-                        inputMode="email"
-                        keyboardType="email-address"
-                    />
-                </View>
-                <View className='mt-2'>
-                    <Text className='text-white'>Enter your password:</Text>
-                    <TextInput
-                        placeholder="Password"
-                        className={inputStyle}
-                        onChangeText={(text: string) => {
-                            setPassword(text);
-                            handlePasswordStrengthIndicator(text);
-                        }}
-                        secureTextEntry
-                        value={password}
-                        inputMode="text"
-                        autoCorrect={false}
-                        textContentType="password"
-                    />
-                    <View className='bg-dark-navy'>
-                        <Text className='text-white'>Password Strength: <Text className={passwordStrengthColor}>{passwordStrengthText}</Text></Text>
-                    </View>
-                </View>
-                <View className='mt-2'>
-                    <Text className='text-white'>Re-enter your password:</Text>
-                    <TextInput
-                        placeholder="Confirm Password"
-                        className={inputStyle}
-                        onChangeText={(text: string) => setConfirmationPassword(text)}
-                        secureTextEntry
-                        value={confirmationPassword}
-                        inputMode="text"
-                        autoCorrect={false}
-                        textContentType="password"
-                    />
-                </View>
-                <InteractButton
-                    onPress={() => registerUser()}
-                    label="Register Account"
-                    buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl"
-                    textClassName="text-white font-bold"
-                    underlayColor='#A22E2B'
+        <SafeAreaView className="flex-1 bg-dark-navy">
+            <View className='pl-6 mt-2'>
+                <TouchableOpacity
+                    className="pr-4" onPress={() => navigation.navigate("LoginScreen")}
+                    activeOpacity={1}
+                >
+                    <Octicons name="chevron-left" size={30} color="white" />
+                </TouchableOpacity>
+            </View>
+
+            <View className="flex-col items-center my-8 mb-11">
+                <Image
+                    className="flex-row h-20 w-20 mb-3"
+                    source={Images.SHPE_LOGO}
                 />
-            </KeyboardAvoidingView>
-            <View className="my-10 border-t-2 border-t-[#a8a8a8] w-11/12" />
+            </View>
+            <View className="flex items-center">
+                <View className="flex-col w-[80%]">
+                    <Text className="text-white font-bold text-3xl mb-3">Create Guest Account</Text>
+                    <KeyboardAvoidingView className="flex-col my-2">
+                        <View>
+                            <TextInputWithFloatingTitle
+                                setTextFunction={(text: string) => setDisplayName(text)}
+                                inputValue={displayName}
+                                title='Name'
+                                placeholderText='Name'
+                                titleStartY={20}
+                                titleEndY={0}
+                                maxCharacters={64}
+                                blurTitleClassName='text-white text-md'
+                                focusTitleClassName='text-gray-300 text-sm ml-1'
+                                textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
+                            />
+                        </View>
+
+                        <View className='mt-4'>
+                            <TextInputWithFloatingTitle
+                                setTextFunction={(text: string) => setEmail(text)}
+                                inputValue={email}
+                                title='Email'
+                                placeholderText='Email (eg. bob@gmail.com)'
+                                titleStartY={20}
+                                titleEndY={0}
+                                maxCharacters={64}
+                                blurTitleClassName='text-white text-md'
+                                focusTitleClassName='text-gray-300 text-sm ml-1'
+                                textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
+                            />
+                        </View>
+
+                        <View className='mt-4'>
+                            <TextInputWithFloatingTitle
+                                setTextFunction={(text: string) => {
+                                    setPassword(text);
+                                    handlePasswordStrengthIndicator(text);
+                                }}
+                                inputValue={password}
+                                title='Password'
+                                placeholderText='Password'
+                                titleStartY={20}
+                                titleEndY={0}
+                                maxCharacters={64}
+                                blurTitleClassName='text-white text-md'
+                                focusTitleClassName='text-gray-300 text-sm ml-1'
+                                textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
+                            />
+                        </View>
+
+                        {password != "" && (
+                            <View className='bg-dark-navy'>
+                                <Text className='text-white'>Password Strength: <Text className={passwordStrengthColor}>{passwordStrengthText}</Text></Text>
+                            </View>
+                        )}
+
+                        <View className='mt-4'>
+                            <TextInputWithFloatingTitle
+                                setTextFunction={(text) => setConfirmationPassword(text)}
+                                inputValue={confirmationPassword}
+                                title='Confirm Password'
+                                placeholderText='Confirm Password'
+                                titleStartY={20}
+                                titleEndY={0}
+                                maxCharacters={64}
+                                blurTitleClassName='text-white text-md'
+                                focusTitleClassName='text-gray-300 text-sm ml-1'
+                                textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
+                            />
+                        </View>
+                        <View className="flex-col">
+                            <InteractButton
+                                onPress={() => registerUser()}
+                                label="Register"
+                                buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl py-2"
+                                textClassName="text-white font-bold text-xl"
+                                underlayColor="#A22E2B"
+                            />
+                        </View>
+                    </KeyboardAvoidingView>
+                </View>
+            </View>
         </SafeAreaView>
     );
 };
