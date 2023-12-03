@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile, signOut } from "firebase/auth";
 import { getUser, initializeCurrentUserData } from '../api/firebaseUtils';
 import { auth } from '../config/firebaseConfig';
-import { evaluatePasswordStrength, validateEmail, validatePassword, validateTamuEmail } from '../helpers/validation';
+import { evaluatePasswordStrength, validateUsername, validateEmail, validatePassword, validateTamuEmail } from '../helpers/validation';
 import InteractButton from '../components/InteractButton';
 import { AuthStackParams } from '../types/Navigation';
 import { UserContext } from '../context/UserContext';
@@ -25,6 +25,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     const [passwordStrengthText, setPasswordStrengthText] = useState<string>();
     const [isUnique, setIsUnique] = useState(true);
     const [loading, setLoading] = useState<boolean>(false);
+    const [validUsername, setValidUsername] = useState<boolean>(true);
 
     const userContext = useContext(UserContext);
     const { setUserInfo } = userContext!;
@@ -48,12 +49,12 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     );
 
     useEffect(() => {
-        const checkUsername = async () => {
+        if (displayName != "") {
             isUsernameUnique(displayName).then(setIsUnique);
+            setValidUsername(validateUsername(displayName));
         }
-        if (displayName != "")
-            checkUsername();
     }, [displayName]);
+
 
     const registerUser = () => {
         if (password !== confirmationPassword) {
@@ -69,6 +70,9 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
             return;
         } else if (!validatePassword(password)) {
             alert("Password must meet specifications:\n- 4-64 characters\n- Spaces are allowed\n- Valid characters: A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~")
+            return;
+        } else if (!validateUsername(displayName)) {
+            alert("Usernames must only contain letters, numbers, underscores, or hyphens.")
             return;
         }
         setLoading(true);
@@ -163,6 +167,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                                         textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
                                     />
                                     {(!isUnique && displayName != "") && <Text style={{ color: 'red' }}>Username is already taken!</Text>}
+                                    {!validUsername && <Text style={{ color: 'red' }}>Username must only contain letters, numbers, underscores, or hyphens.</Text>}
                                 </View>
 
                                 <View className='mt-4'>
