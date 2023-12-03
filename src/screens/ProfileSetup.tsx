@@ -316,30 +316,30 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
     const classYears = generateClassYears();
 
     const majors = [
-        { major: 'Aerospace Engineering', iso: 'AENG' },
-        { major: 'Architectural Engineering', iso: 'ARCE' },
+        { major: 'Aerospace Engineering', iso: 'AERO' },
+        { major: 'Architectural Engineering', iso: 'AREN' },
         { major: 'Biomedical Engineering', iso: 'BMEN' },
         { major: 'Chemical Engineering', iso: 'CHEN' },
-        { major: 'Civil Engineering', iso: 'CIVL' },
+        { major: 'Civil Engineering', iso: 'CHEN' },
         { major: 'Computer Engineering', iso: 'CPEN' },
-        { major: 'Computer Science', iso: 'COMP' },
+        { major: 'Computer Science', iso: 'CSCE' },
         { major: 'Computing', iso: 'COMP' },
-        { major: 'Data Engineering', iso: 'DENG' },
-        { major: 'Electrical Engineering', iso: 'ELEC' },
+        { major: 'Data Engineering', iso: 'EC' },
+        { major: 'Electrical Engineering', iso: 'ECEN' },
         { major: 'Electronic Systems Engineering Technology', iso: 'ESET' },
-        { major: 'Environmental Engineering', iso: 'ENVE' },
+        { major: 'Environmental Engineering', iso: 'EVEN' },
         { major: 'Industrial & Systems Engineering', iso: 'ISEN' },
         { major: 'Industrial Distribution', iso: 'IDIS' },
-        { major: 'Information Technology Service Management', iso: 'ITSM' },
-        { major: 'Interdisciplinary Engineering', iso: 'IEDG' },
+        { major: 'Information Technology Service Management', iso: 'ITSV' },
+        { major: 'Interdisciplinary Engineering', iso: 'ITDE' },
         { major: 'Manufacturing & Mechanical Engineering Technology', iso: 'MMET' },
         { major: 'Materials Science & Engineering', iso: 'MSEN' },
-        { major: 'Mechanical Engineering', iso: 'MENG' },
-        { major: 'Multidisciplinary Engineering Technology', iso: 'METC' },
+        { major: 'Mechanical Engineering', iso: 'MEEN' },
+        { major: 'Multidisciplinary Engineering Technology', iso: 'MXET' },
         { major: 'Nuclear Engineering', iso: 'NUEN' },
         { major: 'Ocean Engineering', iso: 'OCEN' },
-        { major: 'Petroleum Engineering', iso: 'PETR' },
-        { major: 'Technology Management', iso: 'TECM' }
+        { major: 'Petroleum Engineering', iso: 'PETE' },
+        { major: 'Technology Management', iso: 'TCMG' }
     ];
 
     return (
