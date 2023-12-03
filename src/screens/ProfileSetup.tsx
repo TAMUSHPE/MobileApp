@@ -361,7 +361,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                         <View className='absolute top-0 z-20 w-full'>
                             <SimpleDropDown
                                 data={majors}
-                                onSelect={(item) => setMajor(item.major)}
+                                onSelect={(item) => setMajor(item.iso!)}
                                 searchKey="major"
                                 label="Select major"
                                 isOpen={openDropdown === 'major'}

@@ -25,7 +25,7 @@ const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigat
                 <View className='ml-2 my-1'>
                     <View>
                         <View className="flex-row items-center">
-                            <Text className='font-semibold text-lg'>{name} {classYear}</Text>
+                            <Text className='font-semibold text-lg'>{name}</Text>
                             {isOfficer && (
                                 <View className="ml-2">
                                     <Octicons name="star" size={15} color="gold" />
