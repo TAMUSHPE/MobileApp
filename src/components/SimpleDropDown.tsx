@@ -53,7 +53,7 @@ const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, ti
         };
         setSelectedItem(newItem);
         onToggle();
-        onSelect(item);
+        onSelect(newItem.iso ? newItem : item);
         setSearch('');
     };
 
