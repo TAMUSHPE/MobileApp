@@ -12,6 +12,7 @@ import { AuthStackParams } from "../types/Navigation";
 import { Images } from "../../assets";
 import { Octicons } from '@expo/vector-icons';
 import { useFocusEffect } from "@react-navigation/core";
+import TextInputWithFloatingTitle from "../components/TextInputWithFloatingTitle";
 
 
 const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
@@ -102,24 +103,35 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
                 <View className="flex-col w-[80%]">
                     <Text className="text-white font-bold text-3xl mb-3">Guest Login</Text>
                     <KeyboardAvoidingView className="flex-col my-2">
-                        <TextInput
-                            placeholder="Email"
-                            className="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
-                            onChangeText={(text: string) => setEmail(text)}
-                            value={email}
-                            inputMode="email"
-                            keyboardType="email-address"
+                        <TextInputWithFloatingTitle
+                            setTextFunction={(text: string) => setEmail(text)}
+                            inputValue={email}
+                            title='Email'
+                            placeholderText='Email'
+                            titleStartY={20}
+                            titleEndY={0}
+                            maxCharacters={64}
+                            blurTitleClassName='text-white text-md'
+                            focusTitleClassName='text-gray-300 text-sm ml-1'
+                            textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
                         />
-                        <TextInput
-                            placeholder="Password"
-                            className="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2 mt-4"
-                            secureTextEntry
-                            onChangeText={(text) => setPassword(text)}
-                            value={password}
-                            inputMode="text"
-                            onSubmitEditing={() => emailSignIn()}
-                            textContentType="password"
-                        />
+
+                        <View className="mt-4" >
+                            <TextInputWithFloatingTitle
+                                setTextFunction={(text: string) => setPassword(text)}
+                                onSubmitEditing={() => emailSignIn()}
+                                inputValue={password}
+                                title='Password'
+                                placeholderText='Password'
+                                titleStartY={20}
+                                titleEndY={0}
+                                maxCharacters={64}
+                                secureTextEntry
+                                blurTitleClassName='text-white text-md'
+                                focusTitleClassName='text-gray-300 text-sm ml-1'
+                                textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
+                            />
+                        </View>
                     </KeyboardAvoidingView>
                     <View className="flex-col">
                         <TouchableOpacity
@@ -152,7 +164,6 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
                     >
                         <Text className="text-pale-orange text-lg ml-1">Sign up</Text>
                     </TouchableOpacity>
-
                 </View>
             </View>
         </SafeAreaView>

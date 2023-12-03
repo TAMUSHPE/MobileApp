@@ -4,3 +4,4 @@ export { updateCommitteeCount, updateCommitteesCount, incrementCommitteesCount, 
 export { resetOfficeScheduler, resetOfficeOnCall } from "./officeReset";
 export { zipResume } from "./resumeZip";
 export { updateUserRole } from "./roles";
+export { checkUsernameUniqueness } from "./checkUsername";

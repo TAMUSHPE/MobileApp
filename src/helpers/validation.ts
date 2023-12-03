@@ -168,7 +168,7 @@ export enum PasswordStrength {
  */
 export const evaluatePasswordStrength = (password: string): number => {
     const averagePasswordRegex: RegExp = /^[A-Z ]{7,14}$|^[0-9]{7,14}$/i;
-    if (!validatePassword(password, true)) {
+    if (!validatePassword(password, false)) {
         return PasswordStrength.INVALID;
     }
     else if (password.length <= 7) {
@@ -180,5 +180,25 @@ export const evaluatePasswordStrength = (password: string): number => {
     else {
         return PasswordStrength.STRONG;
     }
+};
+
+/**
+ * Validates a username based on certain conditions:
+ *   - Usernames must be alphanumeric and can include underscores or hyphens
+ *   - Usernames must not include spaces or other special characters
+ *   - This function can be extended to include length checks or other criteria
+ * @param username User's username to check
+ * @param alertUser Whether or not to alert the user of any issues
+ * @returns If the username is valid
+ */
+export const validateUsername = (username: string, alertUser: boolean = false): boolean => {
+    const usernameRegex: RegExp = /^[A-Za-z0-9_-]+$/;
+    const isValid = typeof username == 'string' && usernameRegex.test(username);
+
+    if (!isValid && alertUser) {
+        Alert.alert("Invalid Username", "Usernames must only contain letters, numbers, underscores, or hyphens.");
+    }
+
+    return isValid;
 };
 
