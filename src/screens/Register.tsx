@@ -1,5 +1,5 @@
 import { View, Text, TextInput, KeyboardAvoidingView, Alert, TouchableOpacity, Image } from 'react-native';
-import React, { useCallback, useContext, useLayoutEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useLayoutEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile, signOut } from "firebase/auth";
@@ -14,6 +14,7 @@ import { useFocusEffect } from '@react-navigation/core';
 import { Octicons } from '@expo/vector-icons';
 import { Images } from "../../assets";
 import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
+import { isUsernameUnique } from '../api/firebaseUtils';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [displayName, setDisplayName] = useState<string>("");
@@ -22,6 +23,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     const [confirmationPassword, setConfirmationPassword] = useState<string>("");
     const [passwordStrengthColor, setPasswordStrengthColor] = useState<string>("text-[#f00]");
     const [passwordStrengthText, setPasswordStrengthText] = useState<string>();
+    const [isUnique, setIsUnique] = useState(true);
 
     const inputStyle = "bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1";
 
@@ -45,6 +47,14 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
             return () => { };
         }, [])
     );
+
+    useEffect(() => {
+        const checkUsername = async () => {
+            isUsernameUnique(displayName).then(setIsUnique);
+        }
+        if (displayName != "")
+            checkUsername();
+    }, [displayName]);
 
     const registerUser = () => {
         if (password !== confirmationPassword) {
@@ -135,8 +145,8 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                             <TextInputWithFloatingTitle
                                 setTextFunction={(text: string) => setDisplayName(text)}
                                 inputValue={displayName}
-                                title='Name'
-                                placeholderText='Name'
+                                title='Username'
+                                placeholderText='Username'
                                 titleStartY={20}
                                 titleEndY={0}
                                 maxCharacters={64}
@@ -144,6 +154,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                                 focusTitleClassName='text-gray-300 text-sm ml-1'
                                 textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
                             />
+                            {(!isUnique && displayName != "") && <Text style={{ color: 'red' }}>Username is already taken!</Text>}
                         </View>
 
                         <View className='mt-4'>

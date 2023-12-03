@@ -730,4 +730,15 @@ export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
     return members;
   };
   
+  export const isUsernameUnique = async (username: string): Promise<boolean> => {
+    const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');
+  
+    try {
+      const result = await checkUsernameUniqueness({ username });
+      return result.data.unique;
+    } catch (error) {
+      console.error('Error checking username uniqueness:', error);
+      return false; // handle error appropriately
+    }
+  };
   
