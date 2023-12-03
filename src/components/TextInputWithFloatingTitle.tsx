@@ -56,6 +56,10 @@ const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleS
         outputRange: [titleStartY ?? 20, titleEndY ?? 0]
     });
 
+    const textInputStyle = {
+        textAlignVertical: isMultiline ? 'top' : 'center' as 'top' | 'center',
+    };
+
     return (
         <View className={componentClassName}>
             <Animated.View style={{
@@ -64,6 +68,7 @@ const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleS
                 <Text className={currentTitleClassName}>{title ?? "Title"}</Text>
             </Animated.View>
             <TextInput
+                style={textInputStyle}
                 placeholder={placeholderText ?? ""}
                 className={textInputClassName ?? ""}
                 multiline={isMultiline ?? false}
