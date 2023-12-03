@@ -56,7 +56,6 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     }, [displayName]);
 
     const registerUser = () => {
-        setLoading(true);
         if (password !== confirmationPassword) {
             Alert.alert("Password Mismatch", "Original password and re-entered password do not match!");
             return;
@@ -72,6 +71,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
             alert("Password must meet specifications:\n- 4-64 characters\n- Spaces are allowed\n- Valid characters: A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~")
             return;
         }
+        setLoading(true);
 
         createUserWithEmailAndPassword(auth, email, password)
             .then(async (authUser: UserCredential) => {
@@ -130,8 +130,6 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                 className="flex-1"
             >
                 <ScrollView>
-
-
                     <View className='pl-6 mt-2'>
                         <TouchableOpacity
                             className="pr-4" onPress={() => navigation.navigate("LoginScreen")}
