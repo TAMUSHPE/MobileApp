@@ -1,5 +1,5 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Alert, TouchableOpacity, Image } from 'react-native';
-import React, { useCallback, useContext, useEffect, useLayoutEffect, useState } from 'react';
+import { View, Text, Alert, TouchableOpacity, Image, ActivityIndicator, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile, signOut } from "firebase/auth";
@@ -24,11 +24,10 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     const [passwordStrengthColor, setPasswordStrengthColor] = useState<string>("text-[#f00]");
     const [passwordStrengthText, setPasswordStrengthText] = useState<string>();
     const [isUnique, setIsUnique] = useState(true);
-
-    const inputStyle = "bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1";
+    const [loading, setLoading] = useState<boolean>(false);
 
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext!;
+    const { setUserInfo } = userContext!;
 
     const signOutUser = async () => {
         try {
@@ -57,6 +56,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     }, [displayName]);
 
     const registerUser = () => {
+        setLoading(true);
         if (password !== confirmationPassword) {
             Alert.alert("Password Mismatch", "Original password and re-entered password do not match!");
             return;
@@ -92,7 +92,10 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
             .then(() => {
                 navigation.navigate("ProfileSetup");
             })
-            .catch((err) => { console.error(err.message); });
+            .catch((err) => { console.error(err.message); })
+            .finally(() => {
+                setLoading(false);
+            });
     }
 
     const handlePasswordStrengthIndicator = (text: string) => {
@@ -122,107 +125,120 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
 
     return (
         <SafeAreaView className="flex-1 bg-dark-navy">
-            <View className='pl-6 mt-2'>
-                <TouchableOpacity
-                    className="pr-4" onPress={() => navigation.navigate("LoginScreen")}
-                    activeOpacity={1}
-                >
-                    <Octicons name="chevron-left" size={30} color="white" />
-                </TouchableOpacity>
-            </View>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                className="flex-1"
+            >
+                <ScrollView>
 
-            <View className="flex-col items-center my-8 mb-11">
-                <Image
-                    className="flex-row h-20 w-20 mb-3"
-                    source={Images.SHPE_LOGO}
-                />
-            </View>
-            <View className="flex items-center">
-                <View className="flex-col w-[80%]">
-                    <Text className="text-white font-bold text-3xl mb-3">Create Guest Account</Text>
-                    <KeyboardAvoidingView className="flex-col my-2">
-                        <View>
-                            <TextInputWithFloatingTitle
-                                setTextFunction={(text: string) => setDisplayName(text)}
-                                inputValue={displayName}
-                                title='Username'
-                                placeholderText='Username'
-                                titleStartY={20}
-                                titleEndY={0}
-                                maxCharacters={64}
-                                blurTitleClassName='text-white text-md'
-                                focusTitleClassName='text-gray-300 text-sm ml-1'
-                                textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
-                            />
-                            {(!isUnique && displayName != "") && <Text style={{ color: 'red' }}>Username is already taken!</Text>}
-                        </View>
 
-                        <View className='mt-4'>
-                            <TextInputWithFloatingTitle
-                                setTextFunction={(text: string) => setEmail(text)}
-                                inputValue={email}
-                                title='Email'
-                                placeholderText='Email (eg. bob@gmail.com)'
-                                titleStartY={20}
-                                titleEndY={0}
-                                maxCharacters={64}
-                                blurTitleClassName='text-white text-md'
-                                focusTitleClassName='text-gray-300 text-sm ml-1'
-                                textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
-                            />
-                        </View>
+                    <View className='pl-6 mt-2'>
+                        <TouchableOpacity
+                            className="pr-4" onPress={() => navigation.navigate("LoginScreen")}
+                            activeOpacity={1}
+                        >
+                            <Octicons name="chevron-left" size={30} color="white" />
+                        </TouchableOpacity>
+                    </View>
 
-                        <View className='mt-4'>
-                            <TextInputWithFloatingTitle
-                                setTextFunction={(text: string) => {
-                                    setPassword(text);
-                                    handlePasswordStrengthIndicator(text);
-                                }}
-                                inputValue={password}
-                                title='Password'
-                                placeholderText='Password'
-                                titleStartY={20}
-                                titleEndY={0}
-                                maxCharacters={64}
-                                blurTitleClassName='text-white text-md'
-                                focusTitleClassName='text-gray-300 text-sm ml-1'
-                                textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
-                            />
-                        </View>
+                    <View className="flex-col items-center my-8 mb-11">
+                        <Image
+                            className="flex-row h-20 w-20 mb-3"
+                            source={Images.SHPE_LOGO}
+                        />
+                    </View>
+                    <View className="flex items-center">
+                        <View className="flex-col w-[80%]">
+                            <Text className="text-white font-bold text-3xl mb-3">Create Guest Account</Text>
+                            <View className="flex-col my-2">
+                                <View>
+                                    <TextInputWithFloatingTitle
+                                        setTextFunction={(text: string) => setDisplayName(text)}
+                                        inputValue={displayName}
+                                        title='Username'
+                                        placeholderText='Username'
+                                        titleStartY={20}
+                                        titleEndY={0}
+                                        maxCharacters={64}
+                                        blurTitleClassName='text-white text-md'
+                                        focusTitleClassName='text-gray-300 text-sm ml-1'
+                                        textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
+                                    />
+                                    {(!isUnique && displayName != "") && <Text style={{ color: 'red' }}>Username is already taken!</Text>}
+                                </View>
 
-                        {password != "" && (
-                            <View className='bg-dark-navy'>
-                                <Text className='text-white'>Password Strength: <Text className={passwordStrengthColor}>{passwordStrengthText}</Text></Text>
+                                <View className='mt-4'>
+                                    <TextInputWithFloatingTitle
+                                        setTextFunction={(text: string) => setEmail(text)}
+                                        inputValue={email}
+                                        title='Email'
+                                        placeholderText='Email (eg. bob@gmail.com)'
+                                        titleStartY={20}
+                                        titleEndY={0}
+                                        maxCharacters={64}
+                                        blurTitleClassName='text-white text-md'
+                                        focusTitleClassName='text-gray-300 text-sm ml-1'
+                                        textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
+                                    />
+                                </View>
+
+                                <View className='mt-4'>
+                                    <TextInputWithFloatingTitle
+                                        setTextFunction={(text: string) => {
+                                            setPassword(text);
+                                            handlePasswordStrengthIndicator(text);
+                                        }}
+                                        inputValue={password}
+                                        title='Password'
+                                        placeholderText='Password'
+                                        titleStartY={20}
+                                        titleEndY={0}
+                                        maxCharacters={64}
+                                        secureTextEntry
+                                        blurTitleClassName='text-white text-md'
+                                        focusTitleClassName='text-gray-300 text-sm ml-1'
+                                        textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
+                                    />
+                                </View>
+
+                                {password != "" && (
+                                    <View className='bg-dark-navy'>
+                                        <Text className='text-white'>Password Strength: <Text className={passwordStrengthColor}>{passwordStrengthText}</Text></Text>
+                                    </View>
+                                )}
+
+                                <View className='mt-4'>
+                                    <TextInputWithFloatingTitle
+                                        setTextFunction={(text) => setConfirmationPassword(text)}
+                                        inputValue={confirmationPassword}
+                                        title='Confirm Password'
+                                        placeholderText='Confirm Password'
+                                        titleStartY={20}
+                                        titleEndY={0}
+                                        maxCharacters={64}
+                                        secureTextEntry
+                                        blurTitleClassName='text-white text-md'
+                                        focusTitleClassName='text-gray-300 text-sm ml-1'
+                                        textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
+                                    />
+                                </View>
+                                <View className="flex-col">
+                                    <InteractButton
+                                        onPress={() => registerUser()}
+                                        label="Register"
+                                        buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl py-2"
+                                        textClassName="text-white font-bold text-xl"
+                                        underlayColor="#A22E2B"
+                                    />
+                                    {loading && (
+                                        <ActivityIndicator className="mt-4" size={"large"} />
+                                    )}
+                                </View>
                             </View>
-                        )}
-
-                        <View className='mt-4'>
-                            <TextInputWithFloatingTitle
-                                setTextFunction={(text) => setConfirmationPassword(text)}
-                                onSubmitEditing={() => registerUser()}
-                                inputValue={confirmationPassword}
-                                title='Confirm Password'
-                                placeholderText='Confirm Password'
-                                titleStartY={20}
-                                titleEndY={0}
-                                maxCharacters={64}
-                                blurTitleClassName='text-white text-md'
-                                focusTitleClassName='text-gray-300 text-sm ml-1'
-                                textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
-                            />
                         </View>
-                        <View className="flex-col">
-                            <InteractButton
-                                onPress={() => registerUser()}
-                                label="Register"
-                                buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl py-2"
-                                textClassName="text-white font-bold text-xl"
-                                underlayColor="#A22E2B"
-                            />
-                        </View>
-                    </KeyboardAvoidingView>
-                </View>
-            </View>
+                    </View>
+                </ScrollView>
+            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
