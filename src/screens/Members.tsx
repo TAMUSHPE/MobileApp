@@ -15,6 +15,9 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
     const lastUserSnapshotRef = useRef<QueryDocumentSnapshot<DocumentData> | null>(null);
     const [filter, setFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "name" });
     const [hasMoreUser, setHasMoreUser] = useState<boolean>(true);
+    const [loadingOfficer, setLoadingOfficer] = useState<boolean>(true);
+    const [loadingMember, setLoadingMember] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(true);
 
     const [initialLoad, setInitialLoad] = useState(true);
     const [numLimit, setNumLimit] = useState<number | null>(10);
@@ -24,9 +27,15 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
     };
 
     useEffect(() => {
-        const initializeData = async () => {
+        if (!loadingOfficer && !loadingMember) {
+            setLoading(false);
+        } else {
+            setLoading(true);
+        }
+    }, [loadingOfficer, loadingMember])
 
-            console.log("loadmoreusers on initial load")
+    useEffect(() => {
+        const initializeData = async () => {
             await loadMoreUsers();
             await loadOfficers();
         };
@@ -40,6 +49,9 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
         lastUserSnapshotRef.current = lastUserSnapshot;
     }, [lastUserSnapshot]);
 
+    /**
+     * This is how data is being loaded. When numLimit changes data is loaded accordingly.
+     */
     useEffect(() => {
         const resetData = async () => {
             setMembers([]);
@@ -49,7 +61,6 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
 
         if (!initialLoad) {
             resetData().then(() => {
-                console.log("loadmoreusers on filter change and numLimit change")
                 loadMoreUsers();
                 loadOfficers();
             });
@@ -58,6 +69,7 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
     }, [filter, numLimit]);
 
     const loadMoreUsers = async () => {
+        setLoadingMember(true);
         const newMembers = await fetchUserForList({ lastUserSnapshot: lastUserSnapshotRef.current, numLimit: numLimit, filter: filter });
         if (newMembers.members.length > 0) {
             const lastMember = newMembers.members[newMembers.members.length - 1];
@@ -67,16 +79,17 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
                 ...newMembers.members.map(doc => ({ ...doc.data(), uid: doc.id }))
             ]);
         }
-        console.log('setting userref')
         setHasMoreUser(newMembers.hasMoreUser!);
-
+        setLoadingMember(false);
     }
 
     const loadOfficers = async () => {
+        setLoadingOfficer(true);
         const officers = await fetchUserForList({ isOfficer: true, filter: filter });
         if (officers.members.length > 0) {
             setOfficers(officers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
         }
+        setLoadingOfficer(false);
     }
 
     return (
@@ -96,6 +109,8 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
                 setLastUserSnapshot={setLastUserSnapshot}
                 canSearch={true}
                 setNumLimit={setNumLimit}
+                numLimit={numLimit}
+                loading={loading}
             />
         </SafeAreaView >
     )

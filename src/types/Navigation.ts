@@ -156,7 +156,9 @@ export type MembersProps = {
     filter?: UserFilter;
     setLastUserSnapshot?: React.Dispatch<SetStateAction<QueryDocumentSnapshot<DocumentData> | null>>;
     canSearch?: boolean;
+    numLimit?: number | null;
     setNumLimit?: React.Dispatch<SetStateAction<number | null>>;
+    loading?: boolean;
 }
 
 export type EventProps = {
