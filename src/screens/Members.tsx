@@ -111,6 +111,7 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
                 setNumLimit={setNumLimit}
                 numLimit={numLimit}
                 loading={loading}
+                DEFAULT_NUM_LIMIT={10}
             />
         </SafeAreaView >
     )

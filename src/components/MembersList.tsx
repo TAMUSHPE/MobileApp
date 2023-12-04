@@ -7,7 +7,7 @@ import MemberCard from './MemberCard'
 import { TouchableOpacity } from 'react-native';
 
 
-const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUser, filter, setFilter, setLastUserSnapshot, canSearch, numLimit, setNumLimit, loading }) => {
+const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUser, filter, setFilter, setLastUserSnapshot, canSearch, numLimit, setNumLimit, loading, DEFAULT_NUM_LIMIT = 10 }) => {
     const [search, setSearch] = useState<string>("")
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [officers, setOfficers] = useState<PublicUserInfo[] | null>(null)
@@ -16,7 +16,6 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const inputRef = useRef<TextInput>(null);
     const [wait, setWait] = useState(false);
-    const DEFAULT_NUM_LIMIT = 10;
 
     useEffect(() => {
         if (!loading) {
@@ -48,34 +47,21 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
     }
 
     const searchFilterFunction = (text: string) => {
-        let newOfficerData: PublicUserInfo[] = [];
-        if (officersList != undefined && officersList.length > 0) {
-            newOfficerData = officersList.filter(
-                function (item) {
-                    const itemData = item.name
-                        ? item.name.toUpperCase()
-                        : ''.toUpperCase();
-                    const textData = text.toUpperCase();
-                    return itemData.indexOf(textData) > -1;
-                }
-            );
-        }
+        const textData = text.toUpperCase();
 
-        let newMemberData: PublicUserInfo[] = [];
-        if (membersList != undefined && membersList.length > 0) {
-            newMemberData = membersList.filter(
-                function (item) {
-                    const itemData = item.name
-                        ? item.name.toUpperCase()
-                        : ''.toUpperCase();
-                    const textData = text.toUpperCase();
-                    return itemData.indexOf(textData) > -1;
-                }
-            );
-        }
+        const filterByFields = (item: PublicUserInfo) => {
+            const itemName = item.name ? item.name.toUpperCase() : '';
+            const itemDisplayName = item.displayName ? item.displayName.toUpperCase() : '';
+            return itemName.includes(textData) || itemDisplayName.includes(textData);
+        };
+
+        const newOfficerData = officersList?.filter(filterByFields) ?? [];
+        const newMemberData = membersList?.filter(filterByFields) ?? [];
+
         setOfficers(newOfficerData);
         setMembers(newMemberData);
     };
+
 
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (loadMoreUsers == undefined) return;
@@ -134,13 +120,13 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                                     style={{ textAlignVertical: 'top' }}
                                     ref={inputRef}
                                     onChangeText={(text) => {
-                                        if (loading) return
-
                                         setSearch(text);
-
+                                        console.log("text: " + text);
+                                        console.log(numLimit)
                                         if (numLimit == null) {
                                             // This is used after one character is typed in the search bar
                                             // and does local searching
+                                            console.log("local searching");
                                             searchFilterFunction(text);
                                         } else {
                                             // By setting this to null we are telling a useEffect in Members.tsx to grab
@@ -239,7 +225,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                     </View>
                 )}
 
-                {hasMoreUser && (
+                {(!hasMoreUser && !loading) && (
                     <View className='pb-6 items-center justify-center'>
                         <Text>
                             End of Users
