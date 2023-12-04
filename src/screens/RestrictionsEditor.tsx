@@ -206,25 +206,28 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
 
 
                     <View className="h-[100%] w-[100%] bg-white">
-                        <MembersList handleCardPress={(uid) => {
-                            const currentWatchlist = getCurrentWatchlist()
-                            const currentBlacklist = getCurrentBlacklist()
-                            if (changingWatchlist && !currentWatchlist.includes(uid)) {
-                                if (currentBlacklist.includes(uid)) {
-                                    removeBlacklist(uid)
+                        <MembersList
+                            handleCardPress={(uid) => {
+                                const currentWatchlist = getCurrentWatchlist()
+                                const currentBlacklist = getCurrentBlacklist()
+                                if (changingWatchlist && !currentWatchlist.includes(uid)) {
+                                    if (currentBlacklist.includes(uid)) {
+                                        removeBlacklist(uid)
+                                    }
+                                    fetchWatchlistUserData(uid)
+                                    setChangingWatchlist(false)
                                 }
-                                fetchWatchlistUserData(uid)
-                                setChangingWatchlist(false)
-                            }
-                            if (changingBlacklist && !currentBlacklist.includes(uid)) {
-                                if (currentWatchlist.includes(uid)) {
-                                    removeWatchlist(uid)
+                                if (changingBlacklist && !currentBlacklist.includes(uid)) {
+                                    if (currentWatchlist.includes(uid)) {
+                                        removeWatchlist(uid)
+                                    }
+                                    fetchBlacklistUserData(uid)
+                                    setChangingBlacklist(false)
                                 }
-                                fetchBlacklistUserData(uid)
-                                setChangingBlacklist(false)
-                            }
-                            setUsersModalVisible(false)
-                        }} />
+                                setUsersModalVisible(false)
+                            }}
+                            DEFAULT_NUM_LIMIT={null}
+                        />
                     </View>
                 </View>
             </Modal>

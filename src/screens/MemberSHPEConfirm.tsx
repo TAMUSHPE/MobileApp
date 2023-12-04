@@ -108,6 +108,7 @@ const MemberSHPEConfirm = () => {
                     setConfirmVisible(true)
                 }}
                 membersList={members}
+                DEFAULT_NUM_LIMIT={null}
             />
 
             <Modal

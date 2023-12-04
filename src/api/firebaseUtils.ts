@@ -173,7 +173,6 @@ export const fetchUserForList = async (options: FetchMembersOptions) => {
         numLimit = null, 
         filter,
     } = options;
-
     let userQuery: Query<DocumentData, DocumentData> = collection(db, 'users');
 
     userQuery = query(userQuery, where("roles.officer", "==", isOfficer));
