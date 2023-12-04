@@ -7,12 +7,11 @@ import MemberCard from './MemberCard'
 import { TouchableOpacity } from 'react-native';
 
 
-const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUser, filter, setFilter, setLastUserSnapshot, canSearch, setNumLimit }) => {
+const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUser, filter, setFilter, setLastUserSnapshot, canSearch, numLimit, setNumLimit, loading }) => {
     const [search, setSearch] = useState<string>("")
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [officers, setOfficers] = useState<PublicUserInfo[] | null>(null)
     const [members, setMembers] = useState<PublicUserInfo[] | null>(null)
-    const [loading, setLoading] = useState(true);
     const [localFilter, setLocalFilter] = useState<UserFilter>(filter!);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const inputRef = useRef<TextInput>(null);
@@ -20,9 +19,10 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
     const DEFAULT_NUM_LIMIT = 10;
 
     useEffect(() => {
-        searchFilterFunction(search);
-        setLoading(false);
-    }, [membersList, officersList]);
+        if (!loading) {
+            searchFilterFunction(search);
+        }
+    }, [loading]);
 
     useEffect(() => {
         if (search == "") {
@@ -36,13 +36,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
         }
     }, [search])
 
-    // useEffect(() => {
-    //     console.log(members)
-    //     console.log(officers)
-    // }, [members, officers])
-
     const resetList = () => {
-        setLoading(true)
         if (setLastUserSnapshot)
             setLastUserSnapshot(null);
         if (setFilter)
@@ -95,10 +89,9 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
         };
 
         if (!isCloseToBottom(nativeEvent)) return;
-        setLoading(true);
 
         setWait(true);
-    }, [search, loadMoreUsers, setLoading]);
+    }, [search, loadMoreUsers]);
 
     useEffect(() => {
         if (wait) {
@@ -114,7 +107,6 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
 
 
     const handleApplyFilter = () => {
-        setLoading(true)
         if (setLastUserSnapshot)
             setLastUserSnapshot(null);
         if (setFilter)
@@ -131,28 +123,38 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                     <View>
                         <View className='flex-row  mb-4'>
                             <TouchableOpacity
-                                activeOpacity={1} // doing this b/c Touchablewithoutfeedback acts weird 
+                                activeOpacity={1}
                                 className='bg-gray-300 rounded-xl px-4 py-2 flex-row flex-1'
-                                onPress={() => {
-                                    Alert.alert("Search is currently disabled due to performance issues.")
-                                    // inputRef.current?.focus()
-                                }}>
+                                onPress={() => { inputRef.current?.focus() }}
+                            >
                                 <View className='mr-3'>
                                     <Octicons name="search" size={24} color="grey" />
                                 </View>
-                                <Text className='text-lg text-center justify-center'>Search</Text>
-                                {/* <TextInput
+                                <TextInput
+                                    style={{ textAlignVertical: 'top' }}
                                     ref={inputRef}
                                     onChangeText={(text) => {
+                                        if (loading) return
+
                                         setSearch(text);
-                                        if (setNumLimit)
-                                            setNumLimit(null);
+
+                                        if (numLimit == null) {
+                                            // This is used after one character is typed in the search bar
+                                            // and does local searching
+                                            searchFilterFunction(text);
+                                        } else {
+                                            // By setting this to null we are telling a useEffect in Members.tsx to grab
+                                            // all user data again so that it can be used for searching
+                                            if (setNumLimit)
+                                                setNumLimit(null);
+                                        }
+
                                     }}
                                     value={search}
                                     underlineColorAndroid="transparent"
                                     placeholder="Search"
                                     className='text-lg text-center justify-center'
-                                /> */}
+                                />
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => setShowFilterMenu(!showFilterMenu)}
@@ -205,12 +207,7 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                     </View>
                 )}
 
-
-                {officers?.length === 0 && members?.length === 0 &&
-                    <Text className='text-xl mb-4 text-bold'>No users found</Text>
-                }
-
-                {officers?.map((userData, index) => {
+                {!loading && officers?.map((userData, index) => {
                     return (
                         <MemberCard
                             key={index}
@@ -220,32 +217,37 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                         />
                     )
                 })}
-                {
-                    members?.map((userData, index) => {
-                        if (!userData.name) {
-                            return null; // this is a hacky fix for user that have not completed registration
-                        }
-                        return (
-                            <MemberCard
-                                key={index}
-                                userData={userData}
-                                navigation={navigation}
-                                handleCardPress={() => handleCardPress(userData.uid!)}
-                            />
-                        );
-                    })
+
+                {!loading && members?.map((userData, index) => {
+                    if (!userData.name) {
+                        return null; // this is a hacky fix for user that have not completed registration
+                    }
+                    return (
+                        <MemberCard
+                            key={index}
+                            userData={userData}
+                            navigation={navigation}
+                            handleCardPress={() => handleCardPress(userData.uid!)}
+                        />
+                    );
+                })
                 }
 
-                {hasMoreUser ? (
-                    <ActivityIndicator size={"large"} />
+                {loading && (
+                    <View className='pb-6 items-center justify-center'>
+                        <ActivityIndicator size="large" />
+                    </View>
+                )}
 
-                ) : (
+                {hasMoreUser && (
                     <View className='pb-6 items-center justify-center'>
                         <Text>
                             End of Users
                         </Text>
                     </View>
                 )}
+
+
                 <Text className='pb-20'></Text>
             </View>
         </ScrollView>
