@@ -17,6 +17,7 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
     const [numLimit, setNumLimit] = useState<number | null>(null);
     const [filter, setFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "points" });
     const [initialLoad, setInitialLoad] = useState(true);
+    const [loading, setLoading] = useState<boolean>(true);
 
     const insets = useSafeAreaInsets();
     const fetchMemberData = async (uid: string) => {
@@ -45,6 +46,7 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
         const getMembers = await fetchUserForList({ filter: filter });
         if (getMembers.members.length > 0) {
             setMembers(getMembers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
+            setLoading(false);
         }
     }
 
@@ -184,7 +186,10 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                             filter={filter}
                             setFilter={setFilter}
                             canSearch={true}
+                            numLimit={numLimit}
                             setNumLimit={setNumLimit}
+                            loading={loading}
+                            DEFAULT_NUM_LIMIT={null}
                         />
                     </View>
                 </View>
