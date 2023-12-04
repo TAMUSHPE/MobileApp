@@ -365,6 +365,7 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                             }}
                             officersList={officers}
                             membersList={[]}
+                            DEFAULT_NUM_LIMIT={null}
                         />
                     </View>
                 </View>
@@ -404,8 +405,8 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                             officersList={[]}
                             filter={filter}
                             setFilter={setFilter}
-                            canSearch={true}
                             setNumLimit={setNumLimit}
+                            DEFAULT_NUM_LIMIT={null}
                         />
                     </View>
                 </View>
