@@ -2,7 +2,7 @@ import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Images } from '../../assets';
 import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
-import { setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
+import { uploadFileToFirebase } from '../api/firebaseUtils';
 import { auth, db } from '../config/firebaseConfig';
 import { getBlobFromURI, selectFile } from '../api/fileSelection';
 import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
@@ -17,7 +17,7 @@ const MemberSHPETab = () => {
     const [currentTab, setCurrentTab] = useState<MemberSHPETabs>("TAMUChapter")
     const [uploadedNational, setUploadedNational] = useState(false)
     const [uploadedChapter, setUploadedChapter] = useState(false)
-    const [isVerified, setIsVerified] = useState(true)
+    const [isVerified, setIsVerified] = useState(false)
 
     // for now doing fetch to firebase instead of using userContext b/c data syncing issue after admin approves stuff
     const checkUserVerification = async () => {
@@ -26,10 +26,29 @@ const MemberSHPETab = () => {
 
         if (userDocSnap.exists()) {
             const userData = userDocSnap.data();
-            const isChapterVerified = userData.chapterVerification;
-            const isNationalVerified = userData.nationalVerification;
+            const nationalExpirationString = userData.nationalExpiration;
+            const chapterExpirationString = userData.chapterExpiration;
 
-            setIsVerified(isChapterVerified && isNationalVerified);
+            if (!nationalExpirationString || !chapterExpirationString) {
+                setIsVerified(false);
+                return;
+            }
+
+            const currentDate = new Date();
+            let isNationalValid = true;
+            let isChapterValid = true;
+
+            if (nationalExpirationString) {
+                const nationalExpirationDate = new Date(nationalExpirationString);
+                isNationalValid = currentDate <= nationalExpirationDate;
+            }
+
+            if (chapterExpirationString) {
+                const chapterExpirationDate = new Date(chapterExpirationString);
+                isChapterValid = currentDate <= chapterExpirationDate;
+            }
+
+            setIsVerified(isNationalValid && isChapterValid);
         } else {
             console.log('User document does not exist');
             setIsVerified(false);
@@ -122,11 +141,6 @@ const MemberSHPETab = () => {
                     await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
                         if (auth.currentUser) {
                             const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year from now
-                            setPublicUserData({
-                                nationalVerification: false,
-                                nationalExpiration: expirationDate
-                            })
-
                             await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
                                 nationalUploadDate: new Date().toISOString(),
                                 nationalExpiration: expirationDate,
@@ -175,11 +189,6 @@ const MemberSHPETab = () => {
 
                     await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
                         if (auth.currentUser) {
-                            setPublicUserData({
-                                chapterVerification: false,
-                                chapterExpiration: expirationDate
-                            });
-
                             await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
                                 chapterUploadDate: new Date().toISOString(),
                                 chapterExpiration: expirationDate,

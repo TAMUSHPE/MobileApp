@@ -1,4 +1,4 @@
-import { Text, ScrollView, View, TextInput, NativeSyntheticEvent, NativeScrollEvent, ActivityIndicator, TouchableHighlight, TouchableWithoutFeedback, Alert } from 'react-native'
+import { Text, ScrollView, View, TextInput, NativeSyntheticEvent, NativeScrollEvent, ActivityIndicator } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { MembersProps } from '../types/Navigation'
@@ -22,6 +22,15 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
             searchFilterFunction(search);
         }
     }, [loading]);
+
+    useEffect(() => {
+        if (officersList) {
+            setOfficers(officersList);
+        }
+        if (membersList) {
+            setMembers(membersList);
+        }
+    }, [membersList, officersList]);
 
     useEffect(() => {
         if (search == "") {
@@ -121,12 +130,9 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                                     ref={inputRef}
                                     onChangeText={(text) => {
                                         setSearch(text);
-                                        console.log("text: " + text);
-                                        console.log(numLimit)
                                         if (numLimit == null) {
                                             // This is used after one character is typed in the search bar
                                             // and does local searching
-                                            console.log("local searching");
                                             searchFilterFunction(text);
                                         } else {
                                             // By setting this to null we are telling a useEffect in Members.tsx to grab
