@@ -4,7 +4,7 @@ import { PublicUserInfo } from '../types/User'
 import { getMembersToVerify, getPublicUserData } from '../api/firebaseUtils'
 import MembersList from '../components/MembersList'
 import { db } from '../config/firebaseConfig'
-import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
+import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
 import MemberCard from '../components/MemberCard'
 
 const MemberSHPEConfirm = () => {
@@ -93,10 +93,19 @@ const MemberSHPEConfirm = () => {
     };
 
     const handleDeny = async () => {
+        const userDocRef = doc(db, 'users', currentConfirmMember!);
+
+        await updateDoc(userDocRef, {
+            chapterExpiration: deleteField(),
+            nationalExpiration: deleteField()
+        });
+
         const memberDocRef = doc(db, 'memberSHPE', currentConfirmMember!);
         await deleteDoc(memberDocRef);
+
+        // Refresh the members list
         await fetchMembers();
-    }
+    };
 
     return (
         <View className="mt-5">
