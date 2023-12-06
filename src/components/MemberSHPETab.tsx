@@ -1,12 +1,13 @@
 import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Images } from '../../assets';
 import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
 import { uploadFileToFirebase } from '../api/firebaseUtils';
 import { auth, db } from '../config/firebaseConfig';
 import { getBlobFromURI, selectFile } from '../api/fileSelection';
-import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { getDownloadURL } from 'firebase/storage';
+import { UserContext } from '../context/UserContext';
 
 type MemberSHPETabs = "TAMUChapter" | "SHPENational"
 
@@ -19,15 +20,13 @@ const MemberSHPETab = () => {
     const [uploadedChapter, setUploadedChapter] = useState(false)
     const [isVerified, setIsVerified] = useState(false)
 
-    // for now doing fetch to firebase instead of using userContext b/c data syncing issue after admin approves stuff
-    const checkUserVerification = async () => {
-        const userDocRef = doc(db, 'users', auth.currentUser?.uid!);
-        const userDocSnap = await getDoc(userDocRef);
 
-        if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            const nationalExpirationString = userData.nationalExpiration;
-            const chapterExpirationString = userData.chapterExpiration;
+    const { userInfo } = useContext(UserContext)!;
+
+    useEffect(() => {
+        const checkUserVerification = async () => {
+            const nationalExpirationString = userInfo?.publicInfo?.nationalExpiration
+            const chapterExpirationString = userInfo?.publicInfo?.chapterExpiration
 
             if (!nationalExpirationString || !chapterExpirationString) {
                 setIsVerified(false);
@@ -49,14 +48,9 @@ const MemberSHPETab = () => {
             }
 
             setIsVerified(isNationalValid && isChapterValid);
-        } else {
-            console.log('User document does not exist');
-            setIsVerified(false);
-        }
-    };
+        };
 
-    useEffect(() => {
-        checkUserVerification()
+        checkUserVerification();
     }, [])
 
     useEffect(() => {
@@ -133,7 +127,7 @@ const MemberSHPETab = () => {
                             alert("File upload cancelled");
                             break;
                         default:
-                            alert("An unknown error has occured")
+                            alert("An unknown error has occurred")
                             break;
                     }
                 },
@@ -173,7 +167,7 @@ const MemberSHPETab = () => {
                             alert("File upload cancelled");
                             break;
                         default:
-                            alert("An unknown error has occured")
+                            alert("An unknown error has occurred")
                             break;
                     }
                 },
@@ -274,7 +268,7 @@ const MemberSHPETab = () => {
                 </TouchableOpacity>
 
             </View>
-
+            <Text className='mx-20'>Enable Notification to be notified when approved/denied</Text>
 
             {!isVerified &&
                 (<View className='flex-row items-center justify-center space-x-8 mt-8'>
