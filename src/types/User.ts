@@ -39,6 +39,7 @@ export interface PublicUserInfo {
     rankChange?: RankChange;
     nationalExpiration?: string;
     chapterExpiration?: string;
+    isResumeVerified?: boolean;
     // Google Sheets parameters
     points?: number;
 };
