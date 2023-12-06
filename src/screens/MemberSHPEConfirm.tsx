@@ -3,9 +3,10 @@ import React, { useEffect, useState } from 'react'
 import { PublicUserInfo } from '../types/User'
 import { getMembersToVerify, getPublicUserData } from '../api/firebaseUtils'
 import MembersList from '../components/MembersList'
-import { db } from '../config/firebaseConfig'
+import { db, functions } from '../config/firebaseConfig'
 import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
 import MemberCard from '../components/MemberCard'
+import { httpsCallable } from 'firebase/functions'
 
 const MemberSHPEConfirm = () => {
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
@@ -80,17 +81,28 @@ const MemberSHPEConfirm = () => {
     }
 
     const handleApprove = async () => {
-        // Update the user's document in the 'users' collection
         const userDocRef = doc(db, 'users', currentConfirmMember!);
         await updateDoc(userDocRef, {
             chapterExpiration: memberDetails?.chapterExpiration,
             nationalExpiration: memberDetails?.nationalExpiration,
         });
 
+
         const memberDocRef = doc(db, 'memberSHPE', currentConfirmMember!);
         await deleteDoc(memberDocRef);
         await fetchMembers();
+
+        console.log(JSON.stringify(confirmMemberData, null, 2), "data send")
+        console.log(currentConfirmMember, "uid")
+
+        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        await sendNotificationToMember({
+            memberData: confirmMemberData,
+            uid: currentConfirmMember,
+            type: "approved",
+        });
     };
+
 
     const handleDeny = async () => {
         const userDocRef = doc(db, 'users', currentConfirmMember!);
@@ -103,8 +115,16 @@ const MemberSHPEConfirm = () => {
         const memberDocRef = doc(db, 'memberSHPE', currentConfirmMember!);
         await deleteDoc(memberDocRef);
 
-        // Refresh the members list
         await fetchMembers();
+
+        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        await sendNotificationToMember({
+            memberData: confirmMemberData,
+            uid: currentConfirmMember,
+            type: "denied",
+        });
+
+        // Refresh the members list
     };
 
     return (
