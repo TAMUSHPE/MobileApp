@@ -727,7 +727,26 @@ export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
     }
     
     return members;
-  };
+};
+
+export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
+    const resumeRef = collection(db, 'resumeVerification');
+    const resumeQuery = query(resumeRef);
+    const resumeSnapshot = await getDocs(resumeQuery);
+    const resumeUserIds = resumeSnapshot.docs.map(doc => doc.id);
+  
+    const members:PublicUserInfo[] = [];
+    for (const userId of resumeUserIds) {
+      const userDocRef = doc(db, 'users', userId);
+      const userDocSnap = await getDoc(userDocRef);
+      if (userDocSnap.exists()) {
+        members.push({ uid: userId, ...userDocSnap.data() });
+      }
+    }
+    
+    return members;
+};
+
   
   export const isUsernameUnique = async (username: string): Promise<boolean> => {
     const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');
@@ -743,7 +762,7 @@ export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
 
   export const fetchUsersWithPublicResumes = async (): Promise<PublicUserInfo[]> => {
     try {
-        const publicResumeQuery = query(collection(db, 'users'), where("isResumeVerified", "==", true));
+        const publicResumeQuery = query(collection(db, 'users'), where("resumeVerified", "==", true));
         const publicResumeSnapshot = await getDocs(publicResumeQuery);
 
         const officerQuery = query(collection(db, 'users'), where("roles.officer", "==", true));
@@ -752,13 +771,13 @@ export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
         const combinedUsers = new Map();
         publicResumeSnapshot.forEach(doc => {
             const userData = doc.data();
-            if (userData.resumeURL) { 
+            if (userData.resumePublicURL) { 
                 combinedUsers.set(doc.id, { ...userData, uid: doc.id });
             }
         });
         officerSnapshot.forEach(doc => {
             const userData = doc.data();
-            if (userData.resumeURL) { 
+            if (userData.resumePublicURL) { 
                 combinedUsers.set(doc.id, { ...userData, uid: doc.id });
             }
         });

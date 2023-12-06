@@ -11,7 +11,7 @@ import { ResumeProps } from '../types/Navigation'
  * @param props - Contains user public info data and navigation functions.
  */
 const ResumeCard: React.FC<ResumeProps> = ({ resumeData, navigation }) => {
-    const { uid, photoURL, name, displayName, resumeURL, major, classYear } = resumeData
+    const { uid, photoURL, name, displayName, resumePublicURL, major, classYear } = resumeData
 
     const handleLinkPress = async (url: string) => {
         if (!url) {
@@ -64,9 +64,9 @@ const ResumeCard: React.FC<ResumeProps> = ({ resumeData, navigation }) => {
                 <TouchableOpacity
                     className='items-center justify-center px-4 py-2'
                     activeOpacity={0.5}
-                    onPress={() => handleLinkPress(resumeURL!)}
+                    onPress={() => handleLinkPress(resumePublicURL!)}
                 >
-                    <Text>Review Resume</Text>
+                    <Text>View Resume</Text>
                 </TouchableOpacity>
             </View>
         </View>
