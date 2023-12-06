@@ -1,12 +1,13 @@
 import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { Images } from '../../assets';
 import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
-import { setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
+import { uploadFileToFirebase } from '../api/firebaseUtils';
 import { auth, db } from '../config/firebaseConfig';
 import { getBlobFromURI, selectFile } from '../api/fileSelection';
-import { doc, getDoc, onSnapshot, setDoc } from "firebase/firestore";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { getDownloadURL } from 'firebase/storage';
+import { UserContext } from '../context/UserContext';
 
 type MemberSHPETabs = "TAMUChapter" | "SHPENational"
 
@@ -17,27 +18,39 @@ const MemberSHPETab = () => {
     const [currentTab, setCurrentTab] = useState<MemberSHPETabs>("TAMUChapter")
     const [uploadedNational, setUploadedNational] = useState(false)
     const [uploadedChapter, setUploadedChapter] = useState(false)
-    const [isVerified, setIsVerified] = useState(true)
+    const [isVerified, setIsVerified] = useState(false)
 
-    // for now doing fetch to firebase instead of using userContext b/c data syncing issue after admin approves stuff
-    const checkUserVerification = async () => {
-        const userDocRef = doc(db, 'users', auth.currentUser?.uid!);
-        const userDocSnap = await getDoc(userDocRef);
 
-        if (userDocSnap.exists()) {
-            const userData = userDocSnap.data();
-            const isChapterVerified = userData.chapterVerification;
-            const isNationalVerified = userData.nationalVerification;
-
-            setIsVerified(isChapterVerified && isNationalVerified);
-        } else {
-            console.log('User document does not exist');
-            setIsVerified(false);
-        }
-    };
+    const { userInfo } = useContext(UserContext)!;
 
     useEffect(() => {
-        checkUserVerification()
+        const checkUserVerification = async () => {
+            const nationalExpirationString = userInfo?.publicInfo?.nationalExpiration
+            const chapterExpirationString = userInfo?.publicInfo?.chapterExpiration
+
+            if (!nationalExpirationString || !chapterExpirationString) {
+                setIsVerified(false);
+                return;
+            }
+
+            const currentDate = new Date();
+            let isNationalValid = true;
+            let isChapterValid = true;
+
+            if (nationalExpirationString) {
+                const nationalExpirationDate = new Date(nationalExpirationString);
+                isNationalValid = currentDate <= nationalExpirationDate;
+            }
+
+            if (chapterExpirationString) {
+                const chapterExpirationDate = new Date(chapterExpirationString);
+                isChapterValid = currentDate <= chapterExpirationDate;
+            }
+
+            setIsVerified(isNationalValid && isChapterValid);
+        };
+
+        checkUserVerification();
     }, [])
 
     useEffect(() => {
@@ -114,7 +127,7 @@ const MemberSHPETab = () => {
                             alert("File upload cancelled");
                             break;
                         default:
-                            alert("An unknown error has occured")
+                            alert("An unknown error has occurred")
                             break;
                     }
                 },
@@ -122,11 +135,6 @@ const MemberSHPETab = () => {
                     await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
                         if (auth.currentUser) {
                             const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year from now
-                            setPublicUserData({
-                                nationalVerification: false,
-                                nationalExpiration: expirationDate
-                            })
-
                             await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
                                 nationalUploadDate: new Date().toISOString(),
                                 nationalExpiration: expirationDate,
@@ -159,7 +167,7 @@ const MemberSHPETab = () => {
                             alert("File upload cancelled");
                             break;
                         default:
-                            alert("An unknown error has occured")
+                            alert("An unknown error has occurred")
                             break;
                     }
                 },
@@ -175,11 +183,6 @@ const MemberSHPETab = () => {
 
                     await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
                         if (auth.currentUser) {
-                            setPublicUserData({
-                                chapterVerification: false,
-                                chapterExpiration: expirationDate
-                            });
-
                             await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
                                 chapterUploadDate: new Date().toISOString(),
                                 chapterExpiration: expirationDate,
@@ -265,7 +268,7 @@ const MemberSHPETab = () => {
                 </TouchableOpacity>
 
             </View>
-
+            <Text className='mx-20'>Enable Notification to be notified when approved/denied</Text>
 
             {!isVerified &&
                 (<View className='flex-row items-center justify-center space-x-8 mt-8'>
