@@ -36,11 +36,26 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
             setLoading(false);
         }
     }
-    useEffect(() => {
+
+    const handleResumeRemoved = () => {
         fetchResumes();
-    }, [])
+    };
+
 
     useEffect(() => {
+        const updateUser = async () => {
+            try {
+                const uid = auth.currentUser?.uid;
+                if (uid) {
+                    const userFromFirebase = await getUser(uid);
+                    await AsyncStorage.setItem("@user", JSON.stringify(userFromFirebase));
+                    setUserInfo(userFromFirebase);
+                }
+            } catch (error) {
+                console.error("Error updating user:", error);
+            }
+        };
+
         const checkResumeVerification = async () => {
             const resumeVerified = userInfo?.publicInfo?.resumeVerified;
             if (resumeVerified === undefined) {
@@ -49,7 +64,11 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
             setIsVerified(resumeVerified);
         };
 
-        checkResumeVerification();
+
+        updateUser().then(() => {
+            checkResumeVerification();
+        });
+        fetchResumes();
     }, [])
 
     useEffect(() => {
@@ -106,13 +125,17 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                     await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
                         console.log("File available at", URL);
                         if (auth.currentUser) {
+                            const hadPreviousURL = !!userInfo?.publicInfo?.resumePublicURL;
+
                             setResumePublicURL(URL);
                             await setPublicUserData({
-                                resumePublicURL: URL
+                                resumePublicURL: URL,
+                                resumeVerified: false
                             })
                                 .then(() => {
-                                    if (userInfo?.publicInfo?.roles?.officer) {
+                                    if (userInfo?.publicInfo?.roles?.officer || hadPreviousURL) {
                                         fetchResumes();
+                                        setIsVerified(false)
                                     }
                                 });
                         }
@@ -121,8 +144,6 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                         await AsyncStorage.setItem("@user", JSON.stringify(authUser));
                         setUserInfo(authUser);
                         setLoading(false);
-
-
                     });
                 });
         }
@@ -243,6 +264,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                             </View>
 
 
+
                         )}
                         <TouchableOpacity
                             className='items-center justify-center px-4 py-2'
@@ -262,7 +284,13 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
 
             <FlatList
                 data={resumes}
-                renderItem={({ item }) => <ResumeCard resumeData={item} navigation={navigation} />}
+                renderItem={({ item }) => (
+                    <ResumeCard
+                        resumeData={item}
+                        navigation={navigation}
+                        onResumeRemoved={handleResumeRemoved}
+                    />
+                )}
                 keyExtractor={(item, index) => index.toString()}
             />
 
