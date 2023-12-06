@@ -98,6 +98,7 @@ export type AdminDashboardParams = {
     ResetOfficeHours: undefined;
     RestrictionsEditor: undefined;
     MemberSHPEConfirm: undefined;
+    ResumeConfirm: undefined;
     HomeBottomTabs: {
         screen: keyof HomeBottomTabParams;
     };

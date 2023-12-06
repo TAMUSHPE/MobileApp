@@ -1,4 +1,4 @@
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Linking } from 'react-native'
+import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Linking, Modal } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import ResumeCard from '../components/ResumeCard'
 import { PublicUserInfo } from '../types/User'
@@ -13,54 +13,42 @@ import { getBlobFromURI, selectFile } from '../api/fileSelection'
 import { CommonMimeTypes, validateFileBlob } from '../helpers/validation'
 import { getDownloadURL } from 'firebase/storage'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { doc, onSnapshot, setDoc } from 'firebase/firestore'
+import { deleteField, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
+import { TouchableWithoutFeedback } from 'react-native'
 
 const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
     const [resumes, setResumes] = useState<PublicUserInfo[]>([])
     const [loading, setLoading] = useState(true);
-    const [resumeURL, setResumeURL] = useState<string | null>(null);
+    const [resumePublicURL, setResumePublicURL] = useState<string | null>(null);
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [isVerified, setIsVerified] = useState(false);
     const [uploadedResume, setUploadedResume] = useState(false);
+    const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
 
-    useEffect(() => {
-        const fetchResumes = async () => {
-            try {
-                const data = await fetchUsersWithPublicResumes(); // Call your API function
-                setResumes(data);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching resumes:', error);
-                setLoading(false);
-            }
+
+    const fetchResumes = async () => {
+        try {
+            const data = await fetchUsersWithPublicResumes();
+            setResumes(data);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching resumes:', error);
+            setLoading(false);
         }
-
+    }
+    useEffect(() => {
         fetchResumes();
     }, [])
 
     useEffect(() => {
         const checkResumeVerification = async () => {
-            const resumeVerified = userInfo?.publicInfo?.isResumeVerified;
+            const resumeVerified = userInfo?.publicInfo?.resumeVerified;
             if (resumeVerified === undefined) {
                 return;
             }
             setIsVerified(resumeVerified);
         };
 
-        const updateUser = async () => {
-            try {
-                const uid = auth.currentUser?.uid;
-                if (uid) {
-                    const userFromFirebase = await getUser(uid);
-                    await AsyncStorage.setItem("@user", JSON.stringify(userFromFirebase));
-                    setUserInfo(userFromFirebase);
-                }
-            } catch (error) {
-                console.error("Error updating user:", error);
-            }
-        };
-
-        updateUser();
         checkResumeVerification();
     }, [])
 
@@ -93,7 +81,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
     const uploadResume = (resumeBlob: Blob) => {
         if (validateFileBlob(resumeBlob, CommonMimeTypes.RESUME_FILES, true)) {
             setLoading(true)
-            const uploadTask = uploadFileToFirebase(resumeBlob, `user-docs/${auth.currentUser?.uid}/user-resume`);
+            const uploadTask = uploadFileToFirebase(resumeBlob, `user-docs/${auth.currentUser?.uid}/user-resume-public`);
 
             uploadTask.on("state_changed",
                 (snapshot) => {
@@ -118,16 +106,23 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                     await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
                         console.log("File available at", URL);
                         if (auth.currentUser) {
-                            setResumeURL(URL);
+                            setResumePublicURL(URL);
                             await setPublicUserData({
-                                resumeURL: URL
-                            });
+                                resumePublicURL: URL
+                            })
+                                .then(() => {
+                                    if (userInfo?.publicInfo?.roles?.officer) {
+                                        fetchResumes();
+                                    }
+                                });
                         }
 
                         const authUser = await getUser(auth.currentUser?.uid!)
                         await AsyncStorage.setItem("@user", JSON.stringify(authUser));
                         setUserInfo(authUser);
                         setLoading(false);
+
+
                     });
                 });
         }
@@ -138,7 +133,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
         if (auth.currentUser) {
             await setDoc(doc(db, `resumeVerification/${auth.currentUser?.uid}`), {
                 uploadDate: new Date().toISOString(),
-                resumeURL: userInfo?.publicInfo?.resumeURL
+                resumePublicURL: userInfo?.publicInfo?.resumePublicURL
             }, { merge: true });
         }
     }
@@ -184,38 +179,71 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                     <View className='flex-1 flex-row items-center'>
                         <View className='w-[65%]'>
 
-                            {!isVerified && !uploadedResume && userInfo?.publicInfo?.resumeURL && (
-                                <TouchableOpacity onPress={() => submitResume()}>
-                                    <Text className='font-medium'>Add My Resume To Database</Text>
-                                </TouchableOpacity>
-                            )}
+                            {userInfo?.publicInfo?.roles?.officer ? (
+                                <View>
+                                    {userInfo?.publicInfo?.resumePublicURL && (
+                                        <View>
+                                            <Text className='font-medium'>You're Admin, so you resume already public</Text>
+                                        </View>
+                                    )}
+                                </View>
+                            ) : (
+                                <View>
+                                    {!isVerified && !uploadedResume && userInfo?.publicInfo?.resumePublicURL && (
+                                        <TouchableOpacity onPress={() => setConfirmVisible(true)}>
+                                            <Text className='font-medium'>Publish Resume</Text>
+                                        </TouchableOpacity>
+                                    )}
 
-                            {uploadedResume && (
-                                <View className='font-medium'>
-                                    <Text className='font-medium'>resume in-review</Text>
+                                    {uploadedResume && (
+                                        <View className='font-medium'>
+                                            <Text className='font-medium'>resume in-review</Text>
+                                        </View>
+                                    )}
+
+                                    {isVerified && (
+                                        <TouchableOpacity onPress={async () => {
+                                            const userDocRef = doc(db, 'users', auth.currentUser?.uid!);
+                                            await updateDoc(userDocRef, {
+                                                resumePublicURL: deleteField(),
+                                                resumeVerified: false,
+                                            }).then(() => {
+
+                                            });
+
+                                            const authUser = await getUser(auth.currentUser?.uid!)
+                                            await AsyncStorage.setItem("@user", JSON.stringify(authUser));
+                                            setUserInfo(authUser);
+                                            setLoading(false);
+                                            setIsVerified(false);
+                                        }}
+                                            className='font-medium'
+                                        >
+                                            <Text className='font-medium'>Remove my resume</Text>
+                                        </TouchableOpacity>
+                                    )}
                                 </View>
                             )}
 
-                            {isVerified && (
-                                <View
-                                    className='font-medium'
-                                >
-                                    <Text className='font-medium'>Resume Added to Resume Bank</Text>
-                                </View>
-                            )}
+
                         </View>
                     </View>
 
+                    <View>
+                        {userInfo?.publicInfo?.resumePublicURL && (
+                            <View>
 
-                    {userInfo?.publicInfo?.resumeURL ? (
-                        <TouchableOpacity
-                            className='items-center justify-center px-4 py-2'
-                            activeOpacity={0.5}
-                            onPress={() => handleLinkPress(userInfo?.publicInfo?.resumeURL!)}
-                        >
-                            <Text>My Resume</Text>
-                        </TouchableOpacity>
-                    ) : (
+                                <TouchableOpacity
+                                    className='items-center justify-center px-4 py-2'
+                                    activeOpacity={0.5}
+                                    onPress={() => handleLinkPress(userInfo?.publicInfo?.resumeURL!)}
+                                >
+                                    <Text>My Public Resume</Text>
+                                </TouchableOpacity>
+                            </View>
+
+
+                        )}
                         <TouchableOpacity
                             className='items-center justify-center px-4 py-2'
                             activeOpacity={0.5}
@@ -228,7 +256,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                         >
                             <Text>Upload Resume</Text>
                         </TouchableOpacity>
-                    )}
+                    </View>
                 </View>
             </View>
 
@@ -237,6 +265,45 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                 renderItem={({ item }) => <ResumeCard resumeData={item} navigation={navigation} />}
                 keyExtractor={(item, index) => index.toString()}
             />
+
+            <Modal
+                animationType="none"
+                transparent={true}
+                visible={confirmVisible}
+                onRequestClose={() => setConfirmVisible(!confirmVisible)}
+            >
+                <TouchableOpacity
+                    onPress={() => setConfirmVisible(false)}
+                    className="h-[100%] w-[100%]"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                >
+                    <View className='items-center justify-center h-full'>
+                        <TouchableWithoutFeedback>
+                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
+                                <Octicons name="alert" size={24} color="black" />
+                                <View className='flex items-center w-[80%] space-y-8'>
+                                    <Text className="text-center text-lg font-bold">Your resume will be added to the resume bank. Be sure to remove information you don't want public (i.e. phone #, address, email, etc.)</Text>
+                                    <View className="flex-row">
+                                        <TouchableOpacity
+                                            onPress={async () => {
+                                                submitResume();
+                                                setConfirmVisible(false);
+                                            }}
+                                            className="bg-pale-blue rounded-xl justify-center items-center"
+                                        >
+                                            <Text className='text-xl font-bold text-white px-2'> Publish Resume </Text>
+                                        </TouchableOpacity>
+
+                                        <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
+                                            <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableOpacity >
+            </Modal >
         </SafeAreaView>
     )
 }
