@@ -3,16 +3,16 @@ import React, { useEffect, useState } from 'react'
 import { PublicUserInfo } from '../types/User'
 import { getMembersToVerify, getPublicUserData } from '../api/firebaseUtils'
 import MembersList from '../components/MembersList'
-import { db } from '../config/firebaseConfig'
-import { deleteDoc, doc, getDoc, updateDoc } from 'firebase/firestore'
+import { db, functions } from '../config/firebaseConfig'
+import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
 import MemberCard from '../components/MemberCard'
+import { httpsCallable } from 'firebase/functions'
 
 const MemberSHPEConfirm = () => {
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [currentConfirmMember, setCurrentConfirmMember] = useState<string>();
-    const [chapterURL, setChapterURL] = useState<string>();
-    const [nationalURL, setNationalURL] = useState<string>();
+    const [memberDetails, setMemberDetails] = useState<memberSHPEResponse | null>(null);
     const [confirmMemberData, setConfirmMemberData] = useState<PublicUserInfo>();
 
     const fetchMembers = async () => {
@@ -32,9 +32,8 @@ const MemberSHPEConfirm = () => {
         const memberDocSnap = await getDoc(memberDocRef);
 
         if (memberDocSnap.exists()) {
-            const memberData = memberDocSnap.data();
-            setChapterURL(memberData.chapterURL);
-            setNationalURL(memberData.nationalURL);
+            const memberData = memberDocSnap.data() as memberSHPEResponse;
+            setMemberDetails(memberData);
         } else {
             console.log('No such document!');
         }
@@ -82,24 +81,52 @@ const MemberSHPEConfirm = () => {
     }
 
     const handleApprove = async () => {
-        // Update the user's document in the 'users' collection
         const userDocRef = doc(db, 'users', currentConfirmMember!);
         await updateDoc(userDocRef, {
-            chapterVerification: true,
-            nationalVerification: true
+            chapterExpiration: memberDetails?.chapterExpiration,
+            nationalExpiration: memberDetails?.nationalExpiration,
         });
 
-        // Remove the user's document from the 'memberSHPE' collection
+
         const memberDocRef = doc(db, 'memberSHPE', currentConfirmMember!);
         await deleteDoc(memberDocRef);
         await fetchMembers();
+
+        console.log(JSON.stringify(confirmMemberData, null, 2), "data send")
+        console.log(currentConfirmMember, "uid")
+
+        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        await sendNotificationToMember({
+            memberData: confirmMemberData,
+            uid: currentConfirmMember,
+            type: "approved",
+        });
     };
 
+
     const handleDeny = async () => {
+        const userDocRef = doc(db, 'users', currentConfirmMember!);
+
+        await updateDoc(userDocRef, {
+            chapterExpiration: deleteField(),
+            nationalExpiration: deleteField()
+        });
+
         const memberDocRef = doc(db, 'memberSHPE', currentConfirmMember!);
         await deleteDoc(memberDocRef);
+
         await fetchMembers();
-    }
+
+        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        await sendNotificationToMember({
+            memberData: confirmMemberData,
+            uid: currentConfirmMember,
+            type: "denied",
+        });
+
+        // Refresh the members list
+    };
+
     return (
         <View className="mt-5">
             <MembersList
@@ -128,13 +155,13 @@ const MemberSHPEConfirm = () => {
                                 <MemberCard userData={confirmMemberData} handleCardPress={() => { }} />
                                 <TouchableOpacity
                                     className='px-6 py-4 rounded-lg  items-center bg-maroon'
-                                    onPress={async () => { handleOpenLink(nationalURL) }}
+                                    onPress={async () => { handleOpenLink(memberDetails?.chapterURL) }}
                                 >
                                     <Text className="text-white">National Proof</Text>
                                 </TouchableOpacity>
                                 <TouchableOpacity
                                     className='px-6 py-4 rounded-lg  items-center bg-dark-navy'
-                                    onPress={async () => { handleOpenLink(chapterURL) }}
+                                    onPress={async () => { handleOpenLink(memberDetails?.nationalURL) }}
                                 >
                                     <Text className="text-white">Chapter Proof</Text>
                                 </TouchableOpacity>
@@ -164,6 +191,14 @@ const MemberSHPEConfirm = () => {
             </Modal >
         </View >
     )
+}
+
+
+interface memberSHPEResponse {
+    chapterURL: string;
+    nationalURL: string;
+    chapterExpiration: string;
+    nationalExpiration: string;
 }
 
 export default MemberSHPEConfirm

@@ -1,5 +1,5 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { MembersProps } from '../types/Navigation'
 import { Images } from '../../assets'
 import { Octicons } from '@expo/vector-icons';
@@ -8,8 +8,39 @@ const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigat
     if (!userData) {
         return
     }
-    const { name, classYear, committees, roles, uid, displayName, photoURL, chapterVerification, nationalVerification } = userData
+    const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration } = userData
     const isOfficer = roles ? roles.officer : false;
+
+    const [isVerified, setIsVerified] = useState<boolean>(false);
+
+
+    useEffect(() => {
+        const checkVerificationStatus = () => {
+            if (!nationalExpiration || !chapterExpiration) {
+                return;
+            }
+            const nationalExpirationString = nationalExpiration;
+            const chapterExpirationString = chapterExpiration;
+
+            const currentDate = new Date();
+            let isNationalValid = true;
+            let isChapterValid = true;
+
+            if (nationalExpirationString) {
+                const nationalExpirationDate = new Date(nationalExpirationString);
+                isNationalValid = currentDate <= nationalExpirationDate;
+            }
+
+            if (chapterExpirationString) {
+                const chapterExpirationDate = new Date(chapterExpirationString);
+                isChapterValid = currentDate <= chapterExpirationDate;
+            }
+
+            setIsVerified(isNationalValid && isChapterValid);
+        };
+
+        checkVerificationStatus();
+    }, [])
 
     return (
         <TouchableOpacity className='mb-8'
@@ -32,7 +63,7 @@ const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigat
                                 </View>
 
                             )}
-                            {(!isOfficer && nationalVerification && chapterVerification) && (
+                            {(!isOfficer && isVerified) && (
                                 <View className="ml-2">
                                     <Octicons name="check-circle" size={15} color="green" />
                                 </View>
