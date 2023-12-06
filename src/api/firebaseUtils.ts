@@ -740,4 +740,35 @@ export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
       return false; // handle error appropriately
     }
   };
-  
+
+  export const fetchUsersWithPublicResumes = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const publicResumeQuery = query(collection(db, 'users'), where("isResumeVerified", "==", true));
+        const publicResumeSnapshot = await getDocs(publicResumeQuery);
+
+        const officerQuery = query(collection(db, 'users'), where("roles.officer", "==", true));
+        const officerSnapshot = await getDocs(officerQuery);
+
+        const combinedUsers = new Map();
+        publicResumeSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.resumeURL) { 
+                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
+            }
+        });
+        officerSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.resumeURL) { 
+                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
+            }
+        });
+
+        const usersArray = Array.from(combinedUsers.values());
+
+        return usersArray;
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        return [];
+    }
+}
+

@@ -139,6 +139,10 @@ export type PointsProps = {
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 
+export type ResumeProps = {
+    resumeData: PublicUserInfo
+    navigation: NativeStackNavigationProp<ResourcesStackParams>
+}
 export type TestBankProps = {
     testData: Test;
     navigation: NativeStackNavigationProp<ResourcesStackParams>
