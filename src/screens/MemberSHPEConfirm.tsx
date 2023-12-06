@@ -97,7 +97,6 @@ const MemberSHPEConfirm = () => {
 
         const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
         await sendNotificationToMember({
-            memberData: confirmMemberData,
             uid: currentConfirmMember,
             type: "approved",
         });
@@ -119,7 +118,6 @@ const MemberSHPEConfirm = () => {
 
         const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
         await sendNotificationToMember({
-            memberData: confirmMemberData,
             uid: currentConfirmMember,
             type: "denied",
         });

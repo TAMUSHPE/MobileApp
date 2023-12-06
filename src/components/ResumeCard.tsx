@@ -1,17 +1,21 @@
 import { View, Text, TouchableOpacity, Image, Linking } from 'react-native'
-import React from 'react'
-import { Octicons } from '@expo/vector-icons';
+import React, { useContext } from 'react'
 import { Images } from '../../assets';
 import { ResumeProps } from '../types/Navigation'
+import { deleteField, doc, updateDoc } from 'firebase/firestore';
+import { db, functions } from '../config/firebaseConfig';
+import { httpsCallable } from 'firebase/functions';
+import { UserContext } from '../context/UserContext';
 
-/**
- * The RankCard component displays a user's rank information.
- * It provides an interactive card that navigates to the user's public profile.
- * 
- * @param props - Contains user public info data and navigation functions.
- */
-const ResumeCard: React.FC<ResumeProps> = ({ resumeData, navigation }) => {
-    const { uid, photoURL, name, displayName, resumePublicURL, major, classYear } = resumeData
+const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ resumeData, navigation, onResumeRemoved }) => {
+    const { uid, photoURL, name, displayName, resumePublicURL, major, classYear, roles } = resumeData
+
+    const { userInfo } = useContext(UserContext)!;
+
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+
+    const resumeCardHasPrivileges = (roles?.admin?.valueOf() || roles?.officer?.valueOf() || roles?.developer?.valueOf());
+
 
     const handleLinkPress = async (url: string) => {
         if (!url) {
@@ -41,6 +45,23 @@ const ResumeCard: React.FC<ResumeProps> = ({ resumeData, navigation }) => {
         }
     }
 
+    const removeResume = async () => {
+        const userDocRef = doc(db, 'users', uid!);
+
+        await updateDoc(userDocRef, {
+            resumePublicURL: deleteField(),
+            resumeVerified: false,
+        });
+
+
+        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationResumeConfirm');
+        await sendNotificationToMember({
+            uid: uid,
+            type: "removed",
+        });
+        onResumeRemoved();
+    };
+
     return (
         <View className="flex-row bg-[#D4D4D4] py-3 mx-4 px-4 mt-8 rounded-xl items-center">
             <View className='flex-row'>
@@ -61,13 +82,29 @@ const ResumeCard: React.FC<ResumeProps> = ({ resumeData, navigation }) => {
                     </View>
                 </TouchableOpacity>
 
-                <TouchableOpacity
-                    className='items-center justify-center px-4 py-2'
-                    activeOpacity={0.5}
-                    onPress={() => handleLinkPress(resumePublicURL!)}
-                >
-                    <Text>View Resume</Text>
-                </TouchableOpacity>
+                <View>
+
+                    <TouchableOpacity
+                        className='items-center justify-center px-4 py-2'
+                        activeOpacity={0.5}
+                        onPress={() => handleLinkPress(resumePublicURL!)}
+                    >
+                        <Text>View Resume</Text>
+                    </TouchableOpacity>
+
+                    {hasPrivileges && !resumeCardHasPrivileges && (
+                        <TouchableOpacity
+                            className='items-center justify-center px-4 py-2'
+                            activeOpacity={0.5}
+                            onPress={() => removeResume()}
+                        >
+                            <Text className='text-red-500'>Remove</Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+
+
+
             </View>
         </View>
     )

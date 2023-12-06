@@ -16,7 +16,7 @@ export default function App() {
     useEffect(() => {
         notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
             Alert.alert(notification.request.content.body as string);
-            if (notification.request.content.data.type === "approved" || notification.request.content.data.type === "denied") {
+            if (notification.request.content.data.type === "approved" || notification.request.content.data.type === "denied" || notification.request.content.data.type === "removed") {
                 const fetchUpdateMember = async () => {
                     try {
                         const uid = auth.currentUser?.uid;

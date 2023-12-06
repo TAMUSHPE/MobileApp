@@ -113,12 +113,9 @@ const ResumeConfirm = () => {
 
         const sendNotificationToMember = httpsCallable(functions, 'sendNotificationResumeConfirm');
         await sendNotificationToMember({
-            memberData: confirmMemberData,
             uid: currentConfirmMember,
             type: "denied",
         });
-
-        // Refresh the members list
     };
 
     return (
