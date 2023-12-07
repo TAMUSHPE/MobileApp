@@ -1,6 +1,6 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, Roles, User } from "../types/User";
 import { Committee } from "../types/Committees";
@@ -499,27 +499,28 @@ export const destroyEvent = async (eventID: string) => {
     try {
         const eventRef = doc(db, "events", eventID);
         const logRef = collection(db, `/events/${eventID}/logs`);
-        const logQuery = query(logRef);
-        const logSnapshot = await getDocs(logQuery);
+        const summaryRef = collection(db, `/events/${eventID}/summaries`);
 
-        if (!logSnapshot.empty) {
-            const deleteLogPromises = logSnapshot.docs.map((logDoc) => {
-                return deleteDoc(logDoc.ref);
-            });
+        const deleteSubCollection = async (ref: CollectionReference) => {
+            const snapshot = await getDocs(query(ref));
+            if (!snapshot.empty) {
+                const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(deletePromises);
+            }
+        };
 
-            await Promise.all(deleteLogPromises);
-        } else {
-            console.error("No logs to delete.");
-        }
+        await deleteSubCollection(logRef);
+        await deleteSubCollection(summaryRef);
 
         await deleteDoc(eventRef);
-        return true;
 
+        return true;
     } catch (error) {
-        console.error("Error deleting event and log: ", error);
+        console.error("Error deleting event and its related data: ", error);
         return false;
     }
 };
+
 
 const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     try {
