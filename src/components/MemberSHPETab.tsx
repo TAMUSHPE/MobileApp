@@ -19,7 +19,7 @@ const MemberSHPETab = () => {
     const [currentTab, setCurrentTab] = useState<MemberSHPETabs>("TAMUChapter")
     const [uploadedNational, setUploadedNational] = useState(false)
     const [uploadedChapter, setUploadedChapter] = useState(false)
-    const [isVerified, setIsVerified] = useState(false)
+    const [isVerified, setIsVerified] = useState(true)
 
 
     const { userInfo, setUserInfo } = useContext(UserContext)!;
