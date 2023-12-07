@@ -2,12 +2,13 @@ import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { Images } from '../../assets';
 import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
-import { uploadFileToFirebase } from '../api/firebaseUtils';
+import { getUser, uploadFileToFirebase } from '../api/firebaseUtils';
 import { auth, db } from '../config/firebaseConfig';
 import { getBlobFromURI, selectFile } from '../api/fileSelection';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { getDownloadURL } from 'firebase/storage';
 import { UserContext } from '../context/UserContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type MemberSHPETabs = "TAMUChapter" | "SHPENational"
 
@@ -21,7 +22,7 @@ const MemberSHPETab = () => {
     const [isVerified, setIsVerified] = useState(false)
 
 
-    const { userInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
 
     useEffect(() => {
         const checkUserVerification = async () => {
@@ -50,7 +51,22 @@ const MemberSHPETab = () => {
             setIsVerified(isNationalValid && isChapterValid);
         };
 
-        checkUserVerification();
+        const updateUser = async () => {
+            try {
+                const uid = auth.currentUser?.uid;
+                if (uid) {
+                    const userFromFirebase = await getUser(uid);
+                    await AsyncStorage.setItem("@user", JSON.stringify(userFromFirebase));
+                    setUserInfo(userFromFirebase);
+                }
+            } catch (error) {
+                console.error("Error updating user:", error);
+            }
+        };
+
+        updateUser().then(() => {
+            checkUserVerification();
+        })
     }, [])
 
     useEffect(() => {

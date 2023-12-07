@@ -1,7 +1,7 @@
-export { sendNotificationOfficeHours, sendNotificationMemberSHPE } from "./pushNotification";
+export { sendNotificationOfficeHours, sendNotificationMemberSHPE, sendNotificationResumeConfirm } from "./pushNotification";
 export { updateRanksScheduled, updateRanksOnCall } from "./pointSheet";
 export { updateCommitteeCount, updateCommitteesCount, incrementCommitteesCount, countCommitteeMembersOnCall, countCommitteeMembers } from "./committees";
 export { resetOfficeScheduler, resetOfficeOnCall } from "./officeReset";
-export { zipResume } from "./resumeZip";
+export { zipResume } from "./resume";
 export { updateUserRole } from "./roles";
 export { checkUsernameUniqueness } from "./checkUsername";

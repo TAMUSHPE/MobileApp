@@ -29,6 +29,7 @@ export interface PublicUserInfo {
     displayName?: string;
     photoURL?: string;
     resumeURL?: string;
+    resumePublicURL?: string;
     roles?: Roles;
     name?: string;
     bio?: string;
@@ -39,6 +40,7 @@ export interface PublicUserInfo {
     rankChange?: RankChange;
     nationalExpiration?: string;
     chapterExpiration?: string;
+    resumeVerified?: boolean;
     // Google Sheets parameters
     points?: number;
 };
