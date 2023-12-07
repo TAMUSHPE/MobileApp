@@ -240,8 +240,8 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                                     }>
                                     {/* Can use mapping for this */}
                                     <Picker.Item label="All" value="6" />
-                                    <Picker.Item label="Tech" value="7" />
-                                    <Picker.Item label="MentorSHPE" value="8" />
+                                    <Picker.Item label="Tech" value="TECHNICALAFFAIRS" />
+                                    <Picker.Item label="MentorSHPE" value="MENTORSHPE" />
                                     <Picker.Item label="Scholastic" value="9" />
                                     <Picker.Item label="SHPEtinas" value="10" />
                                 </Picker>
