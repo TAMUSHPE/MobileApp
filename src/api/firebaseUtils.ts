@@ -1,11 +1,12 @@
-import { auth, db, storage } from "../config/firebaseConfig";
+import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
-import { PrivateUserInfo, PublicUserInfo, PublicUserInfoUID, User } from "../types/User";
+import { PrivateUserInfo, PublicUserInfo, Roles, User } from "../types/User";
 import { Committee } from "../types/Committees";
 import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
 import { validateTamuEmail } from "../helpers/validation";
+import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 
 
 /**
@@ -150,63 +151,64 @@ export const getUserByEmail = async (email: string): Promise<{ userData: PublicU
 }
 
 
-export const getOfficers = async (): Promise<PublicUserInfoUID[]> => {
-    try {
-        const userRef = collection(db, 'users');
-        const q = query(
-            userRef,
-            where("roles.officer", "==", true),
-            orderBy("name")
-        );
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            return [];
-        }
 
-        const officers = querySnapshot.docs.map((doc) => {
-            return {
-                ...doc.data(),
-                uid: doc.id
-            }
+type UserFilter = {
+    classYear: string,
+    major: string,
+    orderByField: string
+}
+type FetchMembersOptions = {
+    lastUserSnapshot?: any,
+    isOfficer?: boolean,
+    numLimit?: number | null, 
+    filter: UserFilter,
+};
+
+
+
+export const fetchUserForList = async (options: FetchMembersOptions) => {
+    const {
+        lastUserSnapshot = null,
+        isOfficer = false,
+        numLimit = null, 
+        filter,
+    } = options;
+    let userQuery: Query<DocumentData, DocumentData> = collection(db, 'users');
+
+    userQuery = query(userQuery, where("roles.officer", "==", isOfficer));
+
+    if (filter.classYear != "") {
+        userQuery = query(userQuery, where("classYear", "==", filter.classYear));
+    }
+
+    if (filter.major != "") {
+        userQuery = query(userQuery, where("major", "==", filter.major));
+    }
+
+    userQuery = query(userQuery, orderBy(filter.orderByField));
+    
+    if (numLimit !== null) {
+        userQuery = query(userQuery, limit(numLimit));
+    }
+
+    if (lastUserSnapshot) {
+        userQuery = query(userQuery, startAfter(lastUserSnapshot));
+    }   
+
+    try {
+        const snapshot = await getDocs(userQuery);
+        let hasMoreUser = numLimit !== null ? snapshot.docs.length === numLimit : false;
+        
+        const memberUID = snapshot.docs.map(doc => {
+            return doc.id 
         });
 
-        return officers;
-
+        return { members: snapshot.docs, uid: memberUID, hasMoreUser };
     } catch (error) {
-        console.error("Error fetching officers:", error);
-        throw new Error("Internal Server Error.");
+        console.error("Error fetching users:", error);
+        return { members: [], hasMoreUser: false };
     }
 }
-
-
-export const getMembersExcludeOfficers = async (): Promise<PublicUserInfoUID[]> => {
-    try {
-        const userRef = collection(db, 'users');
-        const q = query(
-            userRef,
-            where("roles.officer", "==", false),
-            orderBy("name")
-        );
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) {
-            return [];
-        }
-
-        const members = querySnapshot.docs.map((doc) => {
-            return {
-                ...doc.data(),
-                uid: doc.id
-            }
-        });
-
-        return members;
-
-    } catch (error) {
-        console.error("Error fetching members:", error);
-        throw new Error("Internal Server Error.");
-    }
-}
-
 
 /**
  * Appends an Expo push token to the current user's private data.
@@ -229,7 +231,7 @@ export const appendExpoPushToken = async (expoPushToken: string) => {
  * defaultPublicInfo and defaultPrivateInfo are what a user object should initialize as should either be undefined.
  * If any fields are undefined in the returned user from getUser(), values from defaultPublicInfo and defaultPrivateInfo will be pulled
  * 
- * @returns - User data formatted according to User interface defined in "./src/types/User.tsx".
+ * @returns User data formatted according to User interface defined in "./src/types/User.tsx".
  */
 export const initializeCurrentUserData = async (): Promise<User> => {
 
@@ -239,7 +241,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
      */
     const defaultPublicInfo: PublicUserInfo = {
         email: auth.currentUser?.email ?? "",
-        tamuEmail: validateTamuEmail(auth.currentUser?.email) ? auth.currentUser!.email! : "",
+        tamuEmail: validateTamuEmail(auth.currentUser?.email, false) ? auth.currentUser!.email! : "",
         displayName: auth.currentUser?.displayName ?? "",
         photoURL: auth.currentUser?.photoURL ?? "",
         roles: {
@@ -344,6 +346,50 @@ export const setCommitteeInfo = async (committeeName: string, committeeData: Com
     }
 };
 
+export const getWatchlist = async () => {
+    return getDoc(doc(db, `restrictions/watchlist`))
+        .then((res) => {
+            const responseData = res.data()
+            return responseData?.UIDs;
+        })
+        .catch(err => {
+            console.error(err);
+            return undefined;
+        });
+}
+
+export const getBlacklist = async () => {
+    return getDoc(doc(db, `restrictions/blacklist`))
+        .then((res) => {
+            const responseData = res.data()
+            return responseData?.UIDs;
+        })
+        .catch(err => {
+            console.error(err);
+            return undefined;
+        });
+}
+
+export const setWatchlist = async (watchlist: string[]) => {
+    try {
+        await setDoc(doc(db, `restrictions/watchlist`), {UIDs: watchlist}, { merge: true });
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+};
+
+export const setBlacklist = async (blacklist: string[]) => {
+    try {
+        await setDoc(doc(db, `restrictions/blacklist`), {UIDs: blacklist}, { merge: true });
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+};
+
 export const createEvent = async (event: SHPEEvent) => {
     try {
         const docRef = await addDoc(collection(db, "events"), {
@@ -354,7 +400,10 @@ export const createEvent = async (event: SHPEEvent) => {
             startDate: event.startDate,
             endDate: event.endDate,
             location: event.location,
-            attendance: 0,
+        });
+
+        await setDoc(doc(db, `events/${docRef.id}/summaries/default`), {
+            attendance: 0
         });
 
         return docRef.id;
@@ -363,6 +412,7 @@ export const createEvent = async (event: SHPEEvent) => {
         return null;
     }
 };
+
 export const updateEvent = async (event: SHPEEventID) => {
     try {
         const docRef = doc(db, "events", event.id!);
@@ -389,11 +439,11 @@ export const getEvent = async (eventID: string) => {
         if (eventDoc.exists()) {
             return eventDoc.data() as SHPEEventID;
         } else {
-            console.log("No such document!");
+            console.error("No such document!");
             return null;
         }
     } catch (error) {
-        console.log("Error getting document:", error);
+        console.error("Error getting document:", error);
         return null;
     }
 }
@@ -452,10 +502,6 @@ export const destroyEvent = async (eventID: string) => {
         const logQuery = query(logRef);
         const logSnapshot = await getDocs(logQuery);
 
-        // Debug: Check if we received any logs
-        console.log("Received logs: ", logSnapshot.docs.length);
-
-        // Delete logs if they exist
         if (!logSnapshot.empty) {
             const deleteLogPromises = logSnapshot.docs.map((logDoc) => {
                 return deleteDoc(logDoc.ref);
@@ -463,13 +509,10 @@ export const destroyEvent = async (eventID: string) => {
 
             await Promise.all(deleteLogPromises);
         } else {
-            console.log("No logs to delete.");
+            console.error("No logs to delete.");
         }
 
-        // Delete the event
         await deleteDoc(eventRef);
-
-        console.log("Event and logs deleted successfully");
         return true;
 
     } catch (error) {
@@ -477,8 +520,6 @@ export const destroyEvent = async (eventID: string) => {
         return false;
     }
 };
-
-
 
 const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     try {
@@ -504,6 +545,23 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     return EventLogStatus.ERROR;
 };
 
+export const  getAttendanceNumber = async (eventId: string): Promise<number | null> => {
+    try {
+        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
+        const summaryDocRef = await getDoc(summaryDoc);
+
+        if (summaryDocRef.exists()) {
+            const data = summaryDocRef.data();
+            return data?.attendance || 0;
+        } else {
+            return null;
+        }
+    } catch (e) {
+        console.error("Error fetching attendance number: ", e);
+        return null;
+    }
+}
+
 
 export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
     const status = await getEventStatus(eventId);
@@ -515,24 +573,25 @@ export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
         const logDoc = doc(db, `events/${eventId}/logs/${auth.currentUser?.uid!}`);
         const logDocRef = await getDoc(logDoc);
 
-        const eventDoc = doc(db, `events/${eventId}`);
-        const eventDocRef = await getDoc(eventDoc);
+        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
+        const summaryDocRef = await getDoc(summaryDoc);
 
 
         if (!logDocRef.exists()) {
             await setDoc(logDoc, { signedInTime: serverTimestamp() }, { merge: true });
 
-            const eventDoc = doc(db, 'events', eventId);
-            const eventDocRef = await getDoc(eventDoc);
-
-            if (eventDocRef.exists()) {
-                const currentCount = eventDocRef.data().attendance || 0;
-                await updateDoc(eventDoc, { attendance: currentCount + 1 });
+            if (!summaryDocRef.exists()) {
+                await setDoc(summaryDoc, { attendance: 1 });
+                return EventLogStatus.SUCCESS;
+            } else {
+                const currentCount = summaryDocRef.data().attendance || 0;
+                await updateDoc(summaryDoc, { attendance: currentCount + 1 });
                 return EventLogStatus.SUCCESS;
             }
         } else {
             return EventLogStatus.ALREADY_LOGGED;
         }
+
     } catch (e) {
         console.error("Error adding log: ", e);
     }
@@ -580,3 +639,155 @@ export const setMemberOfTheMonth = async (uid: string, name: string) => {
         return false;
     }
 };
+
+/**
+ * This function sets a given user's roles and custom claims on firebase.
+ * @param uid UID of user which will have their roles modified
+ * @param roles Object containing roles which will be modified
+ * @returns Response from firebase. If there is a communication error, it will return undefined.
+ * @throws FirebaseError if an issue occurs while attempting to call the firebase function 
+ * @example
+ * const uid = "H0ywaA729AkC8s2Km29"; // Example UID
+ * 
+ * // Makes the given user a developer, but removes their admin permissions. All other permissions are untouched.
+ * const roles = {
+ *   developer: true,
+ *   admin: false
+ * };  
+ * 
+ * await setUserRoles(uid, roles);
+ */
+export const setUserRoles = async (uid: string, roles: Roles): Promise<HttpsCallableResult | undefined> => {
+    const claims = (await auth.currentUser?.getIdTokenResult())?.claims;
+
+    // Guards so the app will not call the function without authentication or permissions
+    // updateUserRole() also checks for these when it is called in the case of a foreign request
+    if (!claims) {
+        throw new Error("setUserRoles() requires authentication", { cause: "auth.currentUser?.getIdTokenResult() evaluates as undefined" });
+    }
+    else if (!(claims.admin || claims.developer || claims.officer)) {
+        throw new Error("setUserRoles() called with Invalid Permissions", { cause: "" })
+    }
+
+    // Updates given user's custom claims by calling 
+    return httpsCallable(functions, "updateUserRole").call({}, { uid, roles })
+        .then(async (res) => {
+            // Sets given user's publicUserInfo firestore document to reflect change in claims
+            const currentRoles = (await getPublicUserData())?.roles ?? {};
+            await setPublicUserData({
+                roles: Object.assign(currentRoles, roles)
+            }, uid);
+            return res;
+        });
+};
+
+
+export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const q = query(
+            userRef,
+            where("roles.officer", "==", false),
+            orderBy("name")
+        );
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const members = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            }
+        });
+
+        return members;
+
+    } catch (error) {
+        console.error("Error fetching members:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
+
+export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
+    const memberSHPERef = collection(db, 'memberSHPE');
+    const memberSHPEQuery = query(memberSHPERef);
+    const memberSHPESnapshot = await getDocs(memberSHPEQuery);
+    const memberSHPEUserIds = memberSHPESnapshot.docs.map(doc => doc.id);
+  
+    const members:PublicUserInfo[] = [];
+    for (const userId of memberSHPEUserIds) {
+      const userDocRef = doc(db, 'users', userId);
+      const userDocSnap = await getDoc(userDocRef);
+      if (userDocSnap.exists()) {
+        members.push({ uid: userId, ...userDocSnap.data() });
+      }
+    }
+    
+    return members;
+};
+
+export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
+    const resumeRef = collection(db, 'resumeVerification');
+    const resumeQuery = query(resumeRef);
+    const resumeSnapshot = await getDocs(resumeQuery);
+    const resumeUserIds = resumeSnapshot.docs.map(doc => doc.id);
+  
+    const members:PublicUserInfo[] = [];
+    for (const userId of resumeUserIds) {
+      const userDocRef = doc(db, 'users', userId);
+      const userDocSnap = await getDoc(userDocRef);
+      if (userDocSnap.exists()) {
+        members.push({ uid: userId, ...userDocSnap.data() });
+      }
+    }
+    
+    return members;
+};
+
+  
+  export const isUsernameUnique = async (username: string): Promise<boolean> => {
+    const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');
+  
+    try {
+      const result = await checkUsernameUniqueness({ username });
+      return result.data.unique;
+    } catch (error) {
+      console.error('Error checking username uniqueness:', error);
+      return false; // handle error appropriately
+    }
+  };
+
+  export const fetchUsersWithPublicResumes = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const publicResumeQuery = query(collection(db, 'users'), where("resumeVerified", "==", true));
+        const publicResumeSnapshot = await getDocs(publicResumeQuery);
+
+        const officerQuery = query(collection(db, 'users'), where("roles.officer", "==", true));
+        const officerSnapshot = await getDocs(officerQuery);
+
+        const combinedUsers = new Map();
+        publicResumeSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.resumePublicURL) { 
+                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
+            }
+        });
+        officerSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.resumePublicURL) { 
+                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
+            }
+        });
+
+        const usersArray = Array.from(combinedUsers.values());
+
+        return usersArray;
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        return [];
+    }
+}
+

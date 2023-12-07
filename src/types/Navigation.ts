@@ -2,10 +2,12 @@
 import { ImageSourcePropType } from "react-native";
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from '@react-navigation/native';
-import { PublicUserInfoUID } from "./User";
+import { PublicUserInfo, UserFilter } from "./User";
 import { Test } from '../types/GoogleSheetsTypes';
 import { Committee } from "./Committees";
 import { SHPEEventID } from "./Events";
+import { MutableRefObject, SetStateAction } from "react";
+import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 
 // Stacks
 export type MainStackParams = {
@@ -63,6 +65,9 @@ export type ResourcesStackParams = {
 
 export type CommitteesStackParams = {
     CommitteesScreen: undefined;
+    CommitteeInfoScreen: {
+        committee: Committee;
+    };
     PublicProfile: {
         uid: string;
     };
@@ -90,6 +95,14 @@ export type AdminDashboardParams = {
     MemberOfTheMonthEditor: undefined;
     FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
+    ResetOfficeHours: undefined;
+    RestrictionsEditor: undefined;
+    MemberSHPEConfirm: undefined;
+    ResumeConfirm: undefined;
+    HomeBottomTabs: {
+        screen: keyof HomeBottomTabParams;
+    };
+
 }
 
 // Drawers
@@ -123,19 +136,35 @@ export type ResourcesProps = {
 }
 
 export type PointsProps = {
-    userData: PublicUserInfoUID
+    userData: PublicUserInfo
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 
+export type ResumeProps = {
+    resumeData: PublicUserInfo
+    navigation: NativeStackNavigationProp<ResourcesStackParams>
+}
 export type TestBankProps = {
     testData: Test;
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 
 export type MembersProps = {
-    userData?: PublicUserInfoUID
+    userData?: PublicUserInfo
     handleCardPress: (uid: string) => string | void;
     navigation?: NativeStackNavigationProp<MembersStackParams>
+    officersList? : PublicUserInfo[]
+    membersList? : PublicUserInfo[]
+    loadMoreUsers?: () => void;
+    hasMoreUser?:  boolean;
+    setFilter?: React.Dispatch<SetStateAction<UserFilter>>;
+    filter?: UserFilter;
+    setLastUserSnapshot?: React.Dispatch<SetStateAction<QueryDocumentSnapshot<DocumentData> | null>>;
+    canSearch?: boolean;
+    numLimit?: number | null;
+    setNumLimit?: React.Dispatch<SetStateAction<number | null>>;
+    loading?: boolean;
+    DEFAULT_NUM_LIMIT?: number | null;
 }
 
 export type EventProps = {
@@ -143,8 +172,7 @@ export type EventProps = {
     navigation: NativeStackNavigationProp<EventsStackParams>
 }
 
-export type CommitteesInfoProp = {
-    selectedCommittee?: Committee | null
+export type CommitteesTabProps = {
     navigation: NativeStackNavigationProp<CommitteesStackParams>
 }
 
@@ -163,6 +191,7 @@ export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScr
 // routes prop for screens
 export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
+export type CommitteeInfoScreenRouteProp = RouteProp<CommitteesStackParams, "CommitteeInfoScreen">;
 export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;
 export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "EventInfo">;
 export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;

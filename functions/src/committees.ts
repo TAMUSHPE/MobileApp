@@ -29,7 +29,6 @@ export const incrementCommitteesCount = functions.https.onCall(async (data, cont
     }
     
     const updatePromises = committeeNames.map((committeeName) => {
-        console.log(committeeName)
         const committeeRef = db.doc(`committees/${committeeName}`);
         return committeeRef.update({ memberCount: admin.firestore.FieldValue.increment(1) })
             .catch((error) => {
@@ -37,7 +36,7 @@ export const incrementCommitteesCount = functions.https.onCall(async (data, cont
             });
     });
     try {
-        console.log("starting update")
+
         await Promise.all(updatePromises);
         return { success: true };
     } catch (error) {
@@ -71,4 +70,54 @@ export const updateCommitteesCount = functions.https.onCall(async (data, context
         throw new functions.https.HttpsError('internal', 'Could not update committee count.');
     }
 });
+
+
+export const countCommitteeMembers = functions.pubsub.schedule('every saturday 00:00')
+    .timeZone('America/Chicago') // Set your time zone
+    .onRun(async (context) => {
+        const committeesCount: CommitteeCounts = {};
+
+        const usersSnapshot = await db.collection('users').get();
+
+        usersSnapshot.forEach(doc => {
+            const userData = doc.data();
+
+            userData.committees?.forEach((committee:string) => {
+                if (!committeesCount[committee]) {
+                    committeesCount[committee] = 0;
+                }
+                committeesCount[committee]++;
+            });
+        });
+
+        await db.collection('committees').doc('committeeCounts').set(committeesCount);
+
+        console.log('Committee counts updated:', committeesCount);
+});
+
+export const countCommitteeMembersOnCall = functions.https.onCall(async (data, context) => {
+    const committeesCount: CommitteeCounts = {};
+
+    const usersSnapshot = await db.collection('users').get();
+
+    usersSnapshot.forEach(doc => {
+        const userData = doc.data();
+
+        userData.committees?.forEach((committee: string) => {
+            if (!committeesCount[committee]) {
+                committeesCount[committee] = 0;
+            }
+            committeesCount[committee]++;
+        });
+    });
+
+    await db.collection('committees').doc('committeeCounts').set(committeesCount);
+
+    console.log('Committee counts updated:', committeesCount);
+    return { message: 'Committee counts updated successfully', committeesCount };
+});
+
+interface CommitteeCounts {
+    [key: string]: number;
+}
 

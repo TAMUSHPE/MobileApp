@@ -1,21 +1,25 @@
 import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Alert, TouchableWithoutFeedback, StyleSheet } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Images } from '../../assets';
 import { AdminDashboardParams } from '../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { setMemberOfTheMonth, getPublicUserData, getMemberOfTheMonth } from '../api/firebaseUtils';
+import { setMemberOfTheMonth, getPublicUserData, getMemberOfTheMonth, fetchUserForList } from '../api/firebaseUtils';
 import MembersList from '../components/MembersList';
-import { PublicUserInfoUID } from '../types/User';
+import { PublicUserInfo, UserFilter } from '../types/User';
 
 const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [memberModalVisible, setMemberModalVisible] = useState(false);
-    const [memberInfo, setMemberInfo] = useState<PublicUserInfoUID | null>(null);
+    const [memberInfo, setMemberInfo] = useState<PublicUserInfo | null>(null);
     const [updated, setUpdated] = useState(false);
     const [localMemberOfTheMonth, setLocalMemberOfTheMonth] = useState<string | null>(null);
+    const [members, setMembers] = useState<PublicUserInfo[]>([])
+    const [numLimit, setNumLimit] = useState<number | null>(null);
+    const [filter, setFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "points" });
+    const [initialLoad, setInitialLoad] = useState(true);
+    const [loading, setLoading] = useState<boolean>(true);
 
     const insets = useSafeAreaInsets();
-    console.log(localMemberOfTheMonth)
     const fetchMemberData = async (uid: string) => {
         const fetchedInfo = await getPublicUserData(uid);
         if (fetchedInfo) {
@@ -25,19 +29,6 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
             });
         }
     };
-
-    useEffect(() => {
-        const loadData = async () => {
-            const { uid, name } = await getMemberOfTheMonth() || {};
-            if (uid) {
-                await fetchMemberData(uid);
-            } else {
-                setMemberInfo({ name: name });
-            }
-        };
-
-        loadData();
-    }, []);
 
     useEffect(() => {
         let timerId: NodeJS.Timeout;
@@ -50,6 +41,43 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
             clearTimeout(timerId);
         };
     }, [updated]);
+
+    const loadUsers = async () => {
+        const getMembers = await fetchUserForList({ filter: filter });
+        if (getMembers.members.length > 0) {
+            setMembers(getMembers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            const { uid, name } = await getMemberOfTheMonth() || {};
+            if (uid) {
+                await fetchMemberData(uid);
+            } else {
+                setMemberInfo({ name: name });
+            }
+            loadUsers();
+        };
+        fetchData().then(() => {
+            setInitialLoad(false);
+        });
+    }, []);
+
+    useEffect(() => {
+        const resetData = async () => {
+            setMembers([]);
+        };
+
+        if (!initialLoad) {
+            resetData().then(() => {
+                loadUsers();
+            });
+        }
+
+    }, [filter]);
+
 
     return (
         <SafeAreaView>
@@ -106,8 +134,6 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                         activeOpacity={0.5}
                         className='bg-blue-400 justify-center items-center rounded-md p-2'
                         onPress={() => {
-                            console.log(memberInfo?.name)
-                            console.log(localMemberOfTheMonth)
                             if (memberInfo?.name) {
                                 setMemberOfTheMonth(localMemberOfTheMonth || "", memberInfo?.name)
                                 setUpdated(true)
@@ -149,12 +175,22 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                     </View>
 
                     <View className="h-[100%] w-[100%] bg-white">
-                        <MembersList handleCardPress={(uid) => {
-                            setLocalMemberOfTheMonth(uid)
-                            setMemberModalVisible(false)
-                            fetchMemberData(uid)
-                        }} />
-
+                        <MembersList
+                            handleCardPress={(uid) => {
+                                setLocalMemberOfTheMonth(uid)
+                                setMemberModalVisible(false)
+                                fetchMemberData(uid)
+                            }}
+                            membersList={members}
+                            officersList={[]}
+                            filter={filter}
+                            setFilter={setFilter}
+                            canSearch={true}
+                            numLimit={numLimit}
+                            setNumLimit={setNumLimit}
+                            loading={loading}
+                            DEFAULT_NUM_LIMIT={null}
+                        />
                     </View>
                 </View>
             </Modal>
