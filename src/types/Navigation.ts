@@ -98,6 +98,7 @@ export type AdminDashboardParams = {
     ResetOfficeHours: undefined;
     RestrictionsEditor: undefined;
     MemberSHPEConfirm: undefined;
+    ResumeConfirm: undefined;
     HomeBottomTabs: {
         screen: keyof HomeBottomTabParams;
     };
@@ -139,6 +140,10 @@ export type PointsProps = {
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 
+export type ResumeProps = {
+    resumeData: PublicUserInfo
+    navigation: NativeStackNavigationProp<ResourcesStackParams>
+}
 export type TestBankProps = {
     testData: Test;
     navigation: NativeStackNavigationProp<ResourcesStackParams>

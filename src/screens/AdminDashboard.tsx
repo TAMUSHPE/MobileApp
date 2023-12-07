@@ -80,6 +80,12 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                 <Text>Member SHPE Verifications</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+                onPress={() => navigation.navigate('ResumeConfirm')}
+                className='bg-blue-500 rounded-md p-2'>
+                <Text>Resume Verifications</Text>
+            </TouchableOpacity>
+
         </SafeAreaView>
     )
 }
