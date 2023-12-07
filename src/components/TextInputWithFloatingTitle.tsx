@@ -15,10 +15,12 @@ type TextInputWithFloatingTitleProps = {
     placeholderText?: string,
     maxCharacters?: number,
     lineCount?: number,
-    isMultiline?: boolean
+    isMultiline?: boolean,
+    secureTextEntry?: boolean;
+    onSubmitEditing?: () => void;
 }
 
-const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleStartY, titleEndY, componentClassName, textInputClassName, titleClassName, focusTitleClassName, blurTitleClassName, placeholderText, maxCharacters, lineCount, isMultiline }: TextInputWithFloatingTitleProps) => {
+const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleStartY, titleEndY, componentClassName, textInputClassName, titleClassName, focusTitleClassName, blurTitleClassName, placeholderText, maxCharacters, lineCount, isMultiline, secureTextEntry, onSubmitEditing }: TextInputWithFloatingTitleProps) => {
     const [currentTitleClassName, setCurrentTitleClassName] = useState<string | undefined>(titleClassName ?? blurTitleClassName ?? "");
     const moveTitle = useRef(new Animated.Value(0)).current;
 
@@ -54,6 +56,10 @@ const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleS
         outputRange: [titleStartY ?? 20, titleEndY ?? 0]
     });
 
+    const textInputStyle = {
+        textAlignVertical: isMultiline ? 'top' : 'center' as 'top' | 'center',
+    };
+
     return (
         <View className={componentClassName}>
             <Animated.View style={{
@@ -62,6 +68,7 @@ const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleS
                 <Text className={currentTitleClassName}>{title ?? "Title"}</Text>
             </Animated.View>
             <TextInput
+                style={textInputStyle}
                 placeholder={placeholderText ?? ""}
                 className={textInputClassName ?? ""}
                 multiline={isMultiline ?? false}
@@ -71,6 +78,9 @@ const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleS
                 onChangeText={(text: string) => {
                     setTextFunction(text);
                 }}
+
+                secureTextEntry={secureTextEntry}
+                onSubmitEditing={onSubmitEditing}
             />
         </View>
     );

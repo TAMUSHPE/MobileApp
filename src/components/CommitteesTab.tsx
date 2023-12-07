@@ -1,34 +1,86 @@
-import { View } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
-import CommitteesInfo from './CommitteesInfo'
-import CommitteesSlider from './CommitteesSlider'
-import { Committee } from '../types/Committees'
-import { CommitteesInfoProp } from '../types/Navigation'
-import { useIsFocused } from '@react-navigation/core'
+import { View, Text, ScrollView, TouchableOpacity, Image, SectionList, SafeAreaView } from 'react-native'
+import React from 'react'
+import CommitteeCard from './CommitteeCard'
+import { Committee, CommitteeConstants } from "../types/Committees"
+import { Images } from "../../assets"
+import { CommitteesTabProps } from '../types/Navigation'
 
-const CommitteesTab: React.FC<CommitteesInfoProp> = ({ navigation }) => {
-    const [selectedCommittee, setSelectedCommittee] = useState<Committee | null>(null) // depending on user committe get default committee
-
-    // This reset the selected committee when user switch off the tab
-    const isFocused = useIsFocused();
-    console.log(isFocused)
-    const handleFocus = useCallback(() => {
-        setSelectedCommittee(null);
-    }, [setSelectedCommittee]);
-
-    useEffect(() => {
-        if (isFocused) {
-            handleFocus();
-        }
-    }, [isFocused, handleFocus]);
-
+const CommitteesTab: React.FC<CommitteesTabProps> = ({ navigation }) => {
+    const committees: Committee[] = [
+        {
+            ...CommitteeConstants.TECHNICALAFFAIRS,
+            image: Images.COMMITTEE_1,
+            key: "TECHNICALAFFAIRS",
+        },
+        {
+            ...CommitteeConstants.PUBLICRELATIONS,
+            image: Images.COMMITTEE_2,
+            key: "PUBLICRELATIONS",
+        },
+        {
+            ...CommitteeConstants.MENTORSHPE,
+            image: Images.COMMITTEE_3,
+            key: "MENTORSHPE",
+        },
+        {
+            ...CommitteeConstants.SCHOLASTIC,
+            image: Images.COMMITTEE_4,
+            key: "SCHOLASTIC",
+        },
+    ]
+    
+    const handleCardPress = (committee: Committee): Committee | void => {
+        navigation.navigate("CommitteeInfoScreen", { committee });
+    };
 
     return (
-        <View>
-            <CommitteesSlider onCommitteeSelected={setSelectedCommittee} selectedCommittee={selectedCommittee} />
-            <CommitteesInfo selectedCommittee={selectedCommittee} navigation={navigation} />
+        <View className=''>
+            <ScrollView>
+                {committees.map((committee) => (
+                    <CommitteeCard key={committee.name} committee={committee} handleCardPress={() => { handleCardPress(committee) }}/>
+                ))}
+            </ScrollView>
         </View>
     )
 }
+
+        // <ScrollView
+        //     horizontal={false}
+        //     className='space-x-7 mx-4 mt-4'
+        //     showsVerticalScrollIndicator={true}
+        // >
+        //     {committees.map((committee) => {
+        //         if (committee.name === selectedCommittee?.name) {
+        //             return null;
+        //         }
+        //         return (
+        //             <TouchableOpacity
+        //                 key={committee.name}
+        //                 onPress={() => onCommitteeSelected(committee)}
+        //             >
+        //                 <View className='w-36 h-60'>
+        //                     <View className='h-52 ounded-3xl'>
+        //                         <Image source={committee.image || Images.COMMITTEE_4} className='h-full w-full bg-pale-blue rounded-3xl' />
+        //                     </View>
+        //                     <View className='w-full items-center absolute mt-1'>
+        //                         <Text className='text-lg font-bold'>{committee.name}</Text>
+        //                     </View>
+        //                     {/* <View className='flex-row-reverse bottom-5 left-3 absolute mt-1'>
+        //                         <View className='w-6'>
+        //                             <Image source={Images.DEFAULT_USER_PICTURE} className='h-9 w-9 rounded-full' />
+        //                         </View>
+        //                         <View className='w-6'>
+        //                             <Image source={Images.DEFAULT_USER_PICTURE} className='h-9 w-9 rounded-full' />
+        //                         </View>
+        //                         <View className='w-6'>
+        //                             <Image source={Images.DEFAULT_USER_PICTURE} className='h-9 w-9 rounded-full' />
+        //                         </View>
+        //                     </View> */}
+        //                 </View>
+        //             </TouchableOpacity>
+        //         )
+        //     })}
+        // </ScrollView>
+
 
 export default CommitteesTab

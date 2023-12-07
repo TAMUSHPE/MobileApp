@@ -7,6 +7,9 @@ const config: Config = {
     ],
     setupFiles: ["./src/__mocks__/index.ts"],
     testEnvironment: 'node',
+    coveragePathIgnorePatterns: [
+        "<rootDir>/src/config/"
+    ]
 };
 
 export default config;

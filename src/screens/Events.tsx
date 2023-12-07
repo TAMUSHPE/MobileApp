@@ -46,7 +46,6 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
             fetchEvents();
         }, [])
     );
-    console.log(userInfo?.publicInfo?.roles)
     return (
         <SafeAreaView
             edges={["top", "left", "right"]}>

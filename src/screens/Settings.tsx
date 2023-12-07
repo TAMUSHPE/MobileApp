@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, KeyboardAvoidingView, Platform, Linking } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, KeyboardAvoidingView, Platform, Linking, Alert } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { MainStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
@@ -13,7 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import { getBlobFromURI, selectFile, selectImage } from '../api/fileSelection';
 import ProfileBadge from '../components/ProfileBadge';
 import { CommitteeConstants, CommitteeKey, CommitteeVal } from '../types/Committees';
-import { validateDisplayName, validateName, validateTamuEmail } from '../helpers/validation';
+import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../helpers/validation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../components/SettingsComponents"
@@ -84,14 +84,14 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
                 mainText='Feedback'
                 subText='Help us by sending app feedback!'
                 darkMode={darkMode}
-                onPress={() => alert("Feature Unimplemented")}
+                onPress={() => Alert.alert("Unimplemented", "Feature Unimplemented")}
             />
             <SettingsButton
                 iconName='frequently-asked-questions'
                 mainText='FAQ'
                 subText='Frequently asked questions'
                 darkMode={darkMode}
-                onPress={() => alert("Screen does not currently exist")}
+                onPress={() => Alert.alert("Unimplemented", "Screen does not currently exist")}
             />
             <SettingsButton
                 iconName='information-outline'
@@ -108,7 +108,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
  * Screen where user can search the settings for any option they may need. This will redirect them to the respective screen that they have searched for.
  */
 const SearchSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    alert("Settings Search and Settings Transition Unimplemented")
+    Alert.alert("Unimplemented", "Settings Search and Settings Transition Unimplemented")
     return (
         <SafeAreaView>
 
@@ -176,22 +176,29 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     }, [photoURL]);
 
     const selectProfilePicture = async () => {
-        const result = await selectImage({
+        await selectImage({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [1, 1],
             quality: 1,
+        }).then(async (result) => {
+            if (result) {
+                const imageBlob = await getBlobFromURI(result.assets![0].uri);
+                if (imageBlob && validateFileBlob(imageBlob, CommonMimeTypes.IMAGE_FILES, true)) {
+                    setPhotoURL(result.assets![0].uri);
+                    setImage(imageBlob);
+                }
+            }
+        }).catch((err) => {
+            // TypeError means user did not select an image
+            if (err.name != "TypeError") {
+                console.error(err);
+            }
         });
-
-        if (result) {
-            const imageBlob = await getBlobFromURI(result.assets![0].uri);
-            setImage(imageBlob);
-        }
     }
 
     const selectResume = async () => {
         const result = await selectFile();
-        console.log(result);
         if (result) {
             const resumeBlob = await getBlobFromURI(result.assets![0].uri);
             return resumeBlob;
@@ -211,13 +218,14 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 (error) => {
                     switch (error.code) {
                         case "storage/unauthorized":
-                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            Alert.alert("Permissions error", "File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
                             break;
                         case "storage/canceled":
-                            alert("File upload cancelled");
+                            Alert.alert("File upload canceled", "File upload has been canceled.");
                             break;
                         default:
-                            alert("An unknown error has occured")
+                            Alert.alert("Unknown error", "An unknown error has occured. Please notify a developer.")
+                            console.error(error);
                             break;
                     }
                 },
@@ -239,7 +247,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     }
 
     const uploadResume = (resumeBlob: Blob) => {
-        if (resumeBlob) {
+        if (resumeBlob && validateFileBlob(resumeBlob, CommonMimeTypes.RESUME_FILES, true)) {
             const uploadTask = uploadFileToFirebase(resumeBlob, `user-docs/${auth.currentUser?.uid}/user-resume`);
 
             uploadTask.on("state_changed",
@@ -250,13 +258,14 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 (error) => {
                     switch (error.code) {
                         case "storage/unauthorized":
-                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            Alert.alert("Permissions error", "File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
                             break;
                         case "storage/canceled":
-                            alert("File upload cancelled");
+                            Alert.alert("File upload canceled", "File upload has been canceled.");
                             break;
                         default:
-                            alert("An unknown error has occured")
+                            Alert.alert("Unknown error", "An unknown error has occured. Please notify a developer.")
+                            console.error(error);
                             break;
                     }
                 },
@@ -395,16 +404,9 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     setShowNamesModal(false);
                 }}
                 onDone={() => {
-                    // TODO Make alert messages more verbose
-                    if (validateDisplayName(displayName) && validateName(name)) {
+                    if (validateDisplayName(displayName, true) && validateName(name, true)) {
                         saveChanges();
                         setShowNamesModal(false);
-                    }
-                    else if (!validateDisplayName(displayName)) {
-                        alert("Invalid Display Name. Display Name must not be empty and must be less than 80 characters long.");
-                    }
-                    else if (!validateName(name)) {
-                        alert("Invalid Name. Name must not be empty and must be less than 80 characters long.");
                     }
                 }}
                 content={(
@@ -589,7 +591,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                         });
                                 }
                                 else {
-                                    alert("No resume found")
+                                    Alert.alert("No resume found", "A resume could not be found linked to this account. If you believe this is incorrect, please notify a developer.")
                                 }
                             }}
                         />
@@ -771,20 +773,20 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
             <SettingsButton
                 mainText='Change Email'
                 subText={auth.currentUser?.email ?? "EMAIL"}
-                onPress={() => alert("This button's function is unimplemented")}
+                onPress={() => Alert.alert("Unimplemented", "This button's function is unimplemented")}
                 darkMode={darkMode}
             />
             {!validateTamuEmail(auth.currentUser?.email ?? "") &&
                 <SettingsToggleButton
                     mainText='Use TAMU Email'
                     subText={userInfo?.publicInfo?.tamuEmail ?? "No TAMU email set"}
-                    onPress={() => alert("This button's function is unimplemented")}
+                    onPress={() => Alert.alert("Unimplemented", "This button's function is unimplemented")}
                     darkMode={darkMode}
                 />
             }
             <SettingsButton
                 mainText='Password Reset'
-                onPress={() => alert("This button's function is unimplemented")}
+                onPress={() => Alert.alert("Unimplemented", "This button's function is unimplemented")}
                 darkMode={darkMode}
             />
         </ScrollView>

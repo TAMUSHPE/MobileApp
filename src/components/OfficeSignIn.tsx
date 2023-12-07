@@ -1,8 +1,9 @@
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { auth, db } from '../config/firebaseConfig';
 import { addDoc, collection, doc, serverTimestamp, setDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { OfficerStatus } from '../types/User';
+import { Octicons } from '@expo/vector-icons';
 
 
 /**
@@ -92,23 +93,39 @@ const OfficeSignIn = () => {
                 visible={confirmVisible}
                 onRequestClose={() => setConfirmVisible(!confirmVisible)}
             >
-                <View className='flex-1 justify-end items-center'>
-                    <View className='flex-row justify-between items-center text-center bg-pale-orange w-full px-16 h-16'>
-                        <TouchableOpacity
-                            onPress={async () => {
-                                setConfirmVisible(false)
-                                signInOut()
-                            }}
-                        >
-                            <Text className='text-xl font-bold'> {isSignedIn ? "Sign Out" : "Sign In"} </Text>
-                        </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setConfirmVisible(false)}
+                    className="h-[100%] w-[100%]"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                >
+                    <View className='items-center justify-center h-full'>
+                        <TouchableWithoutFeedback>
+                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
+                                <Octicons name="bell" size={24} color="black" />
+                                <View className='flex items-center w-[80%] space-y-8'>
+                                    <Text className="text-center text-lg font-bold"> {isSignedIn ? "Are you sure you want to sign out?" : "You will receive notifications from members. Are you sure you want to sign in?"}</Text>
+                                    <View className="flex-row">
+                                        <TouchableOpacity
+                                            onPress={async () => {
+                                                setConfirmVisible(false)
+                                                signInOut()
+                                            }}
+                                            className="bg-pale-blue rounded-xl justify-center items-center"
+                                        >
+                                            <Text className='text-xl font-bold text-white px-6'> {isSignedIn ? "Sign Out" : "Sign In"} </Text>
+                                        </TouchableOpacity>
 
-                        <TouchableOpacity onPress={() => { setConfirmVisible(false) }}>
-                            <Text className='text-xl font-bold'>Cancel</Text>
-                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
+                                            <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            </View>
+                        </TouchableWithoutFeedback>
                     </View>
-                </View>
+                </TouchableOpacity >
             </Modal>
+
         </View>
     )
 }

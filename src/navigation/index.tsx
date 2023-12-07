@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ActivityIndicator, View, Image, Text } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { UserContext } from '../context/UserContext';
@@ -6,7 +6,8 @@ import { AuthStack } from './AuthStack';
 import { MainStack } from './MainStack';
 import Splash from '../screens/Splash';
 import { Images } from '../../assets';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { eventEmitter } from '../context/eventEmitter';
 /**
  * Renders the root navigator for the application.
  * It determines whether to show the splash screen, authentication stack, or main stack
@@ -16,16 +17,30 @@ import { Images } from '../../assets';
  */
 const RootNavigator = () => {
     const userContext = useContext(UserContext);
-    const { userInfo, userLoading } = userContext ?? {};
-
+    const { userInfo, setUserInfo, userLoading } = userContext!;
     const [splashLoading, setSplashLoading] = useState<boolean>(true);
+
+    useEffect(() => {
+        const handleUserUpdate = async () => {
+            const userData = await AsyncStorage.getItem('@user');
+            if (userData) {
+                setUserInfo(JSON.parse(userData));
+            }
+        };
+
+        eventEmitter.on('userUpdated', handleUserUpdate);
+        return () => {
+            eventEmitter.off('userUpdated', handleUserUpdate);
+        };
+    }, []);
+
+
     if (splashLoading) {
-        return <Splash setIsLoading={setSplashLoading} />
-    } else {
-        if (userLoading)
-            return (
-                <RenderUserLoading />
-            );
+        return <Splash setIsLoading={setSplashLoading} />;
+    }
+
+    if (userLoading) {
+        return <RenderUserLoading />;
     }
 
     const linking = {
