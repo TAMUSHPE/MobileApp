@@ -12,9 +12,10 @@ import { User, PublicUserInfo } from '../types/User';
 import { StatusBar } from 'expo-status-bar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackParams } from "../types/Navigation"
-import { getPublicUserData, getMemberOfTheMonth } from '../api/firebaseUtils';
+import { getPublicUserData, getMemberOfTheMonth, fetchEventsForCommittees } from '../api/firebaseUtils';
 import { useFocusEffect } from '@react-navigation/core';
 import { Images } from '../../assets';
+import Committees from './Committees';
 
 /**
  * Renders the home screen of the application.
@@ -27,6 +28,9 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const { setUserInfo } = useContext(UserContext)!;
     const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfo | null>(null);
+    const [events, setEvents] = useState<any> ();
+    const { userInfo } = useContext(UserContext)!;
+    const userComittees = userInfo?.publicInfo?.committees || [];
 
     const screenWidth = Dimensions.get('window').width;
     const imageHeight = screenWidth * 0.34;
@@ -89,15 +93,23 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
         };
 
         getLocalUser();
-
+    
+        const getEvents = async() => {
+            try{
+                const fetchEvents = await fetchEventsForCommittees(userComittees);
+                setEvents(fetchEvents);
+            } catch (error) {
+                console.error("Error retrieving user events:", error);
+            }
+        }
+        getEvents();
+        
         try {
             manageNotificationPermissions();
         } catch (error) {
             console.error("Error managing notification permissions:", error);
         }
-
     }, []);
-
     return (
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />

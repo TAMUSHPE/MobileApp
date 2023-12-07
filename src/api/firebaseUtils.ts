@@ -1,12 +1,14 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, Firestore } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, Roles, User } from "../types/User";
+import { UserContext } from '../context/UserContext';
 import { Committee } from "../types/Committees";
 import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
 import { validateTamuEmail } from "../helpers/validation";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
+import { useContext } from "react";
 
 
 /**
@@ -787,6 +789,35 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
         return usersArray;
     } catch (error) {
         console.error("Error fetching users:", error);
+        return [];
+    }
+}
+
+export const fetchEventsForCommittees = async (committees: string []) => {
+    try {
+        let allEvents: { id: string; }[] = [];
+        const currentTime = Timestamp.now();
+
+        for (const committee of committees) {
+            const eventsRef = collection(db, 'events');
+            const eventsQuery = query(
+                eventsRef, 
+                where("notificationGroup", "==", committee),
+                where("endDate", ">=", currentTime)  // Fetch only current and future events
+            );
+            const querySnapshot = await getDocs(eventsQuery);
+
+            querySnapshot.forEach((doc) => {
+                allEvents.push({ id: doc.id, ...doc.data() });
+            });
+        }
+
+        // Remove duplicates, if any
+        const uniqueEvents = Array.from(new Map(allEvents.map(event => [event.id, event])).values());
+
+        return uniqueEvents;
+    } catch (error) {
+        console.error("Error fetching events for committees:", error);
         return [];
     }
 }
