@@ -306,34 +306,38 @@ export const uploadFileToFirebase = (file: Uint8Array | ArrayBuffer | Blob, path
     return uploadTask;
 };
 
+export const getCommitteeInfo = async (committeeName: string) => {
+    return getDoc(doc(db, `committees/${committeeName}`))
+        .then((res) => {
+            const responseData = res.data()
+            if (responseData) {
+                return {
+                    description: responseData?.description,
+                    headUID: responseData?.headUID,
+                    leadUIDs: responseData?.leadUIDs,
+                    memberCount: responseData?.memberCount,
+                    memberApplicationLink: responseData?.memberApplicationLink,
+                    leadApplicationLink: responseData?.leadApplicationLink,
+                } as Committee;
+            }
+            else {
+                return undefined;
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            return undefined;
+        });
+}
 
-export const getCommittees = async (): Promise<Committee[]> => {
+export const setCommitteeInfo = async (committeeName: string, committeeData: Committee) => {
     try {
-        const committeeCollectionRef = collection(db, 'committees');
-        const snapshot = await getDocs(committeeCollectionRef);
-        const committees = snapshot.docs
-            .filter(doc => doc.id !== "committeeCounts") 
-            .map(doc => ({
-                firebaseDocName: doc.id, 
-                ...doc.data()
-            }));
-        return committees;
-    } catch (err) {
-        console.error(err);
-        return [];
-    }
-};
-export const setCommitteeInfo = async (committeeData: Committee) => {
-    try {
-        await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
-            name: committeeData.name || "",
-            color: committeeData.color || "#fff",
+        await setDoc(doc(db, `committees/${committeeName}`), {
             description: committeeData.description || "",
-            head: committeeData.head || "",
-            leads: committeeData.leads || [],
+            headUID: committeeData.headUID || "",
+            leadUIDs: committeeData.leadUIDs || [],
             memberApplicationLink: committeeData.memberApplicationLink || "",
             leadApplicationLink: committeeData.leadApplicationLink || "",
-
         }, { merge: true });
         return true;
     } catch (err) {
@@ -341,7 +345,6 @@ export const setCommitteeInfo = async (committeeData: Committee) => {
         return false;
     }
 };
-
 
 export const getWatchlist = async () => {
     return getDoc(doc(db, `restrictions/watchlist`))

@@ -12,10 +12,10 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
         updateRanksOnCall()
     }
 
-    const getCommittesCount = async () => {
+    const getTrueCommittesCount = async () => {
         const functions = getFunctions();
-        const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
-        committeeCountCheckOnCall()
+        const callUpdateCommitteesCount = httpsCallable(functions, 'updateCommitteesCountOnCall');
+        callUpdateCommitteesCount()
     }
 
 
@@ -29,7 +29,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
             </TouchableOpacity>
 
             <TouchableOpacity
-                onPress={() => getCommittesCount()}
+                onPress={() => getTrueCommittesCount()}
                 className='bg-blue-500 rounded-md p-2'
             >
                 <Text>Load Committee Membership Count</Text>
@@ -37,10 +37,10 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
 
 
             <TouchableOpacity
-                onPress={() => navigation.navigate('CommitteeCreator')}
+                onPress={() => navigation.navigate('CommitteesEditor')}
                 className='bg-blue-500 rounded-md p-2'
             >
-                <Text>Create committee</Text>
+                <Text>update committee info</Text>
             </TouchableOpacity>
             <TouchableOpacity
                 onPress={() => navigation.navigate('MemberOfTheMonthEditor')}
