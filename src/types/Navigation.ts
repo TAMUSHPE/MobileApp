@@ -71,7 +71,7 @@ export type CommitteesStackParams = {
     PublicProfile: {
         uid: string;
     };
-    CommitteeEditor: {
+CommitteeEditor: {
         committee: Committee;
     }
 }
@@ -86,7 +86,7 @@ export type EventsStackParams = {
 
 export type HomeStackParams = {
     Home: undefined;
-    GoogleCalendar: undefined;
+GoogleCalendar: undefined;
     PublicProfile: {
         uid: string;
     }
@@ -105,7 +105,7 @@ export type AdminDashboardParams = {
     HomeBottomTabs: {
         screen: keyof HomeBottomTabParams;
     };
-
+    LocationSample: undefined;
 }
 
 // Drawers
