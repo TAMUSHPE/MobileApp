@@ -2,7 +2,7 @@ import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, Touchable
 import React, { useContext, useEffect, useState } from 'react';
 import { MainStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
-import { auth } from '../config/firebaseConfig';
+import { auth, functions } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
@@ -18,6 +18,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../components/SettingsComponents"
 import InteractButton from '../components/InteractButton';
+import { httpsCallable } from 'firebase/functions';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
@@ -146,8 +147,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [classYear, setClassYear] = useState<string | undefined>(userInfo?.publicInfo?.classYear);
     const [committeesData, setCommitteesData] = useState<Committee[]>([]);
     const [committees, setCommittees] = useState<string[]>(userInfo?.publicInfo?.committees || []);
-
-    // committee state before user enter committees modal
     const [prevCommittees, setPrevCommittees] = useState<string[]>(userInfo?.publicInfo?.committees || []);
 
 
@@ -157,6 +156,9 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [showAcademicInfoModal, setShowAcademicInfoModal] = useState<boolean>(false);
     const [showCommitteesModal, setShowCommitteesModal] = useState<boolean>(false);
     const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
+
+    const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
+
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
@@ -339,6 +341,25 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
             });
     }
 
+    const updateCommitteeCounts = async () => {
+        const addedCommittees = committees.filter(x => !prevCommittees.includes(x));
+        const removedCommittees = prevCommittees.filter(x => !committees.includes(x));
+
+        const committeeChanges = [
+            ...addedCommittees.map(committeeName => ({ committeeName, change: 1 })),
+            ...removedCommittees.map(committeeName => ({ committeeName, change: -1 }))
+        ];
+
+        if (committeeChanges.length > 0) {
+            try {
+                await updateCommitteeMembersCount({ committeeChanges });
+                console.log("Committee member counts updated successfully.");
+            } catch (error) {
+                console.error("Error updating committee counts:", error);
+            }
+        }
+    }
+
     const CommitteeListItemComponent = ({ committeeData, onPress, darkMode, isChecked, committeeIndex }: any) => {
         return (
             <TouchableHighlight
@@ -500,7 +521,8 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 }}
                 onDone={() => {
                     saveChanges();
-                    setShowCommitteesModal(false)
+                    updateCommitteeCounts();
+                    setShowCommitteesModal(false);
                 }}
                 content={(
                     <View className='flex-col'>

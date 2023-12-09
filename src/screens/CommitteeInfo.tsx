@@ -7,6 +7,10 @@ import { Octicons } from '@expo/vector-icons';
 import { PublicUserInfo } from '../types/User';
 import { CommitteeInfoScreenRouteProp, CommitteesTabProps } from '../types/Navigation';
 import { UserContext } from '../context/UserContext';
+import { httpsCallable } from 'firebase/functions';
+import { db, functions } from '../config/firebaseConfig';
+import { setPublicUserData } from '../api/firebaseUtils';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface UserProfileProps { userInfo: PublicUserInfo | null }
 const UserProfile: React.FC<UserProfileProps> = ({ userInfo }) => {
@@ -21,20 +25,33 @@ const UserProfile: React.FC<UserProfileProps> = ({ userInfo }) => {
 
 const CommitteesInfo: React.FC<CommitteesTabProps> = ({ navigation }) => {
     const route = useRoute<CommitteeInfoScreenRouteProp>();
-    const { committee } = route.params;
+    const initialCommittee = route.params.committee;
     const { userInfo, setUserInfo } = useContext(UserContext)!;
-    const { name, color, image, head, leads, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = committee;
 
-
+    const [currentCommittee, setCurrentCommittee] = useState(initialCommittee);
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [lastPassTime, setLastPassTime] = useState(0)
 
-    // determine if user is in committee
+    const { name, color, image, head, leads, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = initialCommittee;
+    const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
+
     useEffect(() => {
         const committeeExists = userInfo?.publicInfo?.committees?.includes(firebaseDocName!);
         setIsInCommittee(committeeExists);
     }, [userInfo, firebaseDocName]);
+
+    const fetchCommitteeData = async () => {
+        try {
+            const docRef = doc(db, `committees/${initialCommittee.firebaseDocName}`);
+            const docSnapshot = await getDoc(docRef);
+            if (docSnapshot.exists()) {
+                setCurrentCommittee(docSnapshot.data());
+            }
+        } catch (error) {
+            console.error('Error fetching updated committee data:', error);
+        }
+    };
 
     const handleLinkPress = async (url: string) => {
         if (!url) {
@@ -68,7 +85,7 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({ navigation }) => {
                     <Text className='text-lg pt-5 px-5'>{description || "No description provided"}</Text>
                     <View className='flex-row py-2'>
                         <Text className='text-3xl'>Members: </Text>
-                        <Text className='text-4xl'>{"0"}</Text>
+                        <Text className='text-4xl'>{currentCommittee.memberCount}</Text>
                     </View>
                     <View className='flex-row space-x-2 pb-5'>
                         <TouchableOpacity
@@ -128,12 +145,43 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({ navigation }) => {
                                     <View className="flex-row">
                                         <TouchableOpacity
                                             onPress={async () => {
-                                                setConfirmVisible(false)
-                                                // updateCommitteeCount()
+                                                setConfirmVisible(false);
+                                                const committeeChanges = [{
+                                                    committeeName: firebaseDocName,
+                                                    change: isInCommittee ? -1 : 1
+                                                }];
+
+                                                try {
+                                                    await updateCommitteeMembersCount({ committeeChanges })
+                                                        .then(() => {
+                                                            fetchCommitteeData();
+                                                        });
+
+                                                    // Update user's committees array
+                                                    let updatedCommittees = [...userInfo?.publicInfo?.committees!!];
+                                                    if (isInCommittee) {
+                                                        updatedCommittees = updatedCommittees.filter(c => c !== firebaseDocName);
+                                                    } else {
+                                                        updatedCommittees.push(firebaseDocName!!);
+                                                    }
+
+                                                    await setPublicUserData({ committees: updatedCommittees });
+
+                                                    setUserInfo({
+                                                        ...userInfo,
+                                                        publicInfo: {
+                                                            ...userInfo?.publicInfo,
+                                                            committees: updatedCommittees
+                                                        }
+                                                    });
+
+                                                } catch (error) {
+                                                    console.error("Error updating committee count:", error);
+                                                }
                                             }}
                                             className="bg-pale-blue rounded-xl justify-center items-center"
                                         >
-                                            <Text className='text-xl font-bold text-white px-8'> {isInCommittee ? "Leave" : "Join"} </Text>
+                                            <Text className='text-xl font-bold text-white px-8'>{isInCommittee ? "Leave" : "Join"}</Text>
                                         </TouchableOpacity>
 
                                         <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
