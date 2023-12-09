@@ -12,6 +12,7 @@ import { Button } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/core";
 import MemberSHPEConfirm from "../screens/MemberSHPEConfirm";
 import ResumeConfirm from "../screens/ResumeConfirm";
+import LocationSample from "../screens/LocationSample";
 
 const AdminDashboardStack = () => {
     const Stack = createNativeStackNavigator<AdminDashboardParams>();
@@ -55,6 +56,7 @@ const AdminDashboardStack = () => {
                 <Stack.Screen name="RestrictionsEditor" component={RestrictionsEditor} />
                 <Stack.Screen name="MemberSHPEConfirm" component={MemberSHPEConfirm} />
                 <Stack.Screen name="ResumeConfirm" component={ResumeConfirm} />
+                <Stack.Screen name="LocationSample" component={LocationSample} />
 
             </Stack.Group>
         </Stack.Navigator >

@@ -86,6 +86,13 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                 <Text>Resume Verifications</Text>
             </TouchableOpacity>
 
+            <TouchableOpacity
+                onPress={() => navigation.navigate('LocationSample')}
+                className='bg-blue-500 rounded-md p-2'
+            >
+                <Text>Geofencing Test</Text>
+            </TouchableOpacity>
+
         </SafeAreaView>
     )
 }
