@@ -342,48 +342,43 @@ export const setCommitteeInfo = async (committeeData: Committee) => {
     }
 };
 
-
-export const getWatchlist = async () => {
-    return getDoc(doc(db, `restrictions/watchlist`))
-        .then((res) => {
-            const responseData = res.data()
-            return responseData?.UIDs;
-        })
-        .catch(err => {
-            console.error(err);
-            return undefined;
-        });
-}
-
-export const getBlacklist = async () => {
-    return getDoc(doc(db, `restrictions/blacklist`))
-        .then((res) => {
-            const responseData = res.data()
-            return responseData?.UIDs;
-        })
-        .catch(err => {
-            console.error(err);
-            return undefined;
-        });
-}
-
-export const setWatchlist = async (watchlist: string[]) => {
+export const deleteCommittee = async (firebaseDocName: string): Promise<void> => {
     try {
-        await setDoc(doc(db, `restrictions/watchlist`), {UIDs: watchlist}, { merge: true });
-        return true;
-    } catch (err) {
-        console.error(err);
-        return false;
+        const committeeRef = doc(db, `committees/${firebaseDocName}`);
+        await deleteDoc(committeeRef);
+        console.log(`Committee with ID ${firebaseDocName} has been deleted.`);
+    } catch (error) {
+        console.error(`Error deleting committee with ID ${firebaseDocName}:`, error);
+        throw new Error(`Error deleting committee: ${error}`);
     }
 };
 
-export const setBlacklist = async (blacklist: string[]) => {
-    try {
-        await setDoc(doc(db, `restrictions/blacklist`), {UIDs: blacklist}, { merge: true });
-        return true;
-    } catch (err) {
-        console.error(err);
-        return false;
+export const getWatchlist = async () => {
+    const docRef = doc(db, "restrictions/watchlist");
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data().UIDs : [];
+};
+
+export const getBlacklist = async () => {
+    const docRef = doc(db, "restrictions/blacklist");
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data().UIDs : [];
+};
+
+
+export const addToWatchlist = async (uid: string) => {
+    const currentWatchlist = await getWatchlist() || [];
+    if (!currentWatchlist.includes(uid)) {
+        const updatedWatchlist = [...currentWatchlist, uid];
+        await setDoc(doc(db, "restrictions/watchlist"), { UIDs: updatedWatchlist }, { merge: true });
+    }
+};
+
+export const addToBlacklist = async (uid: string) => {
+    const currentBlacklist = await getBlacklist() || [];
+    if (!currentBlacklist.includes(uid)) {
+        const updatedBlacklist = [...currentBlacklist, uid];
+        await setDoc(doc(db, "restrictions/blacklist"), { UIDs: updatedBlacklist }, { merge: true });
     }
 };
 

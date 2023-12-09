@@ -8,8 +8,8 @@ import { PublicUserInfo } from '../types/User';
 import { CommitteeInfoScreenRouteProp, CommitteesTabProps } from '../types/Navigation';
 import { UserContext } from '../context/UserContext';
 import { httpsCallable } from 'firebase/functions';
-import { db, functions } from '../config/firebaseConfig';
-import { setPublicUserData } from '../api/firebaseUtils';
+import { auth, db, functions } from '../config/firebaseConfig';
+import { setPublicUserData, addToWatchlist } from '../api/firebaseUtils';
 import { doc, getDoc } from 'firebase/firestore';
 
 interface UserProfileProps { userInfo: PublicUserInfo | null }
@@ -32,6 +32,7 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({ navigation }) => {
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [lastPassTime, setLastPassTime] = useState(0)
+    const DEBOUNCE_TIME = 10000; // 10 seconds
 
     const { name, color, image, head, leads, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = initialCommittee;
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
@@ -160,37 +161,43 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({ navigation }) => {
                                         <TouchableOpacity
                                             onPress={async () => {
                                                 setConfirmVisible(false);
-                                                const committeeChanges = [{
-                                                    committeeName: firebaseDocName,
-                                                    change: isInCommittee ? -1 : 1
-                                                }];
+                                                const currentTime = Date.now();
+                                                if (currentTime - lastPassTime >= DEBOUNCE_TIME) {
+                                                    const committeeChanges = [{
+                                                        committeeName: firebaseDocName,
+                                                        change: isInCommittee ? -1 : 1
+                                                    }];
 
-                                                try {
-                                                    await updateCommitteeMembersCount({ committeeChanges })
-                                                        .then(() => {
-                                                            fetchCommitteeData();
+                                                    try {
+                                                        await updateCommitteeMembersCount({ committeeChanges })
+                                                            .then(() => {
+                                                                fetchCommitteeData();
+                                                                setLastPassTime(currentTime)
+                                                            });
+
+                                                        // Update user's committees array
+                                                        let updatedCommittees = [...userInfo?.publicInfo?.committees!!];
+                                                        if (isInCommittee) {
+                                                            updatedCommittees = updatedCommittees.filter(c => c !== firebaseDocName);
+                                                        } else {
+                                                            updatedCommittees.push(firebaseDocName!!);
+                                                        }
+
+                                                        await setPublicUserData({ committees: updatedCommittees });
+
+                                                        setUserInfo({
+                                                            ...userInfo,
+                                                            publicInfo: {
+                                                                ...userInfo?.publicInfo,
+                                                                committees: updatedCommittees
+                                                            }
                                                         });
 
-                                                    // Update user's committees array
-                                                    let updatedCommittees = [...userInfo?.publicInfo?.committees!!];
-                                                    if (isInCommittee) {
-                                                        updatedCommittees = updatedCommittees.filter(c => c !== firebaseDocName);
-                                                    } else {
-                                                        updatedCommittees.push(firebaseDocName!!);
+                                                    } catch (error) {
+                                                        console.error("Error updating committee count:", error);
                                                     }
-
-                                                    await setPublicUserData({ committees: updatedCommittees });
-
-                                                    setUserInfo({
-                                                        ...userInfo,
-                                                        publicInfo: {
-                                                            ...userInfo?.publicInfo,
-                                                            committees: updatedCommittees
-                                                        }
-                                                    });
-
-                                                } catch (error) {
-                                                    console.error("Error updating committee count:", error);
+                                                } else {
+                                                    await addToWatchlist(auth.currentUser?.uid!);
                                                 }
                                             }}
                                             className="bg-pale-blue rounded-xl justify-center items-center"

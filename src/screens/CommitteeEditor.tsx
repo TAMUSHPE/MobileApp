@@ -4,15 +4,15 @@ import { Committee } from '../types/Committees';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { Images } from '../../assets';
-import { AdminDashboardParams, CommitteeEditorScreenRouteProp } from '../types/Navigation';
+import { CommitteeEditorScreenRouteProp, CommitteesStackParams } from '../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { fetchUserForList, getPublicUserData, setCommitteeInfo } from '../api/firebaseUtils';
+import { deleteCommittee, fetchUserForList, getPublicUserData, setCommitteeInfo } from '../api/firebaseUtils';
 import MembersList from '../components/MembersList';
 import { PublicUserInfo, UserFilter } from '../types/User';
 import CustomColorPicker from '../components/CustomColorPicker';
 import { useRoute } from '@react-navigation/core';
 
-const CommitteeEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const CommitteeEditor = ({ navigation }: NativeStackScreenProps<CommitteesStackParams>) => {
     const route = useRoute<CommitteeEditorScreenRouteProp>();
     const initialCommittee = route.params.committee;
 
@@ -82,6 +82,7 @@ const CommitteeEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
     useEffect(() => {
         const fetchData = async () => {
             loadUsers();
+            loadOfficers()
         };
         fetchData().then(() => {
             setInitialLoad(false);
@@ -107,13 +108,6 @@ const CommitteeEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
             setOfficers(officers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
         }
     }
-
-
-    useEffect(() => {
-        loadOfficers()
-        loadUsers()
-    }, [])
-
 
     return (
         <SafeAreaView>
@@ -228,6 +222,14 @@ const CommitteeEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
                         }}
                     >
                         <Text className='text-xl text-semibold'>Update Committee</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        className='bg-red-400 justify-center items-center rounded-md p-2 mt-4'
+                        onPress={async () => {
+                            await deleteCommittee(committeeData?.firebaseDocName!);
+                            navigation.navigate("CommitteesScreen")
+                        }}>
+                        <Text className='text-xl text-white'>Delete Committee</Text>
                     </TouchableOpacity>
                 </View>
                 <View className='pb-32'></View>
