@@ -2,24 +2,63 @@ import * as functions from 'firebase-functions';
 import { db } from "./firebaseConfig"
 import * as admin from 'firebase-admin';
 
-export const updateCommitteeMembersCount = functions.https.onCall(async (data, context) => {
-    const { committeeChanges } = data;
 
-    if (!Array.isArray(committeeChanges)) {
-        throw new functions.https.HttpsError('invalid-argument', 'committeeChanges must be an array.');
+export const updateCommitteeCount = functions.https.onCall(async (data, context) => {
+    const { committeeName, change } = data; 
+
+    if (change !== 1 && change !== -1) {
+        throw new functions.https.HttpsError('invalid-argument', 'Change value must be 1 or -1.');
     }
 
-    const updatePromises = committeeChanges.map((change) => {
-        if (typeof change.committeeName !== 'string' || typeof change.change !== 'number') {
-            throw new functions.https.HttpsError('invalid-argument', 'Each change must have a committeeName and change.');
-        }
+    const committeeRef = db.doc(`committees/${committeeName}`); 
 
-        const committeeRef = db.doc(`committees/${change.committeeName}`);
-        return committeeRef.update({ 
-            memberCount: admin.firestore.FieldValue.increment(change.change) 
+    try {
+        await committeeRef.update({ memberCount: admin.firestore.FieldValue.increment(change) });
+        return { success: true };
+    } catch (error) {
+        console.error('Update failure:', error);
+        throw new functions.https.HttpsError('internal', 'Could not update committee count.');
+    }
+});
+
+export const incrementCommitteesCount = functions.https.onCall(async (data, context) => {
+    const { committeeNames } = data; 
+    
+    if (!Array.isArray(committeeNames)) {
+        throw new functions.https.HttpsError('invalid-argument', 'committeeNames must be an array.');
+    }
+    
+    const updatePromises = committeeNames.map((committeeName) => {
+        const committeeRef = db.doc(`committees/${committeeName}`);
+        return committeeRef.update({ memberCount: admin.firestore.FieldValue.increment(1) })
+            .catch((error) => {
+                console.error(`Update failure for committee ${committeeName}:`, error);
+            });
+    });
+    try {
+
+        await Promise.all(updatePromises);
+        return { success: true };
+    } catch (error) {
+        console.error('Update failure:', error);
+        throw new functions.https.HttpsError('internal', 'Could not update committee count.');
+    }
+});
+
+export const updateCommitteesCount = functions.https.onCall(async (data, context) => {
+    const { changes } = data;
+
+    if (!Array.isArray(changes)) {
+        throw new functions.https.HttpsError('invalid-argument', 'changes must be an array.');
+    }
+
+    const updatePromises = changes.map((change) => {
+        const committeeRef = db.doc(`committees/${change.firebaseDocName}`);
+        return committeeRef.update({
+            memberCount: admin.firestore.FieldValue.increment(change.change),
         })
         .catch((error) => {
-            console.error(`Update failure for committee ${change.committeeName}:`, error);
+            console.error(`Update failure for committee ${change.firebaseDocName}:`, error);
         });
     });
 
@@ -28,12 +67,12 @@ export const updateCommitteeMembersCount = functions.https.onCall(async (data, c
         return { success: true };
     } catch (error) {
         console.error('Update failure:', error);
-        throw new functions.https.HttpsError('internal', 'Could not update committee member counts.');
+        throw new functions.https.HttpsError('internal', 'Could not update committee count.');
     }
 });
 
 
-export const committeeCountCheck = functions.pubsub.schedule('every saturday 00:00')
+export const countCommitteeMembers = functions.pubsub.schedule('every saturday 00:00')
     .timeZone('America/Chicago') // Set your time zone
     .onRun(async (context) => {
         const committeesCount: CommitteeCounts = {};
@@ -56,7 +95,7 @@ export const committeeCountCheck = functions.pubsub.schedule('every saturday 00:
         console.log('Committee counts updated:', committeesCount);
 });
 
-export const committeeCountCheckOnCall = functions.https.onCall(async (data, context) => {
+export const countCommitteeMembersOnCall = functions.https.onCall(async (data, context) => {
     const committeesCount: CommitteeCounts = {};
 
     const usersSnapshot = await db.collection('users').get();

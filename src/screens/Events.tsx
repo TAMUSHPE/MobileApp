@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EventsStackParams } from '../types/Navigation';
@@ -58,51 +58,51 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     {
                         hasPrivileges &&
                         < View className='absolute w-full items-end justify-center'>
-                            <TouchableOpacity className='bg-blue-400 w-16 h-10 items-center justify-center rounded-md mr-4'
-                                onPress={() => navigation.navigate("CreateEvent")}>
-                                <Text className='font-bold'>Create</Text>
-                            </TouchableOpacity>
+                    <TouchableOpacity className='bg-blue-400 w-16 h-10 items-center justify-center rounded-md mr-4'
+                        onPress={() => navigation.navigate("CreateEvent")}>
+                        <Text className='font-bold'>Create</Text>
+                    </TouchableOpacity>
+                </View>
+                    }
+            </View>
+
+            {isLoading && upcomingEvents.length == 0 && pastEvents.length == 0 &&
+                <View className='h-64 justify-center items-center'>
+                    <ActivityIndicator size="large" />
+                </View>
+            }
+
+            {upcomingEvents.length == 0 && pastEvents.length == 0 && !isLoading &&
+                <View className='h-64 w-full justify-center items-center'>
+                    <Text>No Events</Text>
+                </View>
+            }
+            <View className='ml-2 mt-4'>
+                {upcomingEvents.length != 0 &&
+                    <Text className='text-xl mb-4 text-bold'>Upcoming Events</Text>
+                }
+
+                {upcomingEvents.map((event) => {
+                    return (
+                        <View key={event.id}>
+                            <EventCard key={event.id} event={event} navigation={navigation} />
                         </View>
-                    }
-                </View>
+                    )
+                })}
 
-                {isLoading && upcomingEvents.length == 0 && pastEvents.length == 0 &&
-                    <View className='h-64 justify-center items-center'>
-                        <ActivityIndicator size="large" />
-                    </View>
+                {pastEvents.length != 0 &&
+                    <Text className='text-xl mb-4 text-bold '>Past Events</Text>
                 }
 
-                {upcomingEvents.length == 0 && pastEvents.length == 0 && !isLoading &&
-                    <View className='h-64 w-full justify-center items-center'>
-                        <Text>No Events</Text>
-                    </View>
-                }
-                <View className='ml-2 mt-4'>
-                    {upcomingEvents.length != 0 &&
-                        <Text className='text-xl mb-4 text-bold'>Upcoming Events</Text>
-                    }
-
-                    {upcomingEvents.map((event) => {
-                        return (
-                            <View key={event.id}>
-                                <EventCard key={event.id} event={event} navigation={navigation} />
-                            </View>
-                        )
-                    })}
-
-                    {pastEvents.length != 0 &&
-                        <Text className='text-xl mb-4 text-bold '>Past Events</Text>
-                    }
-
-                    {pastEvents.map((event) => {
-                        return (
-                            <View key={event.id}>
-                                <EventCard event={event} navigation={navigation} />
-                            </View>
-                        )
-                    })}
-                </View>
-            </ScrollView>
+                {pastEvents.map((event) => {
+                    return (
+                        <View key={event.id}>
+                            <EventCard event={event} navigation={navigation} />
+                        </View>
+                    )
+                })}
+            </View>
+        </ScrollView>
         </SafeAreaView >
     )
 }
