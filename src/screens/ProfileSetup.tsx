@@ -1,12 +1,12 @@
-import { Text, View, KeyboardAvoidingView, Image, Animated, TouchableOpacity, ScrollView, Linking, BackHandler, TextInput, TouchableWithoutFeedback, Keyboard, ActivityIndicator } from 'react-native';
-import React, { useEffect, useRef, useState, useContext, useLayoutEffect } from 'react';
+import { Text, View, Image, Animated, TouchableOpacity, ScrollView, Linking, TouchableWithoutFeedback, Keyboard, ActivityIndicator } from 'react-native';
+import React, { useEffect, useRef, useState, useContext } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDownloadURL } from "firebase/storage";
 import { signOut, updateProfile } from 'firebase/auth';
-import { auth } from '../config/firebaseConfig';
+import { auth, functions } from '../config/firebaseConfig';
 import { getCommittees, getUser, setPrivateUserData, setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
 import { getBlobFromURI, selectFile, selectImage } from '../api/fileSelection';
 import { UserContext } from '../context/UserContext';
@@ -16,7 +16,7 @@ import { ProfileSetupStackParams } from '../types/Navigation';
 import { Committee } from '../types/Committees';
 import { Images } from '../../assets';
 import { Octicons } from '@expo/vector-icons';
-import { httpsCallable, getFunctions } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import { CommonMimeTypes, validateFileBlob, validateName } from '../helpers/validation';
 import SimpleDropDown from '../components/SimpleDropDown';
 
@@ -556,6 +556,8 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     const userContext = useContext(UserContext);
     const { setUserInfo } = userContext!;
 
+    const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
+
     useEffect(() => {
         const fetchCommittees = async () => {
             const response = await getCommittees();
@@ -616,21 +618,30 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     />
                     <InteractButton
                         onPress={async () => {
-                            if (canContinue) {
-                                if (auth.currentUser) {
-                                    await setPublicUserData({
-                                        committees: userCommittees,
-                                    });
-                                    await setPrivateUserData({
-                                        completedAccountSetup: true,
-                                    });
-                                }
-                                // On Register, save user to local
-                                const authUser = await getUser(auth.currentUser?.uid!)
+                            if (canContinue && auth.currentUser) {
+
+                                // Update committee member counts
+                                const committeeChanges = userCommittees.map(committeeName => ({
+                                    committeeName,
+                                    change: 1
+                                }));
+                                await updateCommitteeMembersCount({ committeeChanges });
+
+                                // Save user data to firebase
+                                await setPublicUserData({
+                                    committees: userCommittees,
+                                });
+                                await setPrivateUserData({
+                                    completedAccountSetup: true,
+                                });
+
+                                // Save user to local storage and update user context
+                                const authUser = await getUser(auth.currentUser.uid)
                                 await AsyncStorage.setItem("@user", JSON.stringify(authUser));
                                 setUserInfo(authUser); // Navigates to Home
                             }
                         }}
+
                         label='Continue'
                         buttonClassName={`${canContinue ? "bg-continue-dark" : "bg-gray-500"} justify-center items-center rounded-md w-1/2`}
                         textClassName={`${canContinue ? "text-white" : "text-gray-700"} text-lg font-bold`}
