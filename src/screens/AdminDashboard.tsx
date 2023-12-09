@@ -37,7 +37,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
 
 
             <TouchableOpacity
-                onPress={() => navigation.navigate('CommitteesCreator')}
+                onPress={() => navigation.navigate('CommitteeCreator')}
                 className='bg-blue-500 rounded-md p-2'
             >
                 <Text>Create committee</Text>

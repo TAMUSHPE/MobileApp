@@ -34,6 +34,9 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({ navigation }) => {
     const [lastPassTime, setLastPassTime] = useState(0)
 
     const { name, color, image, head, leads, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = initialCommittee;
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+
+
     const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
 
     useEffect(() => {
@@ -79,6 +82,17 @@ const CommitteesInfo: React.FC<CommitteesTabProps> = ({ navigation }) => {
                 <TouchableHighlight className='py-3 px-6' onPress={() => navigation.goBack()} underlayColor="offwhite">
                     <Octicons name="chevron-left" size={30} color="black" />
                 </TouchableHighlight>
+                {hasPrivileges && (
+
+                    <TouchableOpacity
+                        className='flex-row items-center justify-center rounded-md bg-white w-24 py-4  mx-auto mt-5 mb-2'
+                        onPress={() => {
+                            navigation.navigate('CommitteeEditor', { committee: currentCommittee });
+                        }}
+                    >
+                        <Text className="font-bold text-lg">Edit</Text>
+                    </TouchableOpacity>
+                )}
                 <View className='flex-auto items-center gap-4'>
                     <Text className='text-[32px] font-bold'>{name}</Text>
                     <Image className='h-48 w-80 bg-white' source={image || Images.COMMITTEE_4} />
