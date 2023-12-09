@@ -323,12 +323,9 @@ export const getCommittees = async (): Promise<Committee[]> => {
         return [];
     }
 };
-export const createCommittee = async (committeeData: Committee) => {
+export const setCommitteeInfo = async (committeeData: Committee) => {
     try {
-        const committeeRef = doc(db, `committees/${committeeData.firebaseDocName}`);
-        const docSnap = await getDoc(committeeRef);
-
-        await setDoc(committeeRef, {
+        await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
             name: committeeData.name || "",
             color: committeeData.color || "#fff",
             description: committeeData.description || "",
@@ -336,19 +333,15 @@ export const createCommittee = async (committeeData: Committee) => {
             leads: committeeData.leads || [],
             memberApplicationLink: committeeData.memberApplicationLink || "",
             leadApplicationLink: committeeData.leadApplicationLink || "",
+
         }, { merge: true });
-
-        if (!docSnap.exists()) {
-            const memberCountRef = doc(collection(committeeRef, "memberCounts"), "initialCount");
-            await setDoc(memberCountRef, { memberCount: 0 });
-        }
-
         return true;
     } catch (err) {
         console.error(err);
         return false;
     }
 };
+
 
 export const getWatchlist = async () => {
     return getDoc(doc(db, `restrictions/watchlist`))

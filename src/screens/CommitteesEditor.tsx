@@ -6,7 +6,7 @@ import { Octicons } from '@expo/vector-icons';
 import { Images } from '../../assets';
 import { AdminDashboardParams } from '../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { createCommittee, fetchUserForList, getPublicUserData } from '../api/firebaseUtils';
+import { fetchUserForList, getPublicUserData, setCommitteeInfo } from '../api/firebaseUtils';
 import MembersList from '../components/MembersList';
 import { PublicUserInfo, UserFilter } from '../types/User';
 import CustomColorPicker from '../components/CustomColorPicker';
@@ -220,7 +220,7 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                 <View className='w-screen justify-center items-center pt-4 space-x-7'>
                     <TouchableOpacity className='bg-blue-400 justify-center items-center rounded-md p-2'
                         onPress={async () => {
-                            await createCommittee(committeeData!);
+                            await setCommitteeInfo(committeeData!);
                             setCommitteeData({ leads: [] });
                         }}
                     >
