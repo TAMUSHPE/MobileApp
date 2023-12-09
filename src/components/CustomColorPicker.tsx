@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, TextInput } from 'react-native';
-import ColorPicker, {
-  Panel3,
-  colorKit,
-  SaturationSlider,
-  Preview,
-} from 'reanimated-color-picker';
+import ColorPicker, { Panel3, colorKit, SaturationSlider } from 'reanimated-color-picker';
+import { calculateHexLuminosity, validateHexColor } from '../helpers/colorUtils';
 
 export default function CustomColorPicker({ onColorChosen }: CustomColorPickerProps) {
   const [showPicker, setShowPicker] = useState(false);
-  const customSwatches = new Array(6).fill('#fff').map(() => colorKit.randomRgbColor().hex());
-  const [selectedColor, setSelectedColor] = useState(customSwatches[0]);
-  const [hexInput, setHexInput] = useState(customSwatches[0]);
+  const initialColor = colorKit.randomRgbColor().hex();
+  const [selectedColor, setSelectedColor] = useState(initialColor);
+  const [hexInput, setHexInput] = useState(initialColor);
 
   const onColorSelect = (color: any) => {
     setSelectedColor(color.hex);
@@ -19,9 +15,9 @@ export default function CustomColorPicker({ onColorChosen }: CustomColorPickerPr
   };
 
   const handleHexInputChange = (hex: string) => {
-    setHexInput(hex);
-    if (/^#[0-9A-F]{6}$/i.test(hex)) {
+    if (validateHexColor(hex)) {
       setSelectedColor(hex);
+      setHexInput(hex);
     }
   };
 
@@ -36,14 +32,9 @@ export default function CustomColorPicker({ onColorChosen }: CustomColorPickerPr
 
 
   const isColorLight = (colorHex: string) => {
-    const hex = colorHex.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness > 155;
+    const luminosity = calculateHexLuminosity(colorHex);
+    return luminosity > 155;
   };
-
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => setShowPicker(true)}>
@@ -158,22 +149,5 @@ const styles = StyleSheet.create({
     color: '#707070',
     fontWeight: 'bold',
     textAlign: 'center',
-  },
-  closeButton: {
-    marginTop: 20,
-    alignSelf: 'center',
-    backgroundColor: '#ddd',
-    padding: 10,
-    borderRadius: 10,
-  },
-  previewContainer: {
-    paddingBottom: 20,
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderColor: '#bebdbe',
-  },
-  previewStyle: {
-    height: 40,
-    borderRadius: 14,
   },
 });

@@ -6,7 +6,7 @@ import { auth, db, functions } from '../config/firebaseConfig';
 import { MemberStatus } from '../types/User';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../context/UserContext';
-import { getWatchlist, setWatchlist } from '../api/firebaseUtils';
+import { getWatchlist, addToWatchlist } from '../api/firebaseUtils';
 
 /**
  * This component displays the office hours information and provides an interface 
@@ -17,9 +17,12 @@ import { getWatchlist, setWatchlist } from '../api/firebaseUtils';
 const OfficeHours = () => {
     const [officeCount, setOfficeCount] = useState<number>(0);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
+    const [lastPassTime, setLastPassTime] = useState(0)
+    const DEBOUNCE_TIME = 10000; // 10 seconds
 
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
+
 
     useEffect(() => {
         const officeCountRef = doc(db, "office-hours/officer-count");
@@ -32,22 +35,15 @@ const OfficeHours = () => {
         return () => unsubscribe();
     }, []);
 
-    const [lastKnockTime, setLastKnockTime] = useState(0)
 
     const knockOnWall = async (data: MemberStatus) => {
         try {
             const currentTime = Date.now();
-            //Checks if its been at least 10 seconds from the last knock
-            //Adjust as needed
-            if (currentTime - lastKnockTime >= 10000) {
-                // Log Member Knock in Firestore
+            if (currentTime - lastPassTime >= DEBOUNCE_TIME) {
                 const userDocCollection = collection(db, 'office-hours/member-log/log');
                 await addDoc(userDocCollection, data);
 
-                //If the knock is valid, the previous knock time is updated
-                setLastKnockTime(currentTime);
-
-                // Send Notification to Officers using Firebase Functions
+                setLastPassTime(currentTime);
 
                 const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
                 await sendNotificationOfficeHours({
@@ -55,9 +51,7 @@ const OfficeHours = () => {
                 });
             }
             else {
-                //add the user to watchlist here
-                //setWatchlist((await getWatchlist()).append(auth.currentUser?.uid!))
-                console.log("this is hit")
+                await addToWatchlist(auth.currentUser?.uid!);
             }
         } catch (err) {
             console.error("Error sending knock:", err);
