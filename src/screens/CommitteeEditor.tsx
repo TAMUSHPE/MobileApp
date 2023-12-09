@@ -82,6 +82,7 @@ const CommitteeEditor = ({ navigation }: NativeStackScreenProps<CommitteesStackP
     useEffect(() => {
         const fetchData = async () => {
             loadUsers();
+            loadOfficers()
         };
         fetchData().then(() => {
             setInitialLoad(false);
@@ -107,13 +108,6 @@ const CommitteeEditor = ({ navigation }: NativeStackScreenProps<CommitteesStackP
             setOfficers(officers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
         }
     }
-
-
-    useEffect(() => {
-        loadOfficers()
-        loadUsers()
-    }, [])
-
 
     return (
         <SafeAreaView>
