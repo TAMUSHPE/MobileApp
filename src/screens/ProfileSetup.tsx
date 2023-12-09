@@ -7,13 +7,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDownloadURL } from "firebase/storage";
 import { signOut, updateProfile } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
-import { getUser, setPrivateUserData, setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
+import { getCommittees, getUser, setPrivateUserData, setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
 import { getBlobFromURI, selectFile, selectImage } from '../api/fileSelection';
 import { UserContext } from '../context/UserContext';
 import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
 import InteractButton from '../components/InteractButton';
 import { ProfileSetupStackParams } from '../types/Navigation';
-import { CommitteeConstants, CommitteeKey } from '../types/Committees';
+import { Committee } from '../types/Committees';
 import { Images } from '../../assets';
 import { Octicons } from '@expo/vector-icons';
 import { httpsCallable, getFunctions } from 'firebase/functions';
@@ -133,8 +133,6 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
         inputRange: [0, 1],
         outputRange: [-10, 10]
     });
-    console.log(auth.currentUser?.uid, "ASD")
-
     const arrowWidth = moveArrow.interpolate({
         inputRange: [0, 1],
         outputRange: [0.85, 1]
@@ -551,76 +549,35 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
  * Skipping and selecting "None For Now" will do the same thing and set their committees as ["None"]
  */
 const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
-
-    // User Context
-    const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext!;
     const [canContinue, setCanContinue] = useState<boolean>(true);
-    const [committees, setCommittees] = useState<Array<CommitteeKey>>([]);
-    const [noneIsChecked, setNoneIsChecked] = useState<boolean>(false);
-    /**
-     * This function is called whenever a committee is toggled by the user.
-     * Because of the way hooks work, we have to make a deep copy of committees.
-     * @param name - name of the committee being selected/unselected
-     */
-    const handleCommitteeToggle = (name: CommitteeKey | "NONE") => {
-        if (name == "NONE") {
-            handleNonePressed();
-            return;
+    const [committees, setCommittees] = useState<Committee[]>([]);
+    const [userCommittees, setUserCommittees] = useState<string[]>([]);
+
+    const userContext = useContext(UserContext);
+    const { setUserInfo } = userContext!;
+
+    useEffect(() => {
+        const fetchCommittees = async () => {
+            const response = await getCommittees();
+            setCommittees(response)
         }
 
-        setNoneIsChecked(false);
-        const index = committees?.indexOf(name) ?? -1;
-        let modifiedCommittees = [...committees ?? []];
-        if (index === -1) {
-            modifiedCommittees?.push(name);
-        }
-        else {
-            modifiedCommittees?.splice(index, 1);
-        }
-        setCommittees(modifiedCommittees);
-    }
+        fetchCommittees();
+    }, []);
 
-    /**
-     * Handler for when a user presses "None for now"
-     */
-    const handleNonePressed = () => {
-        if (!noneIsChecked)
-            setCommittees([]);
-        setNoneIsChecked(!noneIsChecked);
-    };
-
-    /**
-     * Component used as a list item for each of the committees.
-     *
-     * @param committeeData - Data containing information including the ID, name, color, and whether or not the committee is checked.
-     * @param onPress - Function that gets called when toggle is pressed. The id from committeeData will be passed to it
-     */
-    const CommitteeToggle = ({ committeeData, committeeKey, isChecked, onPress }: { committeeData: { name: string, color: string }, committeeKey: CommitteeKey | "NONE", isChecked: boolean, onPress: (key: CommitteeKey | "NONE") => void, }) => {
-        return (
-            <TouchableOpacity
-                className={`rounded-md w-full py-2 px-1 my-3 bg-white flex-row items-center justify-between border-4 ${isChecked ? "border-green-500 shadow-lg" : "border-transparent shadow-sm"}`}
-                activeOpacity={0.9}
-                onPress={() => onPress(committeeKey)}
-            >
-                <View className='flex-row items-center'>
-                    <View className={`h-10 w-10 rounded-full mr-2`} style={{ backgroundColor: committeeData.color ?? "#000" }} />
-                    <Text className={`font-bold text-center text-lg text-gray-600`}>{committeeData.name}</Text>
-                </View>
-                <Image
-                    className='h-10 w-10'
-                    source={Images.CHECKMARK}
-                    style={{
-                        opacity: isChecked ? 1 : 0
-                    }}
-                />
-            </TouchableOpacity>
-        );
+    const handleCommitteeToggle = (firebaseDocName: string) => {
+        setUserCommittees(prevCommittees => {
+            if (prevCommittees.includes(firebaseDocName)) {
+                return prevCommittees.filter(name => name !== firebaseDocName);
+            } else {
+                return [...prevCommittees, firebaseDocName];
+            }
+        });
     };
 
     useEffect(() => {
-        setCanContinue(committees.length > 0);
-    }, [committees]);
+        setCanContinue(userCommittees.length > 0);
+    }, [userCommittees]);
 
 
     return (
@@ -636,26 +593,18 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     scrollToOverflowEnabled
                 >
                     <View className='w-full h-full pb-28'>
-                        {Object.keys(CommitteeConstants).map((key: string) => {
-                            const committeeData = CommitteeConstants[key as CommitteeKey];
-                            return (
-                                <CommitteeToggle
-                                    committeeData={committeeData}
-                                    committeeKey={key as CommitteeKey}
-                                    isChecked={committees?.findIndex(element => element == key) !== -1}
-                                    onPress={(name: CommitteeKey | "NONE") => handleCommitteeToggle(name)}
-                                    key={committeeData.name}
-                                />
-                            )
-                        }
-                        )}
-                        <CommitteeToggle
-                            committeeData={{ name: "None Right Now", color: "#f55" }}
-                            committeeKey={"NONE"}
-                            isChecked={noneIsChecked}
-                            onPress={(name) => handleNonePressed()}
-                            key={0}
-                        />
+                        {committees.map((committee: Committee) => (
+                            <TouchableOpacity
+                                key={committee.firebaseDocName}
+                                onPress={() => handleCommitteeToggle(committee?.firebaseDocName!)}
+                                className={`rounded-md w-full py-2 px-1 my-3 bg-white flex-row items-center justify-between border-4 ${userCommittees.includes(committee?.firebaseDocName!) ? "border-green-500 shadow-lg" : "border-transparent shadow-sm"}`}
+                            >
+                                <View className='flex-row items-center'>
+                                    <View className={`h-10 w-10 rounded-full mr-2`} style={{ backgroundColor: committee.color ?? "#000" }} />
+                                    <Text className={`font-bold text-center text-lg text-gray-600`}>{committee.name}</Text>
+                                </View>
+                            </TouchableOpacity>
+                        ))}
                     </View>
                 </ScrollView>
                 <View className='flex-row w-10/12 justify-between mb-4'>
@@ -667,10 +616,10 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                     />
                     <InteractButton
                         onPress={async () => {
-                            if (canContinue || noneIsChecked) {
+                            if (canContinue) {
                                 if (auth.currentUser) {
                                     await setPublicUserData({
-                                        committees: committees,
+                                        committees: userCommittees,
                                     });
                                     await setPrivateUserData({
                                         completedAccountSetup: true,
@@ -680,23 +629,13 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                                 const authUser = await getUser(auth.currentUser?.uid!)
                                 await AsyncStorage.setItem("@user", JSON.stringify(authUser));
                                 setUserInfo(authUser); // Navigates to Home
-
-                                // increment committees count
-                                const functions = getFunctions();
-                                const incrementCommitteesCount = httpsCallable(functions, 'incrementCommitteesCount');
-
-                                const committeeNames = committees.map(committee => CommitteeConstants[committee].firebaseDocName);
-                                incrementCommitteesCount({ committeeNames })
-                                    .catch((error) => {
-                                        console.error(error);
-                                    });
                             }
                         }}
                         label='Continue'
-                        buttonClassName={`${canContinue || noneIsChecked ? "bg-continue-dark" : "bg-gray-500"} justify-center items-center rounded-md w-1/2`}
-                        textClassName={`${canContinue || noneIsChecked ? "text-white" : "text-gray-700"} text-lg font-bold`}
-                        opacity={canContinue || noneIsChecked ? 1 : 0.8}
-                        underlayColor={`${canContinue || noneIsChecked ? "#A22E2B" : ""}`}
+                        buttonClassName={`${canContinue ? "bg-continue-dark" : "bg-gray-500"} justify-center items-center rounded-md w-1/2`}
+                        textClassName={`${canContinue ? "text-white" : "text-gray-700"} text-lg font-bold`}
+                        opacity={canContinue ? 1 : 0.8}
+                        underlayColor={`${canContinue ? "#A22E2B" : ""}`}
                     />
                 </View>
                 <InteractButton
