@@ -342,6 +342,16 @@ export const setCommitteeInfo = async (committeeData: Committee) => {
     }
 };
 
+export const deleteCommittee = async (firebaseDocName: string): Promise<void> => {
+    try {
+        const committeeRef = doc(db, `committees/${firebaseDocName}`);
+        await deleteDoc(committeeRef);
+        console.log(`Committee with ID ${firebaseDocName} has been deleted.`);
+    } catch (error) {
+        console.error(`Error deleting committee with ID ${firebaseDocName}:`, error);
+        throw new Error(`Error deleting committee: ${error}`);
+    }
+};
 
 export const getWatchlist = async () => {
     return getDoc(doc(db, `restrictions/watchlist`))
