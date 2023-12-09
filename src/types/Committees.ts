@@ -9,7 +9,6 @@ export type Committee = {
     description?: string;
     head?: PublicUserInfo;
     leads?: PublicUserInfo[];
-    memberCount?: number;
     memberApplicationLink?: string;
     leadApplicationLink?: string;
 }
