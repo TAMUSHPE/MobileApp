@@ -11,7 +11,7 @@ import MembersList from '../components/MembersList';
 import { PublicUserInfo, UserFilter } from '../types/User';
 import CustomColorPicker from '../components/CustomColorPicker';
 
-const CommitteesCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [committeeData, setCommitteeData] = useState<Committee>({ leads: [] });
     const [headModalVisible, setHeadModalVisible] = useState(false);
     const [leadsModalVisible, setLeadsModalVisible] = useState(false);
@@ -312,4 +312,4 @@ const CommitteesCreator = ({ navigation }: NativeStackScreenProps<AdminDashboard
     )
 }
 
-export default CommitteesCreator
+export default CommitteeCreator
