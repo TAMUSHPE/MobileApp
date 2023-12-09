@@ -224,7 +224,7 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                             setCommitteeData({ leads: [] });
                         }}
                     >
-                        <Text className='text-xl text-semibold'>Update Committee</Text>
+                        <Text className='text-xl text-semibold'>Create Committee</Text>
                     </TouchableOpacity>
                 </View>
                 <View className='pb-32'></View>
