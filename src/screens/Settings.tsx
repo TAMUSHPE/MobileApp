@@ -6,19 +6,18 @@ import { auth } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { setPublicUserData, setPrivateUserData, getUser, uploadFileToFirebase } from '../api/firebaseUtils';
+import { setPublicUserData, setPrivateUserData, getUser, uploadFileToFirebase, getCommittees } from '../api/firebaseUtils';
 import { getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import * as ImagePicker from "expo-image-picker";
 import { getBlobFromURI, selectFile, selectImage } from '../api/fileSelection';
 import ProfileBadge from '../components/ProfileBadge';
-import { CommitteeConstants, CommitteeKey, CommitteeVal } from '../types/Committees';
+import { Committee } from '../types/Committees';
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../helpers/validation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../components/SettingsComponents"
 import InteractButton from '../components/InteractButton';
-import { getFunctions, httpsCallable } from 'firebase/functions';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
@@ -145,10 +144,11 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
     const [major, setMajor] = useState<string | undefined>(userInfo?.publicInfo?.major);
     const [classYear, setClassYear] = useState<string | undefined>(userInfo?.publicInfo?.classYear);
-    const [committees, setCommittees] = useState<Array<CommitteeKey | string> | undefined>(userInfo?.publicInfo?.committees);
+    const [committeesData, setCommitteesData] = useState<Committee[]>([]);
+    const [committees, setCommittees] = useState<string[]>(userInfo?.publicInfo?.committees || []);
 
     // committee state before user enter committees modal
-    const [prevCommittees, setPrevCommittees] = useState<Array<CommitteeKey | string> | undefined>(userInfo?.publicInfo?.committees);
+    const [prevCommittees, setPrevCommittees] = useState<string[]>(userInfo?.publicInfo?.committees || []);
 
 
     // Modal options
@@ -159,6 +159,14 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    useEffect(() => {
+        const fetchCommitteeData = async () => {
+            const response = await getCommittees();
+            setCommitteesData(response);
+        }
+        fetchCommitteeData();
+    }, [])
 
     /**
      * Checks for any pending changes in user data.  
@@ -331,12 +339,11 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
             });
     }
 
-    const CommitteeListItemComponent = ({ committeeData, committeeKey, onPress, darkMode, committees, isChecked }: { committeeData: CommitteeVal, committeeKey: CommitteeKey, onPress: (name: CommitteeKey) => void, darkMode?: boolean, committees: Array<string>, isChecked: boolean }) => {
-        const committeeIndex = committees.indexOf(committeeKey);
+    const CommitteeListItemComponent = ({ committeeData, onPress, darkMode, isChecked, committeeIndex }: any) => {
         return (
             <TouchableHighlight
                 className={`border-2 my-4 p-4 rounded-xl w-11/12 shadow-md shadow-black ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${isChecked ? "border-green-400" : "border-transparent"}`}
-                onPress={() => onPress(committeeKey)}
+                onPress={() => onPress()}
                 underlayColor={darkMode ? "#7a7a7a" : "#DDD"}
             >
                 <View className={`items-center flex-row justify-between`}>
@@ -344,50 +351,21 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                         <View className='h-8 w-8 mr-4 rounded-full' style={{ backgroundColor: committeeData.color }} />
                         <Text className={`text-2xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeData.name}</Text>
                     </View>
-                    {isChecked && committeeIndex >= 0 && <Text className={`text-xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeIndex + 1}</Text>}
+                    {isChecked && <Text className={`text-xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeIndex + 1}</Text>}
                 </View>
             </TouchableHighlight>
         );
     };
 
-    /**
-     * This function is called whenever a committee is toggled by the user.
-     * Because of the way hooks work, we have to make a deep copy of committees.
-     * @param name - name of the committee being selected/unselected
-     */
-    const handleCommitteeToggle = (name: CommitteeKey) => {
-        const index = committees?.indexOf(name) ?? -1;
-        let modifiedCommittees = [...committees ?? []];
-        if (index === -1) {
-            modifiedCommittees?.push(name);
-        }
-        else {
-            modifiedCommittees?.splice(index, 1);
-        }
-        setCommittees(modifiedCommittees);
-    }
-
-    const updateCommitteeCounts = (newCommittees: CommitteeKey[], oldCommittees: CommitteeKey[]) => {
-        const changes = [];
-
-        for (const committee of oldCommittees) {
-            if (!newCommittees.includes(committee)) {
-                changes.push({ firebaseDocName: CommitteeConstants[committee as CommitteeKey].firebaseDocName, change: -1 });
+    const handleCommitteeToggle = (name: string) => {
+        setCommittees(prevCommittees => {
+            const isCommitteeSelected = prevCommittees.includes(name);
+            if (isCommitteeSelected) {
+                return prevCommittees.filter(committee => committee !== name);
+            } else {
+                return [...prevCommittees, name];
             }
-        }
-
-        for (const committee of newCommittees) {
-            if (!oldCommittees.includes(committee)) {
-                changes.push({ firebaseDocName: CommitteeConstants[committee as CommitteeKey].firebaseDocName, change: 1 });
-            }
-        }
-
-        if (changes.length === 0) {
-            return;
-        }
-        const functions = getFunctions();
-        const updateCommitteesCount = httpsCallable(functions, 'updateCommitteesCount');
-        updateCommitteesCount({ changes })
+        });
     };
 
     return (
@@ -522,7 +500,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 }}
                 onDone={() => {
                     saveChanges();
-                    updateCommitteeCounts(committees as CommitteeKey[] ?? defaultVals.committees, prevCommittees as CommitteeKey[] ?? defaultVals.committees);
                     setShowCommitteesModal(false)
                 }}
                 content={(
@@ -535,18 +512,19 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                         >
                             <Text className={`text-lg px-4 mb-2 ${darkMode ? "text-gray-300" : "text-black"}`}>The number displayed beside each committee represents the order in which they will be displayed on your profile.</Text>
                             <View className='w-full h-full flex-col items-center'>
-                                {Object.keys(CommitteeConstants).map((key: string) => {
-                                    // key is guaranteed to be of type CommitteeKey since we're iterating through each key
-                                    const committeeData = CommitteeConstants[key as CommitteeKey];
+                                {committeesData.map((committeeData: Committee, index) => {
+                                    const committeeIndex = committees.findIndex(
+                                        userCommittee => userCommittee === committeeData.firebaseDocName
+                                    );
                                     return (
                                         <CommitteeListItemComponent
-                                            key={key}
+                                            key={index}
+                                            committeeIndex={committeeIndex}
                                             committeeData={committeeData}
-                                            committeeKey={key as CommitteeKey}
                                             darkMode={darkMode}
-                                            isChecked={committees?.findIndex(element => element == key) !== -1}
+                                            isChecked={committees.includes(committeeData?.firebaseDocName!)}
                                             committees={committees ?? defaultVals.committees}
-                                            onPress={(name: CommitteeKey) => handleCommitteeToggle(name)}
+                                            onPress={() => handleCommitteeToggle(committeeData?.firebaseDocName!)}
                                         />
                                     )
                                 })}
@@ -646,19 +624,18 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 <View className={`border max-w-11/12 rounded-3xl shadow-sm shadow-black p-3 mx-3 my-3 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                     <Text className={`text-2xl mb-4 ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
                     <View className='flex-row flex-wrap'>
-                        {committees?.map((key: string, index: number) => {
-                            const committeeInfo = CommitteeConstants[key as CommitteeKey];
-                            if (committeeInfo) {
-                                return (
-                                    <ProfileBadge
-                                        badgeClassName='p-2 max-w-2/5 rounded-full mr-1 mb-2'
-                                        text={committeeInfo.name}
-                                        badgeColor={committeeInfo ? committeeInfo?.color : ""}
-                                        key={index}
-                                    />
-                                );
-                            }
+                        {committees?.map((committeeDocName, index) => {
+                            const committeeData = committeesData.find(c => c.firebaseDocName === committeeDocName);
+                            return (
+                                <ProfileBadge
+                                    badgeClassName='p-2 max-w-2/5 rounded-full mr-1 mb-2'
+                                    text={committeeData?.name || "Unknown Committee"}
+                                    badgeColor={committeeData?.color || ""}
+                                    key={index}
+                                />
+                            );
                         })}
+
                         <TouchableHighlight
                             onPress={() => {
                                 setPrevCommittees(committees)
