@@ -82,20 +82,20 @@ Now that you know how to launch a server, there are multiple methods for develop
 ### Method 1 - internal build **[Recommended for IOS]**
 
 - Download the internal build provided by repo maintainer
-- Run "yarn start"
+- Run `yarn start`
 - Scan QRCode provided by the server
 
 ### Method 2 - Emulator **[Recommended for Android]**
 
 - Download the emulator
-- Run "yarn build-android" or "yarn build-ios" at least once
-- Run "yarn start"
-- Press "a" or "i" to run on android or ios, respectively
+- Run `yarn build-android` or `yarn build-ios` at least once (Note: if you download a new dependency/package then this must be ran again)
+- Run `yarn start`
+- Press "a" or "i" to open android or ios emulator, respectively
 
 ### Method 3 - Expo App **[Recommended for quick setup]**
 
 - Download Expo App
-- Run "yarn go"
+- Run `yarn go`
 - Scan the QRCode provided by the server
 
 ## Deployment **[For Repo Maintainer]** - TODO: Need more details
@@ -126,7 +126,7 @@ Create an Internal build by running the following script and provide the link to
 yarn dev-client-sim
 ```
 
-### Test - TODO: Need more details
+## Test - TODO: Need more details
 
 ```
 $ yarn test
