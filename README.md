@@ -33,7 +33,7 @@ Various dependencies are required in order to test and build the application. Th
   - The Android emulator can be installed via [Android Studio] [Android-Studio-url].
 - Internal Build (ios only)
   - A build created for internal use within the development team and can be downloaded on a developer's physical mobile device
-  - see setup section to show how to create an internal build
+  - Ask repo maintainer for link to internal build
   - Emulator not required
 
 ### Other dependencies
