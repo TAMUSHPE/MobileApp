@@ -56,7 +56,7 @@ const AdminDashboardStack = () => {
                 <Stack.Screen name="RestrictionsEditor" component={RestrictionsEditor} />
                 <Stack.Screen name="MemberSHPEConfirm" component={MemberSHPEConfirm} />
                 <Stack.Screen name="ResumeConfirm" component={ResumeConfirm} />
-                <Stack.Screen name="LocationSample" component={LocationSample} />
+                <Stack.Screen name="LocationSample" component={LocationSample} options={{ headerShown: false }} />
 
             </Stack.Group>
         </Stack.Navigator >
