@@ -9276,6 +9276,11 @@ qs@^6.11.0, qs@^6.11.2:
   dependencies:
     side-channel "^1.0.4"
 
+qs@~6.9.1:
+  version "6.9.7"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.9.7.tgz#4610846871485e1e048f44ae3b94033f0e675afe"
+  integrity sha512-IhMFgUmuNpyRfxA90umL7ByLlgRXu6tIfKPpF5TmcfRLlLCckfP/g3IQmju6jjpu+Hh8rA+2p6A27ZSPOOHdKw==
+
 query-string@^5.0.1:
   version "5.1.1"
   resolved "https://registry.yarnpkg.com/query-string/-/query-string-5.1.1.tgz#a78c012b71c17e05f2e3fa2319dd330682efb3cb"
@@ -9380,6 +9385,15 @@ react-native-gesture-handler@~2.12.0:
     invariant "^2.2.4"
     lodash "^4.17.21"
     prop-types "^15.7.2"
+
+react-native-google-places-autocomplete@^2.5.6:
+  version "2.5.6"
+  resolved "https://registry.yarnpkg.com/react-native-google-places-autocomplete/-/react-native-google-places-autocomplete-2.5.6.tgz#94be31b17ed53ecf4a4a6670fd9acd7a46c2ff6d"
+  integrity sha512-Dy7mFKyEoiNeWPLd7HUkrI/SzJYe7GST55FGtiXzXDoPs05LYHIOCPrT9qFE51COh5X8kgDKm+f7D5aMY/aMbg==
+  dependencies:
+    lodash.debounce "^4.0.8"
+    prop-types "^15.7.2"
+    qs "~6.9.1"
 
 react-native-maps@1.7.1:
   version "1.7.1"

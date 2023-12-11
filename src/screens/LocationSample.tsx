@@ -1,32 +1,49 @@
-import { View, TextInput, Button, Modal, Text } from 'react-native'
+import { View, Button, Text, Linking, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import * as Location from 'expo-location'
-import MapView, { Marker, Circle } from 'react-native-maps';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
 import Slider from '@react-native-community/slider';
-
+import { GooglePlacesAutocomplete, GooglePlaceDetail } from 'react-native-google-places-autocomplete';
 
 const LocationSample = () => {
     const [userLocation, setUserLocation] = useState<Location.LocationObject>();
-    const [address, setAddress] = useState<string>('');
-    const [modalVisible, setModalVisible] = useState(false);
-    const [eventLocation, setEventLocation] = useState<Location.LocationGeocodedLocation>();
-    const [eventDetails, setEventDetails] = useState<Location.LocationGeocodedAddress>();
+    const [eventDetails, setEventDetails] = useState<GooglePlaceDetail>();
     const [isUserNear, setIsUserNear] = useState<boolean>(false);
-    const [draggableMarkerCoord, setDraggableMarkerCoord] = useState<Coordinate>();
-    const [prevMarkerCoord, setPrevMarkerCoord] = useState<Coordinate>();
-    const [radius, setRadius] = useState(100);
 
     const initialCoordinate = { latitude: 30.621160236499136, longitude: -96.3403560168198 }
+    const [draggableMarkerCoord, setDraggableMarkerCoord] = useState<Coordinate>(initialCoordinate);
+    const [mapRegion, setMapRegion] = useState({
+        ...initialCoordinate,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+    });
+    const [radius, setRadius] = useState(100);
 
-    const insets = useSafeAreaInsets();
+    const GOOGLE_PLACES_API_KEY = '***REMOVED***';
+
+    const zachary = {
+        description: 'Zachary Engineering Education Complex',
+        geometry: { location: { lat: 30.621160236499136, lng: -96.3403560168198 } },
+    };
+    const bryan_collegiate = {
+        description: 'Bryan Collegiate High School',
+        geometry: { location: { lat: 30.65264295796464, lng: -96.34784907581891 } },
+    };
+    const student_main_rec = {
+        description: 'Student Recreation Center',
+        geometry: { location: { lat: 30.607092272291975, lng: -96.34283843216261 } },
+    };
+
+    const richardson_petroleum = {
+        description: 'Richardson Petroleum Engineering Building',
+        geometry: { location: { lat: 30.61935018435096, lng: -96.33930198511597 } },
+    };
 
     useEffect(() => {
         // Get Permission and Set Location
         const getPermission = async () => {
             let { status } = await Location.requestForegroundPermissionsAsync();
             if (status != 'granted') {
-                console.log('Permission to access location was denied');
                 return;
             }
 
@@ -34,10 +51,16 @@ const LocationSample = () => {
             setUserLocation(currentLocation);
         }
 
+        const fetchInitialLocation = async () => {
+            const response = await reverseGeocode(initialCoordinate);
+            setEventDetails(response);
+        }
+
         getPermission()
+        fetchInitialLocation()
     }, [])
 
-    // [Geofencing Code]
+    // From ChatGPT, need more testing
     const getDistanceBetweenPoints = (lat1: number, lon1: number, lat2: number, lon2: number) => {
         const R = 6371e3; // Earth's radius in meters
         const φ1 = lat1 * Math.PI / 180; // φ, λ in radians
@@ -53,152 +76,192 @@ const LocationSample = () => {
         return R * c; // Distance in meters
     };
 
-    // [GeoFencing Code]
-    const isWithinRegion = (userLocation: Location.LocationObject, eventLocation: Location.LocationGeocodedLocation) => {
+    const isWithinRegion = (userLocation: Location.LocationObject, eventDetails: GooglePlaceDetail) => {
         console.log(userLocation.coords.latitude, userLocation.coords.longitude)
-        console.log(eventLocation.latitude, eventLocation.longitude)
+        console.log(eventDetails.geometry.location.lat, eventDetails.geometry.location.lng)
         const distance = getDistanceBetweenPoints(
             userLocation.coords.latitude,
             userLocation.coords.longitude,
-            eventLocation.latitude,
-            eventLocation.longitude
+            eventDetails.geometry.location.lat,
+            eventDetails.geometry.location.lng
         );
         const Tol = 20;
         setIsUserNear(distance < radius + 20);
     };
 
 
-    // [Event Location Setting]
-    const searchLocation = async () => {
-        if (address === '') { return; }
-        const geocodedLocation = await Location.geocodeAsync(address)
-        if (geocodedLocation.length === 0) { return; }
+    const reverseGeocode = async (coordinate: Coordinate) => {
+        try {
+            const response = await fetch(
+                `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinate.latitude},${coordinate.longitude}&key=${GOOGLE_PLACES_API_KEY}`
+            );
+            const json = await response.json();
 
-        setEventLocation(geocodedLocation[0])
-        isWithinRegion(userLocation!, geocodedLocation[0]);
-        console.log(geocodedLocation[0])
+            if (json.results.length > 0) {
+                const details = json.results;
+                return details[0] as GooglePlaceDetail;
+            } else {
+                console.log("No results found");
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
-        const reverseGeocodedAddress = await Location.reverseGeocodeAsync({
-            longitude: geocodedLocation[0].longitude,
-            latitude: geocodedLocation[0].latitude
-        });
+    const handleLinkPress = async (url: string) => {
+        if (!url) {
+            console.warn(`Empty/Falsy URL passed to handleLinkPress(): ${url}`);
+            return;
+        }
 
-        setEventDetails(reverseGeocodedAddress[0]);
-
-
-        // This will set marker for map for more precise location setting if user needs it
-        setDraggableMarkerCoord({ longitude: geocodedLocation[0].longitude, latitude: geocodedLocation[0].latitude })
-        setPrevMarkerCoord({ longitude: geocodedLocation[0].longitude, latitude: geocodedLocation[0].latitude })
-    }
-
+        await Linking.canOpenURL(url)
+            .then(async (supported) => {
+                if (supported) {
+                    await Linking.openURL(url)
+                        .catch((err) => console.error(`Issue opening url: ${err}`));
+                } else {
+                    console.warn(`Don't know how to open this URL: ${url}`);
+                }
+            })
+            .catch((err) => {
+                console.error(err);
+            });
+    };
 
 
     return (
-        <View className='flex-1 justify-center items-center'>
-            <TextInput placeholder='Address' value={address} onChangeText={setAddress} />
-            <Button title="Search For Location" onPress={() => searchLocation()} />
-            <Text>{eventDetails?.street}</Text>
-            <Text>{eventDetails?.city}</Text>
-            <Text>{eventDetails?.region}</Text>
-            <Text>{eventDetails?.subregion}</Text>
-            <Text>{eventDetails?.district}</Text>
-            <Text>{eventDetails?.postalCode}</Text>
-
-            <Button title="Check User is At Location" onPress={() => {
-                if (userLocation && eventLocation)
-                    isWithinRegion(userLocation!, eventLocation!);
-            }} />
-
-            {(userLocation && eventLocation) && (
-                <Text>{isUserNear ? "Im Here" : "Im not there"}</Text>
-            )}
-            <Button title="Open Map" onPress={() => {
-                setModalVisible(true)
-                setPrevMarkerCoord(draggableMarkerCoord);
-            }}
-            />
-
-
-            <Modal
-                animationType="slide"
-                transparent={false}
-                visible={modalVisible}
-                onRequestClose={() => {
-                    setModalVisible(!modalVisible);
-                }}
-
+        <View className='flex-1'>
+            <MapView
+                className='flex-1'
+                region={mapRegion}
             >
-                <View
-                    className="flex-1 justify-center items-center"
-                    style={{ paddingBottom: insets.bottom + 40 }}
-                >
-                    <MapView
-                        // provider={PROVIDER_GOOGLE}
-                        className='w-[100%] h-[80%]'
-                        initialRegion={{
-                            latitude: draggableMarkerCoord?.latitude || initialCoordinate.latitude,
-                            latitudeDelta: 0.0922,
-                            longitude: draggableMarkerCoord?.longitude || initialCoordinate.longitude,
-                            longitudeDelta: 0.0421,
+                <Marker
+                    draggable
+                    pinColor='#500000'
+                    coordinate={draggableMarkerCoord}
+                    onDragEnd={async (e) => {
+                        const newCoord = e.nativeEvent.coordinate;
+                        setDraggableMarkerCoord(newCoord);
+                        const response = await reverseGeocode(newCoord);
+                        setEventDetails(response);
+                    }} />
+                <Circle
+                    center={draggableMarkerCoord}
+                    radius={radius}
+                    fillColor="rgba(128, 128, 128, 0.3)"
+                    strokeColor="rgba(128, 128, 128, 0.5)"
+                    strokeWidth={1}
+                />
+                {userLocation && (
+                    <Marker
+                        coordinate={{
+                            latitude: userLocation.coords.latitude,
+                            longitude: userLocation.coords.longitude
                         }}
-                    >
-                        <Marker
-                            draggable
-                            pinColor='#500000'
-                            coordinate={draggableMarkerCoord || initialCoordinate}
-                            onDragEnd={(e) => setDraggableMarkerCoord(e.nativeEvent.coordinate)}
-                        />
-                        <Circle
-                            center={draggableMarkerCoord || initialCoordinate}
-                            radius={radius}
-                            fillColor="rgba(128, 128, 128, 0.3)"
-                            strokeColor="rgba(128, 128, 128, 0.5)"
-                            strokeWidth={1}
-                        />
-                    </MapView>
-                    <View className='bg-white py-4 rounded-md m-2'>
-                        <Text>Longitude: {draggableMarkerCoord?.longitude.toFixed(4)}</Text>
-                        <Text>Latitude: {draggableMarkerCoord?.latitude.toFixed(4)}</Text>
-                    </View>
-                    <Button title="Set Location"
-                        onPress={async () => {
-                            setModalVisible(false)
-                            setPrevMarkerCoord(draggableMarkerCoord);
-
-                            setEventLocation(draggableMarkerCoord)
-                            isWithinRegion(userLocation!, draggableMarkerCoord!);
-
-                            const reverseGeocodedAddress = await Location.reverseGeocodeAsync({
-                                longitude: draggableMarkerCoord?.longitude || initialCoordinate.longitude,
-                                latitude: draggableMarkerCoord?.latitude || initialCoordinate.latitude
-                            });
-
-                            setEventDetails(reverseGeocodedAddress[0]);
-                        }} />
-                    <Button title="Close Map"
-                        onPress={() => {
-                            setModalVisible(false)
-                        }} />
-                    <Button title="Reset Marker"
-                        onPress={() => {
-                            setDraggableMarkerCoord(prevMarkerCoord);
-                        }} />
-                    <Text>Radius: {radius}</Text>
-                    <Slider
-                        style={{ width: 200, height: 40 }}
-                        minimumValue={50}
-                        maximumValue={300}
-                        value={radius}
-                        onValueChange={(value) => setRadius(value)}
                     />
-                </View>
-            </Modal>
-        </View>
-    )
-}
+                )}
+            </MapView>
+
+            <View className="absolute top-12 z-10 p-3 w-full">
+                <GooglePlacesAutocomplete
+                    placeholder="Search"
+                    query={{
+                        key: GOOGLE_PLACES_API_KEY,
+                        language: 'en',
+                    }}
+                    onPress={(data, details = null) => {
+                        if (details === null) {
+                            alert("There was a problem searching for that location. Please try again.")
+                            return;
+                        }
+
+                        console.log(JSON.stringify(details, null, 2), "details");
+                        setEventDetails(details);
+                        setDraggableMarkerCoord({
+                            latitude: details.geometry.location.lat,
+                            longitude: details.geometry.location.lng,
+                        });
+                        setMapRegion({
+                            latitude: details.geometry.location.lat,
+                            longitude: details.geometry.location.lng,
+                            latitudeDelta: 0.0922,
+                            longitudeDelta: 0.0421,
+                        });
+                    }}
+                    fetchDetails={true}
+                    predefinedPlaces={[zachary, bryan_collegiate, student_main_rec, richardson_petroleum]}
+                    onFail={(error) => console.error(error)}
+                />
+            </View>
+
+            <View className="absolute bottom-0 w-full p-3 pb-10 items-center bg-white">
+                <Text>Latitude: {draggableMarkerCoord.latitude.toFixed(4)}</Text>
+                <Text>Longitude: {draggableMarkerCoord.longitude.toFixed(4)}</Text>
+
+                {eventDetails?.address_components && (
+                    <View>
+                        {eventDetails.address_components.map((addr, index) => (
+                            <Text key={index}>{addr.long_name}</Text>
+                        ))}
+                    </View>
+                )}
+                {eventDetails?.url && (
+                    <View>
+                        <Text>Open Link via URL from google API</Text>
+                        <Button
+                            title="Open in Google Maps"
+                            onPress={() => handleLinkPress(eventDetails.url!)}
+                        />
+                    </View>
+                )}
+                {eventDetails?.geometry.location && (
+                    <View>
+                        <Text>Open Link via latitude and longitude </Text>
+                        <Button
+                            title="Open in Apple Maps"
+                            onPress={() => {
+                                const { lat, lng } = eventDetails.geometry.location;
+                                handleLinkPress(`http://maps.apple.com/?ll=${lat},${lng}`);
+                            }}
+                        />
+
+                        <Button
+                            title="Open in Google Maps"
+                            onPress={() => {
+                                const { lat, lng } = eventDetails.geometry.location;
+                                handleLinkPress(`https://www.google.com/maps?q=${lat},${lng}`);
+                            }}
+                        />
+                    </View>
+
+                )}
+
+                <Text>Radius: {radius}</Text>
+                <Slider
+                    style={{ width: 200, height: 40 }}
+                    minimumValue={50}
+                    maximumValue={300}
+                    value={radius}
+                    onValueChange={(value) => setRadius(value)}
+                />
+
+                <Button
+                    title="Check if user is near"
+                    onPress={() => {
+                        if (userLocation && eventDetails) {
+                            isWithinRegion(userLocation, eventDetails);
+                        }
+                    }}
+                />
+                <Text>Is user near: {isUserNear ? "Yes" : "No"}</Text>
+            </View>
+        </View >
+    );
+};
 
 interface Coordinate {
     latitude: number;
     longitude: number;
 }
-export default LocationSample
+
+export default LocationSample;
