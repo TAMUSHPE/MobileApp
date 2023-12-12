@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, Image, TextInput, FlatList, Animated, } f
 import React, { useEffect, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 
-const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, title }: SimpleDropDownProps) => {
+const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, title, selectedItemProp }: SimpleDropDownProps) => {
     const [search, setSearch] = useState('');
     const [filteredData, setFilteredData] = useState(data);
     const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null)
@@ -17,6 +17,11 @@ const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, ti
             moveTitleTop();
         }
     }, [selectedItem]);
+
+    useEffect(() => {
+        if (selectedItemProp)
+            setSelectedItem(selectedItemProp);
+    }, [selectedItemProp]);
 
     const moveTitleTop = () => {
         Animated.timing(moveTitle, {
@@ -127,7 +132,7 @@ interface Item {
 }
 
 interface SelectedItem {
-    value: string;
+    value?: string;
     iso?: string;
 }
 
@@ -139,5 +144,6 @@ interface SimpleDropDownProps {
     onToggle: () => void;
     label: string;
     title: string;
+    selectedItemProp?: SelectedItem | null;
 }
 export default SimpleDropDown;

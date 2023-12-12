@@ -19,6 +19,8 @@ import { StatusBar } from 'expo-status-bar';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../components/SettingsComponents"
 import InteractButton from '../components/InteractButton';
 import { httpsCallable } from 'firebase/functions';
+import SimpleDropDown from '../components/SimpleDropDown';
+import { MAJORS, classYears } from '../types/User';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
@@ -145,6 +147,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
     const [major, setMajor] = useState<string | undefined>(userInfo?.publicInfo?.major);
     const [classYear, setClassYear] = useState<string | undefined>(userInfo?.publicInfo?.classYear);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null); // Dropdown for major and class year
     const [committeesData, setCommitteesData] = useState<Committee[]>([]);
     const [committees, setCommittees] = useState<string[]>(userInfo?.publicInfo?.committees || []);
     const [prevCommittees, setPrevCommittees] = useState<string[]>(userInfo?.publicInfo?.committees || []);
@@ -255,6 +258,15 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 });
         }
     }
+
+    // toggle dropdown for class year and major
+    const toggleDropdown = (dropdownKey: string) => {
+        if (openDropdown === dropdownKey) {
+            setOpenDropdown(null);
+        } else {
+            setOpenDropdown(dropdownKey);
+        }
+    };
 
     const uploadResume = (resumeBlob: Blob) => {
         if (resumeBlob && validateFileBlob(resumeBlob, CommonMimeTypes.RESUME_FILES, true)) {
@@ -480,36 +492,38 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     saveChanges();
                     setShowAcademicInfoModal(false)
                 }}
-                content={(
-                    <KeyboardAvoidingView>
-                        <View className='px-6 py-2'>
-                            <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Major</Text>
-                            <TextInput
-                                className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
-                                onChangeText={(text: string) => setMajor(text)}
-                                value={major}
-                                autoCorrect={false}
-                                multiline
-                                inputMode='text'
-                                maxLength={80}
-                                placeholder='Major...'
-                            />
+                content={
+                    (
+                        <View>
+                            <View className='absolute top-0 z-20 w-full'>
+                                <SimpleDropDown
+                                    data={MAJORS}
+                                    onSelect={(item) => setMajor(item.iso!)}
+                                    searchKey="major"
+                                    label="Select major"
+                                    isOpen={openDropdown === 'major'}
+                                    onToggle={() => toggleDropdown('major')}
+                                    title={'Major'}
+                                    selectedItemProp={{ value: major }}
+                                />
+                            </View>
+                            <View className='absolute top-24 z-10 w-full'>
+                                <SimpleDropDown
+                                    data={classYears}
+                                    onSelect={(item) => setClassYear(item.year)}
+                                    searchKey="year"
+                                    label="Select class year"
+                                    isOpen={openDropdown === 'year'}
+                                    onToggle={() => toggleDropdown('year')}
+                                    title={"Class Year"}
+                                    selectedItemProp={{ value: classYear }}
+
+                                />
+                            </View>
                         </View>
-                        <View className='px-6 py-2'>
-                            <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Class Year</Text>
-                            <TextInput
-                                className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
-                                onChangeText={(text: string) => setClassYear(text)}
-                                value={classYear}
-                                autoCorrect={false}
-                                multiline
-                                inputMode='text'
-                                maxLength={80}
-                                placeholder='Class Year..'
-                            />
-                        </View>
-                    </KeyboardAvoidingView>
-                )}
+
+                    )
+                }
             />
             {/* Committees Modal */}
             <SettingsModal
