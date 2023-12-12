@@ -1,43 +1,45 @@
 import { View, Button, Text, Linking, Platform } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import * as Location from 'expo-location'
-import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, Circle, PROVIDER_GOOGLE, LatLng, Region } from 'react-native-maps';
 import Slider from '@react-native-community/slider';
-import { GooglePlacesAutocomplete, GooglePlaceDetail } from 'react-native-google-places-autocomplete';
+import { GooglePlacesAutocomplete, GooglePlaceDetail, Point } from 'react-native-google-places-autocomplete';
 
 const LocationSample = () => {
     const [userLocation, setUserLocation] = useState<Location.LocationObject>();
     const [eventDetails, setEventDetails] = useState<GooglePlaceDetail>();
-    const [isUserNear, setIsUserNear] = useState<boolean>(false);
+    const [isAtEvent, seIsAtEvent] = useState<boolean>(false);
 
-    const initialCoordinate = { latitude: 30.621160236499136, longitude: -96.3403560168198 }
-    const [draggableMarkerCoord, setDraggableMarkerCoord] = useState<Coordinate>(initialCoordinate);
-    const [mapRegion, setMapRegion] = useState({
+    const initialCoordinate = { latitude: 30.621160236499136, longitude: -96.3403560168198 } // Zachary Engineering Education Complex
+    const [draggableMarkerCoord, setDraggableMarkerCoord] = useState<LatLng>(initialCoordinate);
+    const [mapRegion, setMapRegion] = useState<Region>({
         ...initialCoordinate,
         latitudeDelta: 0.0922,
         longitudeDelta: 0.0421,
     });
-    const [radius, setRadius] = useState(100);
+    const [radius, setRadius] = useState<number>(100); // in meters, set the area of the circle for event
 
     const GOOGLE_PLACES_API_KEY = '***REMOVED***';
 
-    const zachary = {
-        description: 'Zachary Engineering Education Complex',
-        geometry: { location: { lat: 30.621160236499136, lng: -96.3403560168198 } },
-    };
-    const bryan_collegiate = {
-        description: 'Bryan Collegiate High School',
-        geometry: { location: { lat: 30.65264295796464, lng: -96.34784907581891 } },
-    };
-    const student_main_rec = {
-        description: 'Student Recreation Center',
-        geometry: { location: { lat: 30.607092272291975, lng: -96.34283843216261 } },
-    };
-
-    const richardson_petroleum = {
-        description: 'Richardson Petroleum Engineering Building',
-        geometry: { location: { lat: 30.61935018435096, lng: -96.33930198511597 } },
-    };
+    // preset location for autocomplete search box
+    const presetLocation = [
+        {
+            description: 'Zachary Engineering Education Complex',
+            geometry: { location: { lat: 30.621160236499136, lng: -96.3403560168198 } },
+        },
+        {
+            description: 'Bryan Collegiate High School',
+            geometry: { location: { lat: 30.65264295796464, lng: -96.34784907581891 } },
+        },
+        {
+            description: 'Student Recreation Center',
+            geometry: { location: { lat: 30.607092272291975, lng: -96.34283843216261 } },
+        },
+        {
+            description: 'Richardson Petroleum Engineering Building',
+            geometry: { location: { lat: 30.61935018435096, lng: -96.33930198511597 } },
+        }
+    ]
 
     useEffect(() => {
         // Get Permission and Set Location
@@ -61,12 +63,12 @@ const LocationSample = () => {
     }, [])
 
     // From ChatGPT, need more testing
-    const getDistanceBetweenPoints = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+    const getDistanceBetweenPoints = (location1: LatLng, location2: Point) => {
         const R = 6371e3; // Earth's radius in meters
-        const φ1 = lat1 * Math.PI / 180; // φ, λ in radians
-        const φ2 = lat2 * Math.PI / 180;
-        const Δφ = (lat2 - lat1) * Math.PI / 180;
-        const Δλ = (lon2 - lon1) * Math.PI / 180;
+        const φ1 = location1.latitude * Math.PI / 180; // φ, λ in radians
+        const φ2 = location2.lat * Math.PI / 180;
+        const Δφ = (location2.lat - location1.latitude) * Math.PI / 180;
+        const Δλ = (location2.lng - location1.longitude) * Math.PI / 180;
 
         const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
             Math.cos(φ1) * Math.cos(φ2) *
@@ -77,20 +79,16 @@ const LocationSample = () => {
     };
 
     const isWithinRegion = (userLocation: Location.LocationObject, eventDetails: GooglePlaceDetail) => {
-        console.log(userLocation.coords.latitude, userLocation.coords.longitude)
-        console.log(eventDetails.geometry.location.lat, eventDetails.geometry.location.lng)
         const distance = getDistanceBetweenPoints(
-            userLocation.coords.latitude,
-            userLocation.coords.longitude,
-            eventDetails.geometry.location.lat,
-            eventDetails.geometry.location.lng
+            userLocation.coords,
+            eventDetails.geometry.location
         );
         const Tol = 20;
-        setIsUserNear(distance < radius + 20);
+        seIsAtEvent(distance < radius + 20);
     };
 
 
-    const reverseGeocode = async (coordinate: Coordinate) => {
+    const reverseGeocode = async (coordinate: LatLng) => {
         try {
             const response = await fetch(
                 `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinate.latitude},${coordinate.longitude}&key=${GOOGLE_PLACES_API_KEY}`
@@ -175,7 +173,6 @@ const LocationSample = () => {
                             return;
                         }
 
-                        console.log(JSON.stringify(details, null, 2), "details");
                         setEventDetails(details);
                         setDraggableMarkerCoord({
                             latitude: details.geometry.location.lat,
@@ -189,7 +186,7 @@ const LocationSample = () => {
                         });
                     }}
                     fetchDetails={true}
-                    predefinedPlaces={[zachary, bryan_collegiate, student_main_rec, richardson_petroleum]}
+                    predefinedPlaces={presetLocation}
                     onFail={(error) => console.error(error)}
                 />
             </View>
@@ -253,15 +250,10 @@ const LocationSample = () => {
                         }
                     }}
                 />
-                <Text>Is user near: {isUserNear ? "Yes" : "No"}</Text>
+                <Text>{isAtEvent ? "You are within range of the event" : "You are not within range of the event. You must be at the event to earn points."}</Text>
             </View>
         </View >
     );
 };
-
-interface Coordinate {
-    latitude: number;
-    longitude: number;
-}
 
 export default LocationSample;
