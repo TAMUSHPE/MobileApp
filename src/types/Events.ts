@@ -18,6 +18,7 @@ export interface SHPEEvent {
     pointsPerHour?: number;
     locationName?: string;
     geoLocation?: Geolocation;
+    copyFromObject?: (object: Object) => void;
 }
 
 /**
@@ -97,12 +98,12 @@ export class CommitteeMeeting implements SHPEEvent {
     }
 
     public copyFromObject({ name, tags, description, startTime, endTime, signInPoints }: {
-        name: string,
-        tags: string[],
-        description: string,
-        startTime: Timestamp,
-        endTime: Timestamp,
-        signInPoints: number,
+        name?: string,
+        tags?: string[],
+        description?: string,
+        startTime?: Timestamp,
+        endTime?: Timestamp,
+        signInPoints?: number,
     }) {
         this.name = name ?? this.name;
         this.tags = tags ?? this.tags;
@@ -196,11 +197,11 @@ export class Workshop implements SHPEEvent {
     public copyFromObject({ name, tags, description, workshopType, startTime, endTime, signInPoints }: {
         name?: string,
         tags?: string[],
-        description: string,
-        workshopType: WorkshopType,
-        startTime: Timestamp,
-        endTime: Timestamp,
-        signInPoints: number,
+        description?: string,
+        workshopType?: WorkshopType,
+        startTime?: Timestamp,
+        endTime?: Timestamp,
+        signInPoints?: number,
     }) {
         this.name = name ?? "Workshop";
         this.tags = tags ?? [];
@@ -274,12 +275,12 @@ export class SocialEvent implements SHPEEvent {
     }
 
     public copyFromObject({ name, tags, description, startTime, endTime, signInPoints }: {
-        name: string,
-        tags: string[],
-        description: string,
-        startTime: Timestamp,
-        endTime: Timestamp,
-        signInPoints: number,
+        name?: string,
+        tags?: string[],
+        description?: string,
+        startTime?: Timestamp,
+        endTime?: Timestamp,
+        signInPoints?: number,
     }) {
         this.name = name ?? this.name;
         this.tags = tags ?? this.tags;
@@ -313,12 +314,12 @@ export class IntramuralEvent implements SHPEEvent {
     }
 
     public copyFromObject({ name, tags, description, startTime, endTime, signInPoints }: {
-        name: string,
-        tags: string[],
-        description: string,
-        startTime: Timestamp,
-        endTime: Timestamp,
-        signInPoints: number,
+        name?: string,
+        tags?: string[],
+        description?: string,
+        startTime?: Timestamp,
+        endTime?: Timestamp,
+        signInPoints?: number,
     }) {
         this.name = name ?? this.name;
         this.tags = tags ?? this.tags;
@@ -402,5 +403,3 @@ export enum EventLogStatus {
     ALREADY_LOGGED = "already_logged",
     ERROR = "error",
 }
-
-export const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

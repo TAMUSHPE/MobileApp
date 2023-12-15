@@ -4,10 +4,11 @@ import { EventProps, SHPEEventScreenRouteProp } from '../types/Navigation'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { SHPEEvent, monthNames } from '../types/Events';
+import { SHPEEvent } from '../types/Events';
 import { getEvent, getAttendanceNumber, isUserSignedIn } from '../api/firebaseUtils';
 import { auth } from "../config/firebaseConfig";
 import { UserContext } from '../context/UserContext';
+import { monthNames } from '../helpers/timeUtils';
 
 
 const EventInfo = ({ navigation }: EventProps) => {

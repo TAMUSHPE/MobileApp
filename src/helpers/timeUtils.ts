@@ -16,3 +16,12 @@ export const getNextHourMillis = (): number => {
     const currentTime = Date.now();
     return currentTime + MillisecondTimes.HOUR - (currentTime % MillisecondTimes.HOUR);
 }
+
+export const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+export const formatDate = (date: Date) => {
+    const day = date.getDate();
+    const month = monthNames[date.getMonth()];
+
+    return `${month} ${day}`;
+}
