@@ -18,6 +18,7 @@ export const selectImage = async (options: ImagePicker.ImagePickerOptions | unde
         alert("Image permissions are required to upload a picture!");
         return undefined;
     }
+    
     return await ImagePicker.launchImageLibraryAsync(options)
         .then((result) => {
             if (!(result.canceled && result.assets === undefined)) {

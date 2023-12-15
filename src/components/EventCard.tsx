@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React, { useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../types/Navigation'
-import { monthNames } from '../types/Events'
+import { monthNames } from '../helpers/timeUtils';
 
 const EventCard: React.FC<EventProps> = ({ event, navigation }) => {
     const startDateAsDate = event?.startDate ? event?.startDate.toDate() : null;
