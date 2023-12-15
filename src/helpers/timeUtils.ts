@@ -2,6 +2,8 @@
  * Set of constants which can be used to do math with milliseconds
  */
 export abstract class MillisecondTimes {
+    static readonly YEAR = 31556952000;
+    static readonly MONTH = 2629746000;
     static readonly DAY = 86400000;
     static readonly HOUR = 3600000;
     static readonly MINUTE = 60000;
@@ -25,3 +27,11 @@ export const formatDate = (date: Date) => {
 
     return `${month} ${day}`;
 }
+
+export const formatTime = (date: Date) => {
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+
+    return `${hour % 12}:${minute} ${hour > 11 ? "PM" : "AM"}`
+}
+
