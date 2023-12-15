@@ -47,7 +47,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                 <View className='px-6'>
                     <View className='flex-row'>
                         <View className='w-full'>
-                            <Text className={`${darkMode ? "text-gray-100" : "text-gray-500"}`}>Select an event type...</Text>
+                            <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Select an event type...</Text>
                             <View className='w-full border-b-2 border-gray-400'>
                                 <Picker
                                     selectedValue={eventType}
