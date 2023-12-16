@@ -86,7 +86,6 @@ export type EventsStackParams = {
 
 export type HomeStackParams = {
     Home: undefined;
-    GoogleCalendar: undefined;
     PublicProfile: {
         uid: string;
     }
