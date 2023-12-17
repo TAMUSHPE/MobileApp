@@ -2,7 +2,7 @@ import { Image, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { MembersProps } from '../types/Navigation'
 import { Images } from '../../assets'
-import { Octicons } from '@expo/vector-icons';
+import TwitterSvg from './TwitterSvg'
 
 const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigation }) => {
     if (!userData) {
@@ -59,13 +59,13 @@ const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigat
                             <Text className='font-semibold text-lg'>{name}</Text>
                             {isOfficer && (
                                 <View className="ml-2">
-                                    <Octicons name="star" size={15} color="gold" />
+                                    <TwitterSvg color="#FCE300" />
                                 </View>
 
                             )}
                             {(!isOfficer && isVerified) && (
                                 <View className="ml-2">
-                                    <Octicons name="check-circle" size={15} color="green" />
+                                    <TwitterSvg color="#500000" />
                                 </View>
                             )}
                         </View>
