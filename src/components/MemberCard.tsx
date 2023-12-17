@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { MembersProps } from '../types/Navigation'
 import { Images } from '../../assets'
 import TwitterSvg from './TwitterSvg'
+import { getBadgeColor, isMemberVerified } from '../helpers/membership'
 
 const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigation }) => {
     if (!userData) {
@@ -12,35 +13,13 @@ const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigat
     const isOfficer = roles ? roles.officer : false;
 
     const [isVerified, setIsVerified] = useState<boolean>(false);
-
+    let badgeColor = getBadgeColor(isOfficer!, isVerified);
 
     useEffect(() => {
-        const checkVerificationStatus = () => {
-            if (!nationalExpiration || !chapterExpiration) {
-                return;
-            }
-            const nationalExpirationString = nationalExpiration;
-            const chapterExpirationString = chapterExpiration;
-
-            const currentDate = new Date();
-            let isNationalValid = true;
-            let isChapterValid = true;
-
-            if (nationalExpirationString) {
-                const nationalExpirationDate = new Date(nationalExpirationString);
-                isNationalValid = currentDate <= nationalExpirationDate;
-            }
-
-            if (chapterExpirationString) {
-                const chapterExpirationDate = new Date(chapterExpirationString);
-                isChapterValid = currentDate <= chapterExpirationDate;
-            }
-
-            setIsVerified(isNationalValid && isChapterValid);
-        };
-
-        checkVerificationStatus();
-    }, [])
+        if (nationalExpiration && chapterExpiration) {
+            setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
+        }
+    }, [nationalExpiration, chapterExpiration])
 
     return (
         <TouchableOpacity className='mb-8'
@@ -59,13 +38,13 @@ const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigat
                             <Text className='font-semibold text-lg'>{name}</Text>
                             {isOfficer && (
                                 <View className="ml-2">
-                                    <TwitterSvg color="#FCE300" />
+                                    <TwitterSvg color={badgeColor} />
                                 </View>
 
                             )}
                             {(!isOfficer && isVerified) && (
                                 <View className="ml-2">
-                                    <TwitterSvg color="#500000" />
+                                    <TwitterSvg color={badgeColor} />
                                 </View>
                             )}
                         </View>
