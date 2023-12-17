@@ -7,6 +7,7 @@ import { signOut } from 'firebase/auth';
 import { doc, setDoc, arrayRemove } from 'firebase/firestore';
 import { auth, db } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
+import { getBadgeColor, isMemberVerified } from '../helpers/membership';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -14,48 +15,25 @@ import TwitterSvg from '../components/TwitterSvg';
 import PublicProfileScreen from "../screens/PublicProfile";
 import { HomeStack } from './HomeStack'
 
+
+/**
+ * HomeDrawerContent - Component for rendering the drawer in the Home screen.
+ * @param {DrawerContentComponentProps} props - Props for the component.
+ */
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
 
+    const [isVerified, setIsVerified] = useState<boolean>(false);
     const { nationalExpiration, chapterExpiration, roles } = userInfo?.publicInfo ?? {};
     const isOfficer = roles ? roles.officer : false;
-    const [isVerified, setIsVerified] = useState<boolean>(false);
+    let badgeColor = getBadgeColor(isOfficer!, isVerified);
 
     useEffect(() => {
-        const checkVerificationStatus = () => {
-            if (!nationalExpiration || !chapterExpiration) {
-                return;
-            }
-            const nationalExpirationString = nationalExpiration;
-            const chapterExpirationString = chapterExpiration;
-
-            const currentDate = new Date();
-            let isNationalValid = true;
-            let isChapterValid = true;
-
-            if (nationalExpirationString) {
-                const nationalExpirationDate = new Date(nationalExpirationString);
-                isNationalValid = currentDate <= nationalExpirationDate;
-            }
-
-            if (chapterExpirationString) {
-                const chapterExpirationDate = new Date(chapterExpirationString);
-                isChapterValid = currentDate <= chapterExpirationDate;
-            }
-
-            setIsVerified(isNationalValid && isChapterValid);
-        };
-
-        checkVerificationStatus();
-    }, [])
-
-    let badgeColor = '';
-    if (isOfficer) {
-        badgeColor = '#FCE300';
-    } else if (isVerified) {
-        badgeColor = '#500000';
-    }
+        if (nationalExpiration && chapterExpiration) {
+            setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
+        }
+    }, [nationalExpiration, chapterExpiration])
 
 
     const removeExpoPushToken = async () => {
@@ -90,7 +68,18 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         color: userInfo?.private?.privateInfo?.settings?.darkMode ? "#EEE" : "#000"
     }
 
-    console.log(isOfficer, isVerified, badgeColor)
+    const DrawerButton = ({ iconName, label, onPress, buttonClassName }: { iconName: FontAwesomeIconName, label: string, onPress: () => void, buttonClassName: string }) => (
+        <TouchableOpacity
+            className={buttonClassName}
+            onPress={onPress}
+        >
+            <View style={{ minWidth: 30, justifyContent: 'center', alignItems: 'center' }}>
+                <FontAwesome name={iconName} color={drawerItemLabelStyle.color} size={30} />
+            </View>
+            <Text className="ml-3 font-semibold text-md" style={drawerItemLabelStyle}>{label}</Text>
+        </TouchableOpacity>
+    );
+
 
     return (
         <DrawerContentScrollView
@@ -100,6 +89,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                 height: "100%",
             }}
         >
+            {/* Profile Header */}
             <View className="flex-col bg-pale-blue w-full px-4 pb-4">
                 <View className='flex-row mb-2 items-center'>
                     <TouchableOpacity
@@ -123,46 +113,38 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                 </View>
             </View>
 
+            {/* Drawer Items */}
             <View className={`${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} flex-grow`}>
-                <TouchableOpacity
-                    className='flex-row ml-5 mt-5 mb-5 items-center'
+                <DrawerButton
+                    iconName="user"
+                    label='View Profile'
+                    buttonClassName='flex-row ml-5 mt-5 mb-5 items-center'
                     onPress={() => {
                         props.navigation.navigate("PublicProfile", { uid: auth.currentUser?.uid });
                         props.navigation.closeDrawer();
                     }}
-                >
-                    <View style={{ minWidth: 30, justifyContent: 'center', alignItems: 'center' }}>
-                        <FontAwesome name="user" color={drawerItemLabelStyle.color} size={30} />
-                    </View>
-                    <Text className="ml-3 font-semibold text-md" style={drawerItemLabelStyle}>View Profile</Text>
-                </TouchableOpacity>
+                />
 
                 {userInfo?.publicInfo?.roles?.officer?.valueOf() &&
-                    <TouchableOpacity
-                        className='flex-row mx-5 mb-5 items-center'
+                    <DrawerButton
+                        iconName="superpowers"
+                        label='Officer Dashboard'
+                        buttonClassName='flex-row mx-5 mb-5 items-center'
                         onPress={() => {
                             props.navigation.navigate("AdminDashboardStack");
                             props.navigation.closeDrawer();
                         }}
-                    >
-                        <View style={{ minWidth: 30, justifyContent: 'center', alignItems: 'center' }}>
-                            <FontAwesome name="superpowers" color={drawerItemLabelStyle.color} size={30} />
-                        </View>
-                        <Text className="ml-3 font-semibold text-md" style={drawerItemLabelStyle}>Officer Dashboard</Text>
-                    </TouchableOpacity>
+                    />
                 }
-                <TouchableOpacity
-                    className='flex-row mx-5 mb-5 items-center'
+                <DrawerButton
+                    iconName="gear"
+                    label='Settings'
+                    buttonClassName='flex-row mx-5 mb-5 items-center'
                     onPress={() => {
                         props.navigation.navigate("SettingsScreen");
                         props.navigation.closeDrawer();
                     }}
-                >
-                    <View style={{ minWidth: 30 }}>
-                        <FontAwesome name="gear" color={drawerItemLabelStyle.color} size={30} />
-                    </View>
-                    <Text className="ml-3 font-semibold text-md" style={drawerItemLabelStyle}>Settings</Text>
-                </TouchableOpacity>
+                />
 
                 <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
             </View>
@@ -226,5 +208,7 @@ const HomeDrawer = () => {
         </Drawer.Navigator>
     );
 };
+
+type FontAwesomeIconName = React.ComponentProps<typeof FontAwesome>['name'];
 
 export default HomeDrawer;
