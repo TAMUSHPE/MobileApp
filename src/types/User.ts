@@ -10,6 +10,7 @@ export interface Roles {
     representative?: boolean;
     lead?: boolean;
     secretary?: boolean;
+    customTitle?: string;
 };
 
 export type RankChange = "decreased" | "same" | "increased";
