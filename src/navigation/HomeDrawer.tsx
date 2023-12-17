@@ -2,35 +2,61 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Image, TouchableOpacity, View, Text } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { signOut } from 'firebase/auth';
 import { doc, setDoc, arrayRemove } from 'firebase/firestore';
 import { auth, db } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
-import ProfileBadge from '../components/ProfileBadge';
-import HomeScreen from '../screens/Home';
-import { Committee } from '../types/Committees';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
-import { StatusBar } from 'expo-status-bar';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import TwitterSvg from '../components/TwitterSvg';
 import PublicProfileScreen from "../screens/PublicProfile";
-import AdminDashboardStack from './AdminDashboardStack';
 import { HomeStack } from './HomeStack'
-import { getCommittees } from '../api/firebaseUtils';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
-    const [committees, setCommittees] = useState<Committee[]>([]);
+
+    const { nationalExpiration, chapterExpiration, roles } = userInfo?.publicInfo ?? {};
+    const isOfficer = roles ? roles.officer : false;
+    const [isVerified, setIsVerified] = useState<boolean>(false);
 
     useEffect(() => {
-        const fetchCommittees = async () => {
-            const response = await getCommittees();
-            setCommittees(response)
-        }
+        const checkVerificationStatus = () => {
+            if (!nationalExpiration || !chapterExpiration) {
+                return;
+            }
+            const nationalExpirationString = nationalExpiration;
+            const chapterExpirationString = chapterExpiration;
 
-        fetchCommittees();
-    }, []);
+            const currentDate = new Date();
+            let isNationalValid = true;
+            let isChapterValid = true;
+
+            if (nationalExpirationString) {
+                const nationalExpirationDate = new Date(nationalExpirationString);
+                isNationalValid = currentDate <= nationalExpirationDate;
+            }
+
+            if (chapterExpirationString) {
+                const chapterExpirationDate = new Date(chapterExpirationString);
+                isChapterValid = currentDate <= chapterExpirationDate;
+            }
+
+            setIsVerified(isNationalValid && isChapterValid);
+        };
+
+        checkVerificationStatus();
+    }, [])
+
+    let badgeColor = '';
+    if (isOfficer) {
+        badgeColor = '#FCE300';
+    } else if (isVerified) {
+        badgeColor = '#500000';
+    }
+
 
     const removeExpoPushToken = async () => {
         try {
@@ -64,90 +90,79 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
         color: userInfo?.private?.privateInfo?.settings?.darkMode ? "#EEE" : "#000"
     }
 
+    console.log(isOfficer, isVerified, badgeColor)
+
     return (
         <DrawerContentScrollView
             {...props}
             contentContainerStyle={{
-                backgroundColor: "#191740"/* "dark-navy" is #191740. */,
-                height: "100%"
+                backgroundColor: "#72A9BE"/* "dark-navy" is #191740. */,
+                height: "100%",
             }}
         >
-            <View className="flex-col bg-dark-navy w-full px-4 pb-4">
+            <View className="flex-col bg-pale-blue w-full px-4 pb-4">
                 <View className='flex-row mb-2 items-center'>
                     <TouchableOpacity
                         onPress={() => props.navigation.navigate("PublicProfile", { uid: auth.currentUser?.uid! })}
                     >
                         <Image
-                            className="flex w-16 h-16 rounded-full mr-2"
+                            className="flex w-16 h-16 rounded-full mr-5"
                             defaultSource={Images.DEFAULT_USER_PICTURE}
                             source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
                         />
                     </TouchableOpacity>
                     <View className='flex-1 flex-col max-w-full'>
-                        <Text className='text-white text-xl break-words mb-1'>{userInfo?.publicInfo?.displayName ?? "Username"}</Text>
-                        <Text className='text-white text-sm break-words'>{userInfo?.publicInfo?.name ?? "Name"}</Text>
                         <View className='flex-row items-center'>
-                            <View className='rounded-full w-2 h-2 bg-orange mr-1' />
-                            <Text className='text-white text-sm break-words'>{`${userInfo?.publicInfo?.points ?? 0} points`}</Text>
+                            <Text className='text-white text-xl break-words font-semibold'>{userInfo?.publicInfo?.displayName ?? "Name"}</Text>
+                            {(isOfficer || isVerified) && (
+                                <TwitterSvg className="ml-2" color={badgeColor} />
+                            )}
                         </View>
+                        <Text className='text-white text-sm break-words font-semibold'>{`${userInfo?.publicInfo?.points ?? 0} points`}</Text>
                     </View>
                 </View>
-                <View className="flex-row flex-wrap">
-                    <ProfileBadge
-                        text={userInfo?.publicInfo?.classYear}
-                        badgeClassName='px-2 py-1 bg-maroon rounded-full inline-block mr-1 mb-1'
-                        badgeColor='#500000'
-                        textClassName='text-center text-xs'
-                    />
-                    <ProfileBadge
-                        text={userInfo?.publicInfo?.major}
-                        badgeClassName='px-2 py-1 bg-pale-blue rounded-full inline-block mr-1 mb-1'
-                        badgeColor='#72A9EF'
-                        textClassName='text-center text-xs'
-                    />
-                    {userInfo?.publicInfo?.committees?.map((committeeDocName, index) => {
-                        const committeeData = committees.find(c => c.firebaseDocName === committeeDocName);
-                        return (
-                            <ProfileBadge
-                                badgeClassName='p-2 max-w-2/5 rounded-full mr-1 mb-2'
-                                text={committeeData?.name || "Unknown Committee"}
-                                badgeColor={committeeData?.color || ""}
-                                key={index}
-                            />
-                        );
-                    })}
-                </View>
             </View>
+
             <View className={`${userInfo?.private?.privateInfo?.settings?.darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} flex-grow`}>
-                <DrawerItem
-                    label="My Profile"
-                    labelStyle={drawerItemLabelStyle}
+                <TouchableOpacity
+                    className='flex-row ml-5 mt-5 mb-5 items-center'
                     onPress={() => {
                         props.navigation.navigate("PublicProfile", { uid: auth.currentUser?.uid });
                         props.navigation.closeDrawer();
                     }}
-                />
-
-
-                <DrawerItem
-                    label="Settings"
-                    labelStyle={drawerItemLabelStyle}
-                    onPress={() => {
-                        props.navigation.navigate("SettingsScreen");
-                        props.navigation.closeDrawer();
-                    }}
-                />
+                >
+                    <View style={{ minWidth: 30, justifyContent: 'center', alignItems: 'center' }}>
+                        <FontAwesome name="user" color={drawerItemLabelStyle.color} size={30} />
+                    </View>
+                    <Text className="ml-3 font-semibold text-md" style={drawerItemLabelStyle}>View Profile</Text>
+                </TouchableOpacity>
 
                 {userInfo?.publicInfo?.roles?.officer?.valueOf() &&
-                    <DrawerItem
-                        label="Admin Dashboard"
-                        labelStyle={drawerItemLabelStyle}
+                    <TouchableOpacity
+                        className='flex-row mx-5 mb-5 items-center'
                         onPress={() => {
                             props.navigation.navigate("AdminDashboardStack");
                             props.navigation.closeDrawer();
                         }}
-                    />
+                    >
+                        <View style={{ minWidth: 30, justifyContent: 'center', alignItems: 'center' }}>
+                            <FontAwesome name="superpowers" color={drawerItemLabelStyle.color} size={30} />
+                        </View>
+                        <Text className="ml-3 font-semibold text-md" style={drawerItemLabelStyle}>Officer Dashboard</Text>
+                    </TouchableOpacity>
                 }
+                <TouchableOpacity
+                    className='flex-row mx-5 mb-5 items-center'
+                    onPress={() => {
+                        props.navigation.navigate("SettingsScreen");
+                        props.navigation.closeDrawer();
+                    }}
+                >
+                    <View style={{ minWidth: 30 }}>
+                        <FontAwesome name="gear" color={drawerItemLabelStyle.color} size={30} />
+                    </View>
+                    <Text className="ml-3 font-semibold text-md" style={drawerItemLabelStyle}>Settings</Text>
+                </TouchableOpacity>
 
                 <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
             </View>
