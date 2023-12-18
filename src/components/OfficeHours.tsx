@@ -1,12 +1,12 @@
 import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import React, { useState, useEffect, useContext } from 'react';
-import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
-import { auth, db, functions } from '../config/firebaseConfig';
-import { MemberStatus } from '../types/User';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../context/UserContext';
+import { auth, db, functions } from '../config/firebaseConfig';
 import { addToWatchlist } from '../api/firebaseUtils';
+import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { MemberStatus } from '../types/User';
 
 /**
  * This component displays the office hours information and provides an interface 
@@ -21,7 +21,7 @@ const OfficeHours = () => {
     const DEBOUNCE_TIME = 10000; // 10 seconds
 
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext!;
+    const { userInfo } = userContext!;
 
 
     useEffect(() => {
@@ -35,8 +35,11 @@ const OfficeHours = () => {
         return () => unsubscribe();
     }, []);
 
-
-    const knockOnWall = async (data: MemberStatus) => {
+    const knockOnWall = async () => {
+        const data: MemberStatus = {
+            uid: auth.currentUser?.uid!,
+            timestamp: serverTimestamp()
+        };
         try {
             const currentTime = Date.now();
             if (currentTime - lastPassTime >= DEBOUNCE_TIME) {
@@ -58,36 +61,29 @@ const OfficeHours = () => {
         }
     };
 
-    const handleKnock = () => {
-        const data: MemberStatus = {
-            uid: auth.currentUser?.uid!,
-            timestamp: serverTimestamp()
-        };
-        knockOnWall(data);
-    };
-
-
     return (
-        <View className='my-10 py-6 mx-7 justify-center items-center bg-[#F9F9F9] rounded-md'>
-            <Text className="text-2xl text-pale-blue font-semibold">Office Hours</Text>
-            <View className='w-[90%] mt-6 border-pale-blue border-4 rounded-sm'>
-                <View className='my-4 justify-center items-center text-center'>
-                    <Text className='text-pale-blue text-lg'>Monday - Thursday</Text>
-                    <Text className='text-pale-blue text-lg'>10am - 2pm</Text>
-                    <View className='border-t-2 border-pale-blue w-[80%] my-3'></View>
-                    <Text className='text-pale-blue text-lg'>Location: Zach 450 - P1</Text>
-                    <Text className='text-pale-blue text-lg'>Email: tamushpe@gmail.com</Text>
+        <View>
+            <View className='my-10 py-6 mx-7 justify-center items-center bg-[#F9F9F9] rounded-md'>
+                <Text className="text-2xl text-pale-blue font-semibold">Office Hours</Text>
+                <View className='w-[90%] mt-6 border-pale-blue border-4 rounded-sm'>
+                    <View className='my-4 justify-center items-center text-center'>
+                        <Text className='text-pale-blue text-lg'>Monday - Thursday</Text>
+                        <Text className='text-pale-blue text-lg'>10am - 2pm</Text>
+                        <View className='border-t-2 border-pale-blue w-[80%] my-3'></View>
+                        <Text className='text-pale-blue text-lg'>Location: Zach 450 - P1</Text>
+                        <Text className='text-pale-blue text-lg'>Email: tamushpe@gmail.com</Text>
+                    </View>
                 </View>
-            </View>
 
-            <TouchableOpacity
-                onPress={() => setConfirmVisible(!confirmVisible)}
-                className="py-5 px-12 mt-10 bg-pale-blue rounded-2xl"
-                activeOpacity={0.7}
-                disabled={officeCount === 0}
-            >
-                <Text className="text-white text-2xl font-extrabold"> {officeCount > 0 ? "Knock on Wall" : "Unavailable"} </Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setConfirmVisible(!confirmVisible)}
+                    className={`py-5 px-12 mt-10 rounded-2xl ${officeCount > 0 ? "bg-pale-blue" : "bg-[#F9F9F9]"}`}
+                    activeOpacity={0.7}
+                    disabled={officeCount === 0}
+                >
+                    <Text className={`text-2xl font-extrabold ${officeCount > 0 ? "text-white" : "text-pale-blue"}`}> {officeCount > 0 ? "Knock on Wall" : "Unavailable"} </Text>
+                </TouchableOpacity>
+            </View>
 
             <Modal
                 animationType="none"
@@ -110,15 +106,15 @@ const OfficeHours = () => {
                                         <TouchableOpacity
                                             onPress={async () => {
                                                 setConfirmVisible(false)
-                                                handleKnock()
+                                                knockOnWall()
                                             }}
                                             className="bg-pale-blue rounded-xl justify-center items-center"
                                         >
-                                            <Text className='text-xl font-bold text-white px-2'> Send Notification </Text>
+                                            <Text className='text-xl font-bold text-white px-3'>Send Notification</Text>
                                         </TouchableOpacity>
 
-                                        <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
-                                            <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
+                                        <TouchableOpacity onPress={async () => { setConfirmVisible(false) }}>
+                                            <Text className='text-xl font-bold py-3 px-8'>Cancel</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
