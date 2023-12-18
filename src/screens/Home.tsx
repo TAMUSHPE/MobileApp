@@ -103,10 +103,6 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
             <StatusBar style='dark' />
             <FeaturedSlider route={route} />
             <View className='flex-row justify-center mt-4'>
-                <View className='bg-gray-100 rounded-md items-center w-1/2 p-4'>
-                    <Text className='text-2xl text-pale-blue font-bold pb-2 text-center'>Upcoming Events</Text>
-                    <Text>TODO: This is the content of column 1.</Text>
-                </View>
                 {MemberOfTheMonth && (
                     <View className="items-center p-4 w-1/2">
                         <Text className='text-2xl text-pale-blue font-bold text-center'>Member of the Month </Text>
@@ -127,7 +123,6 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
                     </View>
                 )}
             </View>
-            <OfficeHours />
             {localUser?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
 
             <View className='my-10 py-6 mx-7 justify-center items-center rounded-md'>
