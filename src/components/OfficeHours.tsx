@@ -1,12 +1,12 @@
 import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import React, { useState, useEffect, useContext } from 'react';
 import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { httpsCallable, getFunctions } from 'firebase/functions';
+import { httpsCallable } from 'firebase/functions';
 import { auth, db, functions } from '../config/firebaseConfig';
 import { MemberStatus } from '../types/User';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../context/UserContext';
-import { getWatchlist, addToWatchlist } from '../api/firebaseUtils';
+import { addToWatchlist } from '../api/firebaseUtils';
 
 /**
  * This component displays the office hours information and provides an interface 
@@ -68,25 +68,25 @@ const OfficeHours = () => {
 
 
     return (
-        <View className='my-10 py-6 mx-7 justify-center items-center bg-pale-blue rounded-md'>
-            <Text className="text-2xl text-white">Office Hours</Text>
-            <View className='w-[90%] mt-6 border-white border-2 rounded-sm'>
+        <View className='my-10 py-6 mx-7 justify-center items-center bg-[#F9F9F9] rounded-md'>
+            <Text className="text-2xl text-pale-blue font-semibold">Office Hours</Text>
+            <View className='w-[90%] mt-6 border-pale-blue border-4 rounded-sm'>
                 <View className='my-4 justify-center items-center text-center'>
-                    <Text className='text-white text-lg'>Monday - Thursday</Text>
-                    <Text className='text-white text-lg'>10am - 2pm</Text>
-                    <View className='border-t-2 border-white w-[80%] my-3'></View>
-                    <Text className='text-white text-lg'>Location: Zach 450 - P1</Text>
-                    <Text className='text-white text-lg'>Email: tamushpe@gmail.com</Text>
+                    <Text className='text-pale-blue text-lg'>Monday - Thursday</Text>
+                    <Text className='text-pale-blue text-lg'>10am - 2pm</Text>
+                    <View className='border-t-2 border-pale-blue w-[80%] my-3'></View>
+                    <Text className='text-pale-blue text-lg'>Location: Zach 450 - P1</Text>
+                    <Text className='text-pale-blue text-lg'>Email: tamushpe@gmail.com</Text>
                 </View>
             </View>
 
             <TouchableOpacity
                 onPress={() => setConfirmVisible(!confirmVisible)}
-                className="py-4 px-10 mt-10 border-white border-2 rounded-2xl"
+                className="py-5 px-12 mt-10 bg-pale-blue rounded-2xl"
                 activeOpacity={0.7}
                 disabled={officeCount === 0}
             >
-                <Text className="text-white text-xl font-extrabold"> {officeCount > 0 ? "Knock on Wall" : "Unavailable"} </Text>
+                <Text className="text-white text-2xl font-extrabold"> {officeCount > 0 ? "Knock on Wall" : "Unavailable"} </Text>
             </TouchableOpacity>
 
             <Modal
@@ -126,8 +126,8 @@ const OfficeHours = () => {
                         </TouchableWithoutFeedback>
                     </View>
                 </TouchableOpacity >
-            </Modal >
-        </View >
+            </Modal>
+        </View>
     )
 }
 
