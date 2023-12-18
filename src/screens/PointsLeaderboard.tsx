@@ -246,21 +246,25 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                             ) : (
                                 <View className='flex-row h-20 mx-4 px-4 mt-8 rounded-xl items-center'
                                     style={{ backgroundColor: colorMapping[userRankChange] }}>
-                                    <View className='flex-1 flex-row items-center'>
-                                        <View className='w-[65%]'>
-                                            <Text className='text-xl font-medium'>Your Ranking</Text>
-                                            <View className='flex-row items-center'>
-                                                <Text className='text-xl font-medium ml-2'>{userPoints} pts</Text>
-                                            </View>
 
+                                    {userPoints != -1 ? (
+                                        <View>
+                                            <View className='flex-1 flex-row items-center'>
+                                                <View className='w-[65%]'>
+                                                    <Text className='text-xl font-medium'>Your Ranking</Text>
+                                                    <View className='flex-row items-center'>
+                                                        <Text className='text-xl font-medium ml-2'>{userPoints} pts </Text>
+                                                    </View>
+                                                </View>
+                                            </View>
+                                            <View className='flex-row'>
+                                                <Text className='text-xl font-medium mr-4'>{userRank}</Text>
+                                                <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
+                                                    {renderRankChangeIcon()}
+                                                </View>
+                                            </View>
                                         </View>
-                                    </View>
-                                    <View className='flex-row'>
-                                        <Text className='text-xl font-medium mr-4'>{userRank}</Text>
-                                        <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
-                                            {renderRankChangeIcon()}
-                                        </View>
-                                    </View>
+                                    ) : (<Text className='text-xl font-medium'>You don't any have points.</Text>)}
                                 </View>
                             )}
                         </View>
