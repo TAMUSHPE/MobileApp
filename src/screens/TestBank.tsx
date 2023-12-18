@@ -173,22 +173,45 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
     }, [filter, endOfData, testCards.length, setQuery]);
 
     return (
-        <SafeAreaView
-            className='bg-red-orange h-full pt-7'
-            edges={['right', 'top', 'left']}
-        >
+        <View className='flex-1 bg-pale-blue'>
             {/* Header */}
-            < View className={`bg-offwhite ${testCards.length === 0 && "h-screen"}`} >
-                <View className='flex-row items-center justify-between px-6 mt-4 pt-4 pb-2'>
-                    <TouchableHighlight className="px-2" onPress={() => navigation.goBack()} underlayColor="offwhite">
-                        <Octicons name="chevron-left" size={30} color="black" />
-                    </TouchableHighlight>
-                    <Text className='text-2xl font-semibold'>Test Bank</Text>
 
-                    <TouchableHighlight onPress={() => setShowFilterMenu(!showFilterMenu)} underlayColor="offwhite">
-                        <Octicons name="filter" size={27} color="black" />
-                    </TouchableHighlight>
+            <SafeAreaView edges={['top']} >
+                <View className='flex-row justify-between items-center mx-5 mt-1'>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Octicons name="chevron-left" size={30} color="white" />
+                    </TouchableOpacity>
+                    <Text className='text-2xl font-semibold text-white'>Test Bank</Text>
+
+                    <TouchableOpacity onPress={() => alert("tobeimplemented")}>
+                        <Octicons name="info" size={25} color="white" />
+                    </TouchableOpacity>
                 </View>
+            </SafeAreaView>
+
+            {/* Test List */}
+            <ScrollView
+                onScroll={handleScroll}
+                scrollEventThrottle={400}
+                bounces={false}
+                className='bg-[#F9F9F9] mt-12 rounded-t-2xl'
+            >
+                <View className='flex-row justify-start'>
+                    <TouchableOpacity
+                        onPress={() => setShowFilterMenu(!showFilterMenu)}
+                        className='my-2 mx-4 p-2'
+                    >
+                        {showFilterMenu ? (
+                            <View className='flex-row items-center space-x-4'>
+                                <Octicons name="x" className='bg-red-600' size={30} color="black" />
+                                <Text className='font-semibold text-xl'>Filters</Text>
+                            </View>
+                        ) : (
+                            <Octicons name="filter" className='bg-blue' size={30} color="black" />
+                        )}
+                    </TouchableOpacity>
+                </View>
+
                 {showFilterMenu && (
                     <View className='flex-row p-4'>
                         <View className='flex-1 space-y-4'>
@@ -197,78 +220,67 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                                     value={filter?.subject}
                                     onChangeText={(text) => setFilter({ ...filter, subject: text })}
                                     placeholder="Subject"
-                                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
                                 />
                                 <TextInput
                                     value={filter?.course}
                                     onChangeText={(text) => setFilter({ ...filter, course: text })}
                                     placeholder="Course"
-                                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2'
+                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
                                 />
+                                <TouchableOpacity
+                                    onPress={() => handleApplyFilter()}
+                                    className='items-center justify-center bg-pale-blue py-2 w-20 rounded-lg ml-3'>
+                                    <Text className='text-white font-bold text-xl'>Apply</Text>
+                                </TouchableOpacity>
                             </View>
-                            <View className='justify-start  flex-row'>
+                            <View className='justify-start flex-row'>
                                 <TextInput
                                     value={filter?.professor}
                                     onChangeText={(text) => setFilter({ ...filter, professor: text })}
                                     placeholder="Professor"
-                                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
                                 />
                                 <TextInput
                                     value={filter?.student}
                                     onChangeText={(text) => setFilter({ ...filter, student: text })}
                                     placeholder="Student"
-                                    className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2'
+                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
                                 />
+                                <TouchableOpacity
+                                    onPress={() => handleCLearFilter()}
+                                    className='items-center justify-center py-2 w-20 rounded-lg ml-3'>
+                                    <Text className='font-bold text-xl text-pale-blue'>Rest</Text>
+                                </TouchableOpacity>
                             </View>
-                        </View>
-                        <View>
-
-                            <TouchableOpacity
-                                onPress={() => handleApplyFilter()}
-                                className='items-center justify-center bg-pale-blue w-14 h-10 rounded-lg'>
-                                <Text className='text-bold text-xl'>Apply</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => handleCLearFilter()}
-                                className='items-center justify-center bg-red-600 w-14 h-10 rounded-lg'>
-                                <Text className='text-bold text-xl'>Clear</Text>
-                            </TouchableOpacity>
                         </View>
                     </View>
                 )}
-                {/* Test List */}
 
-                <ScrollView
-                    onScroll={handleScroll}
-                    scrollEventThrottle={400}
-                    bounces={false}
-                    className='h-full'
-                >
-                    <View className={`${testCards.length === 0 && "h-screen"}`}>
-                        {testCards.slice(3).map((testData, index) => (
-                            <View key={index}>
-                                {(testData.course && testData.subject) && (
-                                    <TestCard testData={testData} navigation={navigation} />
-                                )}
-                            </View>
-                        ))}
-
-                        <View className={`justify-center ${testCards.length < 5 ? "h-100" : "h-32"} items-center mb-6 ${testCards.length === 0 && "h-[70%]"} `}>
-                            {loading && (
-                                <ActivityIndicator className="pb-12" size={"large"} />
-                            )}
-                            {endOfData && (
-                                <View className='pb-12 items-center justify-center'>
-                                    <Text>
-                                        End of Test Bank
-                                    </Text>
-                                </View>
+                <View className='mt-4'>
+                    {testCards.slice(3).map((testData, index) => (
+                        <View key={index}>
+                            {(testData.course && testData.subject) && (
+                                <TestCard testData={testData} navigation={navigation} />
                             )}
                         </View>
+                    ))}
+
+                    <View className='mt-12'>
+                        {loading && (
+                            <ActivityIndicator className="pb-12" size={"large"} />
+                        )}
+                        {endOfData && (
+                            <View className='pb-12 items-center justify-center'>
+                                <Text>
+                                    End of Test Bank
+                                </Text>
+                            </View>
+                        )}
                     </View>
-                </ScrollView>
-            </View >
-        </SafeAreaView >
+                </View>
+            </ScrollView>
+        </View>
     )
 }
 
