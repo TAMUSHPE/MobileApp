@@ -128,23 +128,23 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
 
     return (
         <SafeAreaView
-            className="bg-pale-orange h-full"
+            className="bg-pale-blue h-full"
             edges={["top", "left", "right"]}
         >
             {/* Header */}
             <View className='flex-row items-center h-10'>
                 <View className='pl-6'>
-                    <TouchableHighlight className="px-2" onPress={() => navigation.goBack()} underlayColor="#EF9260">
-                        <Octicons name="chevron-left" size={30} color="black" />
-                    </TouchableHighlight>
+                    <TouchableOpacity activeOpacity={1} className="px-2" onPress={() => navigation.goBack()}>
+                        <Octicons name="chevron-left" size={30} color="white" />
+                    </TouchableOpacity>
                 </View>
                 <View className='flex-1 items-center'>
-                    <Text className="text-2xl font-bold">Points Leaderboard</Text>
+                    <Text className="text-2xl font-bold text-white">Points Leaderboard</Text>
                 </View>
                 <View className="pr-4">
-                    <TouchableHighlight onPress={() => navigation.navigate("PointsInfo")} underlayColor="#EF9260">
-                        <Octicons name="info" size={25} color="black" />
-                    </TouchableHighlight>
+                    <TouchableOpacity activeOpacity={1} onPress={() => navigation.navigate("PointsInfo")}>
+                        <Octicons name="info" size={25} color="white" />
+                    </TouchableOpacity>
                 </View>
             </View>
 
@@ -175,7 +175,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                             </View>
                         </TouchableOpacity>
                         <View className='mt-4 w-[100px]'>
-                            <Text className='text-center text-xl font-bold '>{rankCards[1]?.name}</Text>
+                            <Text className='text-center text-xl font-bold text-white '>{rankCards[1]?.name}</Text>
                         </View>
                     </View>
 
@@ -200,7 +200,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                             </View>
                         </TouchableOpacity>
                         <View className='mt-4 w-[100px]'>
-                            <Text className='text-center text-xl font-bold'>{rankCards[0]?.name}</Text>
+                            <Text className='text-center text-xl font-bold text-white'>{rankCards[0]?.name}</Text>
                         </View>
                     </View>
 
@@ -225,13 +225,13 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                             </View>
                         </TouchableOpacity>
                         <View className='mt-4 w-[100px]'>
-                            <Text className='text-center text-xl font-bold'>{rankCards[2]?.name}</Text>
+                            <Text className='text-center text-xl font-bold text-white'>{rankCards[2]?.name}</Text>
                         </View>
                     </View>
 
                 </View>
 
-                <View className={`bg-white rounded-t-2xl flex-1 ${rankCards.length === 0 && "h-screen"}`}>
+                <View className={`bg-[#F9F9F9] rounded-t-2xl flex-1 ${rankCards.length === 0 && "h-screen"}`}>
                     {/* User Ranking */}
                     {!initLoading && (
                         <View>
@@ -248,7 +248,6 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                                         <View className='w-[65%]'>
                                             <Text className='text-xl font-medium'>Your Ranking</Text>
                                             <View className='flex-row items-center'>
-                                                <Octicons name="star-fill" size={24} color="black" />
                                                 <Text className='text-xl font-medium ml-2'>{userPoints} pts</Text>
                                             </View>
 

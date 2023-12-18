@@ -7,7 +7,7 @@ import { ResourcesStackParams } from '../types/Navigation';
 
 const PointsInfo = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
     return (
-        <SafeAreaView className='bg-pale-orange h-full'>
+        <SafeAreaView className='bg-white h-full'>
             <View className='flex-row justify-end mr-6 mt-2'>
                 <TouchableHighlight onPress={() => navigation.goBack()} underlayColor="#EF9260">
                     <Octicons name="x" size={30} color="black" />
