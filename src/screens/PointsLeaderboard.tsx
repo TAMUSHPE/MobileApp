@@ -11,6 +11,7 @@ import { RankChange, PublicUserInfo } from '../types/User';
 import { GoogleSheetsResponse } from '../types/GoogleSheetsTypes';
 import { ResourcesStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
+import { StatusBar } from 'expo-status-bar';
 
 const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
     const [rankCards, setRankCards] = useState<PublicUserInfo[]>([])
@@ -131,6 +132,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
             className="bg-pale-blue h-full"
             edges={["top", "left", "right"]}
         >
+            <StatusBar style="light" />
             {/* Header */}
             <View className='flex-row items-center h-10'>
                 <View className='pl-6'>
