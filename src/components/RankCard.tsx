@@ -30,7 +30,7 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
             disabled={uid === undefined}
             onPress={() => { navigation.navigate("PublicProfile", { uid: uid! }) }}
         >
-            <View className="flex-row bg-[#D4D4D4] py-3 mx-4 px-4 mt-8 rounded-xl items-center">
+            <View className="flex-row bg-white py-3 mx-4 px-4 mt-8 rounded-xl items-center shadow-md shadow-slate-300">
                 {/* Profile image and points*/}
                 <View className='flex-1 flex-row items-center'>
                     <Image
@@ -40,8 +40,7 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
                     <View className='w-[65%]'>
                         <Text className='text-xl font-medium'>{name}</Text>
                         <View className='flex-row items-center'>
-                            <Octicons name="star-fill" size={24} color="black" />
-                            <Text className='text-xl font-medium ml-2'>{points} pts</Text>
+                            <Text className='text-xl font-medium text-gray-500'>{points} pts</Text>
                         </View>
                     </View>
                 </View>
