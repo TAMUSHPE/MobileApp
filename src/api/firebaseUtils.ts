@@ -327,14 +327,14 @@ export const setCommitteeData = async (committeeData: Committee) => {
     try {
         await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
             name: committeeData.name || "",
-            color: committeeData.color || "#fff",
+            color: committeeData.color || "#500000",
             description: committeeData.description || "",
             head: committeeData.head || "",
             leads: committeeData.leads || [],
             memberApplicationLink: committeeData.memberApplicationLink || "",
             leadApplicationLink: committeeData.leadApplicationLink || "",
             logo: committeeData.logo || "default",
-
+            memberCount: committeeData.memberCount || 0,
         }, { merge: true });
         return true;
     } catch (err) {

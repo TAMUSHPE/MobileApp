@@ -34,7 +34,7 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
     const [lastPassTime, setLastPassTime] = useState(0)
     const DEBOUNCE_TIME = 10000; // 10 seconds
 
-    const { name, color, image, head, leads, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = initialCommittee;
+    const { name, color, logo, head, leads, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = initialCommittee;
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
 
@@ -96,7 +96,6 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                 )}
                 <View className='flex-auto items-center gap-4'>
                     <Text className='text-[32px] font-bold'>{name}</Text>
-                    <Image className='h-48 w-80 bg-white' source={image || Images.COMMITTEE_4} />
                     <Text className='text-lg pt-5 px-5'>{description || "No description provided"}</Text>
                     <View className='flex-row py-2'>
                         <Text className='text-3xl'>Members: </Text>

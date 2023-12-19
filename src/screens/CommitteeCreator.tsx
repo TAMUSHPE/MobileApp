@@ -12,7 +12,7 @@ import { PublicUserInfo, UserFilter } from '../types/User';
 import CustomColorPicker from '../components/CustomColorPicker';
 
 const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
-    const [committeeData, setCommitteeData] = useState<Committee>({ leads: [] });
+    const [localCommitteeData, setLocalCommitteeData] = useState<Committee>({ leads: [], memberCount: 0 });
     const [headModalVisible, setHeadModalVisible] = useState(false);
     const [leadsModalVisible, setLeadsModalVisible] = useState(false);
     const [SelectedLogoComponent, setSelectedLogoComponent] = useState<React.ElementType | null>(null);
@@ -26,8 +26,8 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
 
 
     const handleColorChosen = (color: string) => {
-        setCommitteeData({
-            ...committeeData,
+        setLocalCommitteeData({
+            ...localCommitteeData,
             color: color
         });
     };
@@ -35,8 +35,8 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     const fetchHeadUserData = async (uid: string) => {
         const fetchedInfo = await getPublicUserData(uid);
         if (fetchedInfo) {
-            setCommitteeData({
-                ...committeeData,
+            setLocalCommitteeData({
+                ...localCommitteeData,
                 head: fetchedInfo,
             });
         }
@@ -45,7 +45,7 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     const fetchLeadUserData = async (uid: string) => {
         const fetchedInfo = await getPublicUserData(uid);
         if (fetchedInfo) {
-            setCommitteeData(prevCommitteeData => ({
+            setLocalCommitteeData(prevCommitteeData => ({
                 ...prevCommitteeData,
                 leads: [...(prevCommitteeData?.leads || []), { ...fetchedInfo, uid }]
             }));
@@ -53,7 +53,7 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     };
 
     const addUIDToList = (uid: string) => {
-        const currentUIDList = committeeData?.leads || [];
+        const currentUIDList = localCommitteeData?.leads || [];
         if (currentUIDList.some(lead => lead.uid === uid)) {
             return;
         }
@@ -62,7 +62,7 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     };
 
     const removeUIDFromList = (uid: string) => {
-        setCommitteeData(prevCommitteeData => ({
+        setLocalCommitteeData(prevCommitteeData => ({
             ...prevCommitteeData,
             leads: prevCommitteeData?.leads?.filter(lead => lead.uid !== uid) || []
         }));
@@ -112,13 +112,13 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     }, [])
 
 
-    // Update the selected logo component whenever committeeData.logo changes
+    // Update the selected logo component whenever localCommitteeData.logo changes
     useEffect(() => {
-        if (committeeData.logo) {
-            const LogoComponent = getLogoComponent(committeeData.logo);
+        if (localCommitteeData.logo) {
+            const LogoComponent = getLogoComponent(localCommitteeData.logo);
             setSelectedLogoComponent(() => LogoComponent);
         }
-    }, [committeeData.logo]);
+    }, [localCommitteeData.logo]);
 
     const LogoSelector = ({ onLogoSelected }: { onLogoSelected: (logoName: CommitteeLogosName) => void }) => {
         return (
@@ -131,7 +131,6 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
             </View>
         );
     };
-
 
     return (
         <SafeAreaView>
@@ -154,13 +153,13 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                                 onChangeText={(text: string) => {
                                     const trimmedText = text.trim(); // Remove spaces from both ends
                                     const formattedFirebaseName = trimmedText.toLowerCase().replace(/\s+/g, '-');
-                                    setCommitteeData({
-                                        ...committeeData,
+                                    setLocalCommitteeData({
+                                        ...localCommitteeData,
                                         name: text,
                                         firebaseDocName: formattedFirebaseName
                                     });
                                 }}
-                                value={committeeData?.name}
+                                value={localCommitteeData?.name}
                                 placeholder='Select a committee name'
                             />
                         </View>
@@ -169,7 +168,7 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                     <View className='mt-8'>
                         <Text className='text-gray-500 mb-1'>Select a logo</Text>
                     </View>
-                    <LogoSelector onLogoSelected={(logoName) => setCommitteeData({ ...committeeData!, logo: logoName })} />
+                    <LogoSelector onLogoSelected={(logoName) => setLocalCommitteeData({ ...localCommitteeData, logo: logoName })} />
 
                     {SelectedLogoComponent && (
                         <View>
@@ -183,18 +182,18 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                         <View className='items-center flex-1'>
                             <Text className='text-gray-500 text-lg text-center'>Head UID</Text>
                             <TouchableOpacity onPress={() => setHeadModalVisible(true)}>
-                                <Text className='text-lg text-center'>{committeeData?.head?.name || "Select a Head"}</Text>
+                                <Text className='text-lg text-center'>{localCommitteeData?.head?.name || "Select a Head"}</Text>
                             </TouchableOpacity>
                         </View>
 
                         <View className='items-center flex-1'>
                             <Text className='text-gray-500 text-lg text-center'>Lead UIDs</Text>
                             <TouchableOpacity onPress={() => setLeadsModalVisible(true)}>
-                                {committeeData?.leads?.length === 0 &&
+                                {localCommitteeData?.leads?.length === 0 &&
                                     <Text className='text-lg text-center'>Select Leads</Text>
                                 }
                             </TouchableOpacity>
-                            {committeeData?.leads?.map((userInfo, index) => (
+                            {localCommitteeData?.leads?.map((userInfo, index) => (
                                 <View key={index}>
                                     <View className='flex-row'>
                                         <Text className='text-lg text-center'>{userInfo.name}</Text>
@@ -204,7 +203,7 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                                     </View>
                                 </View>
                             ))}
-                            {committeeData?.leads?.length! > 0 &&
+                            {localCommitteeData?.leads?.length! > 0 &&
                                 <TouchableOpacity
                                     className='text-center bg-pale-orange p-1 mt-2 rounded-md'
                                     onPress={() => setLeadsModalVisible(true)}>
@@ -219,8 +218,8 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                         <Text className='text-gray-500 mb-2'>Members Application Link</Text>
                         <TextInput
                             className='w-full rounded-md text-lg px-2 py-1 bg-white'
-                            value={committeeData?.memberApplicationLink}
-                            onChangeText={(text) => setCommitteeData({ ...committeeData!, memberApplicationLink: text })}
+                            value={localCommitteeData?.memberApplicationLink}
+                            onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, memberApplicationLink: text })}
                             placeholder="Add member application link"
                         />
                     </View>
@@ -229,8 +228,8 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                         <Text className='text-gray-500 mb-2'>Leads Application Link</Text>
                         <TextInput
                             className='w-full rounded-md text-lg px-2 py-1 bg-white'
-                            value={committeeData?.leadApplicationLink}
-                            onChangeText={(text) => setCommitteeData({ ...committeeData!, leadApplicationLink: text })}
+                            value={localCommitteeData?.leadApplicationLink}
+                            onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, leadApplicationLink: text })}
                             placeholder="Add member application link"
                         />
                     </View>
@@ -239,8 +238,8 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                         <Text className='text-gray-500 mb-2'>Description</Text>
                         <TextInput
                             className='w-full rounded-md text-lg px-2 py-1 bg-white h-32'
-                            value={committeeData?.description}
-                            onChangeText={(text) => setCommitteeData({ ...committeeData!, description: text })}
+                            value={localCommitteeData?.description}
+                            onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, description: text })}
                             placeholder="Add a description"
                             multiline={true}
                             style={{ textAlignVertical: 'top' }}
@@ -253,8 +252,8 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                 <View className='w-screen justify-center items-center pt-4 space-x-7'>
                     <TouchableOpacity className='bg-blue-400 justify-center items-center rounded-md p-2'
                         onPress={async () => {
-                            await setCommitteeData(committeeData!);
-                            setCommitteeData({ leads: [] });
+                            setCommitteeData(localCommitteeData);
+                            setLocalCommitteeData({ leads: [] });
                         }}
                     >
                         <Text className='text-xl text-semibold'>Create Committee</Text>
