@@ -10,13 +10,13 @@ import { getDownloadURL } from 'firebase/storage';
 import { UserContext } from '../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type MemberSHPETabs = "TAMUChapter" | "SHPENational"
+type MemberSHPEs = "TAMUChapter" | "SHPENational"
 
-const MemberSHPETab = () => {
+const MemberSHPE = () => {
     const TAMU_GOOGLE_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSeJqnOMHljOHcMGVzkhQeVtPgt5eG5Iic8vZlmZjXCYT0qw3g/viewform"
     const TAMU_PAY_DUES = "https://tamu.estore.flywire.com/products/2023-2024-membershpe-shirt-127459"
     const NATIONALS = "https://www.shpeconnect.org/eweb/DynamicPage.aspx?WebCode=LoginRequired&expires=yes&Site=shpe"
-    const [currentTab, setCurrentTab] = useState<MemberSHPETabs>("TAMUChapter")
+    const [currentTab, setCurrentTab] = useState<MemberSHPEs>("TAMUChapter")
     const [uploadedNational, setUploadedNational] = useState(false)
     const [uploadedChapter, setUploadedChapter] = useState(false)
     const [isVerified, setIsVerified] = useState(true)
@@ -324,4 +324,4 @@ const MemberSHPETab = () => {
     )
 }
 
-export default MemberSHPETab
+export default MemberSHPE

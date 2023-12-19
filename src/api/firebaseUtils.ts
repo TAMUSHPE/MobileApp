@@ -323,7 +323,7 @@ export const getCommittees = async (): Promise<Committee[]> => {
         return [];
     }
 };
-export const setCommitteeInfo = async (committeeData: Committee) => {
+export const setCommitteeData = async (committeeData: Committee) => {
     try {
         await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
             name: committeeData.name || "",
