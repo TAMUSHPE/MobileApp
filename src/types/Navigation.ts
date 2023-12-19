@@ -64,8 +64,8 @@ export type ResourcesStackParams = {
 }
 
 
-export type CommitteesStackParams = {
-    CommitteesScreen: undefined;
+export type InvolvementStackParams = {
+    InvolvementScreen: undefined;
     CommitteeInfoScreen: {
         committee: Committee;
     };
@@ -176,7 +176,7 @@ export type EventProps = {
 }
 
 export type CommitteesTabProps = {
-    navigation: NativeStackNavigationProp<CommitteesStackParams>
+    navigation: NativeStackNavigationProp<InvolvementStackParams>
 }
 
 export type EventVerificationProps = {
@@ -194,8 +194,8 @@ export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScr
 // routes prop for screens
 export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
-export type CommitteeInfoScreenRouteProp = RouteProp<CommitteesStackParams, "CommitteeInfoScreen">;
-export type CommitteeEditorScreenRouteProp = RouteProp<CommitteesStackParams, "CommitteeEditor">;
+export type CommitteeInfoScreenRouteProp = RouteProp<InvolvementStackParams, "CommitteeInfoScreen">;
+export type CommitteeEditorScreenRouteProp = RouteProp<InvolvementStackParams, "CommitteeEditor">;
 export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;
 export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "EventInfo">;
 export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;
