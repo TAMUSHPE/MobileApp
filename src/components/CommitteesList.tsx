@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity, Image, SectionList, SafeAreaView, ActivityIndicator } from 'react-native'
+import { View, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useCallback, useEffect } from 'react'
 import CommitteeCard from './CommitteeCard'
 import { Committee } from "../types/Committees"
@@ -16,6 +16,7 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
         setCommittees(response);
         setLoading(false);
     }
+
     useFocusEffect(
         useCallback(() => {
             fetchCommittees();
@@ -30,9 +31,12 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
     return (
         <View className=''>
             <ScrollView>
-                {loading && <ActivityIndicator size="large" />}
-                {committees.map((committee) => (
-                    <CommitteeCard key={committee.name} committee={committee} handleCardPress={() => { handleCardPress(committee) }} />
+                {!loading && committees.map((committee) => (
+                    <CommitteeCard
+                        key={committee.name}
+                        committee={committee}
+                        handleCardPress={() => { handleCardPress(committee) }}
+                    />
                 ))}
             </ScrollView>
         </View>
