@@ -5,7 +5,7 @@ import { GoogleSheetsResponse, PointsColumnVals } from "../types/GoogleSheetsTyp
  * Constant defining different google sheet ids used
  */
 export const GoogleSheetsIDs = {
-    POINTS_ID: "1gKGAPlJLJL4yqYwt9mo4YeiS9KKuQzPvsyY1zuj4ZsU",
+    POINTS_ID: "1_9UeStHLTNDxjI6ZcLVzXyPaRFNTFGoUFRsUFR5dEs0",
     TEST_BANK_ID: "1aPolyNLDlj6XqzIghBVQ97704hCVk-lEaMBsMtKlF7g",
 }
 
