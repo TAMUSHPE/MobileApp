@@ -152,7 +152,8 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                             <TextInput
                                 className="text-lg text-center py-1"
                                 onChangeText={(text: string) => {
-                                    const formattedFirebaseName = text.toLowerCase().replace(/\s+/g, '-');
+                                    const trimmedText = text.trim(); // Remove spaces from both ends
+                                    const formattedFirebaseName = trimmedText.toLowerCase().replace(/\s+/g, '-');
                                     setCommitteeData({
                                         ...committeeData,
                                         name: text,
