@@ -4,13 +4,13 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import CommitteesTab from '../components/CommitteesTab'
 import MemberSHPETab from '../components/MemberSHPETab'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { CommitteesStackParams } from '../types/Navigation'
+import { InvolvementStackParams } from '../types/Navigation'
 
-type CommittesTabs = "Committees" | "MemberSHPE"
+type InvolvementTabs = "Committees" | "MemberSHPE"
 
 
-const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams>) => {
-    const [currentTab, setCurrentTab] = useState<CommittesTabs>("Committees")
+const Involvement = ({ navigation }: NativeStackScreenProps<InvolvementStackParams>) => {
+    const [currentTab, setCurrentTab] = useState<InvolvementTabs>("Committees")
 
     return (
         <SafeAreaView>
@@ -36,4 +36,4 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
     )
 }
 
-export default Committees
+export default Involvement
