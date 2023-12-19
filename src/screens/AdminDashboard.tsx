@@ -12,7 +12,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
         updateRanksOnCall()
     }
 
-    const getCommittesCount = async () => {
+    const getCommitteesCount = async () => {
         const functions = getFunctions();
         const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
         committeeCountCheckOnCall()
@@ -29,7 +29,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
             </TouchableOpacity>
 
             <TouchableOpacity
-                onPress={() => getCommittesCount()}
+                onPress={() => getCommitteesCount()}
                 className='bg-blue-500 rounded-md p-2'
             >
                 <Text>Load Committee Membership Count</Text>

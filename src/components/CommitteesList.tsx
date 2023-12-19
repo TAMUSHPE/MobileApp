@@ -2,11 +2,11 @@ import { View, Text, ScrollView, TouchableOpacity, Image, SectionList, SafeAreaV
 import React, { useCallback, useEffect } from 'react'
 import CommitteeCard from './CommitteeCard'
 import { Committee } from "../types/Committees"
-import { CommitteesTabProps } from '../types/Navigation'
+import { CommitteesListProps } from '../types/Navigation'
 import { getCommittees } from '../api/firebaseUtils'
 import { useFocusEffect } from '@react-navigation/core'
 
-const CommitteesTab: React.FC<CommitteesTabProps> = ({ navigation }) => {
+const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
     const [committees, setCommittees] = React.useState<Committee[]>([]);
     const [loading, setLoading] = React.useState(true);
 
@@ -24,7 +24,7 @@ const CommitteesTab: React.FC<CommitteesTabProps> = ({ navigation }) => {
     );
 
     const handleCardPress = (committee: Committee): Committee | void => {
-        navigation.navigate("CommitteeInfoScreen", { committee });
+        navigation.navigate("CommitteeScreen", { committee });
     };
 
     return (
@@ -39,4 +39,4 @@ const CommitteesTab: React.FC<CommitteesTabProps> = ({ navigation }) => {
     )
 }
 
-export default CommitteesTab
+export default CommitteesList

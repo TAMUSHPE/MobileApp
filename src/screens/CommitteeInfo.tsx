@@ -5,7 +5,7 @@ import { useRoute } from '@react-navigation/native';
 import { Images } from '../../assets';
 import { Octicons } from '@expo/vector-icons';
 import { PublicUserInfo } from '../types/User';
-import { CommitteeInfoScreenRouteProp, CommitteesTabProps } from '../types/Navigation';
+import { CommitteeScreenRouteProp, CommitteesListProps } from '../types/Navigation';
 import { UserContext } from '../context/UserContext';
 import { httpsCallable } from 'firebase/functions';
 import { auth, db, functions } from '../config/firebaseConfig';
@@ -23,8 +23,8 @@ const UserProfile: React.FC<UserProfileProps> = ({ userInfo }) => {
     );
 }
 
-const CommitteesInfo: React.FC<CommitteesTabProps> = ({ navigation }) => {
-    const route = useRoute<CommitteeInfoScreenRouteProp>();
+const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
+    const route = useRoute<CommitteeScreenRouteProp>();
     const initialCommittee = route.params.committee;
     const { userInfo, setUserInfo } = useContext(UserContext)!;
 
