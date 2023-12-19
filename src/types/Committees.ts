@@ -42,6 +42,7 @@ export type Committee = {
     color?: string,
     description?: string;
     head?: PublicUserInfo;
+    representatives?: PublicUserInfo[];
     leads?: PublicUserInfo[];
     memberCount?: number;
     memberApplicationLink?: string;

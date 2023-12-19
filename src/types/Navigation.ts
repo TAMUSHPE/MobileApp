@@ -179,6 +179,12 @@ export type CommitteesListProps = {
     navigation: NativeStackNavigationProp<InvolvementStackParams>
 }
 
+export type CommitteeTeamCardProps = {
+    navigation: NativeStackNavigationProp<InvolvementStackParams>
+    userData: PublicUserInfo;
+}
+
+
 export type EventVerificationProps = {
     id?: string;
     navigation?: NativeStackNavigationProp<MainStackParams>

@@ -24,7 +24,7 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPres
             >
                 <View className='flex-1 rounded-l-xl' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
                     <View className='items-center justify-center h-full'>
-                        <LogoComponent width={height} height={width} className='' />
+                        <LogoComponent width={height} height={width} />
                     </View>
                     <View className='absolute left-[80%] top-[15%]'>
                         <Image source={head?.photoURL ? { uri: head.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-10 w-10 rounded-full' />

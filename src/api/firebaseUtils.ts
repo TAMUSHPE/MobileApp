@@ -312,7 +312,7 @@ export const getCommittees = async (): Promise<Committee[]> => {
         const committeeCollectionRef = collection(db, 'committees');
         const snapshot = await getDocs(committeeCollectionRef);
         const committees = snapshot.docs
-            .filter(doc => doc.id !== "committeeCounts") 
+            .filter(doc => doc.id !== "committeeCounts") // ignore committeeCounts document
             .map(doc => ({
                 firebaseDocName: doc.id, 
                 ...doc.data()
@@ -330,6 +330,7 @@ export const setCommitteeData = async (committeeData: Committee) => {
             color: committeeData.color || "#500000",
             description: committeeData.description || "",
             head: committeeData.head || "",
+            representatives: committeeData.representatives || [],
             leads: committeeData.leads || [],
             memberApplicationLink: committeeData.memberApplicationLink || "",
             leadApplicationLink: committeeData.leadApplicationLink || "",
@@ -344,6 +345,7 @@ export const setCommitteeData = async (committeeData: Committee) => {
 };
 
 export const deleteCommittee = async (firebaseDocName: string): Promise<void> => {
+    // TODO: Delete committee from all users
     try {
         const committeeRef = doc(db, `committees/${firebaseDocName}`);
         await deleteDoc(committeeRef);
