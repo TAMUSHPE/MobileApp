@@ -248,12 +248,12 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                                     style={{ backgroundColor: colorMapping[userRankChange] }}>
 
                                     {userPoints != -1 ? (
-                                        <View>
+                                        <View className='flex-row'>
                                             <View className='flex-1 flex-row items-center'>
-                                                <View className='w-[65%]'>
+                                                <View className='w-[65%] '>
                                                     <Text className='text-xl font-medium'>Your Ranking</Text>
                                                     <View className='flex-row items-center'>
-                                                        <Text className='text-xl font-medium ml-2'>{userPoints} pts </Text>
+                                                        <Text className='text-xl font-medium'>{userPoints} pts </Text>
                                                     </View>
                                                 </View>
                                             </View>
