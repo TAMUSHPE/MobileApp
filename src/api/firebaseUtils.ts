@@ -753,12 +753,31 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
     }
   };
 
-  export const fetchUsersWithPublicResumes = async (): Promise<PublicUserInfo[]> => {
+
+  export const fetchUsersWithPublicResumes = async (filters: {
+    major?: string;
+    classYear?: string;
+    } = {}) => {
     try {
-        const publicResumeQuery = query(collection(db, 'users'), where("resumeVerified", "==", true));
+        let publicResumeQueryConstraints  = [where("resumeVerified", "==", true)];
+        if (filters.major) {
+            publicResumeQueryConstraints.push(where("major", "==", filters.major));
+        }
+        if (filters.classYear) {
+            publicResumeQueryConstraints.push(where("classYear", "==", filters.classYear));
+        }
+        const publicResumeQuery = query(collection(db, 'users'), ...publicResumeQueryConstraints)
         const publicResumeSnapshot = await getDocs(publicResumeQuery);
 
-        const officerQuery = query(collection(db, 'users'), where("roles.officer", "==", true));
+
+        let officerQueryConstraints = [where("roles.officer", "==", true)];
+        if (filters.major) {
+            officerQueryConstraints.push(where("major", "==", filters.major));
+        }
+        if (filters.classYear) {
+            officerQueryConstraints.push(where("classYear", "==", filters.classYear));
+        }
+        const officerQuery = query(collection(db, 'users'), ...officerQueryConstraints)
         const officerSnapshot = await getDocs(officerQuery);
 
         const combinedUsers = new Map();
