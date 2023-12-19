@@ -3,7 +3,7 @@ import { View, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Octicons } from '@expo/vector-icons';
 import { MembersStack } from './MembersStack';
-import { CommitteesStack } from './CommitteesStack';
+import { InvolvementStack } from './InvolvementStack';
 import { ResourcesStack } from './ResourcesStack';
 import HomeDrawer from './HomeDrawer';
 import { EventsStack } from './EventsStack';
@@ -12,7 +12,7 @@ const TAB_ICON_CONFIG: Record<TabName, OcticonIconName> = {
     Home: 'home',
     ResourcesStack: 'rows',
     Events: "calendar",
-    Committees: 'stack',
+    Involvement: 'stack',
     Members: 'person',
 };
 
@@ -55,13 +55,13 @@ const HomeBottomTabs = () => {
                 <BottomTabs.Screen name="Home" component={HomeDrawer} />
                 <BottomTabs.Screen name="ResourcesStack" component={ResourcesStack} />
                 <BottomTabs.Screen name="Events" component={EventsStack} />
-                <BottomTabs.Screen name="Committees" component={CommitteesStack} />
+                <BottomTabs.Screen name="Involvement" component={InvolvementStack} />
                 <BottomTabs.Screen name="Members" component={MembersStack} />
             </BottomTabs.Navigator >
         </View>
     );
 };
 type OcticonIconName = React.ComponentProps<typeof Octicons>['name'];
-type TabName = 'Home' | 'ResourcesStack' | 'Committees' | 'Members' | 'Events';
+type TabName = 'Home' | 'ResourcesStack' | 'Involvement' | 'Members' | 'Events';
 
 export default HomeBottomTabs;
