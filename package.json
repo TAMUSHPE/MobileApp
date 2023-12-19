@@ -1,6 +1,6 @@
 {
   "name": "shpe-app",
-  "version": "0.2.1",
+  "version": "0.4.0",
   "scripts": {
     "start": "npx expo start --dev-client",
     "test": "jest --coverage=true --verbose --bail --config ./jest.config.ts",
@@ -65,6 +65,7 @@
     "react-native-svg": "13.9.0",
     "react-native-view-shot": "3.7.0",
     "react-test-renderer": "18.2.0",
+    "reanimated-color-picker": "^2.4.1",
     "ts-jest": "^29.1.1"
   },
   "devDependencies": {

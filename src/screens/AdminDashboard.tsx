@@ -12,10 +12,10 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
         updateRanksOnCall()
     }
 
-    const getTrueCommittesCount = async () => {
+    const getCommittesCount = async () => {
         const functions = getFunctions();
-        const callUpdateCommitteesCount = httpsCallable(functions, 'updateCommitteesCountOnCall');
-        callUpdateCommitteesCount()
+        const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
+        committeeCountCheckOnCall()
     }
 
 
@@ -29,7 +29,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
             </TouchableOpacity>
 
             <TouchableOpacity
-                onPress={() => getTrueCommittesCount()}
+                onPress={() => getCommittesCount()}
                 className='bg-blue-500 rounded-md p-2'
             >
                 <Text>Load Committee Membership Count</Text>
@@ -37,10 +37,10 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
 
 
             <TouchableOpacity
-                onPress={() => navigation.navigate('CommitteesEditor')}
+                onPress={() => navigation.navigate('CommitteeCreator')}
                 className='bg-blue-500 rounded-md p-2'
             >
-                <Text>update committee info</Text>
+                <Text>Create committee</Text>
             </TouchableOpacity>
             <TouchableOpacity
                 onPress={() => navigation.navigate('MemberOfTheMonthEditor')}
@@ -78,6 +78,12 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                 className='bg-blue-500 rounded-md p-2'
             >
                 <Text>Member SHPE Verifications</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+                onPress={() => navigation.navigate('ResumeConfirm')}
+                className='bg-blue-500 rounded-md p-2'>
+                <Text>Resume Verifications</Text>
             </TouchableOpacity>
 
         </SafeAreaView>

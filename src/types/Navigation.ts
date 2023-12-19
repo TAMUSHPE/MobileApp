@@ -71,6 +71,9 @@ export type CommitteesStackParams = {
     PublicProfile: {
         uid: string;
     };
+    CommitteeEditor: {
+        committee: Committee;
+    }
 }
 
 export type EventsStackParams = {
@@ -91,13 +94,14 @@ export type HomeStackParams = {
 
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
-    CommitteesEditor: undefined;
+    CommitteeCreator: undefined;
     MemberOfTheMonthEditor: undefined;
     FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
     ResetOfficeHours: undefined;
     RestrictionsEditor: undefined;
     MemberSHPEConfirm: undefined;
+    ResumeConfirm: undefined;
     HomeBottomTabs: {
         screen: keyof HomeBottomTabParams;
     };
@@ -139,6 +143,10 @@ export type PointsProps = {
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 
+export type ResumeProps = {
+    resumeData: PublicUserInfo
+    navigation: NativeStackNavigationProp<ResourcesStackParams>
+}
 export type TestBankProps = {
     testData: Test;
     navigation: NativeStackNavigationProp<ResourcesStackParams>
@@ -156,7 +164,10 @@ export type MembersProps = {
     filter?: UserFilter;
     setLastUserSnapshot?: React.Dispatch<SetStateAction<QueryDocumentSnapshot<DocumentData> | null>>;
     canSearch?: boolean;
+    numLimit?: number | null;
     setNumLimit?: React.Dispatch<SetStateAction<number | null>>;
+    loading?: boolean;
+    DEFAULT_NUM_LIMIT?: number | null;
 }
 
 export type EventProps = {
@@ -184,6 +195,7 @@ export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScr
 export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
 export type CommitteeInfoScreenRouteProp = RouteProp<CommitteesStackParams, "CommitteeInfoScreen">;
+export type CommitteeEditorScreenRouteProp = RouteProp<CommitteesStackParams, "CommitteeEditor">;
 export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;
 export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "EventInfo">;
 export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;

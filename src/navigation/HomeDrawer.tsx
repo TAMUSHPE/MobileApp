@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Image, TouchableOpacity, View, Text } from 'react-native';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,17 +9,28 @@ import { auth, db } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import ProfileBadge from '../components/ProfileBadge';
 import HomeScreen from '../screens/Home';
-import { CommitteeConstants, CommitteeKey } from '../types/Committees';
+import { Committee } from '../types/Committees';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import { StatusBar } from 'expo-status-bar';
 import PublicProfileScreen from "../screens/PublicProfile";
 import AdminDashboardStack from './AdminDashboardStack';
 import { HomeStack } from './HomeStack'
+import { getCommittees } from '../api/firebaseUtils';
 
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
+    const [committees, setCommittees] = useState<Committee[]>([]);
+
+    useEffect(() => {
+        const fetchCommittees = async () => {
+            const response = await getCommittees();
+            setCommittees(response)
+        }
+
+        fetchCommittees();
+    }, []);
 
     const removeExpoPushToken = async () => {
         try {
@@ -94,18 +105,16 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                         badgeColor='#72A9EF'
                         textClassName='text-center text-xs'
                     />
-                    {userInfo?.publicInfo?.committees?.map((key: string) => {
-                        const committeeInfo = CommitteeConstants[key as CommitteeKey];
-                        if (committeeInfo) {
-                            return (
-                                <ProfileBadge
-                                    key={key}
-                                    text={committeeInfo.name}
-                                    badgeColor={committeeInfo ? committeeInfo?.color : ""}
-                                    textClassName='text-black text-center text-xs'
-                                />
-                            );
-                        }
+                    {userInfo?.publicInfo?.committees?.map((committeeDocName, index) => {
+                        const committeeData = committees.find(c => c.firebaseDocName === committeeDocName);
+                        return (
+                            <ProfileBadge
+                                badgeClassName='p-2 max-w-2/5 rounded-full mr-1 mb-2'
+                                text={committeeData?.name || "Unknown Committee"}
+                                badgeColor={committeeData?.color || ""}
+                                key={index}
+                            />
+                        );
                     })}
                 </View>
             </View>

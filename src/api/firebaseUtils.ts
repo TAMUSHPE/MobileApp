@@ -1,6 +1,6 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference } from "firebase/firestore";
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, Roles, User } from "../types/User";
 import { Committee } from "../types/Committees";
@@ -173,7 +173,6 @@ export const fetchUserForList = async (options: FetchMembersOptions) => {
         numLimit = null, 
         filter,
     } = options;
-
     let userQuery: Query<DocumentData, DocumentData> = collection(db, 'users');
 
     userQuery = query(userQuery, where("roles.officer", "==", isOfficer));
@@ -307,38 +306,34 @@ export const uploadFileToFirebase = (file: Uint8Array | ArrayBuffer | Blob, path
     return uploadTask;
 };
 
-export const getCommitteeInfo = async (committeeName: string) => {
-    return getDoc(doc(db, `committees/${committeeName}`))
-        .then((res) => {
-            const responseData = res.data()
-            if (responseData) {
-                return {
-                    description: responseData?.description,
-                    headUID: responseData?.headUID,
-                    leadUIDs: responseData?.leadUIDs,
-                    memberCount: responseData?.memberCount,
-                    memberApplicationLink: responseData?.memberApplicationLink,
-                    leadApplicationLink: responseData?.leadApplicationLink,
-                } as Committee;
-            }
-            else {
-                return undefined;
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            return undefined;
-        });
-}
 
-export const setCommitteeInfo = async (committeeName: string, committeeData: Committee) => {
+export const getCommittees = async (): Promise<Committee[]> => {
     try {
-        await setDoc(doc(db, `committees/${committeeName}`), {
+        const committeeCollectionRef = collection(db, 'committees');
+        const snapshot = await getDocs(committeeCollectionRef);
+        const committees = snapshot.docs
+            .filter(doc => doc.id !== "committeeCounts") 
+            .map(doc => ({
+                firebaseDocName: doc.id, 
+                ...doc.data()
+            }));
+        return committees;
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
+};
+export const setCommitteeInfo = async (committeeData: Committee) => {
+    try {
+        await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
+            name: committeeData.name || "",
+            color: committeeData.color || "#fff",
             description: committeeData.description || "",
-            headUID: committeeData.headUID || "",
-            leadUIDs: committeeData.leadUIDs || [],
+            head: committeeData.head || "",
+            leads: committeeData.leads || [],
             memberApplicationLink: committeeData.memberApplicationLink || "",
             leadApplicationLink: committeeData.leadApplicationLink || "",
+
         }, { merge: true });
         return true;
     } catch (err) {
@@ -347,47 +342,43 @@ export const setCommitteeInfo = async (committeeName: string, committeeData: Com
     }
 };
 
-export const getWatchlist = async () => {
-    return getDoc(doc(db, `restrictions/watchlist`))
-        .then((res) => {
-            const responseData = res.data()
-            return responseData?.UIDs;
-        })
-        .catch(err => {
-            console.error(err);
-            return undefined;
-        });
-}
-
-export const getBlacklist = async () => {
-    return getDoc(doc(db, `restrictions/blacklist`))
-        .then((res) => {
-            const responseData = res.data()
-            return responseData?.UIDs;
-        })
-        .catch(err => {
-            console.error(err);
-            return undefined;
-        });
-}
-
-export const setWatchlist = async (watchlist: string[]) => {
+export const deleteCommittee = async (firebaseDocName: string): Promise<void> => {
     try {
-        await setDoc(doc(db, `restrictions/watchlist`), {UIDs: watchlist}, { merge: true });
-        return true;
-    } catch (err) {
-        console.error(err);
-        return false;
+        const committeeRef = doc(db, `committees/${firebaseDocName}`);
+        await deleteDoc(committeeRef);
+        console.log(`Committee with ID ${firebaseDocName} has been deleted.`);
+    } catch (error) {
+        console.error(`Error deleting committee with ID ${firebaseDocName}:`, error);
+        throw new Error(`Error deleting committee: ${error}`);
     }
 };
 
-export const setBlacklist = async (blacklist: string[]) => {
-    try {
-        await setDoc(doc(db, `restrictions/blacklist`), {UIDs: blacklist}, { merge: true });
-        return true;
-    } catch (err) {
-        console.error(err);
-        return false;
+export const getWatchlist = async () => {
+    const docRef = doc(db, "restrictions/watchlist");
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data().UIDs : [];
+};
+
+export const getBlacklist = async () => {
+    const docRef = doc(db, "restrictions/blacklist");
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data().UIDs : [];
+};
+
+
+export const addToWatchlist = async (uid: string) => {
+    const currentWatchlist = await getWatchlist() || [];
+    if (!currentWatchlist.includes(uid)) {
+        const updatedWatchlist = [...currentWatchlist, uid];
+        await setDoc(doc(db, "restrictions/watchlist"), { UIDs: updatedWatchlist }, { merge: true });
+    }
+};
+
+export const addToBlacklist = async (uid: string) => {
+    const currentBlacklist = await getBlacklist() || [];
+    if (!currentBlacklist.includes(uid)) {
+        const updatedBlacklist = [...currentBlacklist, uid];
+        await setDoc(doc(db, "restrictions/blacklist"), { UIDs: updatedBlacklist }, { merge: true });
     }
 };
 
@@ -500,27 +491,28 @@ export const destroyEvent = async (eventID: string) => {
     try {
         const eventRef = doc(db, "events", eventID);
         const logRef = collection(db, `/events/${eventID}/logs`);
-        const logQuery = query(logRef);
-        const logSnapshot = await getDocs(logQuery);
+        const summaryRef = collection(db, `/events/${eventID}/summaries`);
 
-        if (!logSnapshot.empty) {
-            const deleteLogPromises = logSnapshot.docs.map((logDoc) => {
-                return deleteDoc(logDoc.ref);
-            });
+        const deleteSubCollection = async (ref: CollectionReference) => {
+            const snapshot = await getDocs(query(ref));
+            if (!snapshot.empty) {
+                const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(deletePromises);
+            }
+        };
 
-            await Promise.all(deleteLogPromises);
-        } else {
-            console.error("No logs to delete.");
-        }
+        await deleteSubCollection(logRef);
+        await deleteSubCollection(summaryRef);
 
         await deleteDoc(eventRef);
-        return true;
 
+        return true;
     } catch (error) {
-        console.error("Error deleting event and log: ", error);
+        console.error("Error deleting event and its related data: ", error);
         return false;
     }
 };
+
 
 const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     try {
@@ -728,6 +720,67 @@ export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
     }
     
     return members;
+};
+
+export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
+    const resumeRef = collection(db, 'resumeVerification');
+    const resumeQuery = query(resumeRef);
+    const resumeSnapshot = await getDocs(resumeQuery);
+    const resumeUserIds = resumeSnapshot.docs.map(doc => doc.id);
+  
+    const members:PublicUserInfo[] = [];
+    for (const userId of resumeUserIds) {
+      const userDocRef = doc(db, 'users', userId);
+      const userDocSnap = await getDoc(userDocRef);
+      if (userDocSnap.exists()) {
+        members.push({ uid: userId, ...userDocSnap.data() });
+      }
+    }
+    
+    return members;
+};
+
+  
+  export const isUsernameUnique = async (username: string): Promise<boolean> => {
+    const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');
+  
+    try {
+      const result = await checkUsernameUniqueness({ username });
+      return result.data.unique;
+    } catch (error) {
+      console.error('Error checking username uniqueness:', error);
+      return false; // handle error appropriately
+    }
   };
-  
-  
+
+  export const fetchUsersWithPublicResumes = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const publicResumeQuery = query(collection(db, 'users'), where("resumeVerified", "==", true));
+        const publicResumeSnapshot = await getDocs(publicResumeQuery);
+
+        const officerQuery = query(collection(db, 'users'), where("roles.officer", "==", true));
+        const officerSnapshot = await getDocs(officerQuery);
+
+        const combinedUsers = new Map();
+        publicResumeSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.resumePublicURL) { 
+                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
+            }
+        });
+        officerSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.resumePublicURL) { 
+                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
+            }
+        });
+
+        const usersArray = Array.from(combinedUsers.values());
+
+        return usersArray;
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        return [];
+    }
+}
+

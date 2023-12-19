@@ -1,52 +1,74 @@
 import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Alert, TouchableWithoutFeedback } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { Committee, CommitteeConstants, CommitteeKey } from '../types/Committees';
+import { Committee } from '../types/Committees';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { Images } from '../../assets';
 import { AdminDashboardParams } from '../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Picker } from '@react-native-picker/picker';
-import { fetchUserForList, getCommitteeInfo, getPublicUserData, setCommitteeInfo } from '../api/firebaseUtils';
+import { fetchUserForList, getPublicUserData, setCommitteeInfo } from '../api/firebaseUtils';
 import MembersList from '../components/MembersList';
 import { PublicUserInfo, UserFilter } from '../types/User';
+import CustomColorPicker from '../components/CustomColorPicker';
 
-const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
-    const [committeeData, setCommitteeData] = useState<Committee>();
-    const [committeeName, setCommitteeName] = useState<string>();
-    const [committeeNamePicked, setCommitteeNamePicked] = useState<boolean>(false);
-    const [nameModalVisible, setNameModalVisible] = useState(false);
+const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+    const [committeeData, setCommitteeData] = useState<Committee>({ leads: [] });
     const [headModalVisible, setHeadModalVisible] = useState(false);
     const [leadsModalVisible, setLeadsModalVisible] = useState(false);
-    const [headUserInfo, setHeadUserInfo] = useState<PublicUserInfo | null>(null);
-    const [leadsUserInfo, setLeadsUserInfo] = useState<PublicUserInfo[]>([]);
-    const [updated, setUpdated] = useState(false);
+
     const [officers, setOfficers] = useState<PublicUserInfo[]>([])
     const [members, setMembers] = useState<PublicUserInfo[]>([])
-
     const [numLimit, setNumLimit] = useState<number | null>(null);
     const [filter, setFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "name" });
     const [initialLoad, setInitialLoad] = useState(true);
-
     const insets = useSafeAreaInsets();
+
+
+    const handleColorChosen = (color: string) => {
+        setCommitteeData({
+            ...committeeData,
+            color: color
+        });
+    };
 
     const fetchHeadUserData = async (uid: string) => {
         const fetchedInfo = await getPublicUserData(uid);
         if (fetchedInfo) {
-            setHeadUserInfo({
-                ...fetchedInfo,
-                uid,
+            setCommitteeData({
+                ...committeeData,
+                head: fetchedInfo,
             });
         }
     };
+    console.log("committees", committeeData)
 
     const fetchLeadUserData = async (uid: string) => {
         const fetchedInfo = await getPublicUserData(uid);
         if (fetchedInfo) {
-            setLeadsUserInfo(prevState => [...prevState, { ...fetchedInfo, uid }]);
+            setCommitteeData(prevCommitteeData => ({
+                ...prevCommitteeData,
+                leads: [...(prevCommitteeData?.leads || []), { ...fetchedInfo, uid }]
+            }));
         }
-    }
+    };
 
+    const addUIDToList = (uid: string) => {
+        const currentUIDList = committeeData?.leads || [];
+        if (currentUIDList.some(lead => lead.uid === uid)) {
+            return;
+        }
+
+        fetchLeadUserData(uid);
+    };
+
+    const removeUIDFromList = (uid: string) => {
+        setCommitteeData(prevCommitteeData => ({
+            ...prevCommitteeData,
+            leads: prevCommitteeData?.leads?.filter(lead => lead.uid !== uid) || []
+        }));
+    };
+
+    // Functions below are for fetching data for Head UID and Lead UIDs list
     const loadUsers = async () => {
         const getMembers = await fetchUserForList({ filter: filter });
         if (getMembers.members.length > 0) {
@@ -76,84 +98,6 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
 
     }, [filter]);
 
-    useEffect(() => {
-        const loadData = async () => {
-            const loadedCommitteeData = await getCommitteeInfo(CommitteeConstants[committeeName as CommitteeKey].firebaseDocName);
-            if (loadedCommitteeData) {
-                setCommitteeData(loadedCommitteeData);
-
-                if (loadedCommitteeData.headUID) {
-                    await fetchHeadUserData(loadedCommitteeData.headUID);
-                }
-
-                if (loadedCommitteeData.leadUIDs && loadedCommitteeData.leadUIDs.length > 0) {
-                    loadedCommitteeData.leadUIDs.forEach(uid => {
-                        fetchLeadUserData(uid);
-                    });
-                }
-
-                setHeadUserInfo(null);
-                setLeadsUserInfo([]);
-            } else {
-                setCommitteeData(undefined);
-            }
-        };
-
-        if (committeeName == null) {
-            setCommitteeData(undefined);
-            setLeadsUserInfo([]);
-            setHeadUserInfo(null);
-            return;
-        }
-        if (!committeeName) {
-            return;
-        }
-
-        setHeadUserInfo(null);
-        setLeadsUserInfo([]);
-        loadData();
-    }, [committeeName]);
-
-    useEffect(() => {
-        let timerId: NodeJS.Timeout;
-        if (updated) {
-            timerId = setTimeout(() => {
-                setUpdated(false);
-            }, 3000);
-        }
-        return () => {
-            clearTimeout(timerId);
-        };
-    }, [updated]);
-
-    const addUIDToList = (uid: string) => {
-        const currentUIDList = committeeData?.leadUIDs || [];
-        if (currentUIDList.includes(uid)) {
-            return;
-        }
-        const updatedUIDList = [...currentUIDList, uid];
-        setCommitteeData({
-            ...committeeData,
-            leadUIDs: updatedUIDList
-        });
-
-        // this is for UI purposes only
-        fetchLeadUserData(uid)
-    };
-
-    const removeUIDFromList = (uid: string) => {
-        // Update committeeData
-        const updatedUIDList = committeeData?.leadUIDs!.filter(existingUid => existingUid !== uid);
-        setCommitteeData({
-            ...committeeData,
-            leadUIDs: updatedUIDList
-        });
-
-        // Update leadsUserInfo
-        const updatedLeadsUserInfo = leadsUserInfo.filter(userInfo => userInfo.uid !== uid);
-        setLeadsUserInfo(updatedLeadsUserInfo);
-    };
-
     const loadOfficers = async () => {
         const officers = await fetchUserForList({ isOfficer: true, filter: { classYear: "", major: "", orderByField: "name" } });
         if (officers.members.length > 0) {
@@ -182,38 +126,42 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                 {/* Form */}
                 <View className='mt-9 p-6'>
                     <View>
-                        <Text className='text-gray-500 mb-2'>Committee Name</Text>
+                        <Text className='text-gray-500 mb-1'>Committee Name</Text>
                         <View className='flex-row border-b-2 border-slate-400'>
-                            {committeeNamePicked && committeeName != null ?
-                                <TouchableOpacity onPress={() => setNameModalVisible(true)}>
-                                    <Text className="text-lg text-center">{CommitteeConstants[committeeName as CommitteeKey]?.name} </Text>
-                                </TouchableOpacity>
-                                :
-                                <TouchableOpacity onPress={() => setNameModalVisible(true)}>
-                                    <Text className="text-gray-500 text-lg text-center">Select a Committee </Text>
-                                </TouchableOpacity>
-                            }
-
-
+                            <TextInput
+                                className="text-lg text-center py-1"
+                                onChangeText={(text: string) => {
+                                    const formattedFirebaseName = text.toLowerCase().replace(/\s+/g, '-');
+                                    setCommitteeData({
+                                        ...committeeData,
+                                        name: text,
+                                        firebaseDocName: formattedFirebaseName
+                                    });
+                                }}
+                                value={committeeData?.name}
+                                placeholder='Select a committee name'
+                            />
                         </View>
                     </View>
-
+                    <View className='z-50 mt-4'>
+                        <CustomColorPicker onColorChosen={handleColorChosen} />
+                    </View>
                     <View className='flex-row mt-4 w-full '>
                         <View className='items-center flex-1'>
                             <Text className='text-gray-500 text-lg text-center'>Head UID</Text>
                             <TouchableOpacity onPress={() => setHeadModalVisible(true)}>
-                                <Text className='text-lg text-center'>{headUserInfo?.name || "Select a Head"}</Text>
+                                <Text className='text-lg text-center'>{committeeData?.head?.name || "Select a Head"}</Text>
                             </TouchableOpacity>
                         </View>
 
                         <View className='items-center flex-1'>
                             <Text className='text-gray-500 text-lg text-center'>Lead UIDs</Text>
                             <TouchableOpacity onPress={() => setLeadsModalVisible(true)}>
-                                {leadsUserInfo.length === 0 &&
+                                {committeeData?.leads?.length === 0 &&
                                     <Text className='text-lg text-center'>Select Leads</Text>
                                 }
                             </TouchableOpacity>
-                            {leadsUserInfo.map((userInfo, index) => (
+                            {committeeData?.leads?.map((userInfo, index) => (
                                 <View key={index}>
                                     <View className='flex-row'>
                                         <Text className='text-lg text-center'>{userInfo.name}</Text>
@@ -223,7 +171,7 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                                     </View>
                                 </View>
                             ))}
-                            {leadsUserInfo.length > 0 &&
+                            {committeeData?.leads?.length! > 0 &&
                                 <TouchableOpacity
                                     className='text-center bg-pale-orange p-1 mt-2 rounded-md'
                                     onPress={() => setLeadsModalVisible(true)}>
@@ -271,66 +219,16 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
 
                 <View className='w-screen justify-center items-center pt-4 space-x-7'>
                     <TouchableOpacity className='bg-blue-400 justify-center items-center rounded-md p-2'
-                        onPress={() => {
-                            setCommitteeInfo(CommitteeConstants[committeeName as CommitteeKey].firebaseDocName, committeeData!)
-                            setUpdated(true)
+                        onPress={async () => {
+                            await setCommitteeInfo(committeeData!);
+                            setCommitteeData({ leads: [] });
                         }}
                     >
-                        <Text className='text-xl text-semibold'>Update Committee</Text>
+                        <Text className='text-xl text-semibold'>Create Committee</Text>
                     </TouchableOpacity>
                 </View>
-                <View className='justify-center items-center'>
-                    {updated && <Text className='text-green-500'>Information has been updated</Text>}
-                </View>
-
                 <View className='pb-32'></View>
-            </ScrollView >
-            <Modal
-                animationType="none"
-                transparent={true}
-                visible={nameModalVisible}
-                onRequestClose={() => {
-                    setNameModalVisible(false);
-                }}
-            >
-                <TouchableOpacity
-                    onPress={() => setNameModalVisible(false)}
-                    className="h-[100%] w-[100%]"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                >
-                    <View className='items-center justify-center h-full'>
-                        <TouchableWithoutFeedback>
-                            <View className='opacity-100 bg-white w-[70%] rounded-md items-center'>
-                                <Text className='text-xl mt-7'>Select a Committee</Text>
-                                <Picker
-                                    style={{ width: '100%' }}
-                                    selectedValue={committeeName}
-                                    onValueChange={(itemValue, itemIndex) => {
-                                        setCommitteeName(itemValue)
-                                    }}>
-                                    <Picker.Item label='' />
-                                    {Object.keys(CommitteeConstants).map((key, index) => (
-                                        <Picker.Item
-                                            key={index}
-                                            label={CommitteeConstants[key as CommitteeKey].name}
-                                            value={key}
-                                        />
-                                    ))}
-                                </Picker>
-
-                                <TouchableOpacity
-                                    className='mb-8 bg-pale-orange p-2 rounded-md mt-2'
-                                    onPress={() => {
-                                        setCommitteeNamePicked(true)
-                                        setNameModalVisible(false)
-                                    }}>
-                                    <Text className='text-xl'> Select </Text>
-                                </TouchableOpacity>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </View>
-                </TouchableOpacity>
-            </Modal>
+            </ScrollView>
 
             <Modal
                 animationType="slide"
@@ -350,7 +248,7 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                         </View>
                         <View className='pl-6'>
                             <TouchableOpacity className=" bg-pale-orange p-2 rounded-md" onPress={() => setHeadModalVisible(false)} >
-                                <Text className='text-xl font-semibol'>Cancel</Text>
+                                <Text className='text-xl font-semibold'>Cancel</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -359,12 +257,12 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                     <View className="h-[100%] w-[100%] bg-white">
                         <MembersList
                             handleCardPress={(uid) => {
-                                setCommitteeData({ ...committeeData!, headUID: uid })
                                 setHeadModalVisible(false)
                                 fetchHeadUserData(uid)
                             }}
                             officersList={officers}
                             membersList={[]}
+                            DEFAULT_NUM_LIMIT={null}
                         />
                     </View>
                 </View>
@@ -388,7 +286,7 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                         </View>
                         <View className='pl-6'>
                             <TouchableOpacity className=" bg-pale-orange p-2 rounded-md" onPress={() => setLeadsModalVisible(false)} >
-                                <Text className='text-xl font-semibol'>Cancel</Text>
+                                <Text className='text-xl font-semibold'>Cancel</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -404,8 +302,8 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                             officersList={[]}
                             filter={filter}
                             setFilter={setFilter}
-                            canSearch={true}
                             setNumLimit={setNumLimit}
+                            DEFAULT_NUM_LIMIT={null}
                         />
                     </View>
                 </View>
@@ -414,4 +312,4 @@ const CommitteesEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     )
 }
 
-export default CommitteesEditor
+export default CommitteeCreator
