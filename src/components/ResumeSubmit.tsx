@@ -255,9 +255,10 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                         <TouchableWithoutFeedback>
                             <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
                                 <Octicons name="alert" size={24} color="black" />
-                                <View className='flex items-center w-[80%] space-y-8'>
+                                <View className='flex items-center w-[80%]'>
                                     <Text className="text-center text-lg font-bold">Your resume will be added to the resume bank. Be sure to remove information you don't want public (i.e. phone #, address, email, etc.)</Text>
-                                    <View className="flex-row">
+                                    <Text className="text-center text-lg font-bold text-[#FF4545] mt-2">Only an officer can remove you resume after it's been approved. </Text>
+                                    <View className="flex-row mt-8">
                                         <TouchableOpacity
                                             onPress={async () => {
                                                 submitResume();
