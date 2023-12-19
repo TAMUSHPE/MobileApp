@@ -1,21 +1,24 @@
 import { View, Text, TouchableOpacity, Image, Linking } from 'react-native'
-import React, { useContext } from 'react'
+import React, { useContext, useState } from 'react'
 import { Images } from '../../assets';
 import { ResumeProps } from '../types/Navigation'
 import { deleteField, doc, updateDoc } from 'firebase/firestore';
 import { db, functions } from '../config/firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
 import { UserContext } from '../context/UserContext';
+import TwitterSvg from './TwitterSvg';
+import { getBadgeColor } from '../helpers/membership';
 
 const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ resumeData, navigation, onResumeRemoved }) => {
+    // Data related to user's resume
     const { uid, photoURL, name, displayName, resumePublicURL, major, classYear, roles } = resumeData
+    const isOfficer = roles ? roles.officer : false;
+    const [isVerified, setIsVerified] = useState<boolean>(false);
+    let badgeColor = getBadgeColor(isOfficer!, isVerified);
 
+    // Data related to currently authenticated user
     const { userInfo } = useContext(UserContext)!;
-
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
-
-    const resumeCardHasPrivileges = (roles?.admin?.valueOf() || roles?.officer?.valueOf() || roles?.developer?.valueOf());
-
 
     const handleLinkPress = async (url: string) => {
         if (!url) {
@@ -63,10 +66,10 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
     };
 
     return (
-        <View className="flex-row bg-[#D4D4D4] py-3 mx-4 px-4 mt-8 rounded-xl items-center">
+        <View className="flex-row bg-white py-5 px-4 mx-4 mt-4 rounded-xl items-center shadow-md shadow-slate-300">
             <View className='flex-row'>
+                {/* User Information */}
                 <TouchableOpacity
-                    disabled={uid === undefined}
                     onPress={() => { navigation.navigate("PublicProfile", { uid: uid! }) }}
                     className='flex-1 flex-row items-center'
                 >
@@ -75,35 +78,46 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
                         source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
                     />
                     <View className='w-[65%]'>
-                        <Text className='text-xl font-medium'>{name}</Text>
+                        <View className="flex-row items-center">
+                            <Text className='font-semibold text-lg'>{name}</Text>
+                            {isOfficer && (
+                                <View className="ml-2">
+                                    <TwitterSvg color={badgeColor} />
+                                </View>
+
+                            )}
+                            {(!isOfficer && isVerified) && (
+                                <View className="ml-2">
+                                    <TwitterSvg color={badgeColor} />
+                                </View>
+                            )}
+                        </View>
                         <View className='flex-row items-center'>
                             <Text className='text-xl font-medium'>{major} {classYearFormat(classYear!)}  </Text>
                         </View>
                     </View>
                 </TouchableOpacity>
 
-                <View>
-
+                {/* Resume Information and Controls*/}
+                <View className='w-[30%]items-center justify-center items-center'>
                     <TouchableOpacity
-                        className='items-center justify-center px-4 py-2'
+                        className='px-4 py-2'
                         activeOpacity={0.5}
                         onPress={() => handleLinkPress(resumePublicURL!)}
                     >
-                        <Text>View Resume</Text>
+                        <Text className='text-lg '>View</Text>
                     </TouchableOpacity>
 
-                    {hasPrivileges && !resumeCardHasPrivileges && (
+                    {hasPrivileges && (
                         <TouchableOpacity
                             className='items-center justify-center px-4 py-2'
                             activeOpacity={0.5}
                             onPress={() => removeResume()}
                         >
-                            <Text className='text-red-500'>Remove</Text>
+                            <Text className='text-red-500 text-lg'>Remove</Text>
                         </TouchableOpacity>
                     )}
                 </View>
-
-
 
             </View>
         </View>
