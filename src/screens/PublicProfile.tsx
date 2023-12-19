@@ -26,7 +26,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<MembersStack
     const { uid } = route.params;
     const [loading, setLoading] = useState<boolean>(true);
     const [publicUserData, setPublicUserData] = useState<PublicUserInfo | undefined>();
-    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email } = publicUserData || {};
+    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, tamuEmail } = publicUserData || {};
     const [updatingRoles, setUpdatingRoles] = useState<boolean>(false);
     const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
     const [modifiedRoles, setModifiedRoles] = useState<Roles | undefined>(undefined);
@@ -199,7 +199,13 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<MembersStack
             <View className="flex-col m-8">
 
                 <View className='flex-row items-center'>
-                    <Text className='text-2xl italic'>{roles?.customTitle || "Member"}</Text>
+                    <Text className='text-2xl italic'>
+                        {roles?.customTitle ? roles.customTitle :
+                            (isVerified ? "Member" :
+                                (tamuEmail != "" ? "Student" : "Guest"))
+                        }
+                    </Text>
+
                     {isSuperUser &&
                         <View className='items-center justify-center'>
                             <TouchableOpacity
