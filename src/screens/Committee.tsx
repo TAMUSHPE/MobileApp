@@ -11,17 +11,10 @@ import { httpsCallable } from 'firebase/functions';
 import { auth, db, functions } from '../config/firebaseConfig';
 import { setPublicUserData, addToWatchlist } from '../api/firebaseUtils';
 import { doc, getDoc } from 'firebase/firestore';
-
-interface UserProfileProps { userInfo: PublicUserInfo | null }
-const UserProfile: React.FC<UserProfileProps> = ({ userInfo }) => {
-    return (
-        <TouchableOpacity className='flex-col items-center w-40'>
-            <Image className='h-24 w-24 rounded-full' source={userInfo?.photoURL ? { uri: userInfo?.photoURL } : Images.DEFAULT_USER_PICTURE} />
-            <Text className='text-lg'>{userInfo?.name}</Text>
-            <Text>{userInfo?.email}</Text>
-        </TouchableOpacity>
-    );
-}
+import { calculateHexLuminosity } from '../helpers/colorUtils';
+import { getLogoComponent } from '../types/Committees';
+import { StatusBar } from 'expo-status-bar';
+import CommitteeTeamCard from '../components/CommitteeTeamCard';
 
 const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
     const route = useRoute<CommitteeScreenRouteProp>();
@@ -31,14 +24,18 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
     const [currentCommittee, setCurrentCommittee] = useState(initialCommittee);
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
-    const [lastPassTime, setLastPassTime] = useState(0)
-    const DEBOUNCE_TIME = 10000; // 10 seconds
 
-    const { name, color, logo, head, leads, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = initialCommittee;
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+    const { name, color, logo, head, leads, representatives, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = initialCommittee;
 
+    const { memberCount } = currentCommittee;
 
-    const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
+    const isLight = () => {
+        const luminosity = calculateHexLuminosity(color!);
+        return luminosity < 155;
+    };
+
+    const { LogoComponent, height, width } = getLogoComponent(logo);
+
 
     useEffect(() => {
         const committeeExists = userInfo?.publicInfo?.committees?.includes(firebaseDocName!);
@@ -50,6 +47,7 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
             const docRef = doc(db, `committees/${initialCommittee.firebaseDocName}`);
             const docSnapshot = await getDoc(docRef);
             if (docSnapshot.exists()) {
+                console.log("Committee data updated", docSnapshot.data());
                 setCurrentCommittee(docSnapshot.data());
             }
         } catch (error) {
@@ -78,66 +76,103 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
     };
 
     return (
-        <ScrollView style={{ backgroundColor: color }}>
-            <SafeAreaView className='h-full pb-2' edges={['right', 'top', 'left']}>
-                <TouchableHighlight className='py-3 px-6' onPress={() => navigation.goBack()} underlayColor="offwhite">
-                    <Octicons name="chevron-left" size={30} color="black" />
-                </TouchableHighlight>
-                {hasPrivileges && (
-
-                    <TouchableOpacity
-                        className='flex-row items-center justify-center rounded-md bg-white w-24 py-4  mx-auto mt-5 mb-2'
-                        onPress={() => {
-                            navigation.navigate('CommitteeEditor', { committee: currentCommittee });
-                        }}
-                    >
-                        <Text className="font-bold text-lg">Edit</Text>
+        <View
+            className='flex-1'
+            style={{ backgroundColor: color }}
+        >
+            <StatusBar style={isLight() ? "light" : "dark"} />
+            <SafeAreaView edges={['top']} >
+                <View className='flex-row items-center mx-5 mt-1'>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Octicons name="chevron-left" size={30} color={isLight() ? "white" : "black"} />
                     </TouchableOpacity>
-                )}
-                <View className='flex-auto items-center gap-4'>
-                    <Text className='text-[32px] font-bold'>{name}</Text>
-                    <Text className='text-lg pt-5 px-5'>{description || "No description provided"}</Text>
-                    <View className='flex-row py-2'>
-                        <Text className='text-3xl'>Members: </Text>
-                        <Text className='text-4xl'>{currentCommittee.memberCount}</Text>
+                    <View className='absolute w-full justify-center items-center'>
+                        <Text className={`text-2xl font-semibold text-${isLight() ? "white" : "black"}`} >{name}</Text>
                     </View>
-                    <View className='flex-row space-x-2 pb-5'>
+                </View>
+            </SafeAreaView>
+
+            <ScrollView
+                scrollEventThrottle={400}
+                bounces={false}
+                className='bg-[#F9F9F9] mt-12 rounded-t-2xl py-8 px-5'
+            >
+                <View className='flex-row w-full h-32'>
+                    {/* Logo and Join/Leave Button */}
+                    <View style={{ backgroundColor: color }} className='rounded-2xl flex-col'>
+                        <View className='items-center justify-center h-full rounded-2xl px-3'
+                            style={{ backgroundColor: "rgba(255,255,255,0.4)" }}
+                        >
+                            <LogoComponent width={height} height={width} />
+                        </View>
                         <TouchableOpacity
-                            className='bg-white rounded-xl w-1/6 items-center justify-center'
+                            className={`px-4 py-[2px] rounded-lg items-center mt-2 mx-2 ${isInCommittee ? "bg-[#FF4545]" : "bg-[#AEF359]"}`}
                             onPress={() => setConfirmVisible(!confirmVisible)}
                         >
-                            <Text className='text-[45px]'>{isInCommittee ? "-" : "+"}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            className='bg-white rounded-xl w-1/3 items-center justify-center'
-                            onPress={() => handleLinkPress(memberApplicationLink || '')}
-                        >
-                            <Text className='text-center text-[20px] font-medium'>Member Application</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            className='bg-white rounded-xl w-1/3 items-center justify-center border-gray-600 border'
-                            onPress={() => handleLinkPress(leadApplicationLink || '')}
-                        >
-                            <Text className='text-center text-[20px] font-medium'>Lead Application</Text>
+                            <Text className='text-lg font-semibold'>{isInCommittee ? "Leave" : "Join"}</Text>
                         </TouchableOpacity>
                     </View>
-                </View>
-                <View className='ml-6'>
-                    <Text className='text-3xl font-semibold'>Officer</Text>
-                    <UserProfile userInfo={head!} />
-                    <Text className='text-3xl font-semibold'>Leads</Text>
-                    <FlatList
-                        data={leads!}
-                        horizontal={true}
-                        renderItem={({ item, index }) => {
-                            return (
-                                <UserProfile userInfo={item} key={index}></UserProfile>
-                            )
-                        }}
-                    />
+
+                    {/* Name and Application Buttons */}
+                    <View className='flex-col flex-1 justify-between py-2 ml-6'>
+                        <View className='flex-row items-center'>
+                            <Text className="text-xl font-semibold">{name} ({memberCount} members)</Text>
+                        </View>
+                        <View className='flex-col'>
+                            <TouchableOpacity
+                                className='py-2 rounded-lg items-center w-[80%]'
+                                style={{ backgroundColor: color }}
+                                onPress={() => handleLinkPress(memberApplicationLink!)}
+                            >
+                                <Text className={`font-semibold text-${isLight() ? "white" : "black"}`}>Member Application</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                className='py-2 rounded-lg items-center mt-2 w-[80%]'
+                                style={{ backgroundColor: color }}
+                                onPress={() => handleLinkPress(leadApplicationLink!)}
+                            >
+                                <Text className={`font-semibold text-${isLight() ? "white" : "black"}`}>Lead Application</Text>
+                            </TouchableOpacity>
+
+                        </View>
+                    </View>
                 </View>
 
-            </SafeAreaView>
+                {/* About */}
+                <View className='mt-14'>
+                    <Text className='text-2xl font-bold'>About</Text>
+                    <Text className='text-lg font-semibold'>{description}</Text>
+                </View>
+
+                <View className='mt-11'>
+                    <Text className='text-2xl font-bold'>Upcoming Events</Text>
+                    <Text>TODO: Upcoming Event for a committee, Do after event is done</Text>
+                </View>
+
+                {/* Team List */}
+                <View className='mt-11'>
+                    <Text className='text-2xl font-bold mb-1'>Meet the Team</Text>
+                    <View className='px-3 pt-5 bg-white rounded-lg shadow-sm shadow-slate-300'>
+                        <Text className='font-bold text-lg mb-2' style={{ color: color }}>Head</Text>
+                        <CommitteeTeamCard userData={head!} navigation={navigation} />
+                        {representatives && representatives.length > 0 && (
+                            <Text className='font-bold text-lg mb-2' style={{ color: color }}>Representatives</Text>
+                        )}
+                        {representatives?.map((lead, index) => (
+                            <CommitteeTeamCard key={index} userData={lead} navigation={navigation} />
+                        ))}
+                        {leads && leads.length > 0 && (
+                            <Text className='font-bold text-lg mb-2' style={{ color: color }}>Leads</Text>
+                        )}
+                        {leads?.map((lead, index) => (
+                            <CommitteeTeamCard key={index} userData={lead} navigation={navigation} />
+                        ))}
+                    </View>
+                </View>
+
+                <View className='mb-28' />
+            </ScrollView >
 
             <Modal
                 animationType="none"
@@ -158,48 +193,37 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                                     <Text className="text-center text-lg font-bold"> {isInCommittee ? "Are you sure you want leave?" : "Are you sure you want to join?"}</Text>
                                     <View className="flex-row">
                                         <TouchableOpacity
+                                            className="bg-pale-blue rounded-xl justify-center items-center"
                                             onPress={async () => {
                                                 setConfirmVisible(false);
-                                                const currentTime = Date.now();
-                                                if (currentTime - lastPassTime >= DEBOUNCE_TIME) {
-                                                    const committeeChanges = [{
-                                                        committeeName: firebaseDocName,
-                                                        change: isInCommittee ? -1 : 1
-                                                    }];
-
-                                                    try {
-                                                        await updateCommitteeMembersCount({ committeeChanges })
-                                                            .then(() => {
-                                                                fetchCommitteeData();
-                                                                setLastPassTime(currentTime)
-                                                            });
-
-                                                        // Update user's committees array
-                                                        let updatedCommittees = [...userInfo?.publicInfo?.committees!!];
-                                                        if (isInCommittee) {
-                                                            updatedCommittees = updatedCommittees.filter(c => c !== firebaseDocName);
-                                                        } else {
-                                                            updatedCommittees.push(firebaseDocName!!);
-                                                        }
-
-                                                        await setPublicUserData({ committees: updatedCommittees });
-
-                                                        setUserInfo({
-                                                            ...userInfo,
-                                                            publicInfo: {
-                                                                ...userInfo?.publicInfo,
-                                                                committees: updatedCommittees
-                                                            }
-                                                        });
-
-                                                    } catch (error) {
-                                                        console.error("Error updating committee count:", error);
-                                                    }
+                                                const committeeChanges = [{
+                                                    committeeName: firebaseDocName,
+                                                    change: isInCommittee ? -1 : 1
+                                                }];
+                                                const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
+                                                let updatedCommittees = [...userInfo?.publicInfo?.committees || []];
+                                                if (isInCommittee) {
+                                                    updatedCommittees = updatedCommittees.filter(c => c !== firebaseDocName);
                                                 } else {
-                                                    await addToWatchlist(auth.currentUser?.uid!);
+                                                    updatedCommittees.push(firebaseDocName!!);
+                                                }
+
+                                                try {
+                                                    await setPublicUserData({ committees: updatedCommittees });
+                                                    await updateCommitteeMembersCount({ committeeChanges });
+                                                    await fetchCommitteeData();
+
+                                                    setUserInfo({
+                                                        ...userInfo,
+                                                        publicInfo: {
+                                                            ...userInfo?.publicInfo,
+                                                            committees: updatedCommittees
+                                                        }
+                                                    });
+                                                } catch (err) {
+                                                    console.error(err);
                                                 }
                                             }}
-                                            className="bg-pale-blue rounded-xl justify-center items-center"
                                         >
                                             <Text className='text-xl font-bold text-white px-8'>{isInCommittee ? "Leave" : "Join"}</Text>
                                         </TouchableOpacity>
@@ -215,7 +239,7 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                 </TouchableOpacity >
             </Modal>
 
-        </ScrollView>
+        </View >
     )
 }
 

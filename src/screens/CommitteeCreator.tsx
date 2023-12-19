@@ -15,7 +15,11 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     const [localCommitteeData, setLocalCommitteeData] = useState<Committee>({ leads: [], memberCount: 0 });
     const [headModalVisible, setHeadModalVisible] = useState(false);
     const [leadsModalVisible, setLeadsModalVisible] = useState(false);
-    const [SelectedLogoComponent, setSelectedLogoComponent] = useState<React.ElementType | null>(null);
+    const [selectedLogoData, setSelectedLogoData] = useState<{
+        LogoComponent: React.ElementType;
+        width: number;
+        height: number;
+    } | null>(null);
 
     const [officers, setOfficers] = useState<PublicUserInfo[]>([])
     const [members, setMembers] = useState<PublicUserInfo[]>([])
@@ -37,7 +41,7 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         if (fetchedInfo) {
             setLocalCommitteeData({
                 ...localCommitteeData,
-                head: fetchedInfo,
+                head: { ...fetchedInfo, uid }
             });
         }
     };
@@ -115,22 +119,25 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     // Update the selected logo component whenever localCommitteeData.logo changes
     useEffect(() => {
         if (localCommitteeData.logo) {
-            const LogoComponent = getLogoComponent(localCommitteeData.logo);
-            setSelectedLogoComponent(() => LogoComponent);
+            const logoData = getLogoComponent(localCommitteeData.logo);
+            setSelectedLogoData(logoData);
         }
     }, [localCommitteeData.logo]);
 
-    const LogoSelector = ({ onLogoSelected }: { onLogoSelected: (logoName: CommitteeLogosName) => void }) => {
+
+
+    const LogoSelector = ({ onLogoSelected }: { onLogoSelected: (logoName: keyof typeof committeeLogos) => void }) => {
         return (
             <View>
-                {Object.entries(committeeLogos).map(([name, LogoComponent]) => (
-                    <TouchableOpacity key={name} onPress={() => onLogoSelected(name as CommitteeLogosName)}>
-                        <LogoComponent width={50} height={50} />
+                {Object.entries(committeeLogos).map(([name, logoData]) => (
+                    <TouchableOpacity key={name} onPress={() => onLogoSelected(name as keyof typeof committeeLogos)}>
+                        <logoData.LogoComponent width={logoData.width} height={logoData.height} />
                     </TouchableOpacity>
                 ))}
             </View>
         );
     };
+
 
     return (
         <SafeAreaView>
@@ -170,11 +177,13 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                     </View>
                     <LogoSelector onLogoSelected={(logoName) => setLocalCommitteeData({ ...localCommitteeData, logo: logoName })} />
 
-                    {SelectedLogoComponent && (
-                        <View>
-                            <SelectedLogoComponent width={50} height={50} />
-                        </View>
-                    )}
+                    {selectedLogoData && (() => {
+                        const { LogoComponent, width, height } = selectedLogoData;
+                        return (
+                            <LogoComponent width={width} height={height} />
+                        );
+                    })()}
+
                     <View className='z-50 mt-4'>
                         <CustomColorPicker onColorChosen={handleColorChosen} />
                     </View>
