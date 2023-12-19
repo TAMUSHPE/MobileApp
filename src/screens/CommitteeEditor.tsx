@@ -141,7 +141,7 @@ const CommitteeEditor = ({ navigation }: NativeStackScreenProps<CommitteesStackP
                         </View>
                     </View>
                     <View className='z-50 mt-4'>
-                        <CustomColorPicker onColorChosen={handleColorChosen} />
+                        <CustomColorPicker onColorChosen={handleColorChosen} initialColor={committeeData.color} />
                     </View>
                     <View className='flex-row mt-4 w-full '>
                         <View className='items-center flex-1'>
