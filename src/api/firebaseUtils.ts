@@ -333,6 +333,7 @@ export const setCommitteeInfo = async (committeeData: Committee) => {
             leads: committeeData.leads || [],
             memberApplicationLink: committeeData.memberApplicationLink || "",
             leadApplicationLink: committeeData.leadApplicationLink || "",
+            logo: committeeData.logo || "default",
 
         }, { merge: true });
         return true;
