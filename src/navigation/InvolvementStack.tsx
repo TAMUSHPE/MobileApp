@@ -6,7 +6,7 @@ import CommitteeScreen from "../screens/Committee";
 import PublicProfileScreen from "../screens/PublicProfile";
 // import CommitteeEditor from "../screens/CommitteeEditor";
 
-const CommitteesStack = () => {
+const InvolvementStack = () => {
     const Stack = createNativeStackNavigator<InvolvementStackParams>();
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -18,4 +18,4 @@ const CommitteesStack = () => {
     );
 }
 
-export { CommitteesStack }
+export { InvolvementStack }

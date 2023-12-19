@@ -45,7 +45,7 @@ export default function CustomColorPicker({ onColorChosen, initialColor = "#5000
       >
         <View style={styles.modalOverlay}>
           <View style={styles.pickerPopup}>
-            <Text style={styles.modalTitle}>Select a Color Committee</Text>
+            <Text style={styles.modalTitle}>Select a Color</Text>
             <TextInput
               style={styles.hexInput}
               onChangeText={(text) => {

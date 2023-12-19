@@ -19,18 +19,20 @@ const Involvement = ({ navigation }: NativeStackScreenProps<InvolvementStackPara
                 <TouchableOpacity
                     onPress={() => setCurrentTab("Committees")}
                 >
-                    <Text className={`font-semibold text-lg ${currentTab === "Committees" && "text-[#72A9BE]"}`}>Committees</Text>
+                    <Text className={`font-semibold text-xl ${currentTab === "Committees" && "text-pale-blue"}`}>Committees</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={() => setCurrentTab("MemberSHPE")}
                 >
-                    <Text className={`font-semibold text-lg ${currentTab === "MemberSHPE" && "text-[#72A9BE]"}`}>MemberSHPE</Text>
+                    <Text className={`font-semibold text-xl ${currentTab === "MemberSHPE" && "text-pale-blue"}`}>MemberSHPE</Text>
                 </TouchableOpacity>
             </View>
 
             {/* Content */}
-            {currentTab === "Committees" && <CommitteesList navigation={navigation} />}
-            {currentTab === "MemberSHPE" && <MemberSHPE />}
+            <View className='mt-8'>
+                {currentTab === "Committees" && <CommitteesList navigation={navigation} />}
+                {currentTab === "MemberSHPE" && <MemberSHPE />}
+            </View>
 
         </SafeAreaView>
     )
