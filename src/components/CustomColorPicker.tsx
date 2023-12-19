@@ -14,12 +14,6 @@ export default function CustomColorPicker({ onColorChosen }: CustomColorPickerPr
     setHexInput(color.hex);
   };
 
-  const handleHexInputChange = (hex: string) => {
-    if (validateHexColor(hex)) {
-      setSelectedColor(hex);
-      setHexInput(hex);
-    }
-  };
 
   const handleClose = () => {
     setShowPicker(false);
@@ -55,7 +49,12 @@ export default function CustomColorPicker({ onColorChosen }: CustomColorPickerPr
             <Text style={styles.modalTitle}>Select a Color Committee</Text>
             <TextInput
               style={styles.hexInput}
-              onChangeText={handleHexInputChange}
+              onChangeText={(text) => {
+                setHexInput(text);
+                if (validateHexColor(text)) {
+                  setSelectedColor(text);
+                }
+              }}
               value={hexInput}
               placeholder="Enter Hex Code"
               autoCapitalize="characters"
