@@ -2,14 +2,14 @@ import { View, Text, ActivityIndicator, Image, TouchableHighlight, Modal, Switch
 import React, { useState, useEffect, useContext } from 'react';
 import { useRoute } from '@react-navigation/native';
 import { auth } from '../config/firebaseConfig';
-import { getPublicUserData, setUserRoles } from '../api/firebaseUtils';
+import { getCommittees, getPublicUserData, setUserRoles } from '../api/firebaseUtils';
 import { MembersScreenRouteProp, MembersStackParams } from '../types/Navigation';
 import { PublicUserInfo, Roles } from '../types/User';
 import { Images } from '../../assets';
 import { Octicons } from '@expo/vector-icons';
 import ProfileBadge from '../components/ProfileBadge';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CommitteeConstants, CommitteeKey } from '../types/Committees';
+import { Committee } from '../types/Committees';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { UserContext } from '../context/UserContext';
 
@@ -22,11 +22,22 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<MembersStack
     const [updatingRoles, setUpdatingRoles] = useState<boolean>(false);
     const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
     const [modifiedRoles, setModifiedRoles] = useState<Roles | undefined>(undefined);
+    const [committees, setCommittees] = useState<Committee[]>([]);
+
 
     // Data related to currently authenticated user
     const { userInfo } = useContext(UserContext)!;
     const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    useEffect(() => {
+        const fetchCommitteeData = async () => {
+            const response = await getCommittees();
+            setCommittees(response);
+        }
+        fetchCommitteeData();
+    }, [])
+
 
     useEffect(() => {
         const fetchPublicUserData = async () => {
@@ -168,18 +179,16 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<MembersStack
                 <View className='bg-white w-4/5 rounded-xl pt-3 pb-12 px-2 space-y-2 shadow-md shadow-black items-center'>
                     <Text className='text-xl font-bold'> Committees </Text>
                     <View className='flex-row flex-wrap'>
-                        {publicUserData?.committees?.map((key: string) => {
-                            const committeeInfo = CommitteeConstants[key as CommitteeKey];
-                            if (committeeInfo) {
-                                return (
-                                    <ProfileBadge
-                                        key={key}
-                                        text={committeeInfo.name}
-                                        badgeColor={committeeInfo ? committeeInfo?.color : ""}
-                                        textClassName='text-center text-xs'
-                                    />
-                                );
-                            }
+                        {publicUserData?.committees?.map((committeeDocName, index) => {
+                            const committeeData = committees.find(c => c.firebaseDocName === committeeDocName);
+                            return (
+                                <ProfileBadge
+                                    badgeClassName='p-2 max-w-2/5 rounded-full mr-1 mb-2'
+                                    text={committeeData?.name || "Unknown Committee"}
+                                    badgeColor={committeeData?.color || ""}
+                                    key={index}
+                                />
+                            );
                         })}
                     </View>
                 </View>
