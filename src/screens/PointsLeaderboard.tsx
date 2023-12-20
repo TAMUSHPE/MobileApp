@@ -1,4 +1,4 @@
-import { View, Text, TouchableHighlight, ScrollView, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, Image, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableHighlight, ScrollView, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, Image, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native'
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Octicons } from '@expo/vector-icons';
@@ -20,6 +20,8 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
     const [loading, setLoading] = useState(true);
     const [endOfData, setEndOfData] = useState(false);
     const [nullDataOffset, setNullDataOffset] = useState(0);
+    const [infoVisible, setInfoVisible] = useState(false);
+
     /**
      * userPoints obtained from google sheets
      * userRank and rankChange are directly obtain from firebase
@@ -144,7 +146,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     <Text className="text-2xl font-bold text-white">Points Leaderboard</Text>
                 </View>
                 <View className="pr-4">
-                    <TouchableOpacity activeOpacity={1} onPress={() => navigation.navigate("PointsInfo")}>
+                    <TouchableOpacity activeOpacity={1} onPress={() => setInfoVisible(true)}>
                         <Octicons name="info" size={25} color="white" />
                     </TouchableOpacity>
                 </View>
@@ -288,6 +290,59 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     </View>
                 </View>
             </ScrollView>
+            <Modal
+                animationType="none"
+                transparent={true}
+                visible={infoVisible}
+                onRequestClose={() => setInfoVisible(false)}
+            >
+                <TouchableOpacity
+                    onPress={() => setInfoVisible(false)}
+                    className="h-[100%] w-[100%]"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                >
+                    <View className='items-center justify-center h-full'>
+                        <TouchableWithoutFeedback>
+                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'
+                                style={{ minWidth: 325 }}>
+                                <View className='flex-row items-center justify-between'>
+                                    <View className='flex-row items-center'>
+                                        <Octicons name="info" size={24} color="black" />
+                                        <Text className='text-2xl font-semibold ml-2'>Points FAQ</Text>
+                                    </View>
+                                    <View>
+                                        <TouchableOpacity onPress={() => setInfoVisible(false)}>
+                                            <Octicons name="x" size={24} color="black" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                <View>
+                                    <Text className='text-xl font-semibold'>What are MemberSHPE points?</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>MemberSHPE Points are .....</Text>
+                                </View>
+
+                                <View>
+                                    <Text className='text-xl font-semibold'>How to earn points?</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+1 Upload Old Exam</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+2 Upload Old Exam w/ A</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+1 General Meetings & Events</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+1 Wear SHPE gear</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+2 Community Service per hour</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+1 #WearItWednesday Post</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+1 Fitness Friday</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+3 Professional Workshop</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+2 Academic Workshop</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+1 Academic Social</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+2 General Meeting Sign Out</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>+4 Election</Text>
+                                </View>
+
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableOpacity >
+            </Modal >
         </SafeAreaView >
     )
 }
