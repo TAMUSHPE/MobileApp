@@ -24,6 +24,7 @@ import MSENIcon from '../../assets/msen_icon.svg';
 import NUENIcon from '../../assets/nuen_icon.svg';
 import WGSTIcon from '../../assets/wgst_icon.svg';
 import DefaultIcon from '../../assets/generic_course_icon.svg';
+import { handleLinkPress } from '../helpers/links';
 
 
 const TestCard: React.FC<TestBankProps> = ({ testData, navigation }) => {
@@ -40,17 +41,6 @@ const TestCard: React.FC<TestBankProps> = ({ testData, navigation }) => {
     const formatSemester = semester ? capitalizeFirstLetter(semester) : null;
     const formatStudent = student ? capitalizeFirstLetter(student) : null;
     const formatProfessor = professor ? capitalizeFirstLetter(professor) : null;
-
-    const handlePress = useCallback(async () => {
-        if (testURL) {
-            const supported = await Linking.canOpenURL(testURL);
-            if (supported) {
-                await WebBrowser.openBrowserAsync(testURL);
-            } else {
-                console.log(`Don't know how to open this URL: ${testURL}`);
-            }
-        }
-    }, [testURL]);
 
     const getGradeColor = (grade: string) => {
         const numericGrade = Number(grade);
@@ -97,7 +87,7 @@ const TestCard: React.FC<TestBankProps> = ({ testData, navigation }) => {
     return (
         <View className='justify-center items-center mb-8'>
             <StatusBar style="light" />
-            <TouchableOpacity onPress={handlePress} className='flex-row w-[90%] h-32 bg-white rounded-xl shadow-md shadow-slate-300 py-4 px-1'>
+            <TouchableOpacity onPress={() => handleLinkPress(testURL!)} className='flex-row w-[90%] h-32 bg-white rounded-xl shadow-md shadow-slate-300 py-4 px-1'>
                 <View className='flex-1 items-center relative'>
                     <View className='bg-pale-blue w-[80%] h-full rounded-xl'>
                         <View className='flex-row items-center justify-center h-full'>

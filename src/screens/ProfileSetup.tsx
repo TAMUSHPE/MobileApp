@@ -20,6 +20,7 @@ import { httpsCallable } from 'firebase/functions';
 import { CommonMimeTypes, validateFileBlob, validateName } from '../helpers/validation';
 import SimpleDropDown from '../components/SimpleDropDown';
 import { MAJORS, classYears } from '../types/User';
+import { handleLinkPress } from '../helpers/links';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
@@ -419,25 +420,6 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                 });
         }
     }
-    const handleLinkPress = async (url: string) => {
-        if (!url) {
-            alert("No resume found");
-            return;
-        }
-
-        await Linking.canOpenURL(url)
-            .then(async (supported) => {
-                if (supported) {
-                    await Linking.openURL(url)
-                        .catch((err) => console.error(`Issue opening url: ${err}`));
-                } else {
-                    console.warn(`Don't know how to open this URL: ${resumeURL}`);
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-    };
 
     return (
         <SafeAreaView className={safeAreaViewStyle}>

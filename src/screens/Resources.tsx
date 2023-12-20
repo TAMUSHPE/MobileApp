@@ -8,29 +8,10 @@ import LeaderBoardIcon from '../../assets/ranking-star-solid.svg';
 import ExamIcon from '../../assets/exam-icon.svg';
 import ResumeIcon from '../../assets/resume-icon.svg';
 import OfficeHours from '../components/OfficeHours';
+import { handleLinkPress } from '../helpers/links';
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
     const insets = useSafeAreaInsets();
-    const handleLinkPress = async (url: string) => {
-        if (!url) {
-            console.warn(`Empty/Falsy URL passed to handleLinkPress(): ${url}`);
-            return;
-        }
-
-        await Linking.canOpenURL(url)
-            .then(async (supported) => {
-                if (supported) {
-                    await Linking.openURL(url)
-                        .catch((err) => console.error(`Issue opening url: ${err}`));
-                } else {
-                    console.warn(`Don't know how to open this URL: ${url}`);
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-    };
-
 
     const SocialMediaButton = ({ url, imageSource, bgColor = "" }: {
         url: string,

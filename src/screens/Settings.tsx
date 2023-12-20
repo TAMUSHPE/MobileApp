@@ -22,6 +22,7 @@ import { httpsCallable } from 'firebase/functions';
 import SimpleDropDown from '../components/SimpleDropDown';
 import { MAJORS, classYears } from '../types/User';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { handleLinkPress } from '../helpers/links';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
@@ -591,23 +592,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                             label='View Resume'
                             onPress={async () => {
                                 console.log(resumeURL);
-                                if (resumeURL) {
-                                    await Linking.canOpenURL(resumeURL)
-                                        .then(async (supported) => {
-                                            if (supported) {
-                                                await Linking.openURL(resumeURL!)
-                                                    .catch((err) => console.error(`Issue opening url: ${err}`));
-                                            } else {
-                                                console.warn(`Don't know how to open this URL: ${resumeURL}`);
-                                            }
-                                        })
-                                        .catch((err) => {
-                                            console.error(err);
-                                        });
-                                }
-                                else {
-                                    Alert.alert("No resume found", "A resume could not be found linked to this account. If you believe this is incorrect, please notify a developer.")
-                                }
+                                handleLinkPress(resumeURL!);
                             }}
                         />
                     </View>

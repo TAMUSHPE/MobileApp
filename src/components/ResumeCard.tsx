@@ -8,6 +8,7 @@ import { httpsCallable } from 'firebase/functions';
 import { UserContext } from '../context/UserContext';
 import TwitterSvg from './TwitterSvg';
 import { getBadgeColor } from '../helpers/membership';
+import { handleLinkPress } from '../helpers/links';
 
 const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ resumeData, navigation, onResumeRemoved }) => {
     // Data related to user's resume
@@ -19,26 +20,6 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
     // Data related to currently authenticated user
     const { userInfo } = useContext(UserContext)!;
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
-
-    const handleLinkPress = async (url: string) => {
-        if (!url) {
-            console.warn(`Empty/Falsy URL passed to handleLinkPress(): ${url}`);
-            return;
-        }
-
-        await Linking.canOpenURL(url)
-            .then(async (supported) => {
-                if (supported) {
-                    await Linking.openURL(url)
-                        .catch((err) => console.error(`Issue opening url: ${err}`));
-                } else {
-                    console.warn(`Don't know how to open this URL: ${url}`);
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-    };
 
     const classYearFormat = (classYear: string) => {
         if (classYear.length === 4) {
