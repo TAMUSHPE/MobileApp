@@ -155,44 +155,47 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                                 <Octicons name="filter" size={27} color="black" />
                             </TouchableOpacity>
                         </View>
+
                         {showFilterMenu && (
                             <View className='flex-row p-4'>
-                                <View>
-                                    <TextInput
-                                        value={localFilter?.classYear}
-                                        onChangeText={(text) => setLocalFilter({ ...localFilter, classYear: text })}
-                                        placeholder="classYear"
-                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4 mb-4'
-                                    />
-                                    <TextInput
-                                        value={localFilter?.major}
-                                        onChangeText={(text) => setLocalFilter({ ...localFilter, major: text })}
-                                        placeholder="Major"
-                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4 mb-4'
-                                    />
+                                <View className='flex-1 space-y-4'>
+                                    <View className='justify-start flex-row'>
+                                        <TextInput
+                                            value={localFilter?.classYear}
+                                            onChangeText={(text) => setLocalFilter({ ...localFilter, classYear: text })}
+                                            placeholder="Subject"
+                                            className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                        />
+                                        <TextInput
+                                            value={localFilter?.major}
+                                            onChangeText={(text) => setLocalFilter({ ...localFilter, major: text })}
+                                            placeholder="Course"
+                                            className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                        />
+                                        <TouchableOpacity
+                                            onPress={() => handleApplyFilter()}
+                                            className='items-center justify-center bg-pale-blue py-2 w-20 rounded-lg ml-3'>
+                                            <Text className='text-white font-bold text-xl'>Apply</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <View className='justify-start flex-row'>
 
-                                    <Text>OrderBy:(name/points)</Text>
-                                    <TextInput
-                                        value={localFilter?.orderByField}
-                                        onChangeText={(text) => setLocalFilter({ ...localFilter, orderByField: text })}
-                                        placeholder="OrderBy"
-                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2'
-                                    />
-                                </View>
-                                <View>
-                                    <TouchableOpacity
-                                        onPress={() => handleApplyFilter()}
-                                        className='items-center justify-center bg-pale-blue w-14 h-10 rounded-lg'>
-                                        <Text className='text-bold text-xl'>Apply</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            resetList()
-                                            setSearch("");
-                                        }}
-                                        className='items-center justify-center bg-red-600 w-14 h-10 rounded-lg'>
-                                        <Text className='text-bold text-xl'>Clear</Text>
-                                    </TouchableOpacity>
+                                        <TextInput
+                                            value={localFilter?.orderByField}
+                                            onChangeText={(text) => setLocalFilter({ ...localFilter, orderByField: text })}
+                                            placeholder="Student"
+                                            className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                        />
+                                        <View className='w-28 mr-4'></View>
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                resetList()
+                                                setSearch("");
+                                            }}
+                                            className='items-center justify-center py-2 w-20 rounded-lg ml-3'>
+                                            <Text className='font-bold text-xl text-pale-blue'>Rest</Text>
+                                        </TouchableOpacity>
+                                    </View>
                                 </View>
                             </View>
                         )}
