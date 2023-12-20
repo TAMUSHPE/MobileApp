@@ -1,6 +1,7 @@
-import { View, Text, TouchableHighlight, SafeAreaView, Switch, Modal } from 'react-native';
+import { View, Text, TouchableHighlight, Switch, Modal } from 'react-native';
 import React, { useState } from 'react';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 /**
  * Title used to separate sections of information in different settings screens.

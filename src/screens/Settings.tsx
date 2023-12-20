@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, SafeAreaView, ActivityIndicator, KeyboardAvoidingView, Platform, Linking, Alert } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Linking, Alert } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { MainStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
@@ -21,6 +21,7 @@ import InteractButton from '../components/InteractButton';
 import { httpsCallable } from 'firebase/functions';
 import SimpleDropDown from '../components/SimpleDropDown';
 import { MAJORS, classYears } from '../types/User';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
