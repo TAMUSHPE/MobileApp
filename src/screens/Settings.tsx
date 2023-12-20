@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Linking, Alert } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { MainStackParams } from '../types/Navigation';
 import { Images } from '../../assets';
@@ -6,8 +6,7 @@ import { auth, functions } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { setPublicUserData, setPrivateUserData, getUser, uploadFileToFirebase, getCommittees } from '../api/firebaseUtils';
-import { getDownloadURL } from 'firebase/storage';
+import { setPublicUserData, setPrivateUserData, getUser, getCommittees } from '../api/firebaseUtils';
 import { updateProfile } from 'firebase/auth';
 import * as ImagePicker from "expo-image-picker";
 import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../api/fileSelection';

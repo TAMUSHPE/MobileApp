@@ -1,18 +1,16 @@
-import { View, Text, TouchableOpacity, Image, TextInput, ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
+import { View, Text, TouchableOpacity, Image, TextInput, ScrollView } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { Octicons } from '@expo/vector-icons';
 import { AdminDashboardParams } from '../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from "expo-image-picker";
-import { deleteObject, getDownloadURL, ref } from "firebase/storage";
+import { deleteObject, ref } from "firebase/storage";
 import { db, storage } from '../config/firebaseConfig';
-import { uploadFileToFirebase } from '../api/firebaseUtils';
 import { getBlobFromURI, selectImage, uploadFile } from '../api/fileSelection';
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
 import FeaturedSlider from '../components/FeaturedSlider';
 import { Slide } from '../types/slides';
-import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
+import { CommonMimeTypes } from '../helpers/validation';
 
 const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [image, setImage] = useState<Blob | null>(null);

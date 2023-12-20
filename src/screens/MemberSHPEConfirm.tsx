@@ -1,4 +1,4 @@
-import { View, Text, Modal, TouchableOpacity, TouchableWithoutFeedback, Linking } from 'react-native'
+import { View, Text, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { PublicUserInfo } from '../types/User'
 import { getMembersToVerify, getPublicUserData } from '../api/firebaseUtils'

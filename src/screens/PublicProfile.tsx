@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator, Image, Modal, Alert, TouchableOpacity, Linking, TouchableWithoutFeedback, Pressable, TextInput } from 'react-native';
+import { View, Text, ActivityIndicator, Image, Modal, Alert, TouchableOpacity, TouchableWithoutFeedback, Pressable, TextInput } from 'react-native';
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { BlurView } from '@react-native-community/blur';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';

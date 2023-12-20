@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, Linking } from 'react-native'
+import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React, { useContext, useState } from 'react'
 import { Images } from '../../assets';
 import { ResumeProps } from '../types/Navigation'
