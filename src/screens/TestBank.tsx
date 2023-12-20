@@ -1,4 +1,4 @@
-import { View, Text, TouchableHighlight, ActivityIndicator, ScrollView, NativeSyntheticEvent, NativeScrollEvent, TextInput, TouchableOpacity } from 'react-native'
+import { View, Text, ActivityIndicator, ScrollView, NativeSyntheticEvent, NativeScrollEvent, TextInput, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
@@ -22,6 +22,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
     const [query, setQuery] = useState<string | undefined>(undefined);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [endOfData, setEndOfData] = useState(false);
+    const [infoVisible, setInfoVisible] = useState(false);
 
     /** On mount, load attempt to load the first 50 tests */
     useEffect(() => {
@@ -175,7 +176,6 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
     return (
         <View className='flex-1 bg-pale-blue'>
             {/* Header */}
-
             <SafeAreaView edges={['top']} >
                 <View className='flex-row justify-between items-center mx-5 mt-1'>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -183,7 +183,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                     </TouchableOpacity>
                     <Text className='text-2xl font-semibold text-white'>Test Bank</Text>
 
-                    <TouchableOpacity onPress={() => alert("tobeimplemented")}>
+                    <TouchableOpacity onPress={() => setInfoVisible(true)}>
                         <Octicons name="info" size={25} color="white" />
                     </TouchableOpacity>
                 </View>
@@ -280,6 +280,49 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                     </View>
                 </View>
             </ScrollView>
+
+            <Modal
+                animationType="none"
+                transparent={true}
+                visible={infoVisible}
+                onRequestClose={() => setInfoVisible(false)}
+            >
+                <TouchableOpacity
+                    onPress={() => setInfoVisible(false)}
+                    className="h-[100%] w-[100%]"
+                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                >
+                    <View className='items-center justify-center h-full'>
+                        <TouchableWithoutFeedback>
+                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'
+                                style={{ minWidth: 325 }}>
+                                <View className='flex-row items-center justify-between'>
+                                    <View className='flex-row items-center'>
+                                        <Octicons name="info" size={24} color="black" />
+                                        <Text className='text-2xl font-semibold ml-2'>Resume FAQ</Text>
+                                    </View>
+                                    <View>
+                                        <TouchableOpacity onPress={() => setInfoVisible(false)}>
+                                            <Octicons name="x" size={24} color="black" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                <View>
+                                    <Text className='text-xl font-semibold'>What is the Test Bank?</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>Test Bank is...</Text>
+                                </View>
+
+                                <View>
+                                    <Text className='text-xl font-semibold'>Earning Points with Test Bank</Text>
+                                    <Text className='text-lg font-semibold text-gray-400'>Ways to earn points...</Text>
+                                </View>
+
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableOpacity >
+            </Modal >
         </View>
     )
 }

@@ -57,7 +57,6 @@ export type ResourcesStackParams = {
     PointsLeaderboard: undefined;
     TestBank: undefined;
     ResumeBank: undefined;
-    PointsInfo: undefined;
     PublicProfile: {
         uid: string;
     };
