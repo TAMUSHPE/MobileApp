@@ -151,8 +151,14 @@ const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, offi
                             <TouchableOpacity
                                 onPress={() => setShowFilterMenu(!showFilterMenu)}
                                 className='pl-4 items-center justify-center'
+                                style={{ minWidth: 45 }}
                             >
-                                <Octicons name="filter" size={27} color="black" />
+                                {showFilterMenu ? (
+                                    <Octicons name="x" size={27} color="black" />
+
+                                ) : (
+                                    <Octicons name="filter" size={27} color="black" />
+                                )}
                             </TouchableOpacity>
                         </View>
 
