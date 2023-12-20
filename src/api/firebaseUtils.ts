@@ -761,7 +761,9 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
     major?: string;
     classYear?: string;
     } = {}) => {
+    // THIS IS BAD, LETS REDO IT LATER
     try {
+        // Verified resumes
         let publicResumeQueryConstraints  = [where("resumeVerified", "==", true)];
         if (filters.major) {
             publicResumeQueryConstraints.push(where("major", "==", filters.major));
@@ -772,7 +774,7 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
         const publicResumeQuery = query(collection(db, 'users'), ...publicResumeQueryConstraints)
         const publicResumeSnapshot = await getDocs(publicResumeQuery);
 
-
+        // Officers
         let officerQueryConstraints = [where("roles.officer", "==", true)];
         if (filters.major) {
             officerQueryConstraints.push(where("major", "==", filters.major));
@@ -783,6 +785,30 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
         const officerQuery = query(collection(db, 'users'), ...officerQueryConstraints)
         const officerSnapshot = await getDocs(officerQuery);
 
+        // Representatives
+        let representativeQueryConstraints = [where("roles.representative", "==", true)];
+        if (filters.major) {
+            representativeQueryConstraints.push(where("major", "==", filters.major));
+        }
+        if (filters.classYear) {
+            representativeQueryConstraints.push(where("classYear", "==", filters.classYear));
+        }
+        const representativeQuery = query(collection(db, 'users'), ...representativeQueryConstraints)
+        const representativeSnapshot = await getDocs(representativeQuery);
+
+        // Leads
+        let leadQueryConstraints = [where("roles.lead", "==", true)];
+        if (filters.major) {
+            leadQueryConstraints.push(where("major", "==", filters.major));
+        }
+        if (filters.classYear) {
+            leadQueryConstraints.push(where("classYear", "==", filters.classYear));
+        }
+        const leadQuery = query(collection(db, 'users'), ...leadQueryConstraints)
+        const leadSnapshot = await getDocs(leadQuery);
+
+
+
         const combinedUsers = new Map();
         publicResumeSnapshot.forEach(doc => {
             const userData = doc.data();
@@ -791,6 +817,20 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
             }
         });
         officerSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.resumePublicURL) { 
+                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
+            }
+        });
+
+        representativeSnapshot.forEach(doc => {
+            const userData = doc.data();
+            if (userData.resumePublicURL) { 
+                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
+            }
+        });
+
+        leadSnapshot.forEach(doc => {
             const userData = doc.data();
             if (userData.resumePublicURL) { 
                 combinedUsers.set(doc.id, { ...userData, uid: doc.id });
