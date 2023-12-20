@@ -4,7 +4,7 @@ import { Images } from '../../assets';
 import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
 import { getUser, uploadFileToFirebase } from '../api/firebaseUtils';
 import { auth, db } from '../config/firebaseConfig';
-import { getBlobFromURI, selectFile } from '../api/fileSelection';
+import { getBlobFromURI, selectFile, uploadFile } from '../api/fileSelection';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { getDownloadURL } from 'firebase/storage';
 import { UserContext } from '../context/UserContext';
@@ -103,93 +103,30 @@ const MemberSHPE = () => {
         return null;
     }
 
-    const uploadNational = (nationalBlob: Blob) => {
-        if (uploadedNational) {
-            return;
+    const onNationalUploadSuccess = async (URL: string) => {
+        const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year from now
+        await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
+            nationalUploadDate: new Date().toISOString(),
+            nationalExpiration: expirationDate,
+            nationalURL: URL
+        }, { merge: true });
+    };
+
+    const onChapterUploadSuccess = async (URL: string) => {
+        const today = new Date();
+        let expirationYear = today.getFullYear();
+
+        if (today > new Date(expirationYear, 7, 20)) { // Note: JavaScript months are 0-indexed
+            expirationYear += 1;
         }
-        if (validateFileBlob(nationalBlob, CommonMimeTypes.RESUME_FILES, true)) {
-            const uploadTask = uploadFileToFirebase(nationalBlob, `user-docs/${auth.currentUser?.uid}/national-verification`);
 
-            uploadTask.on("state_changed",
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload is ' + progress + '% done');
-                },
-                (error) => {
-                    switch (error.code) {
-                        case "storage/unauthorized":
-                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
-                            break;
-                        case "storage/canceled":
-                            alert("File upload cancelled");
-                            break;
-                        default:
-                            alert("An unknown error has occurred")
-                            break;
-                    }
-                },
-                async () => {
-                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
-                        if (auth.currentUser) {
-                            const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year from now
-                            await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
-                                nationalUploadDate: new Date().toISOString(),
-                                nationalExpiration: expirationDate,
-                                nationalURL: URL
-                            }, { merge: true });
-                        }
-                    });
-                });
-        }
-    }
-
-    const uploadChapter = (chapterBlob: Blob) => {
-        if (uploadedChapter) {
-            return;
-        }
-        if (validateFileBlob(chapterBlob, CommonMimeTypes.RESUME_FILES, true)) {
-            const uploadTask = uploadFileToFirebase(chapterBlob, `user-docs/${auth.currentUser?.uid}/chapter-verification`);
-
-            uploadTask.on("state_changed",
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload is ' + progress + '% done');
-                },
-                (error) => {
-                    switch (error.code) {
-                        case "storage/unauthorized":
-                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
-                            break;
-                        case "storage/canceled":
-                            alert("File upload cancelled");
-                            break;
-                        default:
-                            alert("An unknown error has occurred")
-                            break;
-                    }
-                },
-                async () => {
-                    const today = new Date();
-                    let expirationYear = today.getFullYear();
-
-                    if (today > new Date(expirationYear, 7, 20)) { // Note: JavaScript months are 0-indexed
-                        expirationYear += 1;
-                    }
-
-                    const expirationDate = new Date(expirationYear, 7, 20).toISOString(); // August 20th of the determined year
-
-                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
-                        if (auth.currentUser) {
-                            await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
-                                chapterUploadDate: new Date().toISOString(),
-                                chapterExpiration: expirationDate,
-                                chapterURL: URL
-                            }, { merge: true });
-                        }
-                    });
-                });
-        }
-    }
+        const expirationDate = new Date(expirationYear, 7, 20).toISOString(); // August 20th of the following year
+        await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
+            chapterUploadDate: new Date().toISOString(),
+            chapterExpiration: expirationDate,
+            chapterURL: URL
+        }, { merge: true });
+    };
 
     return (
         <View className='h-screen'>
@@ -274,7 +211,12 @@ const MemberSHPE = () => {
                         onPress={async () => {
                             const chapterDocument = await selectDocument();
                             if (chapterDocument) {
-                                uploadChapter(chapterDocument);
+                                uploadFile(
+                                    chapterDocument,
+                                    CommonMimeTypes.MEMBERSHIP_DOC_FILES,
+                                    `user-docs/${auth.currentUser?.uid}/chapter-verification`,
+                                    onChapterUploadSuccess
+                                );
                             }
                         }}
                         disabled={uploadedChapter}
@@ -288,7 +230,12 @@ const MemberSHPE = () => {
                         onPress={async () => {
                             const nationalDocument = await selectDocument();
                             if (nationalDocument) {
-                                uploadNational(nationalDocument);
+                                uploadFile(
+                                    nationalDocument,
+                                    CommonMimeTypes.MEMBERSHIP_DOC_FILES,
+                                    `user-docs/${auth.currentUser?.uid}/national-verification`,
+                                    onNationalUploadSuccess
+                                );
                             }
                         }}
                         disabled={uploadedNational}

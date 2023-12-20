@@ -7,7 +7,7 @@ import { auth, db } from '../config/firebaseConfig'
 import { getDownloadURL } from 'firebase/storage'
 import { deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 import { setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils'
-import { getBlobFromURI, selectFile } from '../api/fileSelection'
+import { getBlobFromURI, selectFile, uploadFile } from '../api/fileSelection'
 import { CommonMimeTypes, validateFileBlob } from '../helpers/validation'
 import AddFileIcon from '../../assets/file-circle-plus-solid.svg'
 import { PublicUserInfo } from '../types/User';
@@ -44,65 +44,39 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
         return null;
     }
 
-    const uploadResume = (resumeBlob: Blob) => {
-        if (validateFileBlob(resumeBlob, CommonMimeTypes.RESUME_FILES, true)) {
-            setLoading(true)
-            const uploadTask = uploadFileToFirebase(resumeBlob, `user-docs/${auth.currentUser?.uid}/user-resume-public`);
+    const onResumeUploadSuccess = async (URL: string) => {
+        try {
+            // Remove from resume verification if submitted
+            await removedSubmittedResume();
 
-            uploadTask.on("state_changed",
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload is ' + progress + '% done');
-                },
-                (error) => {
-                    setLoading(false);
-                    switch (error.code) {
-                        case "storage/unauthorized":
-                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
-                            break;
-                        case "storage/canceled":
-                            alert("File upload cancelled");
-                            break;
-                        default:
-                            alert("An unknown error has occured")
-                            break;
-                    }
-                },
-                async () => {
-                    try {
-                        const url = await getDownloadURL(uploadTask.snapshot.ref);
-                        // Remove from resume verification if submitted
-                        await removedSubmittedResume();
+            // Team Members are automatically approved
+            const isTeamMember = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer || userInfo?.publicInfo?.roles?.representative || userInfo?.publicInfo?.roles?.lead;
+            const resumeVerifiedStatus = isTeamMember ? true : false;
 
-                        // Team Members are automatically approved
-                        const isTeamMember = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer || userInfo?.publicInfo?.roles?.representative || userInfo?.publicInfo?.roles?.lead;
-                        const resumeVerifiedStatus = isTeamMember ? true : false;
+            // Update user data in Firebase
+            await setPublicUserData({
+                resumePublicURL: URL,
+                resumeVerified: resumeVerifiedStatus
+            });
 
-                        // Update user data in Firebase
-                        await setPublicUserData({
-                            resumePublicURL: url,
-                            resumeVerified: resumeVerifiedStatus
-                        });
+            // Update user data in local storage
+            await updatePublicInfoAndPersist({
+                resumePublicURL: URL,
+                resumeVerified: resumeVerifiedStatus
+            })
 
-                        // Update user data in local storage
-                        await updatePublicInfoAndPersist({
-                            resumePublicURL: url,
-                            resumeVerified: resumeVerifiedStatus
-                        })
+            // resume by team member are automatically approved so refresh resumes list
+            if (isTeamMember) {
+                onResumesUpdate();
+            }
 
-                        // resume by team member are automatically approved so refresh resumes list
-                        if (isTeamMember) {
-                            onResumesUpdate();
-                        }
-
-                    } catch (error) {
-                        console.error("Error during resume upload process:", error);
-                    } finally {
-                        setLoading(false);
-                    }
-                });
+        } catch (error) {
+            console.error("Error during resume upload process:", error);
+        } finally {
+            setLoading(false);
         }
-    }
+
+    };
 
     // Submit resume to be verified by officer
     const submitResume = async () => {
@@ -158,7 +132,12 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                     onPress={async () => {
                         const selectedResume = await selectResume();
                         if (selectedResume) {
-                            uploadResume(selectedResume);
+                            uploadFile(
+                                selectedResume,
+                                CommonMimeTypes.RESUME_FILES,
+                                `user-docs/${auth.currentUser?.uid}/user-resume-public`,
+                                onResumeUploadSuccess
+                            );
                         }
                     }}>
                     <AddFileIcon height={55} width={55} />

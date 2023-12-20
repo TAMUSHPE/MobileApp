@@ -10,7 +10,7 @@ import { setPublicUserData, setPrivateUserData, getUser, uploadFileToFirebase, g
 import { getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
 import * as ImagePicker from "expo-image-picker";
-import { getBlobFromURI, selectFile, selectImage } from '../api/fileSelection';
+import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../api/fileSelection';
 import ProfileBadge from '../components/ProfileBadge';
 import { Committee } from '../types/Committees';
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../helpers/validation';
@@ -221,43 +221,16 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         return null
     }
 
-    const uploadProfilePicture = () => {
-        if (image) {
-            const uploadTask = uploadFileToFirebase(image, `user-docs/${auth.currentUser?.uid}/user-profile-picture`);
-
-            uploadTask.on("state_changed",
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload is ' + progress + '% done');
-                },
-                (error) => {
-                    switch (error.code) {
-                        case "storage/unauthorized":
-                            Alert.alert("Permissions error", "File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
-                            break;
-                        case "storage/canceled":
-                            Alert.alert("File upload canceled", "File upload has been canceled.");
-                            break;
-                        default:
-                            Alert.alert("Unknown error", "An unknown error has occured. Please notify a developer.")
-                            console.error(error);
-                            break;
-                    }
-                },
-                async () => {
-                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
-                        console.log("File available at", URL);
-                        if (auth.currentUser) {
-                            setPhotoURL(URL);
-                            await updateProfile(auth.currentUser, {
-                                photoURL: URL
-                            });
-                            await setPublicUserData({
-                                photoURL: URL
-                            });
-                        }
-                    });
-                });
+    const onProfilePictureUploadSuccess = async (URL: string) => {
+        console.log("File available at", URL);
+        if (auth.currentUser) {
+            setPhotoURL(URL);
+            await updateProfile(auth.currentUser, {
+                photoURL: URL
+            });
+            await setPublicUserData({
+                photoURL: URL
+            });
         }
     }
 
@@ -270,46 +243,26 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         }
     };
 
-    const uploadResume = (resumeBlob: Blob) => {
-        if (resumeBlob && validateFileBlob(resumeBlob, CommonMimeTypes.RESUME_FILES, true)) {
-            const uploadTask = uploadFileToFirebase(resumeBlob, `user-docs/${auth.currentUser?.uid}/user-resume`);
-
-            uploadTask.on("state_changed",
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload is ' + progress + '% done');
-                },
-                (error) => {
-                    switch (error.code) {
-                        case "storage/unauthorized":
-                            Alert.alert("Permissions error", "File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
-                            break;
-                        case "storage/canceled":
-                            Alert.alert("File upload canceled", "File upload has been canceled.");
-                            break;
-                        default:
-                            Alert.alert("Unknown error", "An unknown error has occured. Please notify a developer.")
-                            console.error(error);
-                            break;
-                    }
-                },
-                async () => {
-                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
-                        console.log("File available at", URL);
-                        if (auth.currentUser) {
-                            setResumeURL(URL);
-                            await setPublicUserData({
-                                resumeURL: URL
-                            });
-                        }
-                    });
-                });
+    const onResumeUploadSuccess = async (URL: string) => {
+        console.log("File available at", URL);
+        if (auth.currentUser) {
+            setResumeURL(URL);
+            await setPublicUserData({
+                resumeURL: URL
+            });
         }
+
     }
 
     const saveChanges = async () => {
         setLoading(true)
-        uploadProfilePicture();
+        // upload profile picture
+        uploadFile(
+            image!,
+            CommonMimeTypes.IMAGE_FILES,
+            `user-docs/${auth.currentUser?.uid}/user-resume-public`,
+            onProfilePictureUploadSuccess
+        );
         // uploadResume();
 
         /**
@@ -584,7 +537,12 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                 saveChanges();
                                 const selectedResume = await selectResume();
                                 if (selectedResume) {
-                                    uploadResume(selectedResume);
+                                    uploadFile(
+                                        selectedResume,
+                                        CommonMimeTypes.RESUME_FILES,
+                                        `user-docs/${auth.currentUser?.uid}/user-resume`,
+                                        onResumeUploadSuccess
+                                    )
                                 }
                             }}
                         />

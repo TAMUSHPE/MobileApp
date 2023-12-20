@@ -111,6 +111,10 @@ export abstract class CommonMimeTypes {
     static readonly RESUME_FILES = [
         "application/pdf"
     ];
+    static readonly MEMBERSHIP_DOC_FILES = [
+        ...CommonMimeTypes.IMAGE_FILES,
+        "application/pdf"
+    ];
 };
 
 /**
