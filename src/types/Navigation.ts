@@ -39,7 +39,6 @@ export type MembersStackParams = {
     PublicProfile: {
         uid: string;
     }
-    SettingsScreen: undefined;
 };
 
 export type ProfileSetupStackParams = {
@@ -115,6 +114,8 @@ export type HomeDrawerParams = {
     PublicProfile: {
         uid: string;
     }
+    
+    ProfileSettingsScreen: undefined;
 };
 
 
