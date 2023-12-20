@@ -1,14 +1,13 @@
-import { View, Text, TouchableOpacity, Linking, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../context/UserContext'
 import { auth, db } from '../config/firebaseConfig'
-import { getDownloadURL } from 'firebase/storage'
 import { deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
-import { setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils'
+import { setPublicUserData } from '../api/firebaseUtils'
 import { getBlobFromURI, selectFile, uploadFile } from '../api/fileSelection'
-import { CommonMimeTypes, validateFileBlob } from '../helpers/validation'
+import { CommonMimeTypes } from '../helpers/validation'
 import AddFileIcon from '../../assets/file-circle-plus-solid.svg'
 import { PublicUserInfo } from '../types/User';
 import { handleLinkPress } from '../helpers/links';
@@ -78,7 +77,6 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
 
     };
 
-    // Submit resume to be verified by officer
     const submitResume = async () => {
         if (auth.currentUser) {
             await setDoc(doc(db, `resumeVerification/${auth.currentUser?.uid}`), {
@@ -95,6 +93,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
             setSubmittedResume(false);
         }
     }
+
     const updatePublicInfoAndPersist = async (publicInfoChanges: PublicUserInfo) => {
         if (userInfo) {
             const updatedUserInfo = {

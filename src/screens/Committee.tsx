@@ -1,4 +1,4 @@
-import { View, Text, Modal, TouchableOpacity, Linking, TouchableWithoutFeedback, ScrollView } from 'react-native'
+import { View, Text, Modal, TouchableOpacity, TouchableWithoutFeedback, ScrollView } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';

@@ -1,5 +1,5 @@
-import { Button, ActivityIndicator, Linking, View, Text } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Button, ActivityIndicator, View, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { db } from '../config/firebaseConfig';

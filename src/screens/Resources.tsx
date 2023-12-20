@@ -1,4 +1,4 @@
-import { View, Image, ScrollView, Text, TouchableOpacity, Linking, ImageSourcePropType } from 'react-native';
+import { View, Image, ScrollView, Text, TouchableOpacity, ImageSourcePropType } from 'react-native';
 import React from 'react';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';

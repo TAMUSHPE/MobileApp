@@ -1,7 +1,7 @@
-import { View, Text, TouchableOpacity, Linking, Image } from 'react-native'
-import React, { useCallback, FC, SVGProps } from 'react'
+import { View, Text, TouchableOpacity } from 'react-native'
+import React from 'react'
 import { TestBankProps } from '../types/Navigation'
-import * as WebBrowser from 'expo-web-browser'
+
 import { StatusBar } from 'expo-status-bar';
 import ACCTIcon from '../../assets/acct_icon.svg';
 import AEROIcon from '../../assets/aero_icon.svg';
@@ -77,7 +77,7 @@ const TestCard: React.FC<TestBankProps> = ({ testData, navigation }) => {
         'default': DefaultIcon
     };
 
-    const getSubjectIcon = (subject: string): FC<SVGProps<SVGSVGElement>> => {
+    const getSubjectIcon = (subject: string): React.FC<React.SVGProps<SVGSVGElement>> => {
         const lowerCaseSubject = subject.replace(/\s+/g, '').toLowerCase() as SubjectCode;
         return subjectIconMapping[lowerCaseSubject] || subjectIconMapping['default'];
     };
@@ -134,7 +134,7 @@ const TestCard: React.FC<TestBankProps> = ({ testData, navigation }) => {
 type SubjectCode = 'acct' | 'aero' | 'astr' | 'bmen' | 'chem' | 'chen' | 'csce' | 'cven' | 'ecen' | 'engr' | 'hist' | 'isen' | 'math' | 'meen' | 'phil' | 'phys' | 'stat' | 'msen' | 'nuen' | 'wgst' | 'default';
 
 type SubjectIconMapping = {
-    [key in SubjectCode]: FC<SVGProps<SVGSVGElement>>;
+    [key in SubjectCode]: React.FC<React.SVGProps<SVGSVGElement>>;
 };
 
 export default TestCard

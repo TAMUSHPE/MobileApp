@@ -1,12 +1,11 @@
-import { View, Text, Image, TouchableOpacity, Linking } from 'react-native'
+import { View, Text, Image, TouchableOpacity } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { Images } from '../../assets';
-import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
-import { getUser, uploadFileToFirebase } from '../api/firebaseUtils';
+import { CommonMimeTypes } from '../helpers/validation';
+import { getUser } from '../api/firebaseUtils';
 import { auth, db } from '../config/firebaseConfig';
 import { getBlobFromURI, selectFile, uploadFile } from '../api/fileSelection';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
-import { getDownloadURL } from 'firebase/storage';
 import { UserContext } from '../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleLinkPress } from '../helpers/links';
