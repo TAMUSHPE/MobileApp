@@ -26,11 +26,11 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<MembersStack
     const { uid } = route.params;
     const [loading, setLoading] = useState<boolean>(true);
     const [publicUserData, setPublicUserData] = useState<PublicUserInfo | undefined>();
-    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, tamuEmail } = publicUserData || {};
+    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, tamuEmail, committees } = publicUserData || {};
     const [updatingRoles, setUpdatingRoles] = useState<boolean>(false);
     const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
     const [modifiedRoles, setModifiedRoles] = useState<Roles | undefined>(undefined);
-    const [committees, setCommittees] = useState<Committee[]>([]);
+    const [committeesData, setCommitteesData] = useState<Committee[]>([]);
     const [isVerified, setIsVerified] = useState<boolean>(false);
     const isOfficer = roles ? roles.officer : false;
     let badgeColor = getBadgeColor(isOfficer!, isVerified);
@@ -66,7 +66,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<MembersStack
     useEffect(() => {
         const fetchCommitteeData = async () => {
             const response = await getCommittees();
-            setCommittees(response);
+            setCommitteesData(response);
         }
         fetchCommitteeData();
     }, [])
@@ -240,8 +240,8 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<MembersStack
 
                 <Text className='text-2xl italic mt-5'>Involvement</Text>
                 <View className='flex-row flex-wrap mt-2'>
-                    {committees?.map((committee, index) => {
-                        const committeeData = committees.find(c => c.firebaseDocName === committee.firebaseDocName);
+                    {committees?.map((committeeName, index) => {
+                        const committeeData = committeesData.find(c => c.firebaseDocName === committeeName);
 
                         return (
                             <ProfileBadge
@@ -253,6 +253,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<MembersStack
                             />
                         );
                     })}
+
                 </View>
             </View>
 
