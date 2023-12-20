@@ -37,8 +37,8 @@ export interface PublicUserInfo {
     committees?: string[];
     pointsRank?: number;
     rankChange?: RankChange;
-    nationalExpiration?: Date;
-    chapterExpiration?: Date;
+    nationalExpiration?: string;
+    chapterExpiration?: string;
     resumeVerified?: boolean;
     // Google Sheets parameters
     points?: number;

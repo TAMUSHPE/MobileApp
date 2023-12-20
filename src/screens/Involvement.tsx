@@ -11,28 +11,31 @@ const Involvement = ({ navigation }: NativeStackScreenProps<InvolvementStackPara
     const [currentTab, setCurrentTab] = useState<InvolvementTabs>("Committees")
 
     return (
-        <SafeAreaView>
+        <View>
             {/* Bar */}
-            <View className='flex flex-row justify-between items-center mx-16 mt-4'>
-                <TouchableOpacity
-                    onPress={() => setCurrentTab("Committees")}
-                >
-                    <Text className={`font-semibold text-xl ${currentTab === "Committees" && "text-pale-blue"}`}>Committees</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    onPress={() => setCurrentTab("MemberSHPE")}
-                >
-                    <Text className={`font-semibold text-xl ${currentTab === "MemberSHPE" && "text-pale-blue"}`}>MemberSHPE</Text>
-                </TouchableOpacity>
-            </View>
+            <SafeAreaView>
+
+                <View className='flex flex-row justify-between items-center mx-16 mt-4'>
+                    <TouchableOpacity
+                        onPress={() => setCurrentTab("Committees")}
+                    >
+                        <Text className={`font-semibold text-xl ${currentTab === "Committees" && "text-pale-blue"}`}>Committees</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setCurrentTab("MemberSHPE")}
+                    >
+                        <Text className={`font-semibold text-xl ${currentTab === "MemberSHPE" && "text-pale-blue"}`}>MemberSHPE</Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
 
             {/* Content */}
-            <View className='mt-8'>
+            <View>
                 {currentTab === "Committees" && <CommitteesList navigation={navigation} />}
                 {currentTab === "MemberSHPE" && <MemberSHPE />}
             </View>
 
-        </SafeAreaView>
+        </View>
     )
 }
 

@@ -24,3 +24,14 @@ export const getBadgeColor = (isOfficer:boolean, isVerified:boolean) => {
     if (isVerified) return '#500000';
     return '';
 };
+
+export const formatExpirationDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    };
+
+    return new Intl.DateTimeFormat('en-US', options).format(date);
+}

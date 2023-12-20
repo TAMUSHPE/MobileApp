@@ -79,7 +79,7 @@ export const uploadFile = async (
     blob: Blob,
     validMimeTypes: string[] = [],
     storagePath: string,
-    onSuccess: (url: string) => Promise<void>
+    onSuccess: ((url: string) => Promise<void>) | null = null
 ) => {
     if (validMimeTypes.length > 0 && !validateFileBlob(blob, validMimeTypes, true)) {
         return;
@@ -108,7 +108,9 @@ export const uploadFile = async (
         async () => {
             try {
                 const URL = await getDownloadURL(uploadTask.snapshot.ref);
-                await onSuccess(URL);
+                if (onSuccess !== null) {
+                    await onSuccess(URL);
+                }
             } catch (error) {
                 console.error("Error in uploadFile:", error);
             }
