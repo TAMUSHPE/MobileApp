@@ -89,9 +89,9 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
             .then(async () => {
                 // On Account Creation, save user to local
                 // This is to deal with user that close app during profile setup
-                const authUser = await getUser(auth.currentUser?.uid!)
-                await AsyncStorage.setItem("@user", JSON.stringify(authUser));
-                setUserInfo(authUser); // Navigates to Home
+                const firebaseUser = await getUser(auth.currentUser?.uid!)
+                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                setUserInfo(firebaseUser); // Navigates to Home
             })
             .then(() => {
                 navigation.navigate("ProfileSetup");

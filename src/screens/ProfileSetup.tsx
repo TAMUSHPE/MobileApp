@@ -598,9 +598,9 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                                 });
 
                                 // Save user to local storage and update user context
-                                const authUser = await getUser(auth.currentUser.uid)
-                                await AsyncStorage.setItem("@user", JSON.stringify(authUser));
-                                setUserInfo(authUser); // Navigates to Home
+                                const firebaseUser = await getUser(auth.currentUser.uid)
+                                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                                setUserInfo(firebaseUser); // Navigates to Home
                             }
                         }}
 
@@ -623,9 +623,9 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         }
                         // On Register, save user to local
 
-                        const authUser = await getUser(auth.currentUser?.uid!)
-                        await AsyncStorage.setItem("@user", JSON.stringify(authUser));
-                        setUserInfo(authUser); // Navigates to Home
+                        const firebaseUser = await getUser(auth.currentUser?.uid!)
+                        await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                        setUserInfo(firebaseUser); // Navigates to Home
                     }}
                     label='Skip For Now'
                     buttonClassName='justify-center items-center bg-[#ddd] rounded-md w-10/12'
