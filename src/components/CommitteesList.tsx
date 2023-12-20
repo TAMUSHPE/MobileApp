@@ -1,10 +1,10 @@
-import { View, ScrollView, ActivityIndicator } from 'react-native'
-import React, { useCallback, useEffect } from 'react'
-import CommitteeCard from './CommitteeCard'
-import { Committee } from "../types/Committees"
-import { CommitteesListProps } from '../types/Navigation'
-import { getCommittees } from '../api/firebaseUtils'
+import { View, ScrollView } from 'react-native'
+import React, { useCallback } from 'react'
 import { useFocusEffect } from '@react-navigation/core'
+import { getCommittees } from '../api/firebaseUtils'
+import { CommitteesListProps } from '../types/Navigation'
+import { Committee } from "../types/Committees"
+import CommitteeCard from './CommitteeCard'
 
 const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
     const [committees, setCommittees] = React.useState<Committee[]>([]);

@@ -1,10 +1,8 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { View, Text, Image, ImageBackground, TouchableOpacity } from 'react-native';
+import React from 'react'
+import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { calculateHexLuminosity } from '../helpers/colorUtils';
 import { Committee, getLogoComponent } from "../types/Committees";
 import { Images } from "../../assets"
-import { PublicUserInfo } from '../types/User';
-import { getPublicUserData } from '../api/firebaseUtils';
-import { calculateHexLuminosity } from '../helpers/colorUtils';
 
 const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPress }) => {
     const { name, color, logo, head, memberCount } = committee;
