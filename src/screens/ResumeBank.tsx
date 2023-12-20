@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Modal, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ResumeCard from '../components/ResumeCard'
 import { PublicUserInfo } from '../types/User'
@@ -10,28 +10,21 @@ import { Octicons } from '@expo/vector-icons';
 import ResumeSubmit from '../components/ResumeSubmit'
 import TwitterSvg from '../components/TwitterSvg'
 
-interface FilterCriteria {
-    major: string;
-    classYear: string;
-}
-
 
 const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
     const [resumes, setResumes] = useState<PublicUserInfo[]>([])
     const [loading, setLoading] = useState(true);
     const [showFilterMenu, setShowFilterMenu] = useState<boolean>(false);
-    const [filter, setFilter] = useState<FilterCriteria>({ major: "", classYear: "" });
+    const [filter, setFilter] = useState<{ major: string, classYear: string }>({ major: "", classYear: "" });
     const [infoVisible, setInfoVisible] = useState(false);
-
-
 
     const fetchResumes = async () => {
         try {
             const data = await fetchUsersWithPublicResumes({});
             setResumes(data);
-            setLoading(false);
         } catch (error) {
             console.error('Error fetching resumes:', error);
+        } finally {
             setLoading(false);
         }
     }
@@ -128,6 +121,12 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                     </View>
                 )}
 
+                {loading && (
+                    <View className='flex justify-center items-center mt-4'>
+                        <ActivityIndicator size="large" />
+                    </View>
+                )}
+
                 {resumes.map((item, index) => (
                     <ResumeCard
                         key={index}
@@ -137,6 +136,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                     />
                 ))}
             </ScrollView>
+
             <Modal
                 animationType="none"
                 transparent={true}
@@ -176,16 +176,13 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
 
 
                                 <View>
-                                    <Text className='text-xl font-semibold'>Officers Resumes</Text>
+                                    <Text className='text-xl font-semibold'>Officers, Representative, and LeadResumes</Text>
                                     <View className='flex-row items-center'>
                                         <Text className='text-lg font-semibold text-gray-400'>All officers resumes are marked by</Text>
                                         <TwitterSvg color={"#FCE300"} className="ml-2" />
                                     </View>
+                                    <Text className='text-lg font-semibold text-gray-400'>All representative and lead resumes are displayed</Text>
                                 </View>
-
-
-
-
                             </View>
                         </TouchableWithoutFeedback>
                     </View>

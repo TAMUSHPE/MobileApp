@@ -1,29 +1,21 @@
-import { View, Text, FlatList, ActivityIndicator, TouchableOpacity, Linking, Modal, ScrollView, TextInput } from 'react-native'
+import { View, Text, TouchableOpacity, Linking, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
-import ResumeCard from '../components/ResumeCard'
-import { PublicUserInfo } from '../types/User'
-import { fetchUsersWithPublicResumes, getUser, setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils'
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { ResourcesStackParams } from '../types/Navigation'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
-import { auth, db } from '../config/firebaseConfig'
 import { UserContext } from '../context/UserContext'
+import { auth, db } from '../config/firebaseConfig'
+import { getDownloadURL } from 'firebase/storage'
+import { deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
+import { setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils'
 import { getBlobFromURI, selectFile } from '../api/fileSelection'
 import { CommonMimeTypes, validateFileBlob } from '../helpers/validation'
-import { getDownloadURL } from 'firebase/storage'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { deleteField, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
-import { TouchableWithoutFeedback } from 'react-native'
 import AddFileIcon from '../../assets/file-circle-plus-solid.svg'
+import { updatePublicInfoAndPersist } from '../helpers/userSaveLocal';
 
 const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void> }) => {
-    const [loading, setLoading] = useState(true);
     const { userInfo, setUserInfo } = useContext(UserContext)!;
-    const [isVerified, setIsVerified] = useState(false);
-    const [uploadedResume, setUploadedResume] = useState(false);
+    const [submittedResume, setSubmittedResume] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
-    const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const unsubscribe = () => {
@@ -31,7 +23,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                 const docRef = doc(db, `resumeVerification/${auth.currentUser?.uid}`);
                 const unsubscribe = onSnapshot(docRef, (doc) => {
                     if (doc.exists()) {
-                        setUploadedResume(true);
+                        setSubmittedResume(true);
                     }
                 });
 
@@ -39,18 +31,6 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
             }
         }
         return unsubscribe();
-    }, [])
-
-    const checkResumeVerification = async () => {
-        if (isSuperUser) {
-            setIsVerified(true);
-            return;
-        }
-        const resumeVerified = userInfo?.publicInfo?.resumeVerified;
-        setIsVerified(resumeVerified || false);
-    };
-    useEffect(() => {
-        checkResumeVerification();
     }, [])
 
     const selectResume = async () => {
@@ -87,43 +67,56 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                     }
                 },
                 async () => {
-                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
-                        console.log("File available at", URL);
-                        if (auth.currentUser) {
-                            const hadPreviousURL = !!userInfo?.publicInfo?.resumePublicURL;
+                    try {
+                        const url = await getDownloadURL(uploadTask.snapshot.ref);
+                        // Remove from resume verification if submitted
+                        await removedSubmittedResume();
 
-                            await setPublicUserData({
-                                resumePublicURL: URL,
-                                resumeVerified: false
-                            })
-                                .then(() => {
-                                    if (userInfo?.publicInfo?.roles?.officer || hadPreviousURL) {
-                                        setIsVerified(false)
-                                    }
-                                });
-                        }
+                        // Team Members are automatically approved
+                        const isTeamMember = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer || userInfo?.publicInfo?.roles?.representative || userInfo?.publicInfo?.roles?.lead;
+                        const resumeVerifiedStatus = isTeamMember ? true : false;
 
-                        const authUser = await getUser(auth.currentUser?.uid!)
-                        await AsyncStorage.setItem("@user", JSON.stringify(authUser));
-                        setUserInfo(authUser);
-                        if (isSuperUser) {
-                            checkResumeVerification(); // this check is only for officers
+                        // Update user data in Firebase
+                        await setPublicUserData({
+                            resumePublicURL: url,
+                            resumeVerified: resumeVerifiedStatus
+                        });
+
+                        // Update user data in local storage
+                        await updatePublicInfoAndPersist(userInfo, setUserInfo, {
+                            resumePublicURL: url,
+                            resumeVerified: resumeVerifiedStatus
+                        })
+
+                        // resume by team member are automatically approved so refresh resumes list
+                        if (isTeamMember) {
                             onResumesUpdate();
                         }
-                        onResumesUpdate();
+
+                    } catch (error) {
+                        console.error("Error during resume upload process:", error);
+                    } finally {
                         setLoading(false);
-                    });
+                    }
                 });
         }
     }
 
-    // This is to submit resume to be verified by officer
+    // Submit resume to be verified by officer
     const submitResume = async () => {
         if (auth.currentUser) {
             await setDoc(doc(db, `resumeVerification/${auth.currentUser?.uid}`), {
                 uploadDate: new Date().toISOString(),
                 resumePublicURL: userInfo?.publicInfo?.resumePublicURL
             }, { merge: true });
+        }
+    }
+
+    const removedSubmittedResume = async () => {
+        if (submittedResume) {
+            const resumeVerificationDoc = doc(db, 'resumeVerification', auth.currentUser?.uid!);
+            await deleteDoc(resumeVerificationDoc);
+            setSubmittedResume(false);
         }
     }
 
@@ -146,6 +139,17 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                 console.error(err);
             });
     };
+
+    if (loading) {
+        return (
+            <View className="flex-row bg-white py-3 mx-4 px-4 mt-8 rounded-lg h-24">
+                <View className='flex-1 items-center justify-center'>
+                    <ActivityIndicator size="large" />
+                </View>
+            </View>
+        )
+    }
+
     return (
         <View className="flex-row bg-white py-3 mx-4 px-4 mt-8 rounded-lg h-24">
             <View className='flex-1 items-center justify-center'>
@@ -171,47 +175,56 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                 )}
 
                 {/* Resume Found, not Approved */}
-                {userInfo?.publicInfo?.resumePublicURL && !isVerified && (
+                {userInfo?.publicInfo?.resumePublicURL && !userInfo.publicInfo.resumeVerified && (
                     <View className='flex-row items-center justify-between h-full'>
                         <View className='flex-row items-center ml-2'>
                             <TouchableOpacity
                                 className='border-b-2'
                                 activeOpacity={0.5}
-                                onPress={() => handleLinkPress(userInfo?.publicInfo?.resumeURL!)}
+                                onPress={() => handleLinkPress(userInfo?.publicInfo?.resumePublicURL!)}
                             >
                                 <Text className='font-semibold text-lg'>Your Resume</Text>
                             </TouchableOpacity>
 
-                            {!uploadedResume && (
-                                <TouchableOpacity onPress={async () => {
-                                    const userDocRef = doc(db, 'users', auth.currentUser?.uid!);
-                                    await updateDoc(userDocRef, {
-                                        resumePublicURL: deleteField(),
-                                        resumeVerified: false,
-                                    }).then(() => {
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    try {
+                                        // Remove from resume verification if submitted
+                                        await removedSubmittedResume();
 
-                                    });
+                                        // Delete resume from user data in Firebase
+                                        const userDocRef = doc(db, 'users', auth.currentUser?.uid!);
+                                        await updateDoc(userDocRef, {
+                                            resumePublicURL: deleteField(),
+                                            resumeVerified: false,
+                                        });
 
-                                    const authUser = await getUser(auth.currentUser?.uid!)
-                                    await AsyncStorage.setItem("@user", JSON.stringify(authUser));
-                                    setUserInfo(authUser);
-                                    setLoading(false);
-                                    setIsVerified(false);
+                                        // Delete resume from user data in local storage
+                                        await updatePublicInfoAndPersist(userInfo, setUserInfo, {
+                                            resumePublicURL: undefined,
+                                            resumeVerified: false
+                                        })
+
+                                    } catch (error) {
+                                        console.error("Error during resume delete process:", error);
+                                    } finally {
+                                        setLoading(false);
+                                    }
                                 }}
-                                    className='ml-2'
-                                >
-                                    <Octicons name="x" size={25} color="#FF4545" />
-                                </TouchableOpacity>
-                            )}
+                                className='ml-2'
+                            >
+                                <Octicons name="x" size={25} color="#FF4545" />
+                            </TouchableOpacity>
+
                         </View>
 
                         <View className='justify-end flex-col items-center'>
-                            <Text className="font-semibold text-md text-gray-500">{uploadedResume ? "In-Review" : "Ready to be review?"}</Text>
+                            <Text className="font-semibold text-md text-gray-500">{submittedResume ? "In-Review" : "Ready to be review?"}</Text>
                             <TouchableOpacity
                                 onPress={() => setConfirmVisible(true)}
-                                className={`rounded-md justify-center items-center h-8 ${uploadedResume ? "bg-gray-500" : "bg-pale-blue"}`}
+                                className={`rounded-md justify-center items-center h-8 ${submittedResume ? "bg-gray-500" : "bg-pale-blue"}`}
                                 style={{ minWidth: 120 }}
-                                disabled={uploadedResume}
+                                disabled={submittedResume}
                             >
                                 <Text className='text-white font-semibold text-lg'>Submit</Text>
                             </TouchableOpacity>
@@ -220,13 +233,13 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                 )}
 
                 {/* Resume Found, Approved */}
-                {userInfo?.publicInfo?.resumePublicURL && isVerified && (
+                {userInfo?.publicInfo?.resumePublicURL && userInfo.publicInfo.resumeVerified && (
                     <View className='flex-col ml-2'>
                         <View className='flex-row'>
                             <TouchableOpacity
                                 className='border-b-2'
                                 activeOpacity={0.5}
-                                onPress={() => handleLinkPress(userInfo?.publicInfo?.resumeURL!)}
+                                onPress={() => handleLinkPress(userInfo?.publicInfo?.resumePublicURL!)}
                             >
                                 <Text className='font-semibold text-lg'>Your Resume</Text>
                             </TouchableOpacity>

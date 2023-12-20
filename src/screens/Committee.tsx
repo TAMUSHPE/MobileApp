@@ -1,59 +1,38 @@
-import { View, Text, Image, Modal, TouchableOpacity, Linking, TouchableWithoutFeedback, ScrollView, TouchableHighlight, FlatList } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, Modal, TouchableOpacity, Linking, TouchableWithoutFeedback, ScrollView } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
-import { Images } from '../../assets';
 import { Octicons } from '@expo/vector-icons';
-import { PublicUserInfo } from '../types/User';
-import { CommitteeScreenRouteProp, CommitteesListProps } from '../types/Navigation';
+import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../context/UserContext';
 import { httpsCallable } from 'firebase/functions';
-import { auth, db, functions } from '../config/firebaseConfig';
-import { setPublicUserData, addToWatchlist } from '../api/firebaseUtils';
 import { doc, getDoc } from 'firebase/firestore';
+import { db, functions } from '../config/firebaseConfig';
+import { setPublicUserData } from '../api/firebaseUtils';
 import { calculateHexLuminosity } from '../helpers/colorUtils';
+import { CommitteeScreenRouteProp, CommitteesListProps } from '../types/Navigation';
 import { getLogoComponent } from '../types/Committees';
-import { StatusBar } from 'expo-status-bar';
 import CommitteeTeamCard from '../components/CommitteeTeamCard';
 
 const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
     const route = useRoute<CommitteeScreenRouteProp>();
     const initialCommittee = route.params.committee;
-    const { userInfo, setUserInfo } = useContext(UserContext)!;
-
-    const [currentCommittee, setCurrentCommittee] = useState(initialCommittee);
-    const [isInCommittee, setIsInCommittee] = useState<boolean>();
-    const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
 
     const { name, color, logo, head, leads, representatives, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = initialCommittee;
-
-    const { memberCount } = currentCommittee;
-
-    const isLight = () => {
-        const luminosity = calculateHexLuminosity(color!);
-        return luminosity < 155;
-    };
-
+    const [memberCount, setMemberCount] = useState<number>(initialCommittee.memberCount || 0);
     const { LogoComponent, height, width } = getLogoComponent(logo);
+    const luminosity = calculateHexLuminosity(color!);
+    const isLightColor = luminosity < 155;
+
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const [isInCommittee, setIsInCommittee] = useState<boolean>();
+    const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
 
 
     useEffect(() => {
         const committeeExists = userInfo?.publicInfo?.committees?.includes(firebaseDocName!);
         setIsInCommittee(committeeExists);
-    }, [userInfo, firebaseDocName]);
-
-    const fetchCommitteeData = async () => {
-        try {
-            const docRef = doc(db, `committees/${initialCommittee.firebaseDocName}`);
-            const docSnapshot = await getDoc(docRef);
-            if (docSnapshot.exists()) {
-                console.log("Committee data updated", docSnapshot.data());
-                setCurrentCommittee(docSnapshot.data());
-            }
-        } catch (error) {
-            console.error('Error fetching updated committee data:', error);
-        }
-    };
+    }, [userInfo]);
 
     const handleLinkPress = async (url: string) => {
         if (!url) {
@@ -80,18 +59,20 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
             className='flex-1'
             style={{ backgroundColor: color }}
         >
-            <StatusBar style={isLight() ? "light" : "dark"} />
+            <StatusBar style={isLightColor ? "light" : "dark"} />
+            {/* Header */}
             <SafeAreaView edges={['top']} >
                 <View className='flex-row items-center mx-5 mt-1'>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Octicons name="chevron-left" size={30} color={isLight() ? "white" : "black"} />
+                        <Octicons name="chevron-left" size={30} color={isLightColor ? "white" : "black"} />
                     </TouchableOpacity>
                     <View className='absolute w-full justify-center items-center'>
-                        <Text className={`text-2xl font-semibold text-${isLight() ? "white" : "black"}`} >{name}</Text>
+                        <Text className={`text-2xl font-semibold text-${isLightColor ? "white" : "black"}`} >{name}</Text>
                     </View>
                 </View>
             </SafeAreaView>
 
+            {/* Content */}
             <ScrollView
                 scrollEventThrottle={400}
                 bounces={false}
@@ -99,10 +80,8 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
             >
                 <View className='flex-row w-full h-32'>
                     {/* Logo and Join/Leave Button */}
-                    <View style={{ backgroundColor: color }} className='rounded-2xl flex-col'>
-                        <View className='items-center justify-center h-full rounded-2xl px-3'
-                            style={{ backgroundColor: "rgba(255,255,255,0.4)" }}
-                        >
+                    <View className='rounded-2xl flex-col' style={{ backgroundColor: color }} >
+                        <View className='items-center justify-center h-full rounded-2xl px-3' style={{ backgroundColor: "rgba(255,255,255,0.4)" }}>
                             <LogoComponent width={height} height={width} />
                         </View>
                         <TouchableOpacity
@@ -124,7 +103,7 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                                 style={{ backgroundColor: color }}
                                 onPress={() => handleLinkPress(memberApplicationLink!)}
                             >
-                                <Text className={`font-semibold text-${isLight() ? "white" : "black"}`}>Member Application</Text>
+                                <Text className={`font-semibold text-${isLightColor ? "white" : "black"}`}>Member Application</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -132,7 +111,7 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                                 style={{ backgroundColor: color }}
                                 onPress={() => handleLinkPress(leadApplicationLink!)}
                             >
-                                <Text className={`font-semibold text-${isLight() ? "white" : "black"}`}>Lead Application</Text>
+                                <Text className={`font-semibold text-${isLightColor ? "white" : "black"}`}>Lead Application</Text>
                             </TouchableOpacity>
 
                         </View>
@@ -145,6 +124,7 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                     <Text className='text-lg font-semibold'>{description}</Text>
                 </View>
 
+                {/* Upcoming Events */}
                 <View className='mt-11'>
                     <Text className='text-2xl font-bold'>Upcoming Events</Text>
                     <Text>TODO: Upcoming Event for a committee, Do after event is done</Text>
@@ -157,17 +137,21 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                         <Text className='font-bold text-lg mb-2' style={{ color: color }}>Head</Text>
                         <CommitteeTeamCard userData={head!} navigation={navigation} />
                         {representatives && representatives.length > 0 && (
-                            <Text className='font-bold text-lg mb-2' style={{ color: color }}>Representatives</Text>
+                            <>
+                                <Text className='font-bold text-lg mb-2' style={{ color: color }}>Representatives</Text>
+                                {representatives.map((representative, index) => (
+                                    <CommitteeTeamCard key={index} userData={representative} navigation={navigation} />
+                                ))}
+                            </>
                         )}
-                        {representatives?.map((lead, index) => (
-                            <CommitteeTeamCard key={index} userData={lead} navigation={navigation} />
-                        ))}
                         {leads && leads.length > 0 && (
-                            <Text className='font-bold text-lg mb-2' style={{ color: color }}>Leads</Text>
+                            <>
+                                <Text className='font-bold text-lg mb-2' style={{ color: color }}>Leads</Text>
+                                {leads.map((representative, index) => (
+                                    <CommitteeTeamCard key={index} userData={representative} navigation={navigation} />
+                                ))}
+                            </>
                         )}
-                        {leads?.map((lead, index) => (
-                            <CommitteeTeamCard key={index} userData={lead} navigation={navigation} />
-                        ))}
                     </View>
                 </View>
 
@@ -196,6 +180,18 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                                             className="bg-pale-blue rounded-xl justify-center items-center"
                                             onPress={async () => {
                                                 setConfirmVisible(false);
+                                                const fetchCommitteeData = async () => {
+                                                    try {
+                                                        const docRef = doc(db, `committees/${initialCommittee.firebaseDocName}`);
+                                                        const docSnapshot = await getDoc(docRef);
+                                                        if (docSnapshot.exists()) {
+                                                            setMemberCount(docSnapshot.data().memberCount);
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error fetching updated committee data:', error);
+                                                    }
+                                                };
+
                                                 const committeeChanges = [{
                                                     committeeName: firebaseDocName,
                                                     change: isInCommittee ? -1 : 1
@@ -205,7 +201,7 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                                                 if (isInCommittee) {
                                                     updatedCommittees = updatedCommittees.filter(c => c !== firebaseDocName);
                                                 } else {
-                                                    updatedCommittees.push(firebaseDocName!!);
+                                                    updatedCommittees.push(firebaseDocName!);
                                                 }
 
                                                 try {
