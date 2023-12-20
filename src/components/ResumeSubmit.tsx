@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, Linking, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../context/UserContext'
 import { auth, db } from '../config/firebaseConfig'
@@ -9,7 +10,7 @@ import { setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils'
 import { getBlobFromURI, selectFile } from '../api/fileSelection'
 import { CommonMimeTypes, validateFileBlob } from '../helpers/validation'
 import AddFileIcon from '../../assets/file-circle-plus-solid.svg'
-import { updatePublicInfoAndPersist } from '../helpers/userSaveLocal';
+import { PublicUserInfo } from '../types/User';
 
 const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void> }) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
@@ -83,7 +84,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                         });
 
                         // Update user data in local storage
-                        await updatePublicInfoAndPersist(userInfo, setUserInfo, {
+                        await updatePublicInfoAndPersist({
                             resumePublicURL: url,
                             resumeVerified: resumeVerifiedStatus
                         })
@@ -119,6 +120,24 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
             setSubmittedResume(false);
         }
     }
+    const updatePublicInfoAndPersist = async (publicInfoChanges: PublicUserInfo) => {
+        if (userInfo) {
+            const updatedUserInfo = {
+                ...userInfo,
+                publicInfo: {
+                    ...userInfo.publicInfo,
+                    ...publicInfoChanges,
+                },
+            };
+
+            try {
+                await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
+                setUserInfo(updatedUserInfo);
+            } catch (error) {
+                console.error("Error updating user info:", error);
+            }
+        }
+    };
 
     const handleLinkPress = async (url: string) => {
         if (!url) {
@@ -200,7 +219,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                                         });
 
                                         // Delete resume from user data in local storage
-                                        await updatePublicInfoAndPersist(userInfo, setUserInfo, {
+                                        await updatePublicInfoAndPersist({
                                             resumePublicURL: undefined,
                                             resumeVerified: false
                                         })

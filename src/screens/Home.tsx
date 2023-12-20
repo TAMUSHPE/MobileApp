@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { ScrollView, Text, TouchableOpacity, Image, View, StyleSheet, Dimensions } from 'react-native';
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getUser } from '../api/firebaseUtils';
-import { auth } from '../config/firebaseConfig';
+import { ScrollView, Text, TouchableOpacity, Image, View, Dimensions } from 'react-native';
 import manageNotificationPermissions from '../helpers/pushNotification';
 import { UserContext } from '../context/UserContext';
 import FeaturedSlider from '../components/FeaturedSlider';
-import OfficeHours from '../components/OfficeHours';
 import OfficeSignIn from '../components/OfficeSignIn';
-import { User, PublicUserInfo } from '../types/User';
+import { PublicUserInfo } from '../types/User';
 import { StatusBar } from 'expo-status-bar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackParams } from "../types/Navigation"
@@ -24,8 +20,7 @@ import { Images } from '../../assets';
  * @returns The rendered home screen.
  */
 const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
-    const [localUser, setLocalUser] = useState<User | undefined>(undefined);
-    const { setUserInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfo | null>(null);
 
     const screenWidth = Dimensions.get('window').width;
@@ -63,33 +58,6 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
     );
 
     useEffect(() => {
-        // only for testing since manually change user in firebase need to look into this later
-        // This will be remove when user settings and admin page is done
-        const updateUser = async () => {
-            try {
-                const uid = auth.currentUser?.uid;
-                if (uid) {
-                    const userFromFirebase = await getUser(uid);
-                    await AsyncStorage.setItem("@user", JSON.stringify(userFromFirebase));
-                    setUserInfo(userFromFirebase);
-                }
-            } catch (error) {
-                console.error("Error updating user:", error);
-            }
-        };
-
-        const getLocalUser = async () => {
-            try {
-                const userJSON = await AsyncStorage.getItem("@user");
-                const userData = userJSON ? JSON.parse(userJSON) : undefined;
-                setLocalUser(userData);
-            } catch (error) {
-                console.error("Error retrieving user from AsyncStorage:", error);
-            }
-        };
-
-        getLocalUser();
-
         try {
             manageNotificationPermissions();
         } catch (error) {
@@ -123,7 +91,7 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
                     </View>
                 )}
             </View>
-            {localUser?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
+            {userInfo?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
 
             <View className='my-10 py-6 mx-7 justify-center items-center rounded-md'>
             </View>
