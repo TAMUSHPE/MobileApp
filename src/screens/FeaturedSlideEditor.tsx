@@ -8,10 +8,11 @@ import * as ImagePicker from "expo-image-picker";
 import { deleteObject, getDownloadURL, ref } from "firebase/storage";
 import { db, storage } from '../config/firebaseConfig';
 import { uploadFileToFirebase } from '../api/firebaseUtils';
-import { getBlobFromURI, selectImage } from '../api/fileSelection';
+import { getBlobFromURI, selectImage, uploadFile } from '../api/fileSelection';
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
 import FeaturedSlider from '../components/FeaturedSlider';
 import { Slide } from '../types/slides';
+import { CommonMimeTypes, validateFileBlob } from '../helpers/validation';
 
 const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [image, setImage] = useState<Blob | null>(null);
@@ -72,40 +73,14 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
         }
     };
 
-    const uploadFeaturedImage = () => {
-        if (image) {
-            const uploadTask = uploadFileToFirebase(image, `/featured-slides/${imageLocation}`);
-
-            uploadTask.on("state_changed",
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload is ' + progress + '% done');
-                },
-                (error) => {
-                    switch (error.code) {
-                        case "storage/unauthorized":
-                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
-                            break;
-                        case "storage/canceled":
-                            alert("File upload cancelled");
-                            break;
-                        default:
-                            alert("An unknown error has occured")
-                            break;
-                    }
-                },
-                async () => {
-                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
-                        setLocalImageURI("");
-                        setImage(null);
-                        setEventName("");
-                        setImageName("");
-                        setImageLocation(null);
-                        saveRecord(URL, Date.now());
-                    });
-                });
-        }
-    };
+    const onImageUploadSuccess = async (URL: string) => {
+        setLocalImageURI("");
+        setImage(null);
+        setEventName("");
+        setImageName("");
+        setImageLocation(null);
+        saveRecord(URL, Date.now());
+    }
 
     const saveRecord = async (url: string, createdAt: number) => {
         try {
@@ -114,7 +89,6 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
                 url,
                 createdAt,
                 fireStoreLocation: `/featured-slides/${imageLocation}`
-
             });
 
             await updateDoc(docRef, {
@@ -124,8 +98,6 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
             console.log(e);
         }
     }
-
-
 
     return (
         <ScrollView>
@@ -157,7 +129,15 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
                         </View>
                         <TouchableOpacity
                             className='bg-blue-400 h-10 w-16 items-center justify-center'
-                            onPress={() => uploadFeaturedImage()}
+                            onPress={() => {
+                                uploadFile(
+                                    image!,
+                                    CommonMimeTypes.RESUME_FILES,
+                                    `/featured-slides/${imageLocation}`,
+                                    onImageUploadSuccess
+                                );
+                            }
+                            }
                         >
                             <Text>Upload Image</Text>
                         </TouchableOpacity>

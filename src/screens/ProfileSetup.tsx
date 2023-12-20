@@ -8,7 +8,7 @@ import { getDownloadURL } from "firebase/storage";
 import { signOut, updateProfile } from 'firebase/auth';
 import { auth, functions } from '../config/firebaseConfig';
 import { getCommittees, getUser, setPrivateUserData, setPublicUserData, uploadFileToFirebase } from '../api/firebaseUtils';
-import { getBlobFromURI, selectFile, selectImage } from '../api/fileSelection';
+import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../api/fileSelection';
 import { UserContext } from '../context/UserContext';
 import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
 import InteractButton from '../components/InteractButton';
@@ -175,47 +175,20 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
         }
     };
 
-    const uploadProfilePicture = () => {
-        if (image && validateFileBlob(image, CommonMimeTypes.IMAGE_FILES, true)) {
-            const uploadTask = uploadFileToFirebase(image, `user-docs/${auth.currentUser?.uid}/user-profile-picture`);
-            setLoading(true);
-
-            uploadTask.on("state_changed",
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload is ' + progress + '% done');
-                },
-                (error) => {
-                    setLoading(false);
-                    switch (error.code) {
-                        case "storage/unauthorized":
-                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
-                            break;
-                        case "storage/canceled":
-                            alert("File upload cancelled");
-                            break;
-                        default:
-                            alert("An unknown error has occured")
-                            break;
-                    }
-                },
-                async () => {
-                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
-                        console.log("File available at", URL);
-                        if (auth.currentUser) {
-                            await updateProfile(auth.currentUser, {
-                                photoURL: URL
-                            });
-                            await setPublicUserData({
-                                photoURL: URL
-                            });
-                        }
-                        setLoading(false);
-                        navigation.navigate("SetupAcademicInformation");
-                    });
-                });
+    const onProfilePictureUploadSuccess = async (URL: string) => {
+        console.log("File available at", URL);
+        if (auth.currentUser) {
+            await updateProfile(auth.currentUser, {
+                photoURL: URL
+            });
+            await setPublicUserData({
+                photoURL: URL
+            });
         }
-    };
+        setLoading(false);
+        navigation.navigate("SetupAcademicInformation");
+
+    }
 
     return (
         <SafeAreaView className={safeAreaViewStyle}>
@@ -264,7 +237,12 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
                         <InteractButton
                             onPress={() => {
                                 if (localImageURI !== "") {
-                                    uploadProfilePicture();
+                                    uploadFile(
+                                        image!,
+                                        CommonMimeTypes.IMAGE_FILES,
+                                        `user-docs/${auth.currentUser?.uid}/user-profile-picture`,
+                                        onProfilePictureUploadSuccess
+                                    );
                                 }
                             }}
                             label='Continue'
@@ -382,43 +360,15 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
         return null;
     }
 
-    const uploadResume = (resumeBlob: Blob) => {
-        if (validateFileBlob(resumeBlob, CommonMimeTypes.RESUME_FILES, true)) {
-            setLoading(true)
-            const uploadTask = uploadFileToFirebase(resumeBlob, `user-docs/${auth.currentUser?.uid}/user-resume`);
-
-            uploadTask.on("state_changed",
-                (snapshot) => {
-                    const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                    console.log('Upload is ' + progress + '% done');
-                },
-                (error) => {
-                    setLoading(false);
-                    switch (error.code) {
-                        case "storage/unauthorized":
-                            alert("File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
-                            break;
-                        case "storage/canceled":
-                            alert("File upload cancelled");
-                            break;
-                        default:
-                            alert("An unknown error has occured")
-                            break;
-                    }
-                },
-                async () => {
-                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
-                        console.log("File available at", URL);
-                        if (auth.currentUser) {
-                            setResumeURL(URL);
-                            await setPublicUserData({
-                                resumeURL: URL
-                            });
-                        }
-                        setLoading(false);
-                    });
-                });
+    const onResumeUploadSuccess = async (URL: string) => {
+        console.log("File available at", URL);
+        if (auth.currentUser) {
+            setResumeURL(URL);
+            await setPublicUserData({
+                resumeURL: URL
+            });
         }
+        setLoading(false);
     }
 
     return (
@@ -441,7 +391,12 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                             onPress={async () => {
                                 const selectedResume = await selectResume();
                                 if (selectedResume) {
-                                    uploadResume(selectedResume);
+                                    uploadFile(
+                                        selectedResume,
+                                        CommonMimeTypes.RESUME_FILES,
+                                        `user-docs/${auth.currentUser?.uid}/user-resume`,
+                                        onResumeUploadSuccess
+                                    );
                                 }
                             }}
                             label='Upload Resume'
