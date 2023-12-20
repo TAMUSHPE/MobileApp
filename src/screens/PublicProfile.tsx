@@ -11,7 +11,7 @@ import { auth } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import { getCommittees, getPublicUserData, setUserRoles } from '../api/firebaseUtils';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
-import { MembersScreenRouteProp, MembersStackParams } from '../types/Navigation';
+import { HomeDrawerParams, MembersScreenRouteProp } from '../types/Navigation';
 import { PublicUserInfo, Roles } from '../types/User';
 import { Committee } from '../types/Committees';
 import { Images } from '../../assets';
@@ -21,7 +21,7 @@ import { handleLinkPress } from '../helpers/links';
 
 
 
-const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
+const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerParams>) => {
     // Data related to public profile user
     const route = useRoute<MembersScreenRouteProp>();
     const { uid } = route.params;
@@ -144,7 +144,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<MembersStack
                         <View className='flex-col relative items-center'>
                             {uid === auth.currentUser?.uid &&
                                 <TouchableOpacity
-                                    onPress={() => navigation.navigate("SettingsScreen")}
+                                    onPress={() => navigation.navigate("ProfileSettingsScreen")}
                                     className="rounded-md px-3 py-2"
                                     style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
                                 >

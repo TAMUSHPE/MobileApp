@@ -1,4 +1,4 @@
-export const isMemberVerified = (nationalExpiration: Date|undefined, chapterExpiration:Date|undefined) => {
+export const isMemberVerified = (nationalExpiration: string|undefined, chapterExpiration:string|undefined) => {
     const nationalExpirationString = nationalExpiration;
     const chapterExpirationString = chapterExpiration;
 
