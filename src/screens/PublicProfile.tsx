@@ -17,6 +17,7 @@ import { Committee } from '../types/Committees';
 import { Images } from '../../assets';
 import TwitterSvg from '../components/TwitterSvg';
 import ProfileBadge from '../components/ProfileBadge';
+import { handleLinkPress } from '../helpers/links';
 
 
 
@@ -88,24 +89,6 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<MembersStack
             }
         }
     }, [modifiedRoles]);
-
-    const handleLinkPress = async (url: string) => {
-        if (!url) {
-            console.warn(`Empty/Falsy URL passed to handleLinkPress(): ${url}`);
-            return;
-        }
-
-        try {
-            const supported = await Linking.canOpenURL(url);
-            if (supported) {
-                await Linking.openURL(url);
-            } else {
-                console.warn(`Can't handle this URL: ${url}`);
-            }
-        } catch (err) {
-            console.error(`An error occurred with Linking: ${err}`);
-        }
-    };
 
     const RoleItem = ({ roleName, isActive, onToggle, darkMode }: { roleName: string, isActive: boolean, onToggle: () => void, darkMode: boolean }) => {
         return (

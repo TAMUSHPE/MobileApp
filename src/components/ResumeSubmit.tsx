@@ -11,6 +11,7 @@ import { getBlobFromURI, selectFile } from '../api/fileSelection'
 import { CommonMimeTypes, validateFileBlob } from '../helpers/validation'
 import AddFileIcon from '../../assets/file-circle-plus-solid.svg'
 import { PublicUserInfo } from '../types/User';
+import { handleLinkPress } from '../helpers/links';
 
 const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void> }) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
@@ -137,26 +138,6 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                 console.error("Error updating user info:", error);
             }
         }
-    };
-
-    const handleLinkPress = async (url: string) => {
-        if (!url) {
-            console.warn(`Empty/Falsy URL passed to handleLinkPress(): ${url}`);
-            return;
-        }
-
-        await Linking.canOpenURL(url)
-            .then(async (supported) => {
-                if (supported) {
-                    await Linking.openURL(url)
-                        .catch((err) => console.error(`Issue opening url: ${err}`));
-                } else {
-                    console.warn(`Don't know how to open this URL: ${url}`);
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-            });
     };
 
     if (loading) {

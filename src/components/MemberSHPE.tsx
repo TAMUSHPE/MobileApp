@@ -9,6 +9,7 @@ import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { getDownloadURL } from 'firebase/storage';
 import { UserContext } from '../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { handleLinkPress } from '../helpers/links';
 
 type MemberSHPEs = "TAMUChapter" | "SHPENational"
 
@@ -93,27 +94,7 @@ const MemberSHPE = () => {
     }, [])
 
 
-    const handleLinkPress = async (url: string) => {
-        if (!url) {
-            console.warn(`Empty/Falsy URL passed to handleLinkPress(): ${url}`);
-            return;
-        }
-
-        await Linking.canOpenURL(url)
-            .then(async (supported) => {
-                if (supported) {
-                    await Linking.openURL(url)
-                        .catch((err) => console.error(`Issue opening url: ${err}`));
-                } else {
-                    console.warn(`Don't know how to open this URL: ${url}`);
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-    };
-
-    const fileSelector = async () => {
+    const selectDocument = async () => {
         const result = await selectFile();
         if (result) {
             const blob = await getBlobFromURI(result.assets![0].uri);
@@ -291,9 +272,9 @@ const MemberSHPE = () => {
                     <TouchableOpacity
                         className={`px-2 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-200" : "bg-maroon"}`}
                         onPress={async () => {
-                            const chapterFile = await fileSelector();
-                            if (chapterFile) {
-                                uploadChapter(chapterFile);
+                            const chapterDocument = await selectDocument();
+                            if (chapterDocument) {
+                                uploadChapter(chapterDocument);
                             }
                         }}
                         disabled={uploadedChapter}
@@ -305,9 +286,9 @@ const MemberSHPE = () => {
                     <TouchableOpacity
                         className={`px-2 py-2 rounded-lg items-center ${uploadedNational ? "bg-gray-200" : "bg-pale-orange"}`}
                         onPress={async () => {
-                            const nationalFile = await fileSelector();
-                            if (nationalFile) {
-                                uploadNational(nationalFile);
+                            const nationalDocument = await selectDocument();
+                            if (nationalDocument) {
+                                uploadNational(nationalDocument);
                             }
                         }}
                         disabled={uploadedNational}

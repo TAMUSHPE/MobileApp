@@ -13,6 +13,7 @@ import { calculateHexLuminosity } from '../helpers/colorUtils';
 import { CommitteeScreenRouteProp, CommitteesListProps } from '../types/Navigation';
 import { getLogoComponent } from '../types/Committees';
 import CommitteeTeamCard from '../components/CommitteeTeamCard';
+import { handleLinkPress } from '../helpers/links';
 
 const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
     const route = useRoute<CommitteeScreenRouteProp>();
@@ -33,26 +34,6 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
         const committeeExists = userInfo?.publicInfo?.committees?.includes(firebaseDocName!);
         setIsInCommittee(committeeExists);
     }, [userInfo]);
-
-    const handleLinkPress = async (url: string) => {
-        if (!url) {
-            console.warn(`Empty/Falsy URL passed to handleLinkPress(): ${url}`);
-            return;
-        }
-
-        await Linking.canOpenURL(url)
-            .then(async (supported) => {
-                if (supported) {
-                    await Linking.openURL(url)
-                        .catch((err) => console.error(`Issue opening url: ${err}`));
-                } else {
-                    console.warn(`Don't know how to open this URL: ${url}`);
-                }
-            })
-            .catch((err) => {
-                console.error(err);
-            });
-    };
 
     return (
         <View

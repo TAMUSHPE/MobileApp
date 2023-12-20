@@ -7,6 +7,7 @@ import { db, functions } from '../config/firebaseConfig'
 import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
 import MemberCard from '../components/MemberCard'
 import { httpsCallable } from 'firebase/functions'
+import { handleLinkPress } from '../helpers/links'
 
 const ResumeConfirm = () => {
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
@@ -59,26 +60,6 @@ const ResumeConfirm = () => {
             fetchMemberDetails(currentConfirmMember)
         }
     }, [currentConfirmMember]);
-
-    const handleOpenLink = async (url: string | undefined) => {
-        if (url) {
-            await Linking.canOpenURL(url)
-                .then(async (supported) => {
-                    if (supported) {
-                        await Linking.openURL(url!)
-                            .catch((err) => console.error(`Issue opening url: ${err}`));
-                    } else {
-                        console.warn(`Don't know how to open this URL: ${url}`);
-                    }
-                })
-                .catch((err) => {
-                    console.error(err);
-                });
-        }
-        else {
-            alert("No resume found")
-        }
-    }
 
     const handleApprove = async () => {
         const userDocRef = doc(db, 'users', currentConfirmMember!);
@@ -146,7 +127,7 @@ const ResumeConfirm = () => {
                                 <MemberCard userData={confirmMemberData} handleCardPress={() => { }} />
                                 <TouchableOpacity
                                     className='px-6 py-4 rounded-lg  items-center bg-dark-navy'
-                                    onPress={async () => { handleOpenLink(memberDetails?.resumePublicURL) }}
+                                    onPress={async () => { handleLinkPress(memberDetails?.resumePublicURL!) }}
                                 >
                                     <Text className="text-white">View Resume</Text>
                                 </TouchableOpacity>
