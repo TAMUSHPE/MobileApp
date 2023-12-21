@@ -1,18 +1,18 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
-import React, { useContext, useState } from 'react'
-import { Images } from '../../../assets';
-import { ResumeProps } from '../../types/Navigation'
-import { deleteField, doc, updateDoc } from 'firebase/firestore';
-import { db, functions } from '../../config/firebaseConfig';
-import { httpsCallable } from 'firebase/functions';
+import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '../../context/UserContext';
-import TwitterSvg from '../../components/TwitterSvg';
-import { getBadgeColor } from '../../helpers/membership';
+import { db, functions } from '../../config/firebaseConfig';
+import { deleteField, doc, updateDoc } from 'firebase/firestore';
+import { httpsCallable } from 'firebase/functions';
+import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
 import { handleLinkPress } from '../../helpers/links';
+import { ResumeProps } from '../../types/Navigation'
+import TwitterSvg from '../../components/TwitterSvg';
+import { Images } from '../../../assets';
 
 const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ resumeData, navigation, onResumeRemoved }) => {
     // Data related to user's resume
-    const { uid, photoURL, name, displayName, resumePublicURL, major, classYear, roles } = resumeData
+    const { uid, photoURL, name, resumePublicURL, major, classYear, roles, nationalExpiration, chapterExpiration } = resumeData
     const isOfficer = roles ? roles.officer : false;
     const [isVerified, setIsVerified] = useState<boolean>(false);
     let badgeColor = getBadgeColor(isOfficer!, isVerified);
@@ -20,6 +20,12 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
     // Data related to currently authenticated user
     const { userInfo } = useContext(UserContext)!;
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+
+    useEffect(() => {
+        if (nationalExpiration && chapterExpiration) {
+            setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
+        }
+    }, [nationalExpiration, chapterExpiration])
 
     const classYearFormat = (classYear: string) => {
         if (classYear.length === 4) {

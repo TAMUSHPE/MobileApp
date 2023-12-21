@@ -194,7 +194,6 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                             >
                                 <Octicons name="x" size={25} color="#FF4545" />
                             </TouchableOpacity>
-
                         </View>
 
                         <View className='justify-end flex-col items-center'>

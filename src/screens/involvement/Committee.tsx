@@ -10,10 +10,10 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db, functions } from '../../config/firebaseConfig';
 import { setPublicUserData } from '../../api/firebaseUtils';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
+import { handleLinkPress } from '../../helpers/links';
 import { CommitteeScreenRouteProp, CommitteesListProps } from '../../types/Navigation';
 import { getLogoComponent } from '../../types/Committees';
 import CommitteeTeamCard from './CommitteeTeamCard';
-import { handleLinkPress } from '../../helpers/links';
 import DismissibleModal from '../../components/DismissibleModal';
 
 const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
@@ -95,7 +95,6 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                             >
                                 <Text className={`font-semibold text-${isLightColor ? "white" : "black"}`}>Lead Application</Text>
                             </TouchableOpacity>
-
                         </View>
                     </View>
                 </View>
@@ -144,8 +143,6 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                 visible={confirmVisible}
                 setVisible={setConfirmVisible}
             >
-
-
                 <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
                     <Octicons name="person" size={24} color="black" />
                     <View className='flex items-center w-[80%] space-y-8'>

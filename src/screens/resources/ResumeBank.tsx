@@ -7,9 +7,9 @@ import { fetchUsersWithPublicResumes } from '../../api/firebaseUtils'
 import { PublicUserInfo } from '../../types/User'
 import { ResourcesStackParams } from '../../types/Navigation'
 import TwitterSvg from '../../components/TwitterSvg'
+import DismissibleModal from '../../components/DismissibleModal';
 import ResumeSubmit from './ResumeSubmit'
 import ResumeCard from './ResumeCard'
-import DismissibleModal from '../../components/DismissibleModal';
 
 
 const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
@@ -55,6 +55,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Octicons name="chevron-left" size={30} color="white" />
                     </TouchableOpacity>
+
                     <Text className='text-2xl font-semibold text-white'>Resume Bank</Text>
 
                     <TouchableOpacity onPress={() => setInfoVisible(true)}>
@@ -66,13 +67,11 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
             {/* User Public Resume Info */}
             <ResumeSubmit onResumesUpdate={fetchResumes} />
 
-            {/* Resumes */}
             <ScrollView
                 scrollEventThrottle={400}
                 bounces={false}
                 className='bg-[#F9F9F9] mt-12 rounded-t-2xl'
             >
-
                 <View className='flex-row justify-start'>
                     <TouchableOpacity
                         onPress={() => setShowFilterMenu(!showFilterMenu)}
@@ -99,12 +98,14 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                                     placeholder="Major"
                                     className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
                                 />
+
                                 <TextInput
                                     value={filter?.classYear}
                                     onChangeText={(text) => setFilter({ ...filter, classYear: text })}
                                     placeholder="Year"
                                     className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
                                 />
+
                                 <TouchableOpacity
                                     onPress={() => handleApplyFilter()}
                                     className='items-center justify-center bg-pale-blue py-2 w-20 rounded-lg ml-3'>
@@ -113,6 +114,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                             </View>
                             <View className='justify-start flex-row'>
                                 <View className='w-28 mr-4'></View>
+
                                 <View className='w-28 mr-4'></View>
 
                                 <TouchableOpacity
@@ -152,6 +154,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                             <Octicons name="info" size={24} color="black" />
                             <Text className='text-2xl font-semibold ml-2'>Points FAQ</Text>
                         </View>
+
                         <View>
                             <TouchableOpacity onPress={() => setInfoVisible(false)}>
                                 <Octicons name="x" size={24} color="black" />

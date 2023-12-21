@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { ScrollView, Text, TouchableOpacity, Image, View, Dimensions } from 'react-native';
-import manageNotificationPermissions from '../../helpers/pushNotification';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/core';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
+import { getPublicUserData, getMemberOfTheMonth } from '../../api/firebaseUtils';
+import manageNotificationPermissions from '../../helpers/pushNotification';
+import { PublicUserInfo } from '../../types/User';
+import { HomeStackParams } from "../../types/Navigation"
+import { Images } from '../../../assets';
 import FeaturedSlider from '../../components/FeaturedSlider';
 import OfficeSignIn from './OfficeSignIn';
-import { PublicUserInfo } from '../../types/User';
-import { StatusBar } from 'expo-status-bar';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { HomeStackParams } from "../../types/Navigation"
-import { getPublicUserData, getMemberOfTheMonth } from '../../api/firebaseUtils';
-import { useFocusEffect } from '@react-navigation/core';
-import { Images } from '../../../assets';
 
 /**
  * Renders the home screen of the application.

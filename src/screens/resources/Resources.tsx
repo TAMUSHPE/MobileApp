@@ -8,7 +8,7 @@ import { Images } from '../../../assets';
 import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
 import ResumeIcon from '../../../assets/resume-icon.svg';
 import ExamIcon from '../../../assets/exam-icon.svg';
-import OfficeHours from '../involvement/OfficeHours';
+import OfficeHours from './OfficeHours';
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
     const SocialMediaButton = ({ url, imageSource, bgColor = "" }: {

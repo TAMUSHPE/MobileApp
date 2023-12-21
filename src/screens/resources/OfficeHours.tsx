@@ -90,7 +90,6 @@ const OfficeHours = () => {
                 visible={confirmVisible}
                 setVisible={setConfirmVisible}
             >
-
                 <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
                     <Octicons name="bell" size={24} color="black" />
                     <View className='flex items-center w-[80%] space-y-8'>

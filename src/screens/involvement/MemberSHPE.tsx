@@ -6,12 +6,13 @@ import { getBlobFromURI, selectFile, uploadFile } from '../../api/fileSelection'
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { CommonMimeTypes } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
-import { formatExpirationDate } from '../../helpers/membership';
+import { formatExpirationDate, isMemberVerified } from '../../helpers/membership';
 import UploadIcon from '../../../assets/upload-solid.svg';
 
 const MemberSHPE = () => {
     const { userInfo } = useContext(UserContext)!;
-    const TAMU_GOOGLE_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSeJqnOMHljOHcMGVzkhQeVtPgt5eG5Iic8vZlmZjXCYT0qw3g/viewform"
+    const { nationalExpiration, chapterExpiration } = userInfo?.publicInfo!;
+    // const TAMU_GOOGLE_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSeJqnOMHljOHcMGVzkhQeVtPgt5eG5Iic8vZlmZjXCYT0qw3g/viewform"
     const TAMU_PAY_DUES = "https://tamu.estore.flywire.com/products/2023-2024-membershpe-shirt-127459"
     const NATIONALS = "https://www.shpeconnect.org/eweb/DynamicPage.aspx?WebCode=LoginRequired&expires=yes&Site=shpe"
     const [uploadedNational, setUploadedNational] = useState(false)
@@ -20,34 +21,10 @@ const MemberSHPE = () => {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        const checkUserVerification = async () => {
-            const nationalExpirationString = userInfo?.publicInfo?.nationalExpiration
-            const chapterExpirationString = userInfo?.publicInfo?.chapterExpiration
-
-            if (!nationalExpirationString || !chapterExpirationString) {
-                setIsVerified(false);
-                return;
-            }
-
-            const currentDate = new Date();
-            let isNationalValid = true;
-            let isChapterValid = true;
-
-            if (nationalExpirationString) {
-                const nationalExpirationDate = new Date(nationalExpirationString);
-                isNationalValid = currentDate <= nationalExpirationDate;
-            }
-
-            if (chapterExpirationString) {
-                const chapterExpirationDate = new Date(chapterExpirationString);
-                isChapterValid = currentDate <= chapterExpirationDate;
-            }
-
-            setIsVerified(isNationalValid && isChapterValid);
-        };
-
-        checkUserVerification();
-    }, [])
+        if (nationalExpiration && chapterExpiration) {
+            setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
+        }
+    }, [nationalExpiration, chapterExpiration])
 
     useEffect(() => {
         const unsubscribe = () => {
@@ -71,7 +48,6 @@ const MemberSHPE = () => {
 
         return unsubscribe();
     }, [])
-
 
     const selectDocument = async () => {
         const result = await selectFile();
