@@ -4,16 +4,16 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
 import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import { UserContext } from '../context/UserContext';
+import { UserContext } from '../../context/UserContext';
 import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc } from 'firebase/firestore';
-import { db, functions } from '../config/firebaseConfig';
-import { setPublicUserData } from '../api/firebaseUtils';
-import { calculateHexLuminosity } from '../helpers/colorUtils';
-import { CommitteeScreenRouteProp, CommitteesListProps } from '../types/Navigation';
-import { getLogoComponent } from '../types/Committees';
-import CommitteeTeamCard from '../components/CommitteeTeamCard';
-import { handleLinkPress } from '../helpers/links';
+import { db, functions } from '../../config/firebaseConfig';
+import { setPublicUserData } from '../../api/firebaseUtils';
+import { calculateHexLuminosity } from '../../helpers/colorUtils';
+import { CommitteeScreenRouteProp, CommitteesListProps } from '../../types/Navigation';
+import { getLogoComponent } from '../../types/Committees';
+import CommitteeTeamCard from '../../components/CommitteeTeamCard';
+import { handleLinkPress } from '../../helpers/links';
 
 const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
     const route = useRoute<CommitteeScreenRouteProp>();

@@ -2,9 +2,9 @@ import { View, Text, Image } from "react-native";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import InteractButton from "../components/InteractButton";
-import { AuthStackParams } from "../types/Navigation";
-import { Images } from "../../assets";
+import InteractButton from "../../components/InteractButton";
+import { AuthStackParams } from "../../types/Navigation";
+import { Images } from "../../../assets";
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     return (

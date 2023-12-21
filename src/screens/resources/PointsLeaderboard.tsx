@@ -3,14 +3,14 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { auth } from "../config/firebaseConfig"
-import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../api/fetchGoogleSheets'
-import { getUserByEmail, getPublicUserData } from '../api/firebaseUtils'
-import RankCard from '../components/RankCard';
-import { RankChange, PublicUserInfo } from '../types/User';
-import { GoogleSheetsResponse } from '../types/GoogleSheetsTypes';
-import { ResourcesStackParams } from '../types/Navigation';
-import { Images } from '../../assets';
+import { auth } from "../../config/firebaseConfig"
+import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../../api/fetchGoogleSheets'
+import { getUserByEmail, getPublicUserData } from '../../api/firebaseUtils'
+import RankCard from '../../components/RankCard';
+import { RankChange, PublicUserInfo } from '../../types/User';
+import { GoogleSheetsResponse } from '../../types/GoogleSheetsTypes';
+import { ResourcesStackParams } from '../../types/Navigation';
+import { Images } from '../../../assets';
 import { StatusBar } from 'expo-status-bar';
 
 const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {

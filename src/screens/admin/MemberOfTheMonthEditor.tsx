@@ -1,12 +1,12 @@
 import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Alert, TouchableWithoutFeedback, StyleSheet } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Images } from '../../assets';
-import { AdminDashboardParams } from '../types/Navigation';
+import { Images } from '../../../assets';
+import { AdminDashboardParams } from '../../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { setMemberOfTheMonth, getPublicUserData, getMemberOfTheMonth, fetchUserForList } from '../api/firebaseUtils';
-import MembersList from '../components/MembersList';
-import { PublicUserInfo, UserFilter } from '../types/User';
+import { setMemberOfTheMonth, getPublicUserData, getMemberOfTheMonth, fetchUserForList } from '../../api/firebaseUtils';
+import MembersList from '../../components/MembersList';
+import { PublicUserInfo, UserFilter } from '../../types/User';
 
 const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [memberModalVisible, setMemberModalVisible] = useState(false);

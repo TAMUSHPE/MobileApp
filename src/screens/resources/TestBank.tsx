@@ -3,10 +3,10 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { GoogleSheetsIDs, queryGoogleSpreadsheet } from '../api/fetchGoogleSheets';
-import TestCard from '../components/TestCard';
-import { ResourcesStackParams } from '../types/Navigation';
-import { Test, GoogleSheetsResponse } from '../types/GoogleSheetsTypes';
+import { GoogleSheetsIDs, queryGoogleSpreadsheet } from '../../api/fetchGoogleSheets';
+import TestCard from '../../components/TestCard';
+import { ResourcesStackParams } from '../../types/Navigation';
+import { Test, GoogleSheetsResponse } from '../../types/GoogleSheetsTypes';
 
 /**
  * Test Bank component.

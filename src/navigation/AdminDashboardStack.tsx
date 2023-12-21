@@ -1,17 +1,17 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { AdminDashboardParams, MainStackParams } from '../types/Navigation';
-import CommitteeCreator from "../screens/CommitteeCreator";
-import RestrictionsEditor from "../screens/RestrictionsEditor";
-import AdminDashboard from "../screens/AdminDashboard";
-import MemberOfTheMonthEditor from "../screens/MemberOfTheMonthEditor";
-import FeaturedSlideEditor from "../screens/FeaturedSlideEditor";
-import ResumeDownloader from "../screens/ResumeDownloader";
-import ResetOfficeHours from "../screens/ResetOfficeHours";
+import { AdminDashboardParams } from '../types/Navigation';
+import CommitteeCreator from "../screens/admin/CommitteeCreator";
+import RestrictionsEditor from "../screens/admin/RestrictionsEditor";
+import AdminDashboard from "../screens/admin/AdminDashboard";
+import MemberOfTheMonthEditor from "../screens/admin/MemberOfTheMonthEditor";
+import FeaturedSlideEditor from "../screens/admin/FeaturedSlideEditor";
+import ResumeDownloader from "../screens/admin/ResumeDownloader";
+import ResetOfficeHours from "../screens/admin/ResetOfficeHours";
 import { Button } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/core";
-import MemberSHPEConfirm from "../screens/MemberSHPEConfirm";
-import ResumeConfirm from "../screens/ResumeConfirm";
+import MemberSHPEConfirm from "../screens/involvement/MemberSHPEConfirm";
+import ResumeConfirm from "../screens/admin/ResumeConfirm";
 
 const AdminDashboardStack = () => {
     const Stack = createNativeStackNavigator<AdminDashboardParams>();

@@ -3,10 +3,10 @@ import { Alert } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationProp, useNavigation, useNavigationState } from '@react-navigation/native';
 import { ProfileSetupStack } from "./ProfileSetupStack";
-import LoginScreen from "../screens/Login";
-import RegisterScreen from "../screens/Register";
-import LoginStudent from "../screens/LoginStudent";
-import LoginGuest from "../screens/LoginGuest";
+import LoginScreen from "../screens/onboarding/Login";
+import RegisterScreen from "../screens/onboarding/Register";
+import LoginStudent from "../screens/onboarding/LoginStudent";
+import LoginGuest from "../screens/onboarding/LoginGuest";
 import { AuthStackParams } from '../types/Navigation';
 
 const AuthStackWarning = () => {

@@ -2,12 +2,12 @@ import { View, Text, Image, TouchableOpacity, ScrollView, Modal, Alert, Touchabl
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { Images } from '../../assets';
-import { AdminDashboardParams } from '../types/Navigation';
+import { Images } from '../../../assets';
+import { AdminDashboardParams } from '../../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { getPublicUserData, setWatchlist, getWatchlist, setBlacklist, getBlacklist } from '../api/firebaseUtils';
-import MembersList from '../components/MembersList';
-import { PublicUserInfo } from '../types/User';
+import { getPublicUserData, getWatchlist, getBlacklist } from '../../api/firebaseUtils';
+import MembersList from '../../components/MembersList';
+import { PublicUserInfo } from '../../types/User';
 
 const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [usersModalVisible, setUsersModalVisible] = useState(false);
@@ -164,8 +164,8 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
                 <View className='w-screen justify-center items-center pt-4 space-x-7'>
                     <TouchableOpacity className='bg-blue-400 justify-center items-center rounded-md p-2'
                         onPress={async () => {
-                            setWatchlist(getCurrentWatchlist())
-                            setBlacklist(getCurrentBlacklist())
+                            // setWatchlist(getCurrentWatchlist())
+                            // setBlacklist(getCurrentBlacklist())
                             setUpdated(true)
                         }}
                     >

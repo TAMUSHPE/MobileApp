@@ -3,16 +3,16 @@ import React, { useEffect, useState, useContext, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth } from "../config/firebaseConfig";
+import { auth } from "../../config/firebaseConfig";
 import { signInWithEmailAndPassword, signInWithCredential, GoogleAuthProvider, signOut } from "firebase/auth";
-import { initializeCurrentUserData } from "../api/firebaseUtils";
-import { UserContext } from "../context/UserContext";
-import InteractButton from "../components/InteractButton";
-import { AuthStackParams } from "../types/Navigation";
-import { Images } from "../../assets";
+import { initializeCurrentUserData } from "../../api/firebaseUtils";
+import { UserContext } from "../../context/UserContext";
+import InteractButton from "../../components/InteractButton";
+import { AuthStackParams } from "../../types/Navigation";
+import { Images } from "../../../assets";
 import { Octicons } from '@expo/vector-icons';
 import { useFocusEffect } from "@react-navigation/core";
-import TextInputWithFloatingTitle from "../components/TextInputWithFloatingTitle";
+import TextInputWithFloatingTitle from "../../components/TextInputWithFloatingTitle";
 
 
 const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {

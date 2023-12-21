@@ -1,15 +1,15 @@
 import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Alert, TouchableWithoutFeedback } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { Committee, CommitteeLogosName, committeeLogos, getLogoComponent } from '../types/Committees';
+import { Committee, CommitteeLogosName, committeeLogos, getLogoComponent } from '../../types/Committees';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { Images } from '../../assets';
-import { AdminDashboardParams } from '../types/Navigation';
+import { Images } from '../../../assets';
+import { AdminDashboardParams } from '../../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { fetchUserForList, getPublicUserData, setCommitteeData } from '../api/firebaseUtils';
-import MembersList from '../components/MembersList';
-import { PublicUserInfo, UserFilter } from '../types/User';
-import CustomColorPicker from '../components/CustomColorPicker';
+import { fetchUserForList, getPublicUserData, setCommitteeData } from '../../api/firebaseUtils';
+import MembersList from '../../components/MembersList';
+import { PublicUserInfo, UserFilter } from '../../types/User';
+import CustomColorPicker from '../../components/CustomColorPicker';
 
 const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [localCommitteeData, setLocalCommitteeData] = useState<Committee>({ leads: [], memberCount: 0 });

@@ -3,18 +3,18 @@ import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile, signOut } from "firebase/auth";
-import { getUser, initializeCurrentUserData } from '../api/firebaseUtils';
-import { auth } from '../config/firebaseConfig';
-import { evaluatePasswordStrength, validateUsername, validateEmail, validatePassword, validateTamuEmail } from '../helpers/validation';
-import InteractButton from '../components/InteractButton';
-import { AuthStackParams } from '../types/Navigation';
-import { UserContext } from '../context/UserContext';
+import { getUser, initializeCurrentUserData } from '../../api/firebaseUtils';
+import { auth } from '../../config/firebaseConfig';
+import { evaluatePasswordStrength, validateUsername, validateEmail, validatePassword, validateTamuEmail } from '../../helpers/validation';
+import InteractButton from '../../components/InteractButton';
+import { AuthStackParams } from '../../types/Navigation';
+import { UserContext } from '../../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/core';
 import { Octicons } from '@expo/vector-icons';
-import { Images } from "../../assets";
-import TextInputWithFloatingTitle from '../components/TextInputWithFloatingTitle';
-import { isUsernameUnique } from '../api/firebaseUtils';
+import { Images } from "../../../assets";
+import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
+import { isUsernameUnique } from '../../api/firebaseUtils';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [displayName, setDisplayName] = useState<string>("");

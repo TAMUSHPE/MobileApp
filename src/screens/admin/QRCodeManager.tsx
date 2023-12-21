@@ -1,6 +1,6 @@
 import { View, Text, Alert, Platform, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState, useRef } from 'react'
-import { QRCodeProps, QRCodeScreenRouteProp } from '../types/Navigation'
+import { QRCodeProps, QRCodeScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';

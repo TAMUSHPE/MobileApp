@@ -1,9 +1,9 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Resources from "../screens/Resources";
-import PointsLeaderboard from "../screens/PointsLeaderboard";
-import TestBank from "../screens/TestBank";
-import ResumeBank from "../screens/ResumeBank";
+import Resources from "../screens/resources/Resources";
+import PointsLeaderboard from "../screens/resources/PointsLeaderboard";
+import TestBank from "../screens/resources/TestBank";
+import ResumeBank from "../screens/resources/ResumeBank";
 import PublicProfileScreen from "../screens/PublicProfile";
 import { ResourcesStackParams } from '../types/Navigation';
 
