@@ -1,13 +1,13 @@
 import { View, Text, ActivityIndicator, ScrollView, NativeSyntheticEvent, NativeScrollEvent, TextInput, TouchableOpacity } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Octicons } from '@expo/vector-icons';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Octicons } from '@expo/vector-icons';
 import { GoogleSheetsIDs, queryGoogleSpreadsheet } from '../../api/fetchGoogleSheets';
-import TestCard from './TestCard';
 import { ResourcesStackParams } from '../../types/Navigation';
 import { Test, GoogleSheetsResponse } from '../../types/GoogleSheetsTypes';
 import DismissibleModal from '../../components/DismissibleModal';
+import TestCard from './TestCard';
 
 /**
  * Test Bank component.
@@ -190,7 +190,6 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                 </View>
             </SafeAreaView>
 
-            {/* Test List */}
             <ScrollView
                 onScroll={handleScroll}
                 scrollEventThrottle={400}

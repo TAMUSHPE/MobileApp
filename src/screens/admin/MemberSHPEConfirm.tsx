@@ -1,14 +1,14 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { PublicUserInfo } from '../../types/User'
-import { getMembersToVerify, getPublicUserData } from '../../api/firebaseUtils'
-import MembersList from '../../components/MembersList'
 import { db, functions } from '../../config/firebaseConfig'
+import { getMembersToVerify, getPublicUserData } from '../../api/firebaseUtils'
 import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
-import MemberCard from '../../components/MemberCard'
 import { httpsCallable } from 'firebase/functions'
 import { handleLinkPress } from '../../helpers/links'
+import { PublicUserInfo } from '../../types/User'
+import MemberCard from '../../components/MemberCard'
 import DismissibleModal from '../../components/DismissibleModal'
+import MembersList from '../../components/MembersList'
 
 const MemberSHPEConfirm = () => {
     const [members, setMembers] = useState<PublicUserInfo[]>([]);

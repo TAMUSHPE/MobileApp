@@ -10,7 +10,7 @@ import ResumeDownloader from "../screens/admin/ResumeDownloader";
 import ResetOfficeHours from "../screens/admin/ResetOfficeHours";
 import { Button } from "react-native";
 import { NavigationProp, useNavigation } from "@react-navigation/core";
-import MemberSHPEConfirm from "../screens/involvement/MemberSHPEConfirm";
+import MemberSHPEConfirm from "../screens/admin/MemberSHPEConfirm";
 import ResumeConfirm from "../screens/admin/ResumeConfirm";
 
 const AdminDashboardStack = () => {

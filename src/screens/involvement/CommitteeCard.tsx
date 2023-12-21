@@ -1,5 +1,5 @@
-import React from 'react'
 import { View, Text, Image, TouchableOpacity } from 'react-native';
+import React from 'react'
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
 import { Committee, getLogoComponent } from "../../types/Committees";
 import { Images } from "../../../assets"

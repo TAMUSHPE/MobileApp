@@ -5,14 +5,12 @@ import { getBadgeColor, isMemberVerified } from '../../helpers/membership'
 import { Images } from '../../../assets'
 import TwitterSvg from '../../components/TwitterSvg'
 
-
-
 const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigation }) => {
     if (!userData) {
         return
     }
 
-    const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration, email } = userData
+    const { name, roles, uid, photoURL, chapterExpiration, nationalExpiration, email } = userData
     const isOfficer = roles ? roles.officer : false;
 
     const [isVerified, setIsVerified] = useState<boolean>(false);
@@ -30,11 +28,8 @@ const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigat
     };
 
     return (
-        <TouchableOpacity className='mb-8'
-            onPress={() => handleCardPress(uid!)}
-        >
+        <TouchableOpacity className='mb-8' onPress={() => handleCardPress(uid!)}>
             <View className="flex-row">
-
                 <Image
                     className="flex w-12 h-12 rounded-full"
                     defaultSource={Images.DEFAULT_USER_PICTURE}
@@ -48,7 +43,6 @@ const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigat
                                 <View className="ml-2">
                                     <TwitterSvg color={badgeColor} />
                                 </View>
-
                             )}
                             {(!isOfficer && isVerified) && (
                                 <View className="ml-2">

@@ -12,9 +12,8 @@ const Involvement = ({ navigation }: NativeStackScreenProps<InvolvementStackPara
 
     return (
         <View>
-            {/* Bar */}
+            {/* Top Nav Bar */}
             <SafeAreaView>
-
                 <View className='flex flex-row justify-between items-center mx-16 mt-4'>
                     <TouchableOpacity
                         onPress={() => setCurrentTab("Committees")}
