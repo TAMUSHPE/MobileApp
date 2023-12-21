@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { TestBankProps } from '../types/Navigation'
+import { TestBankProps } from '../../types/Navigation'
 
 import { StatusBar } from 'expo-status-bar';
 import ACCTIcon from '../../assets/acct_icon.svg';
@@ -24,7 +24,7 @@ import MSENIcon from '../../assets/msen_icon.svg';
 import NUENIcon from '../../assets/nuen_icon.svg';
 import WGSTIcon from '../../assets/wgst_icon.svg';
 import DefaultIcon from '../../assets/generic_course_icon.svg';
-import { handleLinkPress } from '../helpers/links';
+import { handleLinkPress } from '../../helpers/links';
 
 
 const TestCard: React.FC<TestBankProps> = ({ testData, navigation }) => {

@@ -6,7 +6,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { auth } from "../../config/firebaseConfig"
 import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../../api/fetchGoogleSheets'
 import { getUserByEmail, getPublicUserData } from '../../api/firebaseUtils'
-import RankCard from '../../components/RankCard';
+import RankCard from './RankCard';
 import { RankChange, PublicUserInfo } from '../../types/User';
 import { GoogleSheetsResponse } from '../../types/GoogleSheetsTypes';
 import { ResourcesStackParams } from '../../types/Navigation';

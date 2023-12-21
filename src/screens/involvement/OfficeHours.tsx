@@ -1,12 +1,12 @@
 import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import React, { useState, useEffect, useContext } from 'react';
 import { Octicons } from '@expo/vector-icons';
-import { UserContext } from '../context/UserContext';
-import { auth, db, functions } from '../config/firebaseConfig';
-import { addToWatchlist } from '../api/firebaseUtils';
+import { UserContext } from '../../context/UserContext';
+import { auth, db, functions } from '../../config/firebaseConfig';
+import { addToWatchlist } from '../../api/firebaseUtils';
 import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { MemberStatus } from '../types/User';
+import { MemberStatus } from '../../types/User';
 
 /**
  * This component displays the office hours information and provides an interface 

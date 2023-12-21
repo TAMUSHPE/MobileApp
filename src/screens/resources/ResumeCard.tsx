@@ -1,14 +1,14 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React, { useContext, useState } from 'react'
-import { Images } from '../../assets';
-import { ResumeProps } from '../types/Navigation'
+import { Images } from '../../../assets';
+import { ResumeProps } from '../../types/Navigation'
 import { deleteField, doc, updateDoc } from 'firebase/firestore';
-import { db, functions } from '../config/firebaseConfig';
+import { db, functions } from '../../config/firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
-import { UserContext } from '../context/UserContext';
-import TwitterSvg from './TwitterSvg';
-import { getBadgeColor } from '../helpers/membership';
-import { handleLinkPress } from '../helpers/links';
+import { UserContext } from '../../context/UserContext';
+import TwitterSvg from '../../components/TwitterSvg';
+import { getBadgeColor } from '../../helpers/membership';
+import { handleLinkPress } from '../../helpers/links';
 
 const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ resumeData, navigation, onResumeRemoved }) => {
     // Data related to user's resume
