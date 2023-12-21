@@ -1,14 +1,14 @@
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import ResumeCard from './ResumeCard'
-import { PublicUserInfo } from '../../types/User'
-import { fetchUsersWithPublicResumes } from '../../api/firebaseUtils'
-import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { ResourcesStackParams } from '../../types/Navigation'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
-import ResumeSubmit from './ResumeSubmit'
+import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { fetchUsersWithPublicResumes } from '../../api/firebaseUtils'
+import { PublicUserInfo } from '../../types/User'
+import { ResourcesStackParams } from '../../types/Navigation'
 import TwitterSvg from '../../components/TwitterSvg'
+import ResumeSubmit from './ResumeSubmit'
+import ResumeCard from './ResumeCard'
 
 
 const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
@@ -19,8 +19,9 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
     const [infoVisible, setInfoVisible] = useState(false);
 
     const fetchResumes = async () => {
+        setLoading(true);
         try {
-            const data = await fetchUsersWithPublicResumes({});
+            const data = await fetchUsersWithPublicResumes();
             setResumes(data);
         } catch (error) {
             console.error('Error fetching resumes:', error);
@@ -44,6 +45,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
         const filteredUsers = await fetchUsersWithPublicResumes({ major: "", classYear: "" });
         setResumes(filteredUsers);
     };
+
     return (
         <View className="flex-1 bg-pale-blue">
             {/* Header */}
@@ -63,6 +65,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
             {/* User Public Resume Info */}
             <ResumeSubmit onResumesUpdate={fetchResumes} />
 
+            {/* Resumes */}
             <ScrollView
                 scrollEventThrottle={400}
                 bounces={false}

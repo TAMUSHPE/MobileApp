@@ -7,17 +7,17 @@ import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import { auth } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
+import { auth } from '../config/firebaseConfig';
 import { getCommittees, getPublicUserData, setUserRoles } from '../api/firebaseUtils';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
+import { handleLinkPress } from '../helpers/links';
 import { HomeDrawerParams, MembersScreenRouteProp } from '../types/Navigation';
 import { PublicUserInfo, Roles } from '../types/User';
 import { Committee } from '../types/Committees';
 import { Images } from '../../assets';
 import TwitterSvg from '../components/TwitterSvg';
 import ProfileBadge from '../components/ProfileBadge';
-import { handleLinkPress } from '../helpers/links';
 
 
 
@@ -25,17 +25,17 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
     // Data related to public profile user
     const route = useRoute<MembersScreenRouteProp>();
     const { uid } = route.params;
-    const [loading, setLoading] = useState<boolean>(true);
     const [publicUserData, setPublicUserData] = useState<PublicUserInfo | undefined>();
     const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, tamuEmail, committees } = publicUserData || {};
-    const [updatingRoles, setUpdatingRoles] = useState<boolean>(false);
-    const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
-    const [modifiedRoles, setModifiedRoles] = useState<Roles | undefined>(undefined);
     const [committeesData, setCommitteesData] = useState<Committee[]>([]);
+    const [modifiedRoles, setModifiedRoles] = useState<Roles | undefined>(undefined);
     const [isVerified, setIsVerified] = useState<boolean>(false);
     const isOfficer = roles ? roles.officer : false;
-    let badgeColor = getBadgeColor(isOfficer!, isVerified);
+    const badgeColor = getBadgeColor(isOfficer!, isVerified);
 
+    const [loading, setLoading] = useState<boolean>(true);
+    const [updatingRoles, setUpdatingRoles] = useState<boolean>(false);
+    const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
 
     // Data related to currently authenticated user
     const { userInfo } = useContext(UserContext)!;
@@ -63,7 +63,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
         }, [auth])
     );
 
-    // used to get committee color
+    // used to get committee color for badges
     useEffect(() => {
         const fetchCommitteeData = async () => {
             const response = await getCommittees();
@@ -79,6 +79,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
     }, [nationalExpiration, chapterExpiration])
 
 
+    // if no roles are selected, clear custom title
     useEffect(() => {
         if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead) {
             if (modifiedRoles?.customTitle !== "") {
@@ -90,7 +91,12 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
         }
     }, [modifiedRoles]);
 
-    const RoleItem = ({ roleName, isActive, onToggle, darkMode }: { roleName: string, isActive: boolean, onToggle: () => void, darkMode: boolean }) => {
+    const RoleItem = ({ roleName, isActive, onToggle, darkMode }: {
+        roleName: string,
+        isActive: boolean,
+        onToggle: () => void,
+        darkMode: boolean
+    }) => {
         return (
             <View className='flex-row items-center py-1 mb-3'>
                 <Pressable
@@ -117,7 +123,6 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
     return (
         <View className='flex-1'>
             <StatusBar style="light" />
-
             {/* Profile Header */}
             <View>
                 <Image
@@ -133,7 +138,6 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
 
                 <SafeAreaView edges={['top']} >
                     <View className='flex-row justify-between items-center mx-5 mt-1'>
-
                         <TouchableOpacity
                             onPress={() => navigation.goBack()}
                             className="rounded-full w-10 h-10 justify-center items-center"
@@ -168,7 +172,6 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                                     <TwitterSvg className="absolute left-full ml-1" color={badgeColor} />
                                 )}
                             </View>
-
                         </View>
                         <View className='items-center justify-center'>
                             <Text className="text-white text-lg font-semibold" >{`${major} ${"'" + classYear?.substring(2)}`} • {`${points?.toFixed(2)} pts`}  </Text>
@@ -177,10 +180,8 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                 </SafeAreaView>
             </View>
 
-
             {/* Profile Body */}
             <View className="flex-col m-8">
-
                 <View className='flex-row items-center'>
                     <Text className='text-2xl italic'>
                         {roles?.customTitle ? roles.customTitle :
@@ -200,7 +201,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                         </View>
                     }
                 </View>
-                <Text className='text-lg'>{bio}</Text>
+                <Text className='text-lg mt-2'>{bio}</Text>
                 <View className='flex-row mt-4 items-center'>
                     <TouchableOpacity
                         className='items-center justify-center mr-6'
@@ -236,7 +237,6 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                             />
                         );
                     })}
-
                 </View>
             </View>
 
@@ -297,29 +297,24 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                                         darkMode={darkMode || false}
 
                                     />
-
                                     <RoleItem
                                         roleName="Officer"
                                         isActive={modifiedRoles?.officer || false}
                                         onToggle={() => setModifiedRoles({ ...modifiedRoles, officer: !modifiedRoles?.officer })}
                                         darkMode={darkMode || false}
                                     />
-
                                     <RoleItem
                                         roleName="Secretary"
                                         isActive={modifiedRoles?.secretary || false}
                                         onToggle={() => setModifiedRoles({ ...modifiedRoles, secretary: !modifiedRoles?.secretary })}
                                         darkMode={darkMode || false}
                                     />
-
-
                                     <RoleItem
                                         roleName="Representative"
                                         isActive={modifiedRoles?.representative || false}
                                         onToggle={() => setModifiedRoles({ ...modifiedRoles, representative: !modifiedRoles?.representative })}
                                         darkMode={darkMode || false}
                                     />
-
                                     <RoleItem
                                         roleName="Lead"
                                         isActive={modifiedRoles?.lead || false}
@@ -369,8 +364,8 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                             </View>
                         </TouchableWithoutFeedback>
                     </View>
-                </TouchableOpacity >
-            </Modal >
+                </TouchableOpacity>
+            </Modal>
         </View>
     )
 }

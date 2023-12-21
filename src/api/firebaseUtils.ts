@@ -760,89 +760,25 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
   export const fetchUsersWithPublicResumes = async (filters: {
     major?: string;
     classYear?: string;
-    } = {}) => {
-    // THIS IS BAD, LETS REDO IT LATER
+} = {}) => {
     try {
-        // Verified resumes
-        let publicResumeQueryConstraints  = [where("resumeVerified", "==", true)];
+        let queryConstraints = [where("resumeVerified", "==", true)];
         if (filters.major) {
-            publicResumeQueryConstraints.push(where("major", "==", filters.major));
+            queryConstraints.push(where("major", "==", filters.major));
         }
         if (filters.classYear) {
-            publicResumeQueryConstraints.push(where("classYear", "==", filters.classYear));
+            queryConstraints.push(where("classYear", "==", filters.classYear));
         }
-        const publicResumeQuery = query(collection(db, 'users'), ...publicResumeQueryConstraints)
-        const publicResumeSnapshot = await getDocs(publicResumeQuery);
 
-        // Officers
-        let officerQueryConstraints = [where("roles.officer", "==", true)];
-        if (filters.major) {
-            officerQueryConstraints.push(where("major", "==", filters.major));
-        }
-        if (filters.classYear) {
-            officerQueryConstraints.push(where("classYear", "==", filters.classYear));
-        }
-        const officerQuery = query(collection(db, 'users'), ...officerQueryConstraints)
-        const officerSnapshot = await getDocs(officerQuery);
-
-        // Representatives
-        let representativeQueryConstraints = [where("roles.representative", "==", true)];
-        if (filters.major) {
-            representativeQueryConstraints.push(where("major", "==", filters.major));
-        }
-        if (filters.classYear) {
-            representativeQueryConstraints.push(where("classYear", "==", filters.classYear));
-        }
-        const representativeQuery = query(collection(db, 'users'), ...representativeQueryConstraints)
-        const representativeSnapshot = await getDocs(representativeQuery);
-
-        // Leads
-        let leadQueryConstraints = [where("roles.lead", "==", true)];
-        if (filters.major) {
-            leadQueryConstraints.push(where("major", "==", filters.major));
-        }
-        if (filters.classYear) {
-            leadQueryConstraints.push(where("classYear", "==", filters.classYear));
-        }
-        const leadQuery = query(collection(db, 'users'), ...leadQueryConstraints)
-        const leadSnapshot = await getDocs(leadQuery);
-
-
-
-        const combinedUsers = new Map();
-        publicResumeSnapshot.forEach(doc => {
-            const userData = doc.data();
-            if (userData.resumePublicURL) { 
-                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
-            }
-        });
-        officerSnapshot.forEach(doc => {
-            const userData = doc.data();
-            if (userData.resumePublicURL) { 
-                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
-            }
-        });
-
-        representativeSnapshot.forEach(doc => {
-            const userData = doc.data();
-            if (userData.resumePublicURL) { 
-                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
-            }
-        });
-
-        leadSnapshot.forEach(doc => {
-            const userData = doc.data();
-            if (userData.resumePublicURL) { 
-                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
-            }
-        });
-
-        const usersArray = Array.from(combinedUsers.values());
+        const querySnapshot = await getDocs(query(collection(db, 'users'), ...queryConstraints));
+        
+        const usersArray = querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
 
         return usersArray;
     } catch (error) {
         console.error("Error fetching users:", error);
         return [];
     }
-}
+};
+
 
