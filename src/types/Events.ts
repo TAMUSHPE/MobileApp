@@ -2,6 +2,11 @@ import { Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers';
 
 /**
+ * Type used specifically for Workshop events to differentiate the type of workshop
+ */
+export type WorkshopType = "Professional" | "Academic" | "None";
+
+/**
  * Generic Event Interface. All events must implement this type
  */
 export interface SHPEEvent {
@@ -22,6 +27,7 @@ export interface SHPEEvent {
     signInPoints?: number;
     signOutPoints?: number;
     pointsPerHour?: number;
+    workshopType?: WorkshopType;
     locationName?: string;
     geolocation?: Geolocation;
     copyFromObject?: (object: Object) => void;
@@ -186,11 +192,6 @@ export class StudyHours implements SHPEEvent {
         this.geolocation = geolocation;
     }
 }
-
-/**
- * Type used specifically for Workshop events to differentiate the type of workshop
- */
-export type WorkshopType = "Professional" | "Academic" | "None";
 
 /**
  * Template class for Workshop event

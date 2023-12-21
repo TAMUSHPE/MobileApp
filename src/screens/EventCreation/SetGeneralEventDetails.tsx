@@ -12,20 +12,21 @@ import { MillisecondTimes } from '../../helpers';
 import { formatDate, formatTime } from '../../helpers/timeUtils';
 
 const SetGeneralEventDetails = ({ navigation }: EventProps) => {
-    const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
-    const [showStartTimePicker, setShowStartTimePicker] = useState<boolean>(false);
-    const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
-    const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
-
     const route = useRoute<UpdateEventScreenRouteProp>();
     const { event } = route.params;
     const { userInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
-    // Form Hooks
+    // UI Hooks
+    const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
+    const [showStartTimePicker, setShowStartTimePicker] = useState<boolean>(false);
+    const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
+    const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
+
+    // Form Data Hooks
     const [name, setName] = useState<string>("");
-    const [startTime, setStartTime] = useState<Timestamp | undefined>();
-    const [endTime, setEndTime] = useState<Timestamp | undefined>();
+    const [startTime, setStartTime] = useState<Timestamp | undefined>(event.startTime);
+    const [endTime, setEndTime] = useState<Timestamp | undefined>(event.endTime);
     const [description, setDescription] = useState<string>("");
 
     if (!event) return (
@@ -127,7 +128,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                 {/* Header */}
                 <View className='flex-row items-center h-10'>
                     <View className='w-screen absolute'>
-                        <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>General Event Info</Text>
+                        <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>{event.eventType} Info</Text>
                     </View>
                     <TouchableOpacity className='px-6' onPress={() => navigation.goBack()} >
                         <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
