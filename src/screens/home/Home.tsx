@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { ScrollView, Text, TouchableOpacity, Image, View, Dimensions } from 'react-native';
-import manageNotificationPermissions from '../helpers/pushNotification';
-import { UserContext } from '../context/UserContext';
-import FeaturedSlider from '../components/FeaturedSlider';
-import OfficeSignIn from '../components/OfficeSignIn';
-import { PublicUserInfo } from '../types/User';
+import manageNotificationPermissions from '../../helpers/pushNotification';
+import { UserContext } from '../../context/UserContext';
+import FeaturedSlider from '../../components/FeaturedSlider';
+import OfficeSignIn from './OfficeSignIn';
+import { PublicUserInfo } from '../../types/User';
 import { StatusBar } from 'expo-status-bar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { HomeStackParams } from "../types/Navigation"
-import { getPublicUserData, getMemberOfTheMonth } from '../api/firebaseUtils';
+import { HomeStackParams } from "../../types/Navigation"
+import { getPublicUserData, getMemberOfTheMonth } from '../../api/firebaseUtils';
 import { useFocusEffect } from '@react-navigation/core';
-import { Images } from '../../assets';
+import { Images } from '../../../assets';
 
 /**
  * Renders the home screen of the application.

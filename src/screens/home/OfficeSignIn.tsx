@@ -1,8 +1,8 @@
 import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import React, { useState, useEffect } from 'react';
-import { auth, db } from '../config/firebaseConfig';
+import { auth, db } from '../../config/firebaseConfig';
 import { addDoc, collection, doc, serverTimestamp, setDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
-import { OfficerStatus } from '../types/User';
+import { OfficerStatus } from '../../types/User';
 import { Octicons } from '@expo/vector-icons';
 
 
