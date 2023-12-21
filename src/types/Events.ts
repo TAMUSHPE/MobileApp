@@ -5,19 +5,25 @@ import { MillisecondTimes, getNextHourMillis } from '../helpers';
  * Generic Event Interface. All events must implement this type
  */
 export interface SHPEEvent {
+    /** Document name in firebase */
     id?: string;
+    /** Name of event to display to users. This does NOT uniquely identify the event. */
     name: string;
+    /** User submitted description of event */
     description: string;
-    eventType: string;
+    /** Specifies type of event and implies which fields are possibly important to both front and back-end */
+    eventType: EventType;
     tags: string[];
     startTime: Timestamp;
     endTime: Timestamp;
+    signInBuffer?: number;
+    signOutBuffer?: number;
     coverImageURI?: string;
     signInPoints?: number;
     signOutPoints?: number;
     pointsPerHour?: number;
     locationName?: string;
-    geoLocation?: Geolocation;
+    geolocation?: Geolocation;
     copyFromObject?: (object: Object) => void;
 }
 
@@ -44,6 +50,8 @@ export class GeneralMeeting implements SHPEEvent {
     public endTime: Timestamp;
     public signInPoints: number;
     public signOutPoints: number;
+    public locationName?: string;
+    public geolocation?: Geolocation;
 
     public constructor() {
         this.name = "General Meeting";
@@ -56,7 +64,7 @@ export class GeneralMeeting implements SHPEEvent {
         this.signOutPoints = 0;
     }
 
-    public copyFromObject({ name, description, tags, startTime, endTime, signInPoints, signOutPoints }: {
+    public copyFromObject({ name, description, tags, startTime, endTime, signInPoints, signOutPoints, locationName, geolocation, }: {
         name?: string,
         description?: string,
         tags?: string[],
@@ -64,6 +72,8 @@ export class GeneralMeeting implements SHPEEvent {
         endTime?: Timestamp,
         signInPoints?: number,
         signOutPoints?: number,
+        locationName?: string,
+        geolocation?: Geolocation,
     }) {
         this.name = name ?? this.name;
         this.description = description ?? this.description;
@@ -72,6 +82,8 @@ export class GeneralMeeting implements SHPEEvent {
         this.endTime = endTime ?? this.endTime;
         this.signInPoints = signInPoints ?? this.signInPoints;
         this.signOutPoints = signOutPoints ?? this.signOutPoints;
+        this.locationName = locationName;
+        this.geolocation = geolocation;
     }
 }
 
@@ -86,6 +98,8 @@ export class CommitteeMeeting implements SHPEEvent {
     public startTime: Timestamp;
     public endTime: Timestamp;
     public signInPoints: number;
+    public locationName?: string;
+    public geolocation?: Geolocation;
 
     public constructor() {
         this.name = "Committee Meeting";
@@ -97,13 +111,15 @@ export class CommitteeMeeting implements SHPEEvent {
         this.signInPoints = 1;
     }
 
-    public copyFromObject({ name, tags, description, startTime, endTime, signInPoints }: {
+    public copyFromObject({ name, tags, description, startTime, endTime, signInPoints, locationName, geolocation }: {
         name?: string,
         tags?: string[],
         description?: string,
         startTime?: Timestamp,
         endTime?: Timestamp,
         signInPoints?: number,
+        locationName?: string,
+        geolocation?: Geolocation,
     }) {
         this.name = name ?? this.name;
         this.tags = tags ?? this.tags;
@@ -111,6 +127,8 @@ export class CommitteeMeeting implements SHPEEvent {
         this.startTime = startTime ?? this.startTime;
         this.endTime = endTime ?? this.endTime;
         this.signInPoints = signInPoints ?? this.signInPoints;
+        this.locationName = locationName;
+        this.geolocation = geolocation;
     }
 }
 
@@ -129,6 +147,8 @@ export class StudyHours implements SHPEEvent {
     public signInPoints: number;
     public signOutPoints: number;
     public pointsPerHour: number;
+    public locationName?: string;
+    public geolocation?: Geolocation;
 
     public constructor() {
         this.name = "Study Hours";
@@ -142,7 +162,7 @@ export class StudyHours implements SHPEEvent {
         this.pointsPerHour = 1;
     }
 
-    public copyFromObject({ name, description, tags, startTime, endTime, signInPoints, signOutPoints, pointsPerHour }: {
+    public copyFromObject({ name, description, tags, startTime, endTime, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation }: {
         name?: string,
         description?: string,
         tags?: string[],
@@ -151,6 +171,8 @@ export class StudyHours implements SHPEEvent {
         signInPoints?: number,
         signOutPoints?: number,
         pointsPerHour?: number,
+        locationName?: string,
+        geolocation?: Geolocation,
     }) {
         this.name = name ?? this.name;
         this.description = description ?? this.description;
@@ -160,6 +182,8 @@ export class StudyHours implements SHPEEvent {
         this.signInPoints = signInPoints ?? this.signInPoints;
         this.signOutPoints = signOutPoints ?? this.signOutPoints;
         this.pointsPerHour = pointsPerHour ?? this.pointsPerHour;
+        this.locationName = locationName;
+        this.geolocation = geolocation;
     }
 }
 
@@ -182,6 +206,8 @@ export class Workshop implements SHPEEvent {
     public startTime: Timestamp;
     public endTime: Timestamp;
     public signInPoints: number;
+    public locationName?: string;
+    public geolocation?: Geolocation;
 
     public constructor() {
         this.name = "Workshop";
@@ -194,7 +220,7 @@ export class Workshop implements SHPEEvent {
         this.signInPoints = 3;
     }
 
-    public copyFromObject({ name, tags, description, workshopType, startTime, endTime, signInPoints }: {
+    public copyFromObject({ name, tags, description, workshopType, startTime, endTime, signInPoints, locationName, geolocation }: {
         name?: string,
         tags?: string[],
         description?: string,
@@ -202,6 +228,8 @@ export class Workshop implements SHPEEvent {
         startTime?: Timestamp,
         endTime?: Timestamp,
         signInPoints?: number,
+        locationName?: string,
+        geolocation?: Geolocation,
     }) {
         this.name = name ?? "Workshop";
         this.tags = tags ?? [];
@@ -210,6 +238,8 @@ export class Workshop implements SHPEEvent {
         this.startTime = startTime ?? Timestamp.fromMillis(getNextHourMillis());
         this.endTime = endTime ?? Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
         this.signInPoints = signInPoints ?? 0;
+        this.locationName = locationName;
+        this.geolocation = geolocation;
     }
 }
 
@@ -224,6 +254,8 @@ export class VolunteerEvent implements SHPEEvent {
     public startTime: Timestamp;
     public endTime: Timestamp;
     public pointsPerHour: number;
+    public locationName?: string;
+    public geolocation?: Geolocation;
 
     public constructor() {
         this.name = "Volunteer Event";
@@ -235,13 +267,15 @@ export class VolunteerEvent implements SHPEEvent {
         this.pointsPerHour = 2;
     }
 
-    public copyFromObject({ name, tags, description, startTime, endTime, pointsPerHour }: {
+    public copyFromObject({ name, tags, description, startTime, endTime, pointsPerHour, locationName, geolocation, }: {
         name?: string,
         tags?: string[],
         description?: string,
         startTime?: Timestamp,
         endTime?: Timestamp,
         pointsPerHour?: number,
+        locationName?: string,
+        geolocation?: Geolocation,
     }) {
         this.name = name ?? this.name;
         this.tags = tags ?? this.tags;
@@ -249,6 +283,8 @@ export class VolunteerEvent implements SHPEEvent {
         this.startTime = startTime ?? this.startTime;
         this.endTime = endTime ?? this.endTime;
         this.pointsPerHour = pointsPerHour ?? this.pointsPerHour;
+        this.locationName = locationName;
+        this.geolocation = geolocation;
     }
 }
 
@@ -263,6 +299,8 @@ export class SocialEvent implements SHPEEvent {
     public startTime: Timestamp;
     public endTime: Timestamp;
     public signInPoints: number;
+    public locationName?: string;
+    public geolocation?: Geolocation;
 
     public constructor() {
         this.name = "Social Event";
@@ -274,13 +312,15 @@ export class SocialEvent implements SHPEEvent {
         this.signInPoints = 1;
     }
 
-    public copyFromObject({ name, tags, description, startTime, endTime, signInPoints }: {
+    public copyFromObject({ name, tags, description, startTime, endTime, signInPoints, locationName, geolocation }: {
         name?: string,
         tags?: string[],
         description?: string,
         startTime?: Timestamp,
         endTime?: Timestamp,
         signInPoints?: number,
+        locationName?: string,
+        geolocation?: Geolocation,
     }) {
         this.name = name ?? this.name;
         this.tags = tags ?? this.tags;
@@ -288,6 +328,8 @@ export class SocialEvent implements SHPEEvent {
         this.startTime = startTime ?? this.startTime;
         this.endTime = endTime ?? this.endTime;
         this.signInPoints = signInPoints ?? this.signInPoints;
+        this.locationName = locationName;
+        this.geolocation = geolocation;
     }
 }
 
@@ -302,6 +344,8 @@ export class IntramuralEvent implements SHPEEvent {
     public startTime: Timestamp;
     public endTime: Timestamp;
     public signInPoints: number;
+    public locationName?: string;
+    public geolocation?: Geolocation;
 
     public constructor() {
         this.name = "Intramural Event";
@@ -313,13 +357,15 @@ export class IntramuralEvent implements SHPEEvent {
         this.signInPoints = 1;
     }
 
-    public copyFromObject({ name, tags, description, startTime, endTime, signInPoints }: {
+    public copyFromObject({ name, tags, description, startTime, endTime, signInPoints, locationName, geolocation }: {
         name?: string,
         tags?: string[],
         description?: string,
         startTime?: Timestamp,
         endTime?: Timestamp,
         signInPoints?: number,
+        locationName?: string,
+        geolocation?: Geolocation,
     }) {
         this.name = name ?? this.name;
         this.tags = tags ?? this.tags;
@@ -327,6 +373,8 @@ export class IntramuralEvent implements SHPEEvent {
         this.startTime = startTime ?? this.startTime;
         this.endTime = endTime ?? this.endTime;
         this.signInPoints = signInPoints ?? this.signInPoints;
+        this.locationName = locationName;
+        this.geolocation = geolocation;
     }
 }
 
@@ -336,7 +384,7 @@ export class IntramuralEvent implements SHPEEvent {
 export class CustomEvent implements SHPEEvent {
     public name: string;
     public description: string;
-    public eventType: string;
+    public eventType: EventType;
     public tags: string[];
     public startTime: Timestamp;
     public endTime: Timestamp;
@@ -344,7 +392,7 @@ export class CustomEvent implements SHPEEvent {
     public signOutPoints?: number;
     public pointsPerHour?: number;
     public locationName?: string;
-    public geoLocation?: Geolocation;
+    public geolocation?: Geolocation;
 
     public constructor() {
         this.name = "Custom Event";
@@ -355,7 +403,7 @@ export class CustomEvent implements SHPEEvent {
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
     }
 
-    public copyFromObject({ name, description, tags, startTime, endTime, signInPoints, signOutPoints, pointsPerHour, locationName, geoLocation }: {
+    public copyFromObject({ name, description, tags, startTime, endTime, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation }: {
         name?: string;
         description?: string;
         tags?: string[];
@@ -365,19 +413,19 @@ export class CustomEvent implements SHPEEvent {
         signOutPoints?: number;
         pointsPerHour?: number;
         locationName?: string;
-        geoLocation?: Geolocation;
+        geolocation?: Geolocation;
     }) {
         this.name = name ?? "Custom Event";
         this.description = description ?? this.description;
         this.eventType = EventType.CUSTOM_EVENT;
         this.tags = tags ?? [];
-        this.startTime = Timestamp.fromMillis(getNextHourMillis());
-        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
+        this.startTime = startTime ?? Timestamp.fromMillis(getNextHourMillis());
+        this.endTime = endTime ?? Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
         this.signInPoints = signInPoints;
         this.signOutPoints = signOutPoints;
         this.pointsPerHour = pointsPerHour;
         this.locationName = locationName;
-        this.geoLocation = geoLocation;
+        this.geolocation = geolocation;
     }
 
 }
