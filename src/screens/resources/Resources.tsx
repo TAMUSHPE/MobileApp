@@ -1,18 +1,16 @@
 import { View, Image, ScrollView, Text, TouchableOpacity, ImageSourcePropType } from 'react-native';
 import React from 'react';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { handleLinkPress } from '../../helpers/links';
 import { ResourcesStackParams } from '../../types/Navigation';
 import { Images } from '../../../assets';
 import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
-import ExamIcon from '../../../assets/exam-icon.svg';
 import ResumeIcon from '../../../assets/resume-icon.svg';
+import ExamIcon from '../../../assets/exam-icon.svg';
 import OfficeHours from '../involvement/OfficeHours';
-import { handleLinkPress } from '../../helpers/links';
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
-    const insets = useSafeAreaInsets();
-
     const SocialMediaButton = ({ url, imageSource, bgColor = "" }: {
         url: string,
         imageSource: ImageSourcePropType,
@@ -50,7 +48,7 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
     );
 
     return (
-        <View style={{ paddingTop: insets.top }} className='flex-1 bg-white'>
+        <SafeAreaView className='flex-1 bg-white'>
             {/* Header */}
             <View className='flex-row px-5 pb-4'>
                 <View className='flex-1 justify-center items-start'>
@@ -115,7 +113,7 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
 
                 <View className='mb-12' />
             </ScrollView>
-        </View>
+        </SafeAreaView>
     )
 }
 
