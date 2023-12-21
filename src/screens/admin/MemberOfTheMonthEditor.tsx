@@ -1,5 +1,5 @@
-import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Alert, TouchableWithoutFeedback, StyleSheet } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Alert } from 'react-native'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Images } from '../../../assets';
 import { AdminDashboardParams } from '../../types/Navigation';

@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator, Image, Modal, Alert, TouchableOpacity, TouchableWithoutFeedback, Pressable, TextInput } from 'react-native';
+import { View, Text, ActivityIndicator, Image, Alert, TouchableOpacity, Pressable, TextInput } from 'react-native';
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { BlurView } from '@react-native-community/blur';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -18,6 +18,7 @@ import { Committee } from '../types/Committees';
 import { Images } from '../../assets';
 import TwitterSvg from '../components/TwitterSvg';
 import ProfileBadge from '../components/ProfileBadge';
+import DismissibleModal from '../components/DismissibleModal';
 
 
 
@@ -241,131 +242,120 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
             </View>
 
             {/* Role Modal */}
-            <Modal
-                animationType="none"
-                transparent={true}
+            <DismissibleModal
                 visible={showRoleModal}
+                setVisible={setShowRoleModal}
             >
-                <TouchableOpacity
-                    onPress={() => setShowRoleModal(false)}
-                    className="h-[100%] w-[100%]"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                <View
+                    className='flex opacity-100 bg-white rounded-md px-6 pt-6'
+                    style={{ minWidth: 300 }}
                 >
-                    <View className='items-center justify-center h-full '>
-                        <TouchableWithoutFeedback>
-                            <View
-                                className='flex opacity-100 bg-white rounded-md px-6 pt-6'
-                                style={{ minWidth: 300 }}
-                            >
-                                {/* Title */}
-                                <View className='flex-row items-center mb-4'>
-                                    <FontAwesome name="user" color="black" size={30} />
-                                    <Text className='text-2xl font-semibold ml-2'>User Permissions</Text>
-                                </View>
-
-                                {/* Position Custom Title */}
-                                <View>
-                                    <Text className='text-lg font-semibold'>Enter a custom title</Text>
-                                    <Text className='text-sm text-gray-500 mb-2'>This is only used on profile screen</Text>
-                                    <TextInput
-                                        className='border-b mb-5 text-lg pb-1'
-                                        onChangeText={(text) => {
-                                            setModifiedRoles({
-                                                ...modifiedRoles,
-                                                customTitle: text || ""
-                                            })
-                                        }}
-                                        placeholder='Enter title'
-                                        value={modifiedRoles?.customTitle}
-                                    />
-
-                                    <Text className='text-lg font-semibold mb-2'>Select user role</Text>
-                                </View>
-
-                                {/* Position Selection */}
-                                <View>
-                                    <RoleItem
-                                        roleName="Admin"
-                                        isActive={modifiedRoles?.admin || false}
-                                        onToggle={() => setModifiedRoles({ ...modifiedRoles, admin: !modifiedRoles?.admin })}
-                                        darkMode={darkMode || false}
-                                    />
-                                    <RoleItem
-                                        roleName="Developer"
-                                        isActive={modifiedRoles?.developer || false}
-                                        onToggle={() => setModifiedRoles({ ...modifiedRoles, developer: !modifiedRoles?.developer })}
-                                        darkMode={darkMode || false}
-
-                                    />
-                                    <RoleItem
-                                        roleName="Officer"
-                                        isActive={modifiedRoles?.officer || false}
-                                        onToggle={() => setModifiedRoles({ ...modifiedRoles, officer: !modifiedRoles?.officer })}
-                                        darkMode={darkMode || false}
-                                    />
-                                    <RoleItem
-                                        roleName="Secretary"
-                                        isActive={modifiedRoles?.secretary || false}
-                                        onToggle={() => setModifiedRoles({ ...modifiedRoles, secretary: !modifiedRoles?.secretary })}
-                                        darkMode={darkMode || false}
-                                    />
-                                    <RoleItem
-                                        roleName="Representative"
-                                        isActive={modifiedRoles?.representative || false}
-                                        onToggle={() => setModifiedRoles({ ...modifiedRoles, representative: !modifiedRoles?.representative })}
-                                        darkMode={darkMode || false}
-                                    />
-                                    <RoleItem
-                                        roleName="Lead"
-                                        isActive={modifiedRoles?.lead || false}
-                                        onToggle={() => setModifiedRoles({ ...modifiedRoles, lead: !modifiedRoles?.lead })}
-                                        darkMode={darkMode || false}
-                                    />
-                                </View>
-
-                                {/* Action Buttons */}
-                                <View className="flex-row justify-between items-center my-6 mx-5">
-                                    <TouchableOpacity
-                                        onPress={async () => {
-                                            if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
-                                                Alert.alert("Missing Title", "You must enter a title ");
-                                                return;
-                                            }
-
-                                            setUpdatingRoles(true);
-                                            if (modifiedRoles)
-                                                await setUserRoles(uid, modifiedRoles)
-                                                    .then(() => {
-                                                        Alert.alert("Permissions Updated", "This user's roles have been updated successfully!")
-                                                    })
-                                                    .catch((err) => {
-                                                        console.error(err);
-                                                        Alert.alert("An Issue Occured", "A server issue has occured. Please try again. If this keeps occurring, please contact a developer");
-                                                    });
-
-                                            setUpdatingRoles(false);
-                                            setShowRoleModal(false);
-                                        }}
-                                        className="bg-pale-blue rounded-lg justify-center items-center px-4 py-1"
-                                    >
-                                        <Text className='text-xl font-bold text-white px-2'>Done</Text>
-                                    </TouchableOpacity>
-
-
-                                    <TouchableOpacity
-                                        onPress={async () => {
-                                            setModifiedRoles(roles)
-                                            setShowRoleModal(false)
-                                        }} >
-                                        <Text className='text-xl font-bold px-4 py-1'>Cancel</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                {updatingRoles && <ActivityIndicator className='mb-4' size={30} />}
-                            </View>
-                        </TouchableWithoutFeedback>
+                    {/* Title */}
+                    <View className='flex-row items-center mb-4'>
+                        <FontAwesome name="user" color="black" size={30} />
+                        <Text className='text-2xl font-semibold ml-2'>User Permissions</Text>
                     </View>
-                </TouchableOpacity>
-            </Modal>
+
+                    {/* Position Custom Title */}
+                    <View>
+                        <Text className='text-lg font-semibold'>Enter a custom title</Text>
+                        <Text className='text-sm text-gray-500 mb-2'>This is only used on profile screen</Text>
+                        <TextInput
+                            className='border-b mb-5 text-lg pb-1'
+                            onChangeText={(text) => {
+                                setModifiedRoles({
+                                    ...modifiedRoles,
+                                    customTitle: text || ""
+                                })
+                            }}
+                            placeholder='Enter title'
+                            value={modifiedRoles?.customTitle}
+                        />
+
+                        <Text className='text-lg font-semibold mb-2'>Select user role</Text>
+                    </View>
+
+                    {/* Position Selection */}
+                    <View>
+                        <RoleItem
+                            roleName="Admin"
+                            isActive={modifiedRoles?.admin || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, admin: !modifiedRoles?.admin })}
+                            darkMode={darkMode || false}
+                        />
+                        <RoleItem
+                            roleName="Developer"
+                            isActive={modifiedRoles?.developer || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, developer: !modifiedRoles?.developer })}
+                            darkMode={darkMode || false}
+
+                        />
+                        <RoleItem
+                            roleName="Officer"
+                            isActive={modifiedRoles?.officer || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, officer: !modifiedRoles?.officer })}
+                            darkMode={darkMode || false}
+                        />
+                        <RoleItem
+                            roleName="Secretary"
+                            isActive={modifiedRoles?.secretary || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, secretary: !modifiedRoles?.secretary })}
+                            darkMode={darkMode || false}
+                        />
+                        <RoleItem
+                            roleName="Representative"
+                            isActive={modifiedRoles?.representative || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, representative: !modifiedRoles?.representative })}
+                            darkMode={darkMode || false}
+                        />
+                        <RoleItem
+                            roleName="Lead"
+                            isActive={modifiedRoles?.lead || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, lead: !modifiedRoles?.lead })}
+                            darkMode={darkMode || false}
+                        />
+                    </View>
+
+                    {/* Action Buttons */}
+                    <View className="flex-row justify-between items-center my-6 mx-5">
+                        <TouchableOpacity
+                            onPress={async () => {
+                                if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
+                                    Alert.alert("Missing Title", "You must enter a title ");
+                                    return;
+                                }
+
+                                setUpdatingRoles(true);
+                                if (modifiedRoles)
+                                    await setUserRoles(uid, modifiedRoles)
+                                        .then(() => {
+                                            Alert.alert("Permissions Updated", "This user's roles have been updated successfully!")
+                                        })
+                                        .catch((err) => {
+                                            console.error(err);
+                                            Alert.alert("An Issue Occured", "A server issue has occured. Please try again. If this keeps occurring, please contact a developer");
+                                        });
+
+                                setUpdatingRoles(false);
+                                setShowRoleModal(false);
+                            }}
+                            className="bg-pale-blue rounded-lg justify-center items-center px-4 py-1"
+                        >
+                            <Text className='text-xl font-bold text-white px-2'>Done</Text>
+                        </TouchableOpacity>
+
+
+                        <TouchableOpacity
+                            onPress={async () => {
+                                setModifiedRoles(roles)
+                                setShowRoleModal(false)
+                            }} >
+                            <Text className='text-xl font-bold px-4 py-1'>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {updatingRoles && <ActivityIndicator className='mb-4' size={30} />}
+                </View>
+            </DismissibleModal>
         </View>
     )
 }

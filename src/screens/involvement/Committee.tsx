@@ -1,4 +1,4 @@
-import { View, Text, Modal, TouchableOpacity, TouchableWithoutFeedback, ScrollView } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
@@ -14,6 +14,7 @@ import { CommitteeScreenRouteProp, CommitteesListProps } from '../../types/Navig
 import { getLogoComponent } from '../../types/Committees';
 import CommitteeTeamCard from './CommitteeTeamCard';
 import { handleLinkPress } from '../../helpers/links';
+import DismissibleModal from '../../components/DismissibleModal';
 
 const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
     const route = useRoute<CommitteeScreenRouteProp>();
@@ -139,83 +140,72 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                 <View className='mb-28' />
             </ScrollView >
 
-            <Modal
-                animationType="none"
-                transparent={true}
+            <DismissibleModal
                 visible={confirmVisible}
-                onRequestClose={() => setConfirmVisible(!confirmVisible)}
+                setVisible={setConfirmVisible}
             >
-                <TouchableOpacity
-                    onPress={() => setConfirmVisible(false)}
-                    className="h-[100%] w-[100%]"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                >
-                    <View className='items-center justify-center h-full'>
-                        <TouchableWithoutFeedback>
-                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
-                                <Octicons name="person" size={24} color="black" />
-                                <View className='flex items-center w-[80%] space-y-8'>
-                                    <Text className="text-center text-lg font-bold"> {isInCommittee ? "Are you sure you want leave?" : "Are you sure you want to join?"}</Text>
-                                    <View className="flex-row">
-                                        <TouchableOpacity
-                                            className="bg-pale-blue rounded-xl justify-center items-center"
-                                            onPress={async () => {
-                                                setConfirmVisible(false);
-                                                const fetchCommitteeData = async () => {
-                                                    try {
-                                                        const docRef = doc(db, `committees/${initialCommittee.firebaseDocName}`);
-                                                        const docSnapshot = await getDoc(docRef);
-                                                        if (docSnapshot.exists()) {
-                                                            setMemberCount(docSnapshot.data().memberCount);
-                                                        }
-                                                    } catch (error) {
-                                                        console.error('Error fetching updated committee data:', error);
-                                                    }
-                                                };
 
-                                                const committeeChanges = [{
-                                                    committeeName: firebaseDocName,
-                                                    change: isInCommittee ? -1 : 1
-                                                }];
-                                                const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
-                                                let updatedCommittees = [...userInfo?.publicInfo?.committees || []];
-                                                if (isInCommittee) {
-                                                    updatedCommittees = updatedCommittees.filter(c => c !== firebaseDocName);
-                                                } else {
-                                                    updatedCommittees.push(firebaseDocName!);
-                                                }
 
-                                                try {
-                                                    await setPublicUserData({ committees: updatedCommittees });
-                                                    await updateCommitteeMembersCount({ committeeChanges });
-                                                    await fetchCommitteeData();
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
+                    <Octicons name="person" size={24} color="black" />
+                    <View className='flex items-center w-[80%] space-y-8'>
+                        <Text className="text-center text-lg font-bold"> {isInCommittee ? "Are you sure you want leave?" : "Are you sure you want to join?"}</Text>
+                        <View className="flex-row">
+                            <TouchableOpacity
+                                className="bg-pale-blue rounded-xl justify-center items-center"
+                                onPress={async () => {
+                                    setConfirmVisible(false);
+                                    const fetchCommitteeData = async () => {
+                                        try {
+                                            const docRef = doc(db, `committees/${initialCommittee.firebaseDocName}`);
+                                            const docSnapshot = await getDoc(docRef);
+                                            if (docSnapshot.exists()) {
+                                                setMemberCount(docSnapshot.data().memberCount);
+                                            }
+                                        } catch (error) {
+                                            console.error('Error fetching updated committee data:', error);
+                                        }
+                                    };
 
-                                                    setUserInfo({
-                                                        ...userInfo,
-                                                        publicInfo: {
-                                                            ...userInfo?.publicInfo,
-                                                            committees: updatedCommittees
-                                                        }
-                                                    });
-                                                } catch (err) {
-                                                    console.error(err);
-                                                }
-                                            }}
-                                        >
-                                            <Text className='text-xl font-bold text-white px-8'>{isInCommittee ? "Leave" : "Join"}</Text>
-                                        </TouchableOpacity>
+                                    const committeeChanges = [{
+                                        committeeName: firebaseDocName,
+                                        change: isInCommittee ? -1 : 1
+                                    }];
+                                    const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
+                                    let updatedCommittees = [...userInfo?.publicInfo?.committees || []];
+                                    if (isInCommittee) {
+                                        updatedCommittees = updatedCommittees.filter(c => c !== firebaseDocName);
+                                    } else {
+                                        updatedCommittees.push(firebaseDocName!);
+                                    }
 
-                                        <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
-                                            <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
+                                    try {
+                                        await setPublicUserData({ committees: updatedCommittees });
+                                        await updateCommitteeMembersCount({ committeeChanges });
+                                        await fetchCommitteeData();
+
+                                        setUserInfo({
+                                            ...userInfo,
+                                            publicInfo: {
+                                                ...userInfo?.publicInfo,
+                                                committees: updatedCommittees
+                                            }
+                                        });
+                                    } catch (err) {
+                                        console.error(err);
+                                    }
+                                }}
+                            >
+                                <Text className='text-xl font-bold text-white px-8'>{isInCommittee ? "Leave" : "Join"}</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
+                                <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </TouchableOpacity >
-            </Modal>
-
+                </View>
+            </DismissibleModal>
         </View >
     )
 }

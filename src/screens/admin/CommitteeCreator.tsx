@@ -1,6 +1,6 @@
-import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Alert, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { Committee, CommitteeLogosName, committeeLogos, getLogoComponent } from '../../types/Committees';
+import { Committee, committeeLogos, getLogoComponent } from '../../types/Committees';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { Images } from '../../../assets';
