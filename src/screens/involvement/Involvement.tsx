@@ -2,9 +2,9 @@ import { View, Text, TouchableOpacity } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
-import { InvolvementStackParams } from '../types/Navigation'
-import CommitteesList from '../components/CommitteesList'
-import MemberSHPE from '../components/MemberSHPE'
+import { InvolvementStackParams } from '../../types/Navigation'
+import CommitteesList from './CommitteesList'
+import MemberSHPE from './MemberSHPE'
 
 
 const Involvement = ({ navigation }: NativeStackScreenProps<InvolvementStackParams>) => {

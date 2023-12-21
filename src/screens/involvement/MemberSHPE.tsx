@@ -1,12 +1,12 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
-import { UserContext } from '../context/UserContext';
-import { auth, db } from '../config/firebaseConfig';
-import { getBlobFromURI, selectFile, uploadFile } from '../api/fileSelection';
+import { UserContext } from '../../context/UserContext';
+import { auth, db } from '../../config/firebaseConfig';
+import { getBlobFromURI, selectFile, uploadFile } from '../../api/fileSelection';
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
-import { CommonMimeTypes } from '../helpers/validation';
-import { handleLinkPress } from '../helpers/links';
-import { formatExpirationDate } from '../helpers/membership';
+import { CommonMimeTypes } from '../../helpers/validation';
+import { handleLinkPress } from '../../helpers/links';
+import { formatExpirationDate } from '../../helpers/membership';
 import UploadIcon from '../../assets/upload-solid.svg';
 
 const MemberSHPE = () => {

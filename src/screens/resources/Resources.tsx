@@ -2,13 +2,13 @@ import { View, Image, ScrollView, Text, TouchableOpacity, ImageSourcePropType } 
 import React from 'react';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { ResourcesStackParams } from '../types/Navigation';
-import { Images } from '../../assets';
+import { ResourcesStackParams } from '../../types/Navigation';
+import { Images } from '../../../assets';
 import LeaderBoardIcon from '../../assets/ranking-star-solid.svg';
 import ExamIcon from '../../assets/exam-icon.svg';
 import ResumeIcon from '../../assets/resume-icon.svg';
-import OfficeHours from '../components/OfficeHours';
-import { handleLinkPress } from '../helpers/links';
+import OfficeHours from '../../components/OfficeHours';
+import { handleLinkPress } from '../../helpers/links';
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
     const insets = useSafeAreaInsets();

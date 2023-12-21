@@ -1,8 +1,8 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import InvolvementScreen from "../screens/Involvement";
+import InvolvementScreen from "../screens/involvement/Involvement";
 import { InvolvementStackParams } from '../types/Navigation';
-import CommitteeScreen from "../screens/Committee";
+import CommitteeScreen from "../screens/involvement/Committee";
 import PublicProfileScreen from "../screens/PublicProfile";
 // import CommitteeEditor from "../screens/CommitteeEditor";
 

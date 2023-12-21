@@ -5,7 +5,7 @@ import { EventsStackParams } from '../types/Navigation';
 import CreateEvent from "../screens/CreateEvent";
 import UpdateEvent from "../screens/UpdateEvent";
 import EventInfo from "../screens/EventInfo";
-import QRCodeManager from "../screens/QRCodeManager";
+import QRCodeManager from "../screens/admin/QRCodeManager";
 
 const EventsStack = () => {
     const Stack = createNativeStackNavigator<EventsStackParams>();

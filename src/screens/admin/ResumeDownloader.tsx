@@ -2,10 +2,10 @@ import { Button, ActivityIndicator, View, Text } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { db } from '../config/firebaseConfig';
+import { db } from '../../config/firebaseConfig';
 import { doc, onSnapshot } from 'firebase/firestore';
 import * as Clipboard from 'expo-clipboard';
-import { handleLinkPress } from '../helpers/links';
+import { handleLinkPress } from '../../helpers/links';
 
 
 const ResumeDownloader = () => {
