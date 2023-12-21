@@ -1,13 +1,13 @@
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import ResumeCard from '../../components/ResumeCard'
+import ResumeCard from './ResumeCard'
 import { PublicUserInfo } from '../../types/User'
 import { fetchUsersWithPublicResumes } from '../../api/firebaseUtils'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { ResourcesStackParams } from '../../types/Navigation'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
-import ResumeSubmit from '../../components/ResumeSubmit'
+import ResumeSubmit from './ResumeSubmit'
 import TwitterSvg from '../../components/TwitterSvg'
 
 

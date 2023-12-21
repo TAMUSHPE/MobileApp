@@ -7,7 +7,7 @@ import { Images } from '../../../assets';
 import LeaderBoardIcon from '../../assets/ranking-star-solid.svg';
 import ExamIcon from '../../assets/exam-icon.svg';
 import ResumeIcon from '../../assets/resume-icon.svg';
-import OfficeHours from '../../components/OfficeHours';
+import OfficeHours from '../involvement/OfficeHours';
 import { handleLinkPress } from '../../helpers/links';
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {

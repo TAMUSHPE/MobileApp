@@ -2,15 +2,15 @@ import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, Activity
 import React, { useContext, useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Octicons } from '@expo/vector-icons';
-import { UserContext } from '../context/UserContext'
-import { auth, db } from '../config/firebaseConfig'
+import { UserContext } from '../../context/UserContext'
+import { auth, db } from '../../config/firebaseConfig'
 import { deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
-import { setPublicUserData } from '../api/firebaseUtils'
-import { getBlobFromURI, selectFile, uploadFile } from '../api/fileSelection'
-import { CommonMimeTypes } from '../helpers/validation'
+import { setPublicUserData } from '../../api/firebaseUtils'
+import { getBlobFromURI, selectFile, uploadFile } from '../../api/fileSelection'
+import { CommonMimeTypes } from '../../helpers/validation'
 import AddFileIcon from '../../assets/file-circle-plus-solid.svg'
-import { PublicUserInfo } from '../types/User';
-import { handleLinkPress } from '../helpers/links';
+import { PublicUserInfo } from '../../types/User';
+import { handleLinkPress } from '../../helpers/links';
 
 const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void> }) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;

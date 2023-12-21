@@ -1,9 +1,9 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React from 'react'
 import { Octicons } from '@expo/vector-icons';
-import { Images } from '../../assets';
-import { PointsProps } from '../types/Navigation'
-import { RankChange } from '../types/User';
+import { Images } from '../../../assets';
+import { PointsProps } from '../../types/Navigation'
+import { RankChange } from '../../types/User';
 
 /**
  * The RankCard component displays a user's rank information.

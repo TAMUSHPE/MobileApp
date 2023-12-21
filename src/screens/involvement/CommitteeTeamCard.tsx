@@ -1,9 +1,9 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { CommitteeTeamCardProps } from '../types/Navigation'
-import { getBadgeColor, isMemberVerified } from '../helpers/membership'
-import { Images } from '../../assets'
-import TwitterSvg from './TwitterSvg'
+import { CommitteeTeamCardProps } from '../../types/Navigation'
+import { getBadgeColor, isMemberVerified } from '../../helpers/membership'
+import { Images } from '../../../assets'
+import TwitterSvg from '../../components/TwitterSvg'
 
 
 

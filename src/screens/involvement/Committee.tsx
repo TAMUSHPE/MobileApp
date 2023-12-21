@@ -12,7 +12,7 @@ import { setPublicUserData } from '../../api/firebaseUtils';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
 import { CommitteeScreenRouteProp, CommitteesListProps } from '../../types/Navigation';
 import { getLogoComponent } from '../../types/Committees';
-import CommitteeTeamCard from '../../components/CommitteeTeamCard';
+import CommitteeTeamCard from './CommitteeTeamCard';
 import { handleLinkPress } from '../../helpers/links';
 
 const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
