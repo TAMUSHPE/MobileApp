@@ -7,7 +7,7 @@ import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { CommonMimeTypes } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
 import { formatExpirationDate } from '../../helpers/membership';
-import UploadIcon from '../../assets/upload-solid.svg';
+import UploadIcon from '../../../assets/upload-solid.svg';
 
 const MemberSHPE = () => {
     const { userInfo } = useContext(UserContext)!;

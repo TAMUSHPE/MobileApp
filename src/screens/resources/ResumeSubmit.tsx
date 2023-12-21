@@ -8,7 +8,7 @@ import { deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc } from 'fire
 import { setPublicUserData } from '../../api/firebaseUtils'
 import { getBlobFromURI, selectFile, uploadFile } from '../../api/fileSelection'
 import { CommonMimeTypes } from '../../helpers/validation'
-import AddFileIcon from '../../assets/file-circle-plus-solid.svg'
+import AddFileIcon from '../../../assets/file-circle-plus-solid.svg'
 import { PublicUserInfo } from '../../types/User';
 import { handleLinkPress } from '../../helpers/links';
 

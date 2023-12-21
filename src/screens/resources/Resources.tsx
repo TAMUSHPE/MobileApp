@@ -4,9 +4,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ResourcesStackParams } from '../../types/Navigation';
 import { Images } from '../../../assets';
-import LeaderBoardIcon from '../../assets/ranking-star-solid.svg';
-import ExamIcon from '../../assets/exam-icon.svg';
-import ResumeIcon from '../../assets/resume-icon.svg';
+import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
+import ExamIcon from '../../../assets/exam-icon.svg';
+import ResumeIcon from '../../../assets/resume-icon.svg';
 import OfficeHours from '../involvement/OfficeHours';
 import { handleLinkPress } from '../../helpers/links';
 
