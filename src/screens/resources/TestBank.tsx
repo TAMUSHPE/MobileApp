@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator, ScrollView, NativeSyntheticEvent, NativeScrollEvent, TextInput, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, ActivityIndicator, ScrollView, NativeSyntheticEvent, NativeScrollEvent, TextInput, TouchableOpacity } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import { GoogleSheetsIDs, queryGoogleSpreadsheet } from '../../api/fetchGoogleSh
 import TestCard from './TestCard';
 import { ResourcesStackParams } from '../../types/Navigation';
 import { Test, GoogleSheetsResponse } from '../../types/GoogleSheetsTypes';
+import DismissibleModal from '../../components/DismissibleModal';
 
 /**
  * Test Bank component.
@@ -281,48 +282,36 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                 </View>
             </ScrollView>
 
-            <Modal
-                animationType="none"
-                transparent={true}
+            <DismissibleModal
                 visible={infoVisible}
-                onRequestClose={() => setInfoVisible(false)}
+                setVisible={setInfoVisible}
             >
-                <TouchableOpacity
-                    onPress={() => setInfoVisible(false)}
-                    className="h-[100%] w-[100%]"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                >
-                    <View className='items-center justify-center h-full'>
-                        <TouchableWithoutFeedback>
-                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'
-                                style={{ minWidth: 325 }}>
-                                <View className='flex-row items-center justify-between'>
-                                    <View className='flex-row items-center'>
-                                        <Octicons name="info" size={24} color="black" />
-                                        <Text className='text-2xl font-semibold ml-2'>Resume FAQ</Text>
-                                    </View>
-                                    <View>
-                                        <TouchableOpacity onPress={() => setInfoVisible(false)}>
-                                            <Octicons name="x" size={24} color="black" />
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-
-                                <View>
-                                    <Text className='text-xl font-semibold'>What is the Test Bank?</Text>
-                                    <Text className='text-lg font-semibold text-gray-400'>Test Bank is...</Text>
-                                </View>
-
-                                <View>
-                                    <Text className='text-xl font-semibold'>Earning Points with Test Bank</Text>
-                                    <Text className='text-lg font-semibold text-gray-400'>Ways to earn points...</Text>
-                                </View>
-
-                            </View>
-                        </TouchableWithoutFeedback>
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'
+                    style={{ minWidth: 325 }}>
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center'>
+                            <Octicons name="info" size={24} color="black" />
+                            <Text className='text-2xl font-semibold ml-2'>Resume FAQ</Text>
+                        </View>
+                        <View>
+                            <TouchableOpacity onPress={() => setInfoVisible(false)}>
+                                <Octicons name="x" size={24} color="black" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </TouchableOpacity >
-            </Modal >
+
+                    <View>
+                        <Text className='text-xl font-semibold'>What is the Test Bank?</Text>
+                        <Text className='text-lg font-semibold text-gray-400'>Test Bank is...</Text>
+                    </View>
+
+                    <View>
+                        <Text className='text-xl font-semibold'>Earning Points with Test Bank</Text>
+                        <Text className='text-lg font-semibold text-gray-400'>Ways to earn points...</Text>
+                    </View>
+
+                </View>
+            </DismissibleModal>
         </View>
     )
 }

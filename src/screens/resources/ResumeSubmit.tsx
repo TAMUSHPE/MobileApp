@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Octicons } from '@expo/vector-icons';
@@ -11,6 +11,7 @@ import { CommonMimeTypes } from '../../helpers/validation'
 import AddFileIcon from '../../../assets/file-circle-plus-solid.svg'
 import { PublicUserInfo } from '../../types/User';
 import { handleLinkPress } from '../../helpers/links';
+import DismissibleModal from '../../components/DismissibleModal';
 
 const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void> }) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
@@ -231,45 +232,34 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                     </View>
                 )}
             </View>
-            <Modal
-                animationType="none"
-                transparent={true}
-                visible={confirmVisible}
-                onRequestClose={() => setConfirmVisible(!confirmVisible)}
-            >
-                <TouchableOpacity
-                    onPress={() => setConfirmVisible(false)}
-                    className="h-[100%] w-[100%]"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                >
-                    <View className='items-center justify-center h-full'>
-                        <TouchableWithoutFeedback>
-                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
-                                <Octicons name="alert" size={24} color="black" />
-                                <View className='flex items-center w-[80%]'>
-                                    <Text className="text-center text-lg font-bold">Your resume will be added to the resume bank. Be sure to remove information you don't want public (i.e. phone #, address, email, etc.)</Text>
-                                    <Text className="text-center text-lg font-bold text-[#FF4545] mt-2">Only an officer can remove you resume after it's been approved. </Text>
-                                    <View className="flex-row mt-8">
-                                        <TouchableOpacity
-                                            onPress={async () => {
-                                                submitResume();
-                                                setConfirmVisible(false);
-                                            }}
-                                            className="bg-pale-blue rounded-xl justify-center items-center"
-                                        >
-                                            <Text className='text-xl font-bold text-white px-2'> Publish Resume </Text>
-                                        </TouchableOpacity>
 
-                                        <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
-                                            <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
+            <DismissibleModal
+                visible={confirmVisible}
+                setVisible={setConfirmVisible}
+            >
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
+                    <Octicons name="alert" size={24} color="black" />
+                    <View className='flex items-center w-[80%]'>
+                        <Text className="text-center text-lg font-bold">Your resume will be added to the resume bank. Be sure to remove information you don't want public (i.e. phone #, address, email, etc.)</Text>
+                        <Text className="text-center text-lg font-bold text-[#FF4545] mt-2">Only an officer can remove you resume after it's been approved. </Text>
+                        <View className="flex-row mt-8">
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    submitResume();
+                                    setConfirmVisible(false);
+                                }}
+                                className="bg-pale-blue rounded-xl justify-center items-center"
+                            >
+                                <Text className='text-xl font-bold text-white px-2'> Publish Resume </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
+                                <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </TouchableOpacity >
-            </Modal >
+                </View>
+            </DismissibleModal>
         </View>
     )
 }

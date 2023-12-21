@@ -1,4 +1,4 @@
-import { View, Text, Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, TouchableOpacity } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { PublicUserInfo } from '../../types/User'
 import { getMembersToResumeVerify, getPublicUserData } from '../../api/firebaseUtils'
@@ -8,6 +8,7 @@ import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firesto
 import MemberCard from '../../components/MemberCard'
 import { httpsCallable } from 'firebase/functions'
 import { handleLinkPress } from '../../helpers/links'
+import DismissibleModal from '../../components/DismissibleModal'
 
 const ResumeConfirm = () => {
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
@@ -110,51 +111,39 @@ const ResumeConfirm = () => {
                 DEFAULT_NUM_LIMIT={null}
             />
 
-            <Modal
-                animationType="none"
-                transparent={true}
+            <DismissibleModal
                 visible={confirmVisible}
-                onRequestClose={() => setConfirmVisible(!confirmVisible)}
+                setVisible={setConfirmVisible}
             >
-                <TouchableOpacity
-                    onPress={() => setConfirmVisible(false)}
-                    className="h-[100%] w-[100%]"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                >
-                    <View className='items-center justify-center h-full'>
-                        <TouchableWithoutFeedback>
-                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
-                                <MemberCard userData={confirmMemberData} handleCardPress={() => { }} />
-                                <TouchableOpacity
-                                    className='px-6 py-4 rounded-lg  items-center bg-dark-navy'
-                                    onPress={async () => { handleLinkPress(memberDetails?.resumePublicURL!) }}
-                                >
-                                    <Text className="text-white">View Resume</Text>
-                                </TouchableOpacity>
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
+                    <MemberCard userData={confirmMemberData} handleCardPress={() => { }} />
+                    <TouchableOpacity
+                        className='px-6 py-4 rounded-lg  items-center bg-dark-navy'
+                        onPress={async () => { handleLinkPress(memberDetails?.resumePublicURL!) }}
+                    >
+                        <Text className="text-white">View Resume</Text>
+                    </TouchableOpacity>
 
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        handleApprove()
-                                        setConfirmVisible(false);
-                                    }}>
-                                    <Text>Approve</Text>
-                                </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => {
+                            handleApprove()
+                            setConfirmVisible(false);
+                        }}>
+                        <Text>Approve</Text>
+                    </TouchableOpacity>
 
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        handleDeny()
-                                        setConfirmVisible(false);
-                                    }}>
-                                    <Text>Deny</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity onPress={() => { setConfirmVisible(false); }}>
-                                    <Text>Cancel</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </TouchableWithoutFeedback>
-                    </View>
-                </TouchableOpacity >
-            </Modal >
+                    <TouchableOpacity
+                        onPress={() => {
+                            handleDeny()
+                            setConfirmVisible(false);
+                        }}>
+                        <Text>Deny</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => { setConfirmVisible(false); }}>
+                        <Text>Cancel</Text>
+                    </TouchableOpacity>
+                </View>
+            </DismissibleModal>
         </View >
     )
 }

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Modal, TouchableWithoutFeedback, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
@@ -9,6 +9,7 @@ import { ResourcesStackParams } from '../../types/Navigation'
 import TwitterSvg from '../../components/TwitterSvg'
 import ResumeSubmit from './ResumeSubmit'
 import ResumeCard from './ResumeCard'
+import DismissibleModal from '../../components/DismissibleModal';
 
 
 const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
@@ -140,57 +141,45 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                 ))}
             </ScrollView>
 
-            <Modal
-                animationType="none"
-                transparent={true}
+            <DismissibleModal
                 visible={infoVisible}
-                onRequestClose={() => setInfoVisible(false)}
+                setVisible={setInfoVisible}
             >
-                <TouchableOpacity
-                    onPress={() => setInfoVisible(false)}
-                    className="h-[100%] w-[100%]"
-                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                >
-                    <View className='items-center justify-center h-full'>
-                        <TouchableWithoutFeedback>
-                            <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'
-                                style={{ minWidth: 325 }}>
-                                <View className='flex-row items-center justify-between'>
-                                    <View className='flex-row items-center'>
-                                        <Octicons name="info" size={24} color="black" />
-                                        <Text className='text-2xl font-semibold ml-2'>Points FAQ</Text>
-                                    </View>
-                                    <View>
-                                        <TouchableOpacity onPress={() => setInfoVisible(false)}>
-                                            <Octicons name="x" size={24} color="black" />
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-
-                                <View>
-                                    <Text className='text-xl font-semibold'>What is the Resume Bank</Text>
-                                    <Text className='text-lg font-semibold text-gray-400'>Test Bank is ..</Text>
-                                </View>
-
-                                <View>
-                                    <Text className='text-xl font-semibold'>Earning Points with Resume Bank</Text>
-                                    <Text className='text-lg font-semibold text-gray-400'>Ways to earn points...</Text>
-                                </View>
-
-
-                                <View>
-                                    <Text className='text-xl font-semibold'>Officers, Representative, and LeadResumes</Text>
-                                    <View className='flex-row items-center'>
-                                        <Text className='text-lg font-semibold text-gray-400'>All officers resumes are marked by</Text>
-                                        <TwitterSvg color={"#FCE300"} className="ml-2" />
-                                    </View>
-                                    <Text className='text-lg font-semibold text-gray-400'>All representative and lead resumes are displayed</Text>
-                                </View>
-                            </View>
-                        </TouchableWithoutFeedback>
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'
+                    style={{ minWidth: 325 }}>
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center'>
+                            <Octicons name="info" size={24} color="black" />
+                            <Text className='text-2xl font-semibold ml-2'>Points FAQ</Text>
+                        </View>
+                        <View>
+                            <TouchableOpacity onPress={() => setInfoVisible(false)}>
+                                <Octicons name="x" size={24} color="black" />
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </TouchableOpacity >
-            </Modal >
+
+                    <View>
+                        <Text className='text-xl font-semibold'>What is the Resume Bank</Text>
+                        <Text className='text-lg font-semibold text-gray-400'>Test Bank is ..</Text>
+                    </View>
+
+                    <View>
+                        <Text className='text-xl font-semibold'>Earning Points with Resume Bank</Text>
+                        <Text className='text-lg font-semibold text-gray-400'>Ways to earn points...</Text>
+                    </View>
+
+
+                    <View>
+                        <Text className='text-xl font-semibold'>Officers, Representative, and LeadResumes</Text>
+                        <View className='flex-row items-center'>
+                            <Text className='text-lg font-semibold text-gray-400'>All officers resumes are marked by</Text>
+                            <TwitterSvg color={"#FCE300"} className="ml-2" />
+                        </View>
+                        <Text className='text-lg font-semibold text-gray-400'>All representative and lead resumes are displayed</Text>
+                    </View>
+                </View>
+            </DismissibleModal>
         </View>
     )
 }

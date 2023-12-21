@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity, ScrollView, Modal, Alert, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, Image, TouchableOpacity, ScrollView, Modal } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
