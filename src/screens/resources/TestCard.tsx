@@ -3,27 +3,27 @@ import React from 'react'
 import { TestBankProps } from '../../types/Navigation'
 
 import { StatusBar } from 'expo-status-bar';
-import ACCTIcon from '../../assets/acct_icon.svg';
-import AEROIcon from '../../assets/aero_icon.svg';
-import ASTRIcon from '../../assets/astr_icon.svg';
-import BMENIcon from '../../assets/bmen_icon.svg';
-import CHEMIcon from '../../assets/chem_icon.svg';
-import CHENIcon from '../../assets/chen_icon.svg';
-import CSCEIcon from '../../assets/csce_icon.svg';
-import CVENIcon from '../../assets/cven_icon.svg';
-import ECENIcon from '../../assets/ecen_icon.svg';
-import ENGRIcon from '../../assets/engr_icon.svg';
-import HISTIcon from '../../assets/hist_icon.svg';
-import ISENIcon from '../../assets/isen_icon.svg';
-import MATHIcon from '../../assets/math_icon.svg';
-import MEENIcon from '../../assets/meen_icon.svg';
-import PHILIcon from '../../assets/phil_icon.svg';
-import PHYSIcon from '../../assets/phys_icon.svg';
-import STATIcon from '../../assets/stat_icon.svg';
-import MSENIcon from '../../assets/msen_icon.svg';
-import NUENIcon from '../../assets/nuen_icon.svg';
-import WGSTIcon from '../../assets/wgst_icon.svg';
-import DefaultIcon from '../../assets/generic_course_icon.svg';
+import ACCTIcon from '../../../assets/acct_icon.svg';
+import AEROIcon from '../../../assets/aero_icon.svg';
+import ASTRIcon from '../../../assets/astr_icon.svg';
+import BMENIcon from '../../../assets/bmen_icon.svg';
+import CHEMIcon from '../../../assets/chem_icon.svg';
+import CHENIcon from '../../../assets/chen_icon.svg';
+import CSCEIcon from '../../../assets/csce_icon.svg';
+import CVENIcon from '../../../assets/cven_icon.svg';
+import ECENIcon from '../../../assets/ecen_icon.svg';
+import ENGRIcon from '../../../assets/engr_icon.svg';
+import HISTIcon from '../../../assets/hist_icon.svg';
+import ISENIcon from '../../../assets/isen_icon.svg';
+import MATHIcon from '../../../assets/math_icon.svg';
+import MEENIcon from '../../../assets/meen_icon.svg';
+import PHILIcon from '../../../assets/phil_icon.svg';
+import PHYSIcon from '../../../assets/phys_icon.svg';
+import STATIcon from '../../../assets/stat_icon.svg';
+import MSENIcon from '../../../assets/msen_icon.svg';
+import NUENIcon from '../../../assets/nuen_icon.svg';
+import WGSTIcon from '../../../assets/wgst_icon.svg';
+import DefaultIcon from '../../../assets/generic_course_icon.svg';
 import { handleLinkPress } from '../../helpers/links';
 
 
