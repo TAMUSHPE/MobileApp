@@ -79,7 +79,8 @@ export const uploadFile = async (
     blob: Blob,
     validMimeTypes: string[] = [],
     storagePath: string,
-    onSuccess: ((url: string) => Promise<void>) | null = null
+    onSuccess: ((url: string) => Promise<void>) | null = null,
+    onProgress: ((progress: number) => void) | null = null
 ) => {
     if (validMimeTypes.length > 0 && !validateFileBlob(blob, validMimeTypes, true)) {
         return;
@@ -90,6 +91,9 @@ export const uploadFile = async (
     uploadTask.on("state_changed",
         (snapshot) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            if (onProgress !== null) {
+                onProgress(progress); 
+            }
             console.log(`Upload is ${progress}% done`);
         },
         (error) => {
