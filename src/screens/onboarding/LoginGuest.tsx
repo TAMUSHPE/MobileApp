@@ -110,7 +110,6 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
                         <View className="mt-4" >
                             <TextInputWithFloatingTitle
                                 setTextFunction={(text: string) => setPassword(text)}
-                                onSubmitEditing={() => emailSignIn()}
                                 inputValue={password}
                                 title='Password'
                                 placeholderText='Password'
