@@ -32,6 +32,12 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
 
+    useEffect(() => {
+        if (!auth.currentUser?.uid) {
+            navigation.navigate("LoginScreen");
+        }
+    }, [])
+
     return (
         <SafeAreaView className={safeAreaViewStyle}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
