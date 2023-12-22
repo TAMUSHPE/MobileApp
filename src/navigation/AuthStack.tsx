@@ -32,11 +32,6 @@ const AuthStackWarning = () => {
 
 const AuthStack = () => {
     const Stack = createNativeStackNavigator<AuthStackParams>();
-    const navigation = useNavigation<NavigationProp<AuthStackParams>>();
-
-    const navigateToLogin = () => {
-        navigation.navigate('LoginScreen');
-    };
 
     return (
         <>
@@ -44,9 +39,7 @@ const AuthStack = () => {
             <Stack.Navigator>
                 <Stack.Group screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="LoginScreen" component={LoginScreen} />
-                    <Stack.Screen name="ProfileSetup">
-                        {() => <ProfileSetupStack navigateToLogin={navigateToLogin} />}
-                    </Stack.Screen>
+                    <Stack.Screen name="ProfileSetup" component={ProfileSetupStack} />
                     <Stack.Screen name="LoginStudent" component={LoginStudent} />
                     <Stack.Screen name="LoginGuest" component={LoginGuest} />
                     <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
