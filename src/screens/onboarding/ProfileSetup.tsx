@@ -5,14 +5,16 @@ import * as ImagePicker from "expo-image-picker";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Octicons } from '@expo/vector-icons';
+import { Circle, Svg } from 'react-native-svg';
 import { UserContext } from '../../context/UserContext';
 import { auth, functions } from '../../config/firebaseConfig';
-import { signOut, updateProfile } from 'firebase/auth';
 import { getCommittees, getUser, setPrivateUserData, setPublicUserData } from '../../api/firebaseUtils';
 import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/fileSelection';
+import { updateProfile } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { CommonMimeTypes, validateName } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
+import { signOutUser } from '../../helpers/account';
 import { Committee } from '../../types/Committees';
 import { MAJORS, classYears } from '../../types/User';
 import { ProfileSetupStackParams } from '../../types/Navigation';
@@ -22,7 +24,6 @@ import DownloadIcon from '../../../assets/arrow-down-solid.svg';
 import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
 import SimpleDropDown from '../../components/SimpleDropDown';
 import InteractButton from '../../components/InteractButton';
-import { Circle, Svg } from 'react-native-svg';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
@@ -35,17 +36,6 @@ const SetupNameAndBio = ({ navigation, navigateToLogin }: SetupNameAndBioProps) 
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
 
-    const { setUserInfo } = useContext(UserContext)!;
-
-    const signOutUser = async () => {
-        signOut(auth)
-            .then(() => {
-                AsyncStorage.removeItem('@user')
-                setUserInfo(undefined);
-            })
-            .catch((error) => console.error(error));
-    };
-
     return (
         <SafeAreaView className={safeAreaViewStyle}>
             <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -53,7 +43,7 @@ const SetupNameAndBio = ({ navigation, navigateToLogin }: SetupNameAndBioProps) 
                     <TouchableOpacity
                         className="mb-4"
                         onPress={() => {
-                            signOutUser();
+                            signOutUser(false);
                             navigateToLogin();
                         }}
                     >

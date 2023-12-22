@@ -14,6 +14,7 @@ import { Images } from "../../../assets";
 import { validateTamuEmail } from "../../helpers/validation";
 import { Octicons } from '@expo/vector-icons';
 import { useFocusEffect } from "@react-navigation/core";
+import { signOutUser } from "../../helpers/account";
 
 const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [loading, setLoading] = useState<boolean>(false);
@@ -27,20 +28,10 @@ const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackPar
     });
 
 
-    const signOutUser = async () => {
-        try {
-            await signOut(auth);
-            await AsyncStorage.removeItem('@user');
-            setUserInfo(undefined);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
     // Occurs when a user back swipe to this screen from the ProfileSetup screen
     useFocusEffect(
         useCallback(() => {
-            signOutUser();
+            signOutUser(false);
             return () => { };
         }, [])
     );

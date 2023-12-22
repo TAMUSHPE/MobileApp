@@ -1,12 +1,25 @@
 import { View, Text, Image } from "react-native";
-import React from "react";
+import React, { useContext } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import InteractButton from "../../components/InteractButton";
 import { AuthStackParams } from "../../types/Navigation";
 import { Images } from "../../../assets";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { UserContext } from '../../context/UserContext';
+
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
+
+
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
+
+
+    const userJSON = AsyncStorage.getItem("@user");
+    console.log(userJSON)
+    console.log(userInfo)
+
     return (
         <SafeAreaView className="flex-1 justify-between bg-dark-navy items-center">
             <View className="flex-col items-center my-8">

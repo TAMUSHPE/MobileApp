@@ -3,16 +3,17 @@ import React, { useEffect, useState, useContext, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { auth } from "../../config/firebaseConfig";
-import { signInWithEmailAndPassword, signInWithCredential, GoogleAuthProvider, signOut } from "firebase/auth";
-import { initializeCurrentUserData } from "../../api/firebaseUtils";
+import { useFocusEffect } from "@react-navigation/core";
+import { Octicons } from '@expo/vector-icons';
 import { UserContext } from "../../context/UserContext";
-import InteractButton from "../../components/InteractButton";
+import { auth } from "../../config/firebaseConfig";
+import { initializeCurrentUserData } from "../../api/firebaseUtils";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { signOutUser } from "../../helpers/account";
 import { AuthStackParams } from "../../types/Navigation";
 import { Images } from "../../../assets";
-import { Octicons } from '@expo/vector-icons';
-import { useFocusEffect } from "@react-navigation/core";
 import TextInputWithFloatingTitle from "../../components/TextInputWithFloatingTitle";
+import InteractButton from "../../components/InteractButton";
 
 
 const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
@@ -28,20 +29,10 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
      * is changed until it's either true or false.
      */
 
-    const signOutUser = async () => {
-        try {
-            await signOut(auth);
-            await AsyncStorage.removeItem('@user');
-            setUserInfo(undefined);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
     // Occurs when a user back swipe to this screen from the ProfileSetup screen
     useFocusEffect(
         useCallback(() => {
-            signOutUser();
+            signOutUser(false);
             return () => { };
         }, [])
     );
