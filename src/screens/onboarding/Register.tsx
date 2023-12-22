@@ -2,19 +2,20 @@ import { View, Text, Alert, TouchableOpacity, Image, ActivityIndicator, Platform
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { createUserWithEmailAndPassword, UserCredential, updateProfile, signOut } from "firebase/auth";
-import { getUser, initializeCurrentUserData } from '../../api/firebaseUtils';
-import { auth } from '../../config/firebaseConfig';
-import { evaluatePasswordStrength, validateUsername, validateEmail, validatePassword, validateTamuEmail } from '../../helpers/validation';
-import InteractButton from '../../components/InteractButton';
-import { AuthStackParams } from '../../types/Navigation';
-import { UserContext } from '../../context/UserContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/core';
 import { Octicons } from '@expo/vector-icons';
-import { Images } from "../../../assets";
-import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
+import { UserContext } from '../../context/UserContext';
+import { auth } from '../../config/firebaseConfig';
+import { getUser, initializeCurrentUserData } from '../../api/firebaseUtils';
 import { isUsernameUnique } from '../../api/firebaseUtils';
+import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
+import { evaluatePasswordStrength, validateUsername, validateEmail, validatePassword, validateTamuEmail } from '../../helpers/validation';
+import { signOutUser } from '../../helpers/account';
+import { AuthStackParams } from '../../types/Navigation';
+import { Images } from "../../../assets";
+import InteractButton from '../../components/InteractButton';
+import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
 
 const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [displayName, setDisplayName] = useState<string>("");
@@ -30,20 +31,10 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     const userContext = useContext(UserContext);
     const { setUserInfo } = userContext!;
 
-    const signOutUser = async () => {
-        try {
-            await signOut(auth);
-            await AsyncStorage.removeItem('@user');
-            setUserInfo(undefined);
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
     // Occurs when a user back swipe to this screen from the ProfileSetup screen
     useFocusEffect(
         useCallback(() => {
-            signOutUser();
+            signOutUser(false);
             return () => { };
         }, [])
     );

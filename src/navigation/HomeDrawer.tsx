@@ -1,16 +1,14 @@
-import React, { useContext, useEffect, useState } from 'react';
 import { Image, TouchableOpacity, View, Text } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { signOut } from 'firebase/auth';
-import { auth } from '../config/firebaseConfig';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { UserContext } from '../context/UserContext';
+import { auth } from '../config/firebaseConfig';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
-import { removeExpoPushToken } from '../helpers/pushNotification';
+import { signOutUser } from '../helpers/account';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
 import TwitterSvg from '../components/TwitterSvg';
 import PublicProfileScreen from "../screens/PublicProfile";
 import { HomeStack } from './HomeStack'
@@ -34,19 +32,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
         }
     }, [nationalExpiration, chapterExpiration])
-
-    const signOutUser = async () => {
-        try {
-            await removeExpoPushToken();
-            await signOut(auth);
-        } catch (error) {
-            console.error(error);
-        } finally {
-            await AsyncStorage.removeItem('@user');
-            setUserInfo(undefined);
-        }
-    };
-
 
     const drawerItemLabelStyle = {
         color: userInfo?.private?.privateInfo?.settings?.darkMode ? "#EEE" : "#000"
@@ -130,7 +115,11 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                     }}
                 />
 
-                <DrawerItem label="Logout" labelStyle={{ color: "#E55" }} onPress={() => signOutUser()} />
+                <DrawerItem
+                    label="Logout"
+                    labelStyle={{ color: "#E55" }}
+                    onPress={() => signOutUser(true)}
+                />
             </View>
         </DrawerContentScrollView>
     );
