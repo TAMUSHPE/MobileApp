@@ -4,22 +4,25 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { signOut, updateProfile } from 'firebase/auth';
+import { Octicons } from '@expo/vector-icons';
+import { UserContext } from '../../context/UserContext';
 import { auth, functions } from '../../config/firebaseConfig';
+import { signOut, updateProfile } from 'firebase/auth';
 import { getCommittees, getUser, setPrivateUserData, setPublicUserData } from '../../api/firebaseUtils';
 import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/fileSelection';
-import { UserContext } from '../../context/UserContext';
-import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
-import InteractButton from '../../components/InteractButton';
-import { ProfileSetupStackParams } from '../../types/Navigation';
-import { Committee } from '../../types/Committees';
-import { Images } from '../../../assets';
-import { Octicons } from '@expo/vector-icons';
 import { httpsCallable } from 'firebase/functions';
 import { CommonMimeTypes, validateName } from '../../helpers/validation';
-import SimpleDropDown from '../../components/SimpleDropDown';
-import { MAJORS, classYears } from '../../types/User';
 import { handleLinkPress } from '../../helpers/links';
+import { Committee } from '../../types/Committees';
+import { MAJORS, classYears } from '../../types/User';
+import { ProfileSetupStackParams } from '../../types/Navigation';
+import { Images } from '../../../assets';
+import UploadFileIcon from '../../../assets/file-arrow-up-solid.svg';
+import DownloadIcon from '../../../assets/arrow-down-solid.svg';
+import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
+import SimpleDropDown from '../../components/SimpleDropDown';
+import InteractButton from '../../components/InteractButton';
+import { Circle, Svg } from 'react-native-svg';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
@@ -350,6 +353,28 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
     const [resumeURL, setResumeURL] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
 
+    const progress = useRef(new Animated.Value(0)).current;
+    const setProgress = (newProgress: number) => {
+        if (newProgress <= 0) {
+            progress.setValue(0);
+        } else if (newProgress >= 100) {
+            progress.setValue(100);
+        } else {
+            Animated.timing(progress, {
+                toValue: newProgress,
+                duration: 500,
+                useNativeDriver: true,
+            }).start();
+        }
+    };
+
+    const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+    const circumference = 2 * Math.PI * 45; // 45 is the radius of the circle
+    const strokeDashoffset = progress.interpolate({
+        inputRange: [0, 100],
+        outputRange: [circumference, 0]
+    });
+
     const selectResume = async () => {
         const result = await selectFile();
         if (result) {
@@ -382,11 +407,25 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
 
                 <View className='flex-col items-center'>
                     <View className='flex-col items-center'>
-                        <Text className='text-white text-center text-3xl'>Upload Your Resume</Text>
+                        <Text className='text-white text-center text-3xl'>Professional Information</Text>
                         <Text className='text-white text-center text-lg mt-4'>Showcase Your Skills and Experience</Text>
                     </View>
-                    <View className='flex-col w-64 h-44 my-8 border-2 border-gray-400 border-dashed rounded-md items-center justify-center'>
-                        <InteractButton
+
+                    <View className='items-center'>
+                        {resumeURL && (
+                            <TouchableOpacity
+                                className='mt-8'
+                                onPress={async () => { handleLinkPress(resumeURL!) }}
+                            >
+                                <View className='relative flex-row items-center border-b border-white'>
+                                    <Text className="text-white font-semibold text-lg">My Resume</Text>
+                                    <View className='absolute left-full ml-1'>
+                                        <DownloadIcon width={15} height={15} />
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                        <TouchableOpacity className="relative items-center justify-center rounded-full h-44 w-44 mb-10 mt-4"
                             onPress={async () => {
                                 const selectedResume = await selectResume();
                                 if (selectedResume) {
@@ -394,26 +433,38 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                                         selectedResume,
                                         CommonMimeTypes.RESUME_FILES,
                                         `user-docs/${auth.currentUser?.uid}/user-resume`,
-                                        onResumeUploadSuccess
+                                        onResumeUploadSuccess,
+                                        setProgress
                                     );
                                 }
-                            }}
-                            label='Upload Resume'
-                            buttonClassName={"bg-continue-dark justify-center items-center rounded-md"}
-                            textClassName={"text-white text-lg font-bold"}
-                            opacity={1}
-                            underlayColor={"#A22E2B"}
-                        />
-
-                        <InteractButton
-                            onPress={async () => { handleLinkPress(resumeURL!) }}
-                            label='View Resume'
-                            buttonClassName={`${!resumeURL ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md mt-5`}
-                            textClassName={`${!resumeURL ? "text-gray-700" : "text-white"} text-lg font-bold`}
-                            opacity={!resumeURL ? 1 : 0.8}
-                            underlayColor={`${!resumeURL ? "" : "#A22E2B"}`}
-                        />
+                            }}>
+                            <Svg height="100%" width="100%" viewBox="0 0 100 100" className="absolute">
+                                <Circle
+                                    cx="50"
+                                    cy="50"
+                                    r="45"
+                                    stroke="#ffffff"
+                                    strokeWidth="4"
+                                    fill="transparent"
+                                />
+                            </Svg>
+                            <Svg height="100%" width="100%" viewBox="0 0 100 100" className="absolute">
+                                <AnimatedCircle
+                                    cx="50"
+                                    cy="50"
+                                    r="45"
+                                    stroke="#AEF359"
+                                    strokeWidth="4"
+                                    fill="transparent"
+                                    strokeDasharray={circumference}
+                                    strokeDashoffset={strokeDashoffset}
+                                    transform="rotate(-90, 50, 50)"
+                                />
+                            </Svg>
+                            <UploadFileIcon width={110} height={110} />
+                        </TouchableOpacity>
                     </View>
+
                     <View className='w-10/12 mb-2'>
                         {loading && (
                             <ActivityIndicator className="mb-4" size={"large"} />
