@@ -42,6 +42,7 @@ export type MembersStackParams = {
 };
 
 export type ProfileSetupStackParams = {
+    LoginScreen: undefined;
     SetupNameAndBio: undefined;
     SetupProfilePicture: undefined;
     SetupAcademicInformation: undefined;

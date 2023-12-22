@@ -10,16 +10,6 @@ import { UserContext } from '../../context/UserContext';
 
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
-
-
-    const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext!;
-
-
-    const userJSON = AsyncStorage.getItem("@user");
-    console.log(userJSON)
-    console.log(userInfo)
-
     return (
         <SafeAreaView className="flex-1 justify-between bg-dark-navy items-center">
             <View className="flex-col items-center my-8">

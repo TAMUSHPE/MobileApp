@@ -27,12 +27,8 @@ import InteractButton from '../../components/InteractButton';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
-type SetupNameAndBioProps = NativeStackScreenProps<ProfileSetupStackParams> & {
-    navigateToLogin: () => void;
-};
-
 /** In this screen, the user will set their name and bio. The screen only let the user continue if their name is not empty. */
-const SetupNameAndBio = ({ navigation, navigateToLogin }: SetupNameAndBioProps) => {
+const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
 
@@ -44,7 +40,7 @@ const SetupNameAndBio = ({ navigation, navigateToLogin }: SetupNameAndBioProps) 
                         className="mb-4"
                         onPress={() => {
                             signOutUser(false);
-                            navigateToLogin();
+                            navigation.navigate("LoginScreen");
                         }}
                     >
                         <Octicons name="chevron-left" size={30} color="white" />
