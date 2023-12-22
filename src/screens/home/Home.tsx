@@ -2,15 +2,18 @@ import { ScrollView, Text, TouchableOpacity, Image, View, Dimensions } from 'rea
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/core';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
+import { signOut } from 'firebase/auth';
 import { getPublicUserData, getMemberOfTheMonth } from '../../api/firebaseUtils';
-import manageNotificationPermissions from '../../helpers/pushNotification';
+import manageNotificationPermissions, { removeExpoPushToken } from '../../helpers/pushNotification';
 import { PublicUserInfo } from '../../types/User';
 import { HomeStackParams } from "../../types/Navigation"
 import { Images } from '../../../assets';
 import FeaturedSlider from '../../components/FeaturedSlider';
 import OfficeSignIn from './OfficeSignIn';
+import { auth } from '../../config/firebaseConfig';
 
 /**
  * Renders the home screen of the application.
@@ -58,12 +61,27 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
     );
 
     useEffect(() => {
+        const signOutUser = async () => {
+            try {
+                await removeExpoPushToken();
+                await signOut(auth);
+            } catch (error) {
+                console.error(error);
+            } finally {
+                await AsyncStorage.removeItem('@user');
+                setUserInfo(undefined);
+            }
+        };
+
         try {
             manageNotificationPermissions();
         } catch (error) {
             console.error("Error managing notification permissions:", error);
         }
 
+        if (!auth.currentUser?.uid) {
+            signOutUser();
+        }
     }, []);
 
     return (
