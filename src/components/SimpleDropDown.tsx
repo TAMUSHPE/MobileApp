@@ -64,13 +64,12 @@ const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, ti
 
     return (
         <View>
-
             <View>
-                <Animated.Text className="w-[90%] items-center self-center pl-1" style={{ minWidth: "90%", fontWeight: '600', color: "#fff", transform: [{ translateY: yVal }] }}>
+                <Animated.Text className="w-[90%] items-center self-center pl-1" style={{ maxWidth: "80%", fontWeight: '600', color: "#fff", transform: [{ translateY: yVal }] }}>
                     {title}
                 </Animated.Text>
                 <TouchableOpacity
-                    className='flex-row justify-between items-center self-center px-4 bg-white rounded-md w-[90%] h-14'
+                    className='flex-row justify-between items-center self-center px-3 bg-white rounded-md w-[80%] h-12'
                     activeOpacity={1}
                     onPress={() => onToggle()}>
 
