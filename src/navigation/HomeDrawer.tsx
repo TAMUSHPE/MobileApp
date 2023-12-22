@@ -4,10 +4,10 @@ import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerConte
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { signOut } from 'firebase/auth';
-import { doc, setDoc, arrayRemove } from 'firebase/firestore';
-import { auth, db } from '../config/firebaseConfig';
+import { auth } from '../config/firebaseConfig';
 import { UserContext } from '../context/UserContext';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
+import { removeExpoPushToken } from '../helpers/pushNotification';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -34,22 +34,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
         }
     }, [nationalExpiration, chapterExpiration])
-
-
-    const removeExpoPushToken = async () => {
-        try {
-            const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
-            if (expoPushToken) {
-                const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
-                await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true });
-            }
-        } catch (error) {
-            console.error("Error removing token from Firestore: ", error);
-        } finally {
-            await AsyncStorage.removeItem('@expoPushToken');
-        }
-    }
-
 
     const signOutUser = async () => {
         try {
