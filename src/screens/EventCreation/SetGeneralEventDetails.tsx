@@ -16,6 +16,7 @@ import { uploadFileToFirebase } from '../../api/firebaseUtils';
 import { auth } from '../../config/firebaseConfig';
 import { UploadTask, getDownloadURL } from 'firebase/storage';
 import ProgressBar from '../../components/ProgressBar';
+import { StatusBar } from 'expo-status-bar';
 
 const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
@@ -121,6 +122,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
 
     return (
         <>
+            <StatusBar style={darkMode ? "light" : "dark"} />
             {/* Start Date Pickers */}
             {Platform.OS == 'android' && showStartDatePicker &&
                 <DateTimePicker
@@ -219,13 +221,13 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                 </View>
                 {/* Form */}
                 <ScrollView className={`flex flex-col px-4 flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}>
-
                     <KeyboardAvoidingView className='py-3'>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Name <Text className='text-[#f00]'>*</Text></Text>
                         <TextInput
                             className={`text-lg p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                             value={name}
                             placeholder='What is this event called?'
+                            placeholderTextColor={darkMode ? "#DDD" : "#777"}
                             onChangeText={(text) => setName(text)}
                             keyboardType='ascii-capable'
                             autoFocus
@@ -243,7 +245,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                 className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                             >
                                 <>
-                                    <Text className={`text-base`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
+                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
                                     <Octicons name='calendar' size={24} />
                                 </>
                             </TouchableHighlight>
@@ -256,7 +258,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                 className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                             >
                                 <>
-                                    <Text className={`text-base`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
+                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
                                     <Octicons name='chevron-down' size={24} />
                                 </>
                             </TouchableHighlight>
@@ -273,7 +275,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                 className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                             >
                                 <>
-                                    <Text className={`text-base`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
+                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
                                     <Octicons name='calendar' size={24} />
                                 </>
                             </TouchableHighlight>
@@ -286,7 +288,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                 className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                             >
                                 <>
-                                    <Text className={`text-base`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
+                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
                                     <Octicons name='chevron-down' size={24} />
                                 </>
                             </TouchableHighlight>
@@ -299,6 +301,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             className={`text-lg p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                             value={description}
                             placeholder='What is this event about?'
+                            placeholderTextColor={darkMode ? "#DDD" : "#777"}
                             onChangeText={(text) => setDescription(text)}
                             keyboardType='ascii-capable'
                             autoCapitalize='sentences'
@@ -310,8 +313,8 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Cover Image</Text>
                     {
                         localImageURI === undefined ?
-                            <View className='py-8 my-2 bg-gray-100'>
-                                <Text className='text-center'>No Image Selected</Text>
+                            <View className={`py-8 my-2 ${darkMode ? "text-white bg-gray-500" : "text-black bg-gray-100"}`}>
+                                <Text className={`text-center ${darkMode ? "text-white" : "text-black"}`}>No Image Selected</Text>
                             </View> :
                             <View className='py-2 flex flex-row justify-center'>
                                 <Image
@@ -326,14 +329,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     {
                         isUploading ?
                             <>
-                                <View className='flex flex-col items-center'>
-                                    <ProgressBar
-                                        progress={uploadProgress}
-                                    />
-                                    <Text>
-                                        {`${((bytesTransferred ?? 0) / 1000000).toFixed(2)} / ${((totalBytes ?? 0) / 1000000).toFixed(2)} MB`}
-                                    </Text>
-                                </View>
                                 <InteractButton
                                     label='Cancel Upload'
                                     buttonClassName='bg-red-500 rounded-md'
@@ -344,6 +339,14 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                         setCoverImageURI(undefined);
                                     }}
                                 />
+                                <View className='flex flex-col items-center pt-2'>
+                                    <ProgressBar
+                                        progress={uploadProgress}
+                                    />
+                                    <Text>
+                                        {`${((bytesTransferred ?? 0) / 1000000).toFixed(2)} / ${((totalBytes ?? 0) / 1000000).toFixed(2)} MB`}
+                                    </Text>
+                                </View>
                             </> :
                             <InteractButton
                                 label='Upload Cover Image'
@@ -353,7 +356,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             />
                     }
                     <InteractButton
-                        buttonClassName='bg-orange mt-7 mb-4 py-1 rounded-xl'
+                        buttonClassName='bg-orange mt-6 mb-4 py-1 rounded-xl'
                         textClassName='text-center text-white text-lg'
                         label='Next Step'
                         underlayColor='#f2aa96'

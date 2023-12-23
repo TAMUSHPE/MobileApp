@@ -9,6 +9,7 @@ import { Octicons } from '@expo/vector-icons';
 import { Images } from '../../../assets';
 import InteractButton from '../../components/InteractButton';
 import { UserContext } from '../../context/UserContext';
+import { StatusBar } from 'expo-status-bar';
 
 const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [eventType, setEventType] = useState<EventType | undefined>();
@@ -18,6 +19,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
 
     return (
         <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
             {/* Header */}
             <View className={`flex-row items-center h-10`}>
                 <View className='w-screen absolute'>
