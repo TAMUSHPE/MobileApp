@@ -6,7 +6,6 @@ import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { UserContext } from '../context/UserContext';
 import { auth } from '../config/firebaseConfig';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
-import { signOutUser } from '../helpers/account';
 import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import TwitterSvg from '../components/TwitterSvg';
@@ -20,7 +19,7 @@ import { HomeStack } from './HomeStack'
  */
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext!;
+    const { userInfo, setUserInfo, signOutUser } = userContext!;
 
     const [isVerified, setIsVerified] = useState<boolean>(false);
     const { nationalExpiration, chapterExpiration, roles } = userInfo?.publicInfo ?? {};

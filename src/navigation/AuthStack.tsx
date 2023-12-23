@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Alert } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { NavigationProp, useNavigation, useNavigationState } from '@react-navigation/native';
+import { useNavigationState } from '@react-navigation/native';
 import { ProfileSetupStack } from "./ProfileSetupStack";
 import LoginScreen from "../screens/onboarding/Login";
 import RegisterScreen from "../screens/onboarding/Register";

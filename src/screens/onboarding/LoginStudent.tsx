@@ -14,13 +14,12 @@ import { Images } from "../../../assets";
 import { validateTamuEmail } from "../../helpers/validation";
 import { Octicons } from '@expo/vector-icons';
 import { useFocusEffect } from "@react-navigation/core";
-import { signOutUser } from "../../helpers/account";
 
 const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [loading, setLoading] = useState<boolean>(false);
 
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext!;
+    const { userInfo, setUserInfo, signOutUser } = userContext!;
 
     const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
         iosClientId: "600060629240-m7bu9ba9namtlmo9sii2s8qs2j9k5bt4.apps.googleusercontent.com",

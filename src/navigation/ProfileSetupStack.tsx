@@ -10,12 +10,12 @@ const ProfileSetupStack = () => {
     const Stack = createStackNavigator<ProfileSetupStackParams>();
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="LoginScreen" component={LoginScreen} />
             <Stack.Screen name="SetupNameAndBio" options={{ gestureEnabled: false }} component={SetupNameAndBio} />
             <Stack.Screen name="SetupProfilePicture" component={SetupProfilePicture} />
             <Stack.Screen name="SetupAcademicInformation" component={SetupAcademicInformation} />
             <Stack.Screen name="SetupCommittees" component={SetupCommittees} />
             <Stack.Screen name="SetupResume" component={SetupResume} />
+            <Stack.Screen name="LoginScreen" component={LoginScreen} />
         </Stack.Navigator>
     );
 };

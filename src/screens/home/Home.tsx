@@ -7,7 +7,6 @@ import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
 import { getPublicUserData, getMemberOfTheMonth } from '../../api/firebaseUtils';
 import manageNotificationPermissions from '../../helpers/pushNotification';
-import { signOutUser } from '../../helpers/account';
 import { PublicUserInfo } from '../../types/User';
 import { HomeStackParams } from "../../types/Navigation"
 import { Images } from '../../../assets';
@@ -22,7 +21,7 @@ import OfficeSignIn from './OfficeSignIn';
  * @returns The rendered home screen.
  */
 const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo, signOutUser } = useContext(UserContext)!;
     const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfo | null>(null);
 
     const screenWidth = Dimensions.get('window').width;
