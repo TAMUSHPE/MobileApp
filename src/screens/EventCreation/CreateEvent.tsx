@@ -1,14 +1,11 @@
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, Platform, Alert } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, Image, ScrollView, Alert } from 'react-native'
+import React, { useContext, useState } from 'react'
 import { CommitteeMeeting, CustomEvent, EventType, GeneralMeeting, IntramuralEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop } from '../../types/Events'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Picker } from '@react-native-picker/picker';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EventsStackParams } from '../../types/Navigation';
-import { createEvent } from '../../api/firebaseUtils';
-import { Timestamp } from 'firebase/firestore';
 import { Octicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { Images } from '../../../assets';
 import InteractButton from '../../components/InteractButton';
 import { UserContext } from '../../context/UserContext';
@@ -111,7 +108,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                     }
                     <InteractButton
                         buttonClassName='bg-orange mt-10 mb-4 py-1 rounded-xl'
-                        textClassName='text-center text-black'
+                        textClassName='text-center text-white text-lg'
                         label='Next Step'
                         underlayColor='#f2aa96'
                         onPress={() => {
@@ -154,75 +151,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                     />
                     <Text className={`text-xl text-center pt-2 ${darkMode ? "text-white" : "text-black"}`}>Step 1 of 4</Text>
                 </View>
-                {/* {showStartDatePicker && (
-                <DateTimePicker
-                    testID="dateTimePicker"
-                    value={startDate}
-                    mode={"date"}
-                    onChange={
-                        (event, selectedDate) => {
-                            setShowStartDatePicker(false);
-                            setNewEvent({
-                                ...newEvent,
-                                startDate: Timestamp.fromDate(selectedDate!)
-                            });
-                        }
-                    }
-                    />
-                )} */}
-                {/* {showStartTimePicker && (
-        <DateTimePicker
-        testID="dateTimePicker"
-        value={startDate}
-        mode={"time"}
-        onChange={
-            (event, selectedDate) => {
-                setShowStartTimePicker(false);
-                setNewEvent({
-                    ...newEvent,
-                    startDate: Timestamp.fromDate(selectedDate!)
-                });
-            }
-        }
-        />
-    )} */}
-
-                {/* {showEndDatePicker && (
-        <DateTimePicker
-        testID="dateTimePicker"
-        value={endDate}
-        mode={"date"}
-        onChange={
-            (event, selectedDate) => {
-                setIsInitialDatePicked(true);
-                setNewEvent({
-                    ...newEvent,
-                    endDate: Timestamp.fromDate(selectedDate!)
-                });
-                setShowEndDatePicker(false);
-            }
-        }
-        />
-    )} */}
-
-                {/* {showEndTimePicker && (
-                <DateTimePicker
-                testID="dateTimePicker"
-                value={endDate}
-                mode={"time"}
-                onChange={
-                    (event, selectedDate) => {
-                        setIsInitialDatePicked(true);
-                        setNewEvent({
-                            ...newEvent,
-                            endDate: Timestamp.fromDate(selectedDate!)
-                        });
-                        setShowEndTimePicker(false);
-                    }
-                }
-            />
-        )} */}
-            </ScrollView >
+            </ScrollView>
         </SafeAreaView>
     )
 }

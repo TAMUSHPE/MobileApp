@@ -9,28 +9,53 @@ export type WorkshopType = "Professional" | "Academic" | "None";
 /**
  * Generic Event Interface. All events must implement this type
  */
-export interface SHPEEvent {
+export abstract class SHPEEvent {
     /** Document name in firebase */
-    id?: string;
+    public id?: string;
     /** Name of event to display to users. This does NOT uniquely identify the event. */
-    name: string;
+    public name: string;
     /** User submitted description of event */
-    description: string;
+    public description: string;
     /** Specifies type of event and implies which fields are possibly important to both front and back-end */
-    eventType: EventType;
-    tags: string[];
-    startTime: Timestamp;
-    endTime: Timestamp;
-    signInBuffer?: number;
-    signOutBuffer?: number;
-    coverImageURI?: string;
-    signInPoints?: number;
-    signOutPoints?: number;
-    pointsPerHour?: number;
-    workshopType?: WorkshopType;
-    locationName?: string;
-    geolocation?: Geolocation;
-    copyFromObject?: (object: Object) => void;
+    public eventType: EventType;
+    /** Any extra data tags that are useful in analysis, but not app or point calculation functionality. */
+    public tags: string[];
+    /** Firebase timestamp of when the event starts */
+    public startTime: Timestamp;
+    /** Firebase timestamp of when the event ends */
+    public endTime: Timestamp;
+    /** Time in milliseconds before event starts when users can sign in/out */
+    public startTimeBuffer?: number;
+    /** Time in milliseconds after event ends when users can sign in/out */
+    public endTimeBuffer?: number;
+    /** URI for image that will be displayed for the event */
+    public coverImageURI?: string;
+    /** Points a user will receive when signing in */
+    public signInPoints?: number;
+    /** Points a user will receive when signing out */
+    public signOutPoints?: number;
+    /** Points a user will receive for each hour they are signed in */
+    public pointsPerHour?: number;
+    /** Specific to workshops: specifies whether or not a workshop is Professional or Academic */
+    public workshopType?: WorkshopType;
+    /** Text description of location */
+    public locationName?: string;
+    /** Real location of event */
+    public geolocation?: Geolocation;
+
+    constructor() {
+        this.name = "SHPE Event";
+        this.description = "Generic SHPE Event";
+        this.eventType = EventType.CUSTOM_EVENT;
+        this.tags = [];
+        this.startTime = Timestamp.fromMillis(getNextHourMillis());
+        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
+    }
+
+    public copyFromObject(event: any) {
+        this.locationName = event.locationName;
+        this.geolocation = event.geolocation;
+    }
 }
 
 /**
