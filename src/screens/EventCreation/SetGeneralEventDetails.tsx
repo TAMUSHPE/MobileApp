@@ -343,7 +343,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                     <ProgressBar
                                         progress={uploadProgress}
                                     />
-                                    <Text>
+                                    <Text className={darkMode ? "text-white" : "text-black"}>
                                         {`${((bytesTransferred ?? 0) / 1000000).toFixed(2)} / ${((totalBytes ?? 0) / 1000000).toFixed(2)} MB`}
                                     </Text>
                                 </View>
