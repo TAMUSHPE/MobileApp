@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import InteractButton from '../../components/InteractButton';
 import { Picker } from '@react-native-picker/picker';
 import { WorkshopType } from '../../types/Events';
+import { StatusBar } from 'expo-status-bar';
 
 const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
@@ -26,6 +27,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
 
     return (
         <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
             {/* Header */}
             <View className='flex-row items-center h-10'>
                 <View className='w-screen absolute'>
@@ -124,6 +126,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                     className={`text-lg p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                     value={locationName}
                     placeholder='Where is this event?'
+                    placeholderTextColor={darkMode ? "#DDD" : "#777"}
                     onChangeText={(text) => setLocationName(text)}
                     keyboardType='ascii-capable'
                     autoFocus
