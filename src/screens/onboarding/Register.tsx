@@ -11,7 +11,6 @@ import { getUser, initializeCurrentUserData } from '../../api/firebaseUtils';
 import { isUsernameUnique } from '../../api/firebaseUtils';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
 import { evaluatePasswordStrength, validateUsername, validateEmail, validatePassword, validateTamuEmail } from '../../helpers/validation';
-import { signOutUser } from '../../helpers/account';
 import { AuthStackParams } from '../../types/Navigation';
 import { Images } from "../../../assets";
 import InteractButton from '../../components/InteractButton';
@@ -29,7 +28,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     const [validUsername, setValidUsername] = useState<boolean>(true);
 
     const userContext = useContext(UserContext);
-    const { setUserInfo } = userContext!;
+    const { setUserInfo, signOutUser } = userContext!;
 
     // Occurs when a user back swipe to this screen from the ProfileSetup screen
     useFocusEffect(

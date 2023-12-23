@@ -14,7 +14,6 @@ import { updateProfile } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { CommonMimeTypes, validateName } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
-import { signOutUser } from '../../helpers/account';
 import { Committee } from '../../types/Committees';
 import { MAJORS, classYears } from '../../types/User';
 import { ProfileSetupStackParams } from '../../types/Navigation';
@@ -31,6 +30,9 @@ const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
+
+    const userContext = useContext(UserContext);
+    const { signOutUser } = userContext!;
 
     useEffect(() => {
         if (!auth.currentUser?.uid) {

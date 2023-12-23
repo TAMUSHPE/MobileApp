@@ -9,7 +9,6 @@ import { UserContext } from "../../context/UserContext";
 import { auth } from "../../config/firebaseConfig";
 import { initializeCurrentUserData } from "../../api/firebaseUtils";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { signOutUser } from "../../helpers/account";
 import { AuthStackParams } from "../../types/Navigation";
 import { Images } from "../../../assets";
 import TextInputWithFloatingTitle from "../../components/TextInputWithFloatingTitle";
@@ -22,7 +21,7 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
     const [loading, setLoading] = useState<boolean>(false);
 
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext!;
+    const { userInfo, setUserInfo, signOutUser } = userContext!;
     /**
      * Due to asynchronous problem, the value of completedAccountSetup may
      * initially be undefined. This function will check the value when userInfo
@@ -36,6 +35,13 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
             return () => { };
         }, [])
     );
+
+    useEffect(() => {
+        signOutUser(false);
+        console.log("userInfo", userInfo)
+        console.log("auth", auth.currentUser?.uid)
+        console.log(AsyncStorage.getItem("@user"))
+    }, [])
 
     useEffect(() => {
         if (userInfo?.private?.privateInfo?.completedAccountSetup === false) {
@@ -71,7 +77,6 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
                 alert(error.message);
             })
     }
-
 
     return (
         <SafeAreaView className="flex-1 bg-dark-navy">
