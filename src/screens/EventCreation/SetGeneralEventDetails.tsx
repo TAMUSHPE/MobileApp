@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, TouchableHighlight, KeyboardAvoidingView, Modal, Platform } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, TouchableHighlight, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import React, { useContext, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation';
@@ -8,8 +8,14 @@ import { Timestamp } from 'firebase/firestore';
 import InteractButton from '../../components/InteractButton';
 import { UserContext } from '../../context/UserContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { MillisecondTimes } from '../../helpers';
+import { CommonMimeTypes, MillisecondTimes, validateFileBlob } from '../../helpers';
 import { formatDate, formatTime } from '../../helpers/timeUtils';
+import { getBlobFromURI, selectImage } from '../../api/fileSelection';
+import * as ImagePicker from "expo-image-picker";
+import { uploadFileToFirebase } from '../../api/firebaseUtils';
+import { auth } from '../../config/firebaseConfig';
+import { UploadTask, getDownloadURL } from 'firebase/storage';
+import ProgressBar from '../../components/ProgressBar';
 
 const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
@@ -22,12 +28,86 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     const [showStartTimePicker, setShowStartTimePicker] = useState<boolean>(false);
     const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
+    const [localImageURI, setLocalImageURI] = useState<string>();
+    const [isUploading, setIsUploading] = useState<boolean>();
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
+    const [bytesTransferred, setBytesTransferred] = useState<number>();
+    const [totalBytes, setTotalBytes] = useState<number>();
+    const [currentUploadTask, setCurrentUploadTask] = useState<UploadTask>();
 
     // Form Data Hooks
     const [name, setName] = useState<string>("");
     const [startTime, setStartTime] = useState<Timestamp | undefined>(event.startTime);
     const [endTime, setEndTime] = useState<Timestamp | undefined>(event.endTime);
     const [description, setDescription] = useState<string>("");
+    const [coverImageURI, setCoverImageURI] = useState<string>();
+
+
+    const selectCoverImage = async () => {
+        await selectImage({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [16, 9],
+            quality: 1,
+        }).then(async (result) => {
+            if (result) {
+                const imageBlob = await getBlobFromURI(result.assets![0].uri);
+                if (imageBlob && validateFileBlob(imageBlob, CommonMimeTypes.IMAGE_FILES, true)) {
+                    setLocalImageURI(result.assets![0].uri);
+                    uploadCoverImage(imageBlob);
+                }
+            }
+        }).catch((err) => {
+            // TypeError means user did not select an image
+            if (err.name != "TypeError") {
+                console.error(err);
+            }
+            else {
+                setLocalImageURI(undefined);
+            }
+        });
+    }
+
+    const uploadCoverImage = (image: Blob | undefined) => {
+        if (image) {
+            setIsUploading(true);
+            // Creates image in firebase cloud storage with unique name
+            const uploadTask = uploadFileToFirebase(image, `events/cover-images/${auth.currentUser?.uid.toString()}${Date.now().toString()}`)
+            setCurrentUploadTask(uploadTask);
+            uploadTask.on("state_changed",
+                (snapshot) => {
+                    setUploadProgress(snapshot.bytesTransferred / snapshot.totalBytes);
+                    setBytesTransferred(snapshot.bytesTransferred);
+                    setTotalBytes(snapshot.totalBytes);
+                },
+                (error) => {
+                    switch (error.code) {
+                        case "storage/unauthorized":
+                            Alert.alert("Permissions error", "File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            break;
+                        case "storage/canceled":
+                            Alert.alert("File upload canceled", "File upload has been canceled.");
+                            break;
+                        default:
+                            Alert.alert("Unknown error", "An unknown error has occured. Please notify a developer.")
+                            console.error(error);
+                            break;
+                    }
+                    setIsUploading(false);
+                },
+                async () => {
+                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
+                        console.log("File available at", URL);
+                        setCoverImageURI(URL);
+                    });
+                    setIsUploading(false);
+                }
+            );
+        }
+        else {
+            console.warn("No image was selected from image picker");
+        }
+    }
 
     if (!event) return (
         <SafeAreaView className='flex flex-col items-center justify-center h-full w-screen'>
@@ -53,11 +133,11 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                         if (!date) {
                             console.warn("Date picked is undefined.")
                         }
-                        else if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
-                            Alert.alert("Invalid Start Time", "Event cannot start after end date.")
-                        }
                         else {
                             setStartTime(Timestamp.fromDate(date));
+                            if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
+                                setEndTime(Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR));
+                            }
                         }
                         setShowStartDatePicker(false);
                     }}
@@ -68,7 +148,10 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     value={startTime?.toDate() ?? new Date()}
                     mode='time'
                     onChange={(_, date) => {
-                        if (!date) {
+                        if (isUploading) {
+                            Alert.alert("Image upload in progress.", "Please wait for image to finish uploading.")
+                        }
+                        else if (!date) {
                             console.warn("Date picked is undefined.")
                         }
                         else if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
@@ -224,9 +307,54 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                         />
                     </KeyboardAvoidingView>
 
+                    <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Cover Image</Text>
+                    {
+                        localImageURI === undefined ?
+                            <View className='py-8 my-2 bg-gray-100'>
+                                <Text className='text-center'>No Image Selected</Text>
+                            </View> :
+                            <View className='py-2 flex flex-row justify-center'>
+                                <Image
+                                    source={{ uri: localImageURI as string }}
+                                    style={{
+                                        width: 256,
+                                        height: 144,
+                                    }}
+                                />
+                            </View>
+                    }
+                    {
+                        isUploading ?
+                            <>
+                                <View className='flex flex-col items-center'>
+                                    <ProgressBar
+                                        progress={uploadProgress}
+                                    />
+                                    <Text>
+                                        {`${((bytesTransferred ?? 0) / 1000000).toFixed(2)} / ${((totalBytes ?? 0) / 1000000).toFixed(2)} MB`}
+                                    </Text>
+                                </View>
+                                <InteractButton
+                                    label='Cancel Upload'
+                                    buttonClassName='bg-red-500 rounded-md'
+                                    textClassName='text-center text-lg text-white'
+                                    onPress={() => {
+                                        currentUploadTask?.cancel()
+                                        setLocalImageURI(undefined);
+                                        setCoverImageURI(undefined);
+                                    }}
+                                />
+                            </> :
+                            <InteractButton
+                                label='Upload Cover Image'
+                                buttonClassName='bg-blue-200 rounded-md'
+                                textClassName='text-center text-lg'
+                                onPress={() => selectCoverImage()}
+                            />
+                    }
                     <InteractButton
-                        buttonClassName='bg-orange mt-10 mb-4 py-1 rounded-xl'
-                        textClassName='text-center text-black'
+                        buttonClassName='bg-orange mt-7 mb-4 py-1 rounded-xl'
+                        textClassName='text-center text-white text-lg'
                         label='Next Step'
                         underlayColor='#f2aa96'
                         onPress={() => {
@@ -243,6 +371,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                     endTime,
                                     description
                                 });
+                                event.coverImageURI = coverImageURI;
                                 navigation.navigate("SetSpecificEventDetails", { event })
                             }
                             else {

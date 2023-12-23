@@ -133,7 +133,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
 
                 <InteractButton
                     buttonClassName='bg-orange mt-10 mb-4 py-1 rounded-xl'
-                    textClassName='text-center text-black'
+                    textClassName='text-center text-white text-lg'
                     label='Next Step'
                     underlayColor='#f2aa96'
                     onPress={() => {
@@ -149,7 +149,6 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 geolocation,
                                 tags,
                             });
-                            console.log(event);
                             navigation.navigate("FinalizeEvent", { event: event });
                         }
 
