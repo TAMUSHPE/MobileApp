@@ -1,4 +1,4 @@
-import { View, Text, Alert, TouchableOpacity, Image, ActivityIndicator, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Image, ActivityIndicator, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -26,6 +26,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     const [isUnique, setIsUnique] = useState(true);
     const [loading, setLoading] = useState<boolean>(false);
     const [validUsername, setValidUsername] = useState<boolean>(true);
+    const [error, setError] = useState<string>("");
 
     const userContext = useContext(UserContext);
     const { setUserInfo, signOutUser } = userContext!;
@@ -48,21 +49,21 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
 
     const registerUser = () => {
         if (password !== confirmationPassword) {
-            Alert.alert("Password Mismatch", "Original password and re-entered password do not match!");
+            setError("Password Mismatch. Original password and re-entered password do not match!");
             return;
         }
         else if (!validateEmail(email)) {
-            alert("Invalid Email.")
+            setError("Invalid Email.")
             return;
         }
         else if (validateTamuEmail(email)) {
-            alert("Guests must register with their personal email")
+            setError("Guests must register with their personal email")
             return;
         } else if (!validatePassword(password)) {
-            alert("Password must meet specifications:\n- 4-64 characters\n- Spaces are allowed\n- Valid characters: A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~")
+            setError("Password must meet specifications:\n- 4-64 characters\n- Spaces are allowed\n- Valid characters: A-Z, 0-9, !\"#$%&'()*+,-./:;<=>?@[\\\]^_`{|}~")
             return;
         } else if (!validateUsername(displayName)) {
-            alert("Usernames must only contain letters, numbers, underscores, or hyphens.")
+            setError("Usernames must only contain letters, numbers, underscores, or hyphens.")
             return;
         }
         setLoading(true);
@@ -86,7 +87,18 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
             .then(() => {
                 navigation.navigate("ProfileSetup");
             })
-            .catch((err) => { console.error(err.message); })
+            .catch((error) => {
+                const errorCode = error.message.split('(')[1].split(')')[0]
+                console.log(errorCode)
+                switch (errorCode) {
+                    case 'auth/email-already-in-use':
+                        setError('The email is already in use.')
+                        break;
+                    default:
+                        setError('An unexpected error occurred. Please try again.')
+                        break;
+                }
+            })
             .finally(() => {
                 setLoading(false);
             });
@@ -223,6 +235,8 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                                         textClassName="text-white font-bold text-xl"
                                         underlayColor="#A22E2B"
                                     />
+
+                                    {error && <Text style={{ color: 'red' }} className="text-center mt-2">{error}</Text>}
                                     {loading && (
                                         <ActivityIndicator className="mt-4" size={"large"} />
                                     )}

@@ -19,6 +19,7 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string>("");
 
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo, signOutUser } = userContext!;
@@ -38,9 +39,6 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
 
     useEffect(() => {
         signOutUser(false);
-        console.log("userInfo", userInfo)
-        console.log("auth", auth.currentUser?.uid)
-        console.log(AsyncStorage.getItem("@user"))
     }, [])
 
     useEffect(() => {
@@ -73,8 +71,25 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
         signInWithEmailAndPassword(auth, email, password)
             .then(handleUserAuth)
             .catch((error: Error) => {
-                console.error("Error during email sign-in:", error);
-                alert(error.message);
+                const errorCode = error.message.split('(')[1].split(')')[0]
+                console.log(errorCode)
+                switch (errorCode) {
+                    case 'auth/invalid-email':
+                        setError('The email address is invalid.')
+                        break
+                    case 'auth/user-not-found':
+                        setError('No user found with this email address.')
+                        break;
+                    case 'auth/missing-password':
+                        setError('Missing password')
+                        break;
+                    case 'auth/wrong-password':
+                        setError('Wrong password. Please try again.')
+                        break;
+                    default:
+                        setError('An unexpected error occurred. Please try again.')
+                        break;
+                }
             })
     }
 
@@ -142,9 +157,8 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
                             textClassName="text-white font-bold text-xl"
                             underlayColor="#A22E2B"
                         />
-                        {loading && (
-                            <ActivityIndicator className="mt-4" size={"large"} />
-                        )}
+                        {error && <Text style={{ color: 'red' }} className="text-center mt-2">{error}</Text>}
+                        {loading && <ActivityIndicator className="mt-4" size={"large"} />}
 
                     </View>
                 </View>

@@ -17,6 +17,7 @@ import InteractButton from "../../components/InteractButton";
 
 const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string>("");
 
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo, signOutUser } = userContext!;
@@ -75,7 +76,7 @@ const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackPar
                 .then((credential) => {
                     if (!validateTamuEmail(credential.user.email)) {
                         auth.signOut();
-                        alert("Sign in with your Tamu email");
+                        setError("Sign in with your tamu email");
                         return;
                     }
                     handleUserAuth();
@@ -120,6 +121,7 @@ const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackPar
                             textClassName="text-[#3b3b3b] font-bold text-xl"
                             iconSource={{ uri: "https://developers.google.com/static/identity/images/g-logo.png" }}
                         />
+                        {error && <Text style={{ color: 'red' }} className="text-center mt-2">{error}</Text>}
                         {loading && (
                             <ActivityIndicator className="mt-4" size={"large"} />
                         )}
