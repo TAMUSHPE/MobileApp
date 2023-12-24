@@ -1,19 +1,19 @@
-import { View, Text, Image, ActivityIndicator, TouchableHighlight, TouchableOpacity } from "react-native";
+import { View, Text, Image, ActivityIndicator, TouchableOpacity } from "react-native";
 import React, { useEffect, useState, useContext, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Google from "expo-auth-session/providers/google";
-import { auth } from "../../config/firebaseConfig";
-import { signInWithCredential, GoogleAuthProvider, signOut } from "firebase/auth";
-import { initializeCurrentUserData } from "../../api/firebaseUtils";
-import { UserContext } from "../../context/UserContext";
-import InteractButton from "../../components/InteractButton";
-import { AuthStackParams } from "../../types/Navigation";
-import { Images } from "../../../assets";
-import { validateTamuEmail } from "../../helpers/validation";
 import { Octicons } from '@expo/vector-icons';
 import { useFocusEffect } from "@react-navigation/core";
+import { UserContext } from "../../context/UserContext";
+import { auth } from "../../config/firebaseConfig";
+import { validateTamuEmail } from "../../helpers/validation";
+import { signInWithCredential, GoogleAuthProvider, signOut } from "firebase/auth";
+import { initializeCurrentUserData } from "../../api/firebaseUtils";
+import { AuthStackParams } from "../../types/Navigation";
+import { Images } from "../../../assets";
+import InteractButton from "../../components/InteractButton";
 
 const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [loading, setLoading] = useState<boolean>(false);

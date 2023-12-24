@@ -1,4 +1,4 @@
-import { View, Text, TextInput, KeyboardAvoidingView, Image, ActivityIndicator, TouchableOpacity } from "react-native";
+import { View, Text, KeyboardAvoidingView, Image, ActivityIndicator, TouchableOpacity } from "react-native";
 import React, { useEffect, useState, useContext, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
