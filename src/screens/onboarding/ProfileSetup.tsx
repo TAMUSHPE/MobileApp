@@ -14,7 +14,8 @@ import { updateProfile } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { CommonMimeTypes, validateName } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
-import { Committee } from '../../types/Committees';
+import { calculateHexLuminosity } from '../../helpers/colorUtils';
+import { Committee, getLogoComponent } from '../../types/Committees';
 import { MAJORS, classYears } from '../../types/User';
 import { ProfileSetupStackParams } from '../../types/Navigation';
 import { Images } from '../../../assets';
@@ -499,14 +500,12 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     const userContext = useContext(UserContext);
     const { setUserInfo } = userContext!;
 
-    const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
 
     useEffect(() => {
         const fetchCommittees = async () => {
             const response = await getCommittees();
             setCommittees(response)
         }
-
         fetchCommittees();
     }, []);
 
@@ -524,94 +523,117 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
         setCanContinue(userCommittees.length > 0);
     }, [userCommittees]);
 
-
     return (
         <SafeAreaView className={safeAreaViewStyle}>
-            <View className='flex-col items-center'>
-                <View className='flex-col items-center'>
-                    <Text className='text-white text-center text-3xl'>Committees</Text>
-                    <Text className='text-white text-center text-lg mt-4'>{"Are you part of any committees? If yes, we'd love to know which ones."}</Text>
-                </View>
-                <ScrollView
-                    className='w-11/12 h-1/2 flex-col px-3 bg-[#b5b5cc2c] my-5 rounded-md'
-                    persistentScrollbar
-                    scrollToOverflowEnabled
+            <View className='flex-col'>
+                <TouchableOpacity
+                    className="mb-4"
+                    onPress={() => { navigation.goBack(); }}
                 >
-                    <View className='w-full h-full pb-28'>
-                        {committees.map((committee: Committee) => (
-                            <TouchableOpacity
-                                key={committee.firebaseDocName}
-                                onPress={() => handleCommitteeToggle(committee?.firebaseDocName!)}
-                                className={`rounded-md w-full py-2 px-1 my-3 bg-white flex-row items-center justify-between border-4 ${userCommittees.includes(committee?.firebaseDocName!) ? "border-green-500 shadow-lg" : "border-transparent shadow-sm"}`}
-                            >
-                                <View className='flex-row items-center'>
-                                    <View className={`h-10 w-10 rounded-full mr-2`} style={{ backgroundColor: committee.color ?? "#000" }} />
-                                    <Text className={`font-bold text-center text-lg text-gray-600`}>{committee.name}</Text>
-                                </View>
-                            </TouchableOpacity>
-                        ))}
+                    <Octicons name="chevron-left" size={30} color="white" />
+                </TouchableOpacity>
+                <View className='items-center'>
+                    <View className='flex-col items-center'>
+                        <Text className='text-white text-center text-3xl'>Committees</Text>
+                        <Text className='text-white text-center text-lg mt-4'>{"Are you part of any committees? If yes, we'd love to know which ones."}</Text>
                     </View>
-                </ScrollView>
-                <View className='flex-row w-10/12 justify-between mb-4'>
-                    <InteractButton
-                        onPress={() => navigation.goBack()}
-                        label='Back'
-                        buttonClassName='justify-center items-center bg-[#ddd] rounded-md w-1/2'
-                        textClassName='text-[#3b3b3b] text-lg font-bold'
-                    />
+                    <ScrollView
+                        className='w-11/12 h-1/2 flex-col bg-[#b5b5cc2c] my-5 rounded-md'
+                        persistentScrollbar
+                        scrollToOverflowEnabled
+                    >
+                        <View className='flex-wrap flex-row w-full h-full pb-28 justify-around pt-4'>
+                            {committees.map((committee: Committee) => {
+                                const isLight = (colorHex: string) => {
+                                    const luminosity = calculateHexLuminosity(colorHex);
+                                    return luminosity < 155;
+                                };
+
+                                const { LogoComponent, height, width } = getLogoComponent(committee.logo);
+                                const isSelected = userCommittees.includes(committee.firebaseDocName!);
+
+                                return (
+                                    <TouchableOpacity
+                                        onPress={() => handleCommitteeToggle(committee?.firebaseDocName!)}
+                                        className='flex-col rounded-md w-[45%]'
+                                        style={{ backgroundColor: committee.color, minHeight: 90 }}
+                                    >
+                                        <View className='flex-1 rounded-md items-center' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
+                                            <View className='flex-1 items-center flex-row justify-center py-2'>
+                                                {isSelected ? (
+                                                    <View className="items-center justify-center h-10 w-10 rounded-full" style={{ backgroundColor: committee.color }}>
+                                                        <Octicons name="check" size={30} color="white" />
+                                                    </View>
+                                                ) : (
+                                                    <LogoComponent width={height / 2} height={width / 2} />
+
+                                                )}
+                                            </View>
+                                            <Text className={`justify-end font-bold text-lg text-black text-${isLight(committee.color!) ? "white" : "black"}`}>{committee.name}</Text>
+                                        </View>
+                                    </TouchableOpacity>
+                                );
+                            })}
+                        </View>
+                    </ScrollView>
+
+                    <View className='w-10/12 mb-2'>
+                        <InteractButton
+                            onPress={async () => {
+                                if (canContinue && auth.currentUser) {
+                                    // Update committee member counts
+                                    const committeeChanges = userCommittees.map(committeeName => ({
+                                        committeeName,
+                                        change: 1
+                                    }));
+
+                                    const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
+                                    await updateCommitteeMembersCount({ committeeChanges });
+
+                                    // Save user data to firebase
+                                    await setPublicUserData({
+                                        committees: userCommittees,
+                                    });
+                                    await setPrivateUserData({
+                                        completedAccountSetup: true,
+                                    });
+
+                                    // Save user to local storage and update user context
+                                    const firebaseUser = await getUser(auth.currentUser.uid)
+                                    await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                                    setUserInfo(firebaseUser); // Navigates to Home
+                                }
+                            }}
+
+                            label='Continue'
+                            buttonClassName={`${!canContinue ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
+                            textClassName={`${!canContinue ? "text-gray-700" : "text-white"} text-lg font-bold`}
+                            opacity={!canContinue ? 1 : 0.8}
+                            underlayColor={`${!canContinue ? "" : "#A22E2B"}`}
+                        />
+                    </View>
                     <InteractButton
                         onPress={async () => {
-                            if (canContinue && auth.currentUser) {
-
-                                // Update committee member counts
-                                const committeeChanges = userCommittees.map(committeeName => ({
-                                    committeeName,
-                                    change: 1
-                                }));
-                                await updateCommitteeMembersCount({ committeeChanges });
-
-                                // Save user data to firebase
+                            if (auth.currentUser) {
                                 await setPublicUserData({
-                                    committees: userCommittees,
+                                    committees: [],
                                 });
                                 await setPrivateUserData({
                                     completedAccountSetup: true,
                                 });
-
-                                // Save user to local storage and update user context
-                                const firebaseUser = await getUser(auth.currentUser.uid)
-                                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                                setUserInfo(firebaseUser); // Navigates to Home
                             }
-                        }}
+                            // On Register, save user to local
 
-                        label='Continue'
-                        buttonClassName={`${canContinue ? "bg-continue-dark" : "bg-gray-500"} justify-center items-center rounded-md w-1/2`}
-                        textClassName={`${canContinue ? "text-white" : "text-gray-700"} text-lg font-bold`}
-                        opacity={canContinue ? 1 : 0.8}
-                        underlayColor={`${canContinue ? "#A22E2B" : ""}`}
+                            const firebaseUser = await getUser(auth.currentUser?.uid!)
+                            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                            setUserInfo(firebaseUser); // Navigates to Home
+                        }}
+                        label='Skip For Now'
+                        buttonClassName='justify-center items-center  rounded-md w-10/12'
+                        textClassName='text-pale-orange text-lg font-bold'
+                        underlayColor='transparent'
                     />
                 </View>
-                <InteractButton
-                    onPress={async () => {
-                        if (auth.currentUser) {
-                            await setPublicUserData({
-                                committees: [],
-                            });
-                            await setPrivateUserData({
-                                completedAccountSetup: true,
-                            });
-                        }
-                        // On Register, save user to local
-
-                        const firebaseUser = await getUser(auth.currentUser?.uid!)
-                        await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                        setUserInfo(firebaseUser); // Navigates to Home
-                    }}
-                    label='Skip For Now'
-                    buttonClassName='justify-center items-center bg-[#ddd] rounded-md w-10/12'
-                    textClassName='text-[#3b3b3b] text-lg font-bold'
-                />
             </View>
         </SafeAreaView>
     );
