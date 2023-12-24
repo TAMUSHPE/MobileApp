@@ -50,7 +50,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
     return (
         <View className="flex-1 bg-pale-blue">
             {/* Header */}
-            <SafeAreaView edges={['top']} >
+            <SafeAreaView edges={['top']}>
                 <View className='flex-row justify-between items-center mx-5 mt-1'>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Octicons name="chevron-left" size={30} color="white" />

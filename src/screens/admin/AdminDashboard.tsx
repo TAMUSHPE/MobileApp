@@ -20,7 +20,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
 
 
     return (
-        <SafeAreaView className='items-center justify-center space-y-4' edges={['right', 'top', 'left']}>
+        <SafeAreaView className='items-center justify-center space-y-4' edges={['top']}>
             <TouchableOpacity
                 onPress={() => updateRanks()}
                 className='bg-blue-500 rounded-md p-2'

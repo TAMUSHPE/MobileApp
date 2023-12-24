@@ -29,17 +29,15 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
     };
 
     return (
-        <View className=''>
-            <ScrollView>
-                {!loading && committees.map((committee) => (
-                    <CommitteeCard
-                        key={committee.name}
-                        committee={committee}
-                        handleCardPress={() => { handleCardPress(committee) }}
-                    />
-                ))}
-            </ScrollView>
-        </View>
+        <ScrollView>
+            {!loading && committees.map((committee) => (
+                <CommitteeCard
+                    key={committee.name}
+                    committee={committee}
+                    handleCardPress={() => { handleCardPress(committee) }}
+                />
+            ))}
+        </ScrollView>
     )
 }
 
