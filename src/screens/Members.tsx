@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MembersStackParams } from '../types/Navigation';
 import MembersList from '../components/MembersList';
@@ -93,7 +93,7 @@ const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams
     }
 
     return (
-        <SafeAreaView>
+        <SafeAreaView className="flex-1" edges={["top"]}>
             <View className='w-full mt-4 justify-center items-center'>
                 <Text className='text-3xl h-10'>Users</Text>
             </View>

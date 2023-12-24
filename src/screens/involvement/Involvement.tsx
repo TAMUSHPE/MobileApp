@@ -11,7 +11,7 @@ const Involvement = ({ navigation }: NativeStackScreenProps<InvolvementStackPara
     const [currentTab, setCurrentTab] = useState<InvolvementTabs>("Committees")
 
     return (
-        <View>
+        <View className='h-full'>
             {/* Top Nav Bar */}
             <SafeAreaView>
                 <View className='flex flex-row justify-between items-center mx-16 mt-4'>
@@ -29,7 +29,7 @@ const Involvement = ({ navigation }: NativeStackScreenProps<InvolvementStackPara
             </SafeAreaView>
 
             {/* Content */}
-            <View>
+            <View className='flex-1'>
                 {currentTab === "Committees" && <CommitteesList navigation={navigation} />}
                 {currentTab === "MemberSHPE" && <MemberSHPE />}
             </View>

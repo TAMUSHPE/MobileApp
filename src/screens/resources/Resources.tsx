@@ -48,7 +48,7 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
     );
 
     return (
-        <SafeAreaView className='flex-1 bg-white'>
+        <SafeAreaView className='flex-1 bg-white' edges={["top"]}>
             {/* Header */}
             <View className='flex-row px-5 pb-4'>
                 <View className='flex-1 justify-center items-start'>

@@ -131,10 +131,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
     }, [rankCards, nullDataOffset, endOfData]);
 
     return (
-        <SafeAreaView
-            className="bg-pale-blue h-full"
-            edges={["top", "left", "right"]}
-        >
+        <SafeAreaView className="bg-pale-blue h-full" edges={["top"]} >
             <StatusBar style="light" />
             {/* Header */}
             <View className='flex-row items-center h-10'>

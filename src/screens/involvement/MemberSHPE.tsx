@@ -217,7 +217,7 @@ const MemberSHPE = () => {
                 </View>
             </View>
 
-            <View className='mb-80'></View>
+            <View className='mb-20'></View>
         </ScrollView>
 
     )
