@@ -4,13 +4,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext'
 import { auth, db } from '../../config/firebaseConfig'
-import { deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 import { setPublicUserData } from '../../api/firebaseUtils'
 import { getBlobFromURI, selectFile, uploadFile } from '../../api/fileSelection'
+import { deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 import { CommonMimeTypes } from '../../helpers/validation'
-import AddFileIcon from '../../../assets/file-circle-plus-solid.svg'
-import { PublicUserInfo } from '../../types/User';
 import { handleLinkPress } from '../../helpers/links';
+import { PublicUserInfo } from '../../types/User';
+import AddFileIcon from '../../../assets/file-circle-plus-solid.svg'
 import DismissibleModal from '../../components/DismissibleModal';
 
 const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void> }) => {
@@ -20,20 +20,24 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const unsubscribe = () => {
-            if (auth.currentUser) {
-                const docRef = doc(db, `resumeVerification/${auth.currentUser?.uid}`);
-                const unsubscribe = onSnapshot(docRef, (doc) => {
-                    if (doc.exists()) {
-                        setSubmittedResume(true);
-                    }
-                });
+        setLoading(true);
 
-                return unsubscribe;
+        const docRef = doc(db, `resumeVerification/${auth.currentUser?.uid}`);
+        const unsubscribe = onSnapshot(docRef, (doc) => {
+            if (doc.exists()) {
+                setSubmittedResume(true);
+            } else {
+                setSubmittedResume(false);
             }
-        }
-        return unsubscribe();
-    }, [])
+            setLoading(false);
+        },
+            (error) => {
+                console.error("Error fetching document:", error);
+                setLoading(false);
+            });
+
+        return unsubscribe;
+    }, []);
 
     const selectResume = async () => {
         const result = await selectFile();
@@ -132,6 +136,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                     onPress={async () => {
                         const selectedResume = await selectResume();
                         if (selectedResume) {
+                            setLoading(true);
                             uploadFile(
                                 selectedResume,
                                 CommonMimeTypes.RESUME_FILES,
@@ -186,8 +191,6 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
 
                                     } catch (error) {
                                         console.error("Error during resume delete process:", error);
-                                    } finally {
-                                        setLoading(false);
                                     }
                                 }}
                                 className='ml-2'

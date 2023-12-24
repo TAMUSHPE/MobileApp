@@ -3,16 +3,16 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { StatusBar } from 'expo-status-bar';
 import { auth } from "../../config/firebaseConfig"
 import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../../api/fetchGoogleSheets'
 import { getUserByEmail, getPublicUserData } from '../../api/firebaseUtils'
-import RankCard from './RankCard';
 import { RankChange, PublicUserInfo } from '../../types/User';
 import { GoogleSheetsResponse } from '../../types/GoogleSheetsTypes';
 import { ResourcesStackParams } from '../../types/Navigation';
 import { Images } from '../../../assets';
-import { StatusBar } from 'expo-status-bar';
 import DismissibleModal from '../../components/DismissibleModal';
+import RankCard from './RankCard';
 
 const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
     const [rankCards, setRankCards] = useState<PublicUserInfo[]>([])
@@ -238,10 +238,9 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     {!initLoading && (
                         <View>
                             {userRank === -1 ? (
-                                <View className='flex-col h-20 mx-4 px-4 mt-8 rounded-xl items-center'
+                                <View className='flex-col h-20 mx-4 px-4 mt-8 rounded-xl items-center justify-center'
                                     style={{ backgroundColor: colorMapping[userRankChange] }}>
                                     <Text className='text-xl font-medium'>You are unranked</Text>
-                                    <Text className='text-lg text-center'>Learn how to earn points in the information screen</Text>
                                 </View>
                             ) : (
                                 <View className='flex-row h-20 mx-4 px-4 mt-8 rounded-xl items-center'

@@ -5,10 +5,10 @@ import { useRoute } from '@react-navigation/native';
 import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
-import { httpsCallable } from 'firebase/functions';
-import { doc, getDoc } from 'firebase/firestore';
 import { db, functions } from '../../config/firebaseConfig';
 import { setPublicUserData } from '../../api/firebaseUtils';
+import { httpsCallable } from 'firebase/functions';
+import { doc, getDoc } from 'firebase/firestore';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
 import { handleLinkPress } from '../../helpers/links';
 import { CommitteeScreenRouteProp, CommitteesListProps } from '../../types/Navigation';
@@ -37,10 +37,7 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
     }, [userInfo]);
 
     return (
-        <View
-            className='flex-1'
-            style={{ backgroundColor: color }}
-        >
+        <View className='flex-1' style={{ backgroundColor: color }} >
             <StatusBar style={isLightColor ? "light" : "dark"} />
             {/* Header */}
             <SafeAreaView edges={['top']} >
@@ -50,6 +47,9 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                     </TouchableOpacity>
                     <View className='absolute w-full justify-center items-center'>
                         <Text className={`text-2xl font-semibold text-${isLightColor ? "white" : "black"}`} >{name}</Text>
+                        <View className='absolute top-full'>
+                            <Text className={`text-lg font-semibold text-${isLightColor ? "white" : "black"}`} >{memberCount} Members</Text>
+                        </View>
                     </View>
                 </View>
             </SafeAreaView>
@@ -75,26 +75,30 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                     </View>
 
                     {/* Name and Application Buttons */}
-                    <View className='flex-col flex-1 justify-between py-2 ml-6'>
-                        <View className='flex-row items-center'>
-                            <Text className="text-xl font-semibold">{name} ({memberCount} members)</Text>
+                    <View className='flex-col flex-1 py-2 ml-6'>
+                        <View className='flex-row mb-4 w-full justify-center'>
+                            <Text className="text-xl font-semibold">{name}</Text>
                         </View>
-                        <View className='flex-col'>
-                            <TouchableOpacity
-                                className='py-2 rounded-lg items-center w-[80%]'
-                                style={{ backgroundColor: color }}
-                                onPress={() => handleLinkPress(memberApplicationLink!)}
-                            >
-                                <Text className={`font-semibold text-${isLightColor ? "white" : "black"}`}>Member Application</Text>
-                            </TouchableOpacity>
+                        <View className='flex-col items-center'>
+                            {memberApplicationLink && (
+                                <TouchableOpacity
+                                    className='py-2 rounded-lg items-center w-[80%]'
+                                    style={{ backgroundColor: color }}
+                                    onPress={() => handleLinkPress(memberApplicationLink!)}
+                                >
+                                    <Text className={`font-semibold text-${isLightColor ? "white" : "black"}`}>Member Application</Text>
+                                </TouchableOpacity>
+                            )}
+                            {leadApplicationLink && (
 
-                            <TouchableOpacity
-                                className='py-2 rounded-lg items-center mt-2 w-[80%]'
-                                style={{ backgroundColor: color }}
-                                onPress={() => handleLinkPress(leadApplicationLink!)}
-                            >
-                                <Text className={`font-semibold text-${isLightColor ? "white" : "black"}`}>Lead Application</Text>
-                            </TouchableOpacity>
+                                <TouchableOpacity
+                                    className='py-2 rounded-lg items-center mt-2 w-[80%]'
+                                    style={{ backgroundColor: color }}
+                                    onPress={() => handleLinkPress(leadApplicationLink!)}
+                                >
+                                    <Text className={`font-semibold text-${isLightColor ? "white" : "black"}`}>Lead Application</Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
                     </View>
                 </View>
