@@ -314,6 +314,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                 isOpen={openDropdown === 'year'}
                                 onToggle={() => toggleDropdown('year')}
                                 title={"Class Year"}
+                                disableSearch
                             />
                         </View>
                     </View>
@@ -496,6 +497,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     const [canContinue, setCanContinue] = useState<boolean>(true);
     const [committees, setCommittees] = useState<Committee[]>([]);
     const [userCommittees, setUserCommittees] = useState<string[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const userContext = useContext(UserContext);
     const { setUserInfo } = userContext!;
@@ -554,6 +556,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
 
                                 return (
                                     <TouchableOpacity
+                                        key={committee.firebaseDocName}
                                         onPress={() => handleCommitteeToggle(committee?.firebaseDocName!)}
                                         className='flex-col rounded-md w-[45%]'
                                         style={{ backgroundColor: committee.color, minHeight: 90 }}
@@ -581,6 +584,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         <InteractButton
                             onPress={async () => {
                                 if (canContinue && auth.currentUser) {
+                                    setLoading(true);
                                     // Update committee member counts
                                     const committeeChanges = userCommittees.map(committeeName => ({
                                         committeeName,
@@ -602,6 +606,8 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                                     const firebaseUser = await getUser(auth.currentUser.uid)
                                     await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
                                     setUserInfo(firebaseUser); // Navigates to Home
+
+                                    setLoading(false);
                                 }
                             }}
 
@@ -633,6 +639,9 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         textClassName='text-pale-orange text-lg font-bold'
                         underlayColor='transparent'
                     />
+                    {loading && (
+                        <ActivityIndicator className="mb-4" size={"large"} />
+                    )}
                 </View>
             </View>
         </SafeAreaView>

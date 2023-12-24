@@ -471,7 +471,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                     onToggle={() => toggleDropdown('year')}
                                     title={"Class Year"}
                                     selectedItemProp={{ value: classYear }}
-
+                                    disableSearch
                                 />
                             </View>
                         </View>

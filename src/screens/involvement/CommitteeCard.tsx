@@ -24,7 +24,7 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPres
                     <View className='items-center justify-center h-full'>
                         <LogoComponent width={height} height={width} />
                     </View>
-                    <View className='absolute left-[80%] top-[15%]'>
+                    <View className='absolute left-[80%] top-[7%]'>
                         <Image source={head?.photoURL ? { uri: head.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-10 w-10 rounded-full' />
                     </View>
                 </View>
@@ -37,7 +37,6 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPres
                         <Text className={`font-semibold text-${isTextLight(color!) ? "white" : "black"}`}>{memberCount} Members</Text>
                     </View>
                 </View>
-
             </TouchableOpacity>
         </View>
     );

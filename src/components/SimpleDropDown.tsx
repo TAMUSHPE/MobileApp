@@ -1,8 +1,8 @@
-import { View, Text, TouchableOpacity, Image, TextInput, FlatList, Animated, } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Animated, } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 
-const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, title, selectedItemProp }: SimpleDropDownProps) => {
+const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, title, selectedItemProp, disableSearch }: SimpleDropDownProps) => {
     const [search, setSearch] = useState('');
     const [filteredData, setFilteredData] = useState(data);
     const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null)
@@ -43,7 +43,8 @@ const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, ti
     const onSearch = (searchText: string) => {
         if (searchText !== '') {
             const tempData = data.filter(item =>
-                item[searchKey] && String(item[searchKey]).toLowerCase().includes(searchText.toLowerCase())
+                (item.major && item.major.toLowerCase().includes(searchText.toLowerCase())) ||
+                (item.iso && item.iso.toLowerCase().includes(searchText.toLowerCase()))
             );
             setFilteredData(tempData);
         } else {
@@ -86,18 +87,21 @@ const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, ti
             </View>
             {isOpen ? (
                 <View className="self-center bg-white w-[90%] rounded-md mt-4 h-72">
-                    <TextInput
-                        placeholder="Search.."
-                        value={search}
-                        ref={searchRef}
-                        onChangeText={txt => {
-                            onSearch(txt);
-                            setSearch(txt);
-                        }}
-                        className='w-[90%] h-12 self-center mt-6 pl-3 rounded-md border-gray-400 border'
-                    />
+                    {!disableSearch && (
+                        <TextInput
+                            placeholder="Search.."
+                            value={search}
+                            ref={searchRef}
+                            onChangeText={txt => {
+                                onSearch(txt);
+                                setSearch(txt);
+                            }}
+                            className='w-[90%] h-12 self-center mt-6 pl-3 rounded-md border-gray-400 border'
+                        />
+                    )}
 
                     <FlatList
+                        className='mt-4'
                         data={filteredData}
                         renderItem={({ item, index }) => {
                             return (
@@ -144,5 +148,6 @@ interface SimpleDropDownProps {
     label: string;
     title: string;
     selectedItemProp?: SelectedItem | null;
+    disableSearch?: boolean;
 }
 export default SimpleDropDown;

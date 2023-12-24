@@ -168,7 +168,7 @@ const MemberSHPE = () => {
             </View>
 
             {/* TAMU Chapter Instructions */}
-            <View className='mx-6 mt-8 bg-white shadow-md shadow-slate-300 px-4 py-3 rounded-lg'>
+            <View className='mx-6 mt-8 bg-white shadow-md shadow-slate-300 px-4 py-3 rounded-lg border-4 border-maroon'>
                 <Text className='font-bold text-xl text-maroon mb-2'>TAMU Chapter</Text>
                 <View className='space-y-1'>
                     <View className='flex-row'>
@@ -181,13 +181,13 @@ const MemberSHPE = () => {
                         <Text className='text-md font-bold'>t-shirt</Text>
 
                     </View>
-                    <Text className='text-md font-bold'>2.Take a screenshot of the receipt </Text>
+                    <Text className='text-md font-bold'>2. Take a screenshot of the receipt </Text>
 
                 </View>
             </View>
 
             {/* National Chapter Instructions */}
-            <View className='mx-6 mt-8 bg-white shadow-md shadow-slate-300 px-4 py-3 rounded-lg'>
+            <View className='mx-6 mt-8 bg-white shadow-md shadow-slate-300 px-4 py-3 rounded-lg border-4 border-pale-orange'>
                 <Text className='font-bold text-xl text-pale-orange mb-2'>National Chapter</Text>
                 <View className='space-y-1'>
                     <View className='flex-row'>
@@ -210,9 +210,9 @@ const MemberSHPE = () => {
             <View className='mx-6 mt-8 bg-white shadow-md shadow-slate-300 px-4 py-3 rounded-lg'>
                 <Text className='font-bold text-xl mb-2'>Submit</Text>
                 <View className='space-y-1'>
-                    <Text className='text-md font-bold'>1. Upload T-shirt receipt to TAMU Chapter</Text>
-                    <Text className='text-md font-bold'>2. Upload SHPE National Membership to National Chapter</Text>
-                    <Text className='text-md font-bold'>3. Turn on notification and wait to be approved</Text>
+                    <Text className='text-md font-bold'>1. Upload T-shirt receipt to TAMU Chapter button above</Text>
+                    <Text className='text-md font-bold'>2. Upload SHPE National Membership to National Chapter button above</Text>
+                    <Text className='text-md font-bold'>3. Make sure notification is on and wait to be approved</Text>
                     <Text className='text-md font-bold'>4. If you're not verified after receiving the notification, refresh your profile or contact an officer </Text>
                 </View>
             </View>

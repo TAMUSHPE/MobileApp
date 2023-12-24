@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
+import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
 import { db, functions } from '../../config/firebaseConfig';
 import { deleteField, doc, updateDoc } from 'firebase/firestore';
@@ -92,7 +93,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
                         activeOpacity={0.5}
                         onPress={() => handleLinkPress(resumePublicURL!)}
                     >
-                        <Text className='text-lg '>View</Text>
+                        <Octicons name="chevron-right" size={30} color="black px-4" />
                     </TouchableOpacity>
 
                     {hasPrivileges && (
