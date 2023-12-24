@@ -2,14 +2,10 @@ import { View, Text, Image } from "react-native";
 import React, { useContext, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import InteractButton from "../../components/InteractButton";
+import { UserContext } from '../../context/UserContext';
 import { AuthStackParams } from "../../types/Navigation";
 import { Images } from "../../../assets";
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { UserContext } from '../../context/UserContext';
-import { auth } from "../../config/firebaseConfig";
-import { signOut } from "firebase/auth";
-
+import InteractButton from "../../components/InteractButton";
 
 const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const userContext = useContext(UserContext);
