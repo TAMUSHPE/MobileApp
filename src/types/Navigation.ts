@@ -101,10 +101,7 @@ export type AdminDashboardParams = {
     RestrictionsEditor: undefined;
     MemberSHPEConfirm: undefined;
     ResumeConfirm: undefined;
-    HomeBottomTabs: {
-        screen: keyof HomeBottomTabParams;
-    };
-
+    Home: undefined;
 }
 
 // Drawers
