@@ -102,6 +102,9 @@ export type AdminDashboardParams = {
     MemberSHPEConfirm: undefined;
     ResumeConfirm: undefined;
     Home: undefined;
+    PublicProfile: {
+        uid: string;
+    }
 }
 
 // Drawers
@@ -152,7 +155,7 @@ export type TestBankProps = {
 
 export type MembersProps = {
     userData?: PublicUserInfo
-    handleCardPress: (uid: string) => string | void;
+    handleCardPress?: (uid: string) => string | void;
     navigation?: NativeStackNavigationProp<MembersStackParams>
     officersList? : PublicUserInfo[]
     membersList? : PublicUserInfo[]
@@ -166,6 +169,19 @@ export type MembersProps = {
     setNumLimit?: React.Dispatch<SetStateAction<number | null>>;
     loading?: boolean;
     DEFAULT_NUM_LIMIT?: number | null;
+}
+
+export type MemberListProps = {
+    handleCardPress: (uid: string) => string | void;
+    users: PublicUserInfo[];
+    navigation?: NativeStackNavigationProp<MembersStackParams>
+}
+
+
+export type MemberCardProp = {
+    handleCardPress?: (uid: string) => string | void;
+    userData?: PublicUserInfo;
+    navigation?: NativeStackNavigationProp<any>
 }
 
 export type EventProps = {

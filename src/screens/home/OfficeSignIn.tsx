@@ -76,16 +76,16 @@ const OfficeSignIn = () => {
     }
 
     return (
-        <View className='my-10 mx-7 py-8 bg-dark-navy rounded-md items-center justify-center text-center'>
+        <View className='my-10 mx-7 py-8 bg-white rounded-md items-center justify-center text-center shadow-md shadow-slate-300'>
             <View>
-                <Text className='text-white text-xl bold'>Office Sign In </Text>
+                <Text className='text-xl font-bold text-pale-blue'>Office Hours Sign In </Text>
             </View>
 
             <TouchableOpacity
-                className="mt-4 border-white border-2 rounded-lg py-4 px-8"
+                className="mt-4 rounded-lg py-4 px-8 bg-pale-blue"
                 onPress={() => setConfirmVisible(!confirmVisible)}
             >
-                <Text className="text-white text-xl font-extrabold"> {isSignedIn ? "Sign Out" : "Sign In"} </Text>
+                <Text className=" text-xl font-extrabold text-white"> {isSignedIn ? "Sign Out" : "Sign In"} </Text>
             </TouchableOpacity>
 
             <DismissibleModal
@@ -104,7 +104,7 @@ const OfficeSignIn = () => {
                                 }}
                                 className="bg-pale-blue rounded-xl justify-center items-center"
                             >
-                                <Text className='text-xl font-bold text-white px-6'> {isSignedIn ? "Sign Out" : "Sign In"} </Text>
+                                <Text className='text-xl font-bold px-6 text-white'> {isSignedIn ? "Sign Out" : "Sign In"} </Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >

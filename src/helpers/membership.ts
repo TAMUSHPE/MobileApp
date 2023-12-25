@@ -25,7 +25,8 @@ export const getBadgeColor = (isOfficer:boolean, isVerified:boolean) => {
     return '';
 };
 
-export const formatExpirationDate = (dateString: string): string => {
+export const formatExpirationDate = (dateString: string | undefined): string => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {
         year: 'numeric',

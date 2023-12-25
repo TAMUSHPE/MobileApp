@@ -609,9 +609,9 @@ export const isUserSignedIn = async (eventId: string, uid: string) => {
 export const getMemberOfTheMonth = async () => {
     return getDoc(doc(db, `member-of-the-month/member`))
         .then((res) => {
-            const responseData = res.data()
+            const responseData = res.data();
             if (responseData) {
-                return { uid: responseData?.uid, name: responseData?.name };
+                return responseData.member as PublicUserInfo;
             }
             else {
                 return undefined;
@@ -623,11 +623,10 @@ export const getMemberOfTheMonth = async () => {
         });
 }
 
-export const setMemberOfTheMonth = async (uid: string, name: string) => {
+export const setMemberOfTheMonth = async (member: PublicUserInfo) => {
     try {
         await setDoc(doc(db, `member-of-the-month/member`), {
-            uid: uid,
-            name: name
+            member: member
         }, { merge: true });
         return true;
     } catch (err) {
