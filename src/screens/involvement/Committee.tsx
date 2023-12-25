@@ -42,15 +42,15 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
             {/* Header */}
             <SafeAreaView edges={['top']} >
                 <View className='flex-row items-center mx-5 mt-1'>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Octicons name="chevron-left" size={30} color={isLightColor ? "white" : "black"} />
-                    </TouchableOpacity>
                     <View className='absolute w-full justify-center items-center'>
                         <Text className={`text-2xl font-semibold text-${isLightColor ? "white" : "black"}`} >{name}</Text>
                         <View className='absolute top-full'>
                             <Text className={`text-lg font-semibold text-${isLightColor ? "white" : "black"}`} >{memberCount} Members</Text>
                         </View>
                     </View>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Octicons name="chevron-left" size={30} color={isLightColor ? "white" : "black"} />
+                    </TouchableOpacity>
                 </View>
             </SafeAreaView>
 
