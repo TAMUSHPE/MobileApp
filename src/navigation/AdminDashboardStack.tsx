@@ -1,6 +1,5 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { NavigationProp, useNavigation } from "@react-navigation/core";
 import { AdminDashboardParams } from '../types/Navigation';
 import { HomeStack } from "./HomeStack";
 import CommitteeCreator from "../screens/admin/CommitteeCreator";
@@ -12,6 +11,7 @@ import ResumeDownloader from "../screens/admin/ResumeDownloader";
 import ResetOfficeHours from "../screens/admin/ResetOfficeHours";
 import MemberSHPEConfirm from "../screens/admin/MemberSHPEConfirm";
 import ResumeConfirm from "../screens/admin/ResumeConfirm";
+import PublicProfileScreen from "../screens/PublicProfile";
 
 const AdminDashboardStack = () => {
     const Stack = createNativeStackNavigator<AdminDashboardParams>();
@@ -29,6 +29,7 @@ const AdminDashboardStack = () => {
                 <Stack.Screen name="MemberSHPEConfirm" component={MemberSHPEConfirm} />
                 <Stack.Screen name="ResumeConfirm" component={ResumeConfirm} />
                 <Stack.Screen name="Home" component={HomeStack} />
+                <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
             </Stack.Group>
         </Stack.Navigator>
     );

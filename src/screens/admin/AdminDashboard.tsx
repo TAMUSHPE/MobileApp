@@ -1,10 +1,10 @@
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
-import { httpsCallable, getFunctions } from 'firebase/functions';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AdminDashboardParams } from '../../types/Navigation';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
+import { httpsCallable, getFunctions } from 'firebase/functions';
+import { AdminDashboardParams } from '../../types/Navigation';
 
 const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const updateRanks = async () => {

@@ -1,14 +1,15 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { MembersProps } from '../types/Navigation'
+import { MemberCardProp } from '../types/Navigation'
 import { Images } from '../../assets'
 import TwitterSvg from './TwitterSvg'
 import { getBadgeColor, isMemberVerified } from '../helpers/membership'
 
-const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigation }) => {
+const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation }) => {
     if (!userData) {
         return
     }
+
     const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration } = userData
     const isOfficer = roles ? roles.officer : false;
 
@@ -22,11 +23,12 @@ const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigat
     }, [nationalExpiration, chapterExpiration])
 
     return (
-        <TouchableOpacity className='mb-8'
-            onPress={() => handleCardPress(uid!)}
+        <TouchableOpacity
+            className='mb-8'
+            onPress={() => handleCardPress && handleCardPress(uid!)}
+            activeOpacity={!!handleCardPress && 1 || 0.6}
         >
             <View className="flex-row">
-
                 <Image
                     className="flex w-12 h-12 rounded-full"
                     defaultSource={Images.DEFAULT_USER_PICTURE}

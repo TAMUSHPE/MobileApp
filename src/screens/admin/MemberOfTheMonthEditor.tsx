@@ -1,199 +1,196 @@
-import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Alert } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Images } from '../../../assets';
-import { AdminDashboardParams } from '../../types/Navigation';
+import { View, Text, TouchableOpacity } from 'react-native'
+import React, { useCallback, useEffect, useState } from 'react'
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { setMemberOfTheMonth, getPublicUserData, getMemberOfTheMonth, fetchUserForList } from '../../api/firebaseUtils';
+import { Octicons } from '@expo/vector-icons';
+import { getMemberOfTheMonth, getMembersExcludeOfficers, setMemberOfTheMonth } from '../../api/firebaseUtils';
+import { AdminDashboardParams } from '../../types/Navigation';
+import { PublicUserInfo } from '../../types/User';
 import MembersList from '../../components/MembersList';
-import { PublicUserInfo, UserFilter } from '../../types/User';
+import DismissibleModal from '../../components/DismissibleModal';
+import MemberCard from '../../components/MemberCard';
+import { useFocusEffect } from '@react-navigation/core';
+import MemberOfTheMonth from '../../components/MOTMCard';
 
 const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
-    const [memberModalVisible, setMemberModalVisible] = useState(false);
-    const [memberInfo, setMemberInfo] = useState<PublicUserInfo | null>(null);
-    const [updated, setUpdated] = useState(false);
-    const [localMemberOfTheMonth, setLocalMemberOfTheMonth] = useState<string | null>(null);
     const [members, setMembers] = useState<PublicUserInfo[]>([])
-    const [numLimit, setNumLimit] = useState<number | null>(null);
-    const [filter, setFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "points" });
-    const [initialLoad, setInitialLoad] = useState(true);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
+    const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();
+    const [localMemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfo>();
 
-    const insets = useSafeAreaInsets();
-    const fetchMemberData = async (uid: string) => {
-        const fetchedInfo = await getPublicUserData(uid);
-        if (fetchedInfo) {
-            setMemberInfo({
-                ...fetchedInfo,
-                uid,
-            });
+    const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
+    const [infoVisible, setInfoVisible] = useState(false);
+    const [invisibleConfirmModal, setInvisibleConfirmModal] = useState(false);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (selectedMemberUID) {
+                setConfirmVisible(true);
+                setInvisibleConfirmModal(true);
+            }
+            if (selectedMemberUID && members) {
+                const memberData = members.find(member => member.uid === selectedMemberUID);
+                if (memberData) {
+                    setSelectedMember(memberData);
+                } else {
+                    console.error('No data found for member with UID:', selectedMemberUID);
+                }
+            }
+        }, [selectedMemberUID, members])
+    );
+
+    const fetchMembers = async () => {
+        try {
+            const fetchedMembers = await getMembersExcludeOfficers();
+            setMembers(fetchedMembers);
+        } catch (error) {
+            console.error('Error fetching members:', error);
         }
     };
-
-    useEffect(() => {
-        let timerId: NodeJS.Timeout;
-        if (updated) {
-            timerId = setTimeout(() => {
-                setUpdated(false);
-            }, 3000);
+    const fetchMemberOfTheMonth = async () => {
+        try {
+            const fetchedMemberOfTheMonth = await getMemberOfTheMonth();
+            setLocalMemberOfTheMonth(fetchedMemberOfTheMonth);
+        } catch (error) {
+            console.error('Error fetching member of the month:', error);
         }
-        return () => {
-            clearTimeout(timerId);
-        };
-    }, [updated]);
 
-    const loadUsers = async () => {
-        const getMembers = await fetchUserForList({ filter: filter });
-        if (getMembers.members.length > 0) {
-            setMembers(getMembers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
-            setLoading(false);
-        }
     }
-
     useEffect(() => {
-        const fetchData = async () => {
-            const { uid, name } = await getMemberOfTheMonth() || {};
-            if (uid) {
-                await fetchMemberData(uid);
-            } else {
-                setMemberInfo({ name: name });
-            }
-            loadUsers();
-        };
-        fetchData().then(() => {
-            setInitialLoad(false);
-        });
+
+        fetchMembers();
+        fetchMemberOfTheMonth();
     }, []);
 
+    // Logic for expiration modal closing is more complicated then simply setting visibility to false
+    // so this is needed to deal with dismissible modal
     useEffect(() => {
-        const resetData = async () => {
-            setMembers([]);
-        };
-
-        if (!initialLoad) {
-            resetData().then(() => {
-                loadUsers();
-            });
+        if (!confirmVisible) {
+            setSelectedMemberUID(undefined);
+            setSelectedMember(undefined);
         }
-
-    }, [filter]);
-
+    }, [confirmVisible])
 
     return (
-        <SafeAreaView>
-            <ScrollView>
-                {/* Image */}
-                <View className='justify-center items-center'>
-                    <Image
-                        className="mt-2 h-60 w-[90%] bg-gray-700 rounded-xl"
-                        source={Images.COMMITTEE}
-                    />
-                </View>
-
-                {/* Form */}
-                <View className='p-6 items-center flex-1'>
-                    <View className='items-center flex-1'>
-                        <Text className='text-gray-500 text-lg text-center'>Current Member of the Month</Text>
-                        <Text className='text-lg text-center'>{memberInfo?.name}</Text>
-                    </View>
-
-                    <View className='mt-4 items-center flex-1'>
-                        <Text className='text-gray-500 text-lg text-center'>Select a User</Text>
-                        <TouchableOpacity
-                            onPress={() => setMemberModalVisible(true)}
-                            activeOpacity={0.5}
-                            className='bg-[#e4e4e4] justify-center items-center rounded-md pr-9 pl-9'
-                        >
-                            <Text className='text-lg text-center'>Click</Text>
-                        </TouchableOpacity>
-                    </View>
-
-                    <View className='flex-row items-center mt-7 mb-4'>
-                        <View className='flex-1 bg-gray-400 h-0.5' />
-                        <Text className='mx-2 px-2 text-gray-600 text-lg'>or manually enter a name</Text>
-                        <View className='flex-1 bg-gray-400 h-0.5' />
-                    </View>
-
-                    <View className='flex-row'>
-                        <Text>Name: </Text>
-                        <TextInput
-                            placeholder="Full Name"
-                            className="bg-[#e4e4e4] border-2 border-gray-300 rounded-md pr-10 pl-1"
-                            onChangeText={(name: string) => {
-                                setLocalMemberOfTheMonth("")
-                                setMemberInfo({ uid: "", name: name })
-                            }}
-                        />
-                    </View>
-
-                </View>
-
-
-                <View className='w-screen justify-center items-center pt-4 space-x-7'>
-                    <TouchableOpacity
-                        activeOpacity={0.5}
-                        className='bg-blue-400 justify-center items-center rounded-md p-2'
-                        onPress={() => {
-                            if (memberInfo?.name) {
-                                setMemberOfTheMonth(localMemberOfTheMonth || "", memberInfo?.name)
-                                setUpdated(true)
-                            } else {
-                                Alert.alert("Please Select a member of the month")
-                            }
-                        }}
-                    >
-                        <Text className='text-xl text-semibold'>Confirm</Text>
+        <SafeAreaView className='flex-1' edges={["top"]}>
+            <View className='flex-row items-center h-10'>
+                <View className='pl-6'>
+                    <TouchableOpacity activeOpacity={1} className="px-2" onPress={() => navigation.goBack()}>
+                        <Octicons name="chevron-left" size={30} color="black" />
                     </TouchableOpacity>
                 </View>
-                <View className='justify-center items-center'>
-                    {updated && <Text className='text-green-500'>Information has been updated</Text>}
+                <View className='flex-1 items-center'>
+                    <Text className="text-2xl font-bold text-black">MOTM</Text>
                 </View>
+                <View className="pr-4">
+                    <TouchableOpacity activeOpacity={1} onPress={() => setInfoVisible(true)}>
+                        <Octicons name="info" size={25} color="black" />
+                    </TouchableOpacity>
+                </View>
+            </View>
 
-                <View className='pb-32'></View>
-            </ScrollView >
-            <Modal
-                animationType="slide"
-                transparent={true}
-                visible={memberModalVisible}
-                onRequestClose={() => {
-                    setMemberModalVisible(false);
-                }}
+            <View className='mt-9'>
+                <MemberOfTheMonth
+                    userData={localMemberOfTheMonth}
+                    navigation={navigation}
+                    handleCardPress={() => {
+                        navigation.navigate("PublicProfile", { uid: localMemberOfTheMonth?.uid! })
+                    }}
+                />
+            </View>
+
+            <View className='mt-6 mx-5'>
+                <Text className='font-bold text-xl'>Suggest MOTM</Text>
+            </View>
+
+            <View className='mt-6 flex-1'>
+                <Text className='font-bold text-xl mx-5 mb-4'>Members</Text>
+
+                <MembersList
+                    handleCardPress={(uid) => {
+                        setSelectedMemberUID(uid)
+                    }}
+                    users={members}
+                />
+            </View>
+
+            <DismissibleModal
+                visible={confirmVisible && invisibleConfirmModal}
+                setVisible={setConfirmVisible}
             >
-                <View
-                    style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className='bg-white'>
-
-                    <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
-                            <Text className="text-2xl font-bold justify-center text-center">Select a Member</Text>
+                <View className='flex opacity-100 bg-white rounded-md p-6' style={{ minWidth: 325 }}>
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center'>
+                            <Octicons name="alert" size={24} color="black" />
+                            <Text className='text-xl font-semibold ml-2'>Confirm Member</Text>
                         </View>
-                        <View className='pl-6'>
-                            <TouchableOpacity activeOpacity={0.5} className=" bg-pale-orange p-2 rounded-md" onPress={() => setMemberModalVisible(false)} >
-                                <Text className='text-xl font-semibol'>Cancel</Text>
+                        <View>
+                            <TouchableOpacity onPress={() => setConfirmVisible(false)}>
+                                <Octicons name="x" size={24} color="black" />
                             </TouchableOpacity>
                         </View>
                     </View>
 
-                    <View className="h-[100%] w-[100%] bg-white">
-                        <MembersList
-                            handleCardPress={(uid) => {
-                                setLocalMemberOfTheMonth(uid)
-                                setMemberModalVisible(false)
-                                fetchMemberData(uid)
+                    <View className='mt-5'>
+                        <MemberCard
+                            userData={selectedMember!}
+                            navigation={navigation}
+                            handleCardPress={() => {
+                                navigation.navigate("PublicProfile", { uid: selectedMemberUID! })
+                                setInvisibleConfirmModal(false)
+                            }} />
+                    </View>
+                    <View className='flex-row justify-around'>
+                        <TouchableOpacity
+                            className='bg-[#AEF359] w-[40%] items-center py-2 rounded-md'
+                            onPress={() => {
+                                setMemberOfTheMonth(selectedMember!)
+                                setConfirmVisible(false)
+                                fetchMemberOfTheMonth();
                             }}
-                            membersList={members}
-                            officersList={[]}
-                            filter={filter}
-                            setFilter={setFilter}
-                            canSearch={true}
-                            numLimit={numLimit}
-                            setNumLimit={setNumLimit}
-                            loading={loading}
-                            DEFAULT_NUM_LIMIT={null}
-                        />
+                        >
+                            <Text className='font-semibold text-lg'>Confirm</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            className='w-[40%] items-center py-2 rounded-md'
+                            onPress={() => setConfirmVisible(false)}
+                        >
+                            <Text className='font-semibold text-lg'>Cancel</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
-            </Modal>
+            </DismissibleModal>
+
+            <DismissibleModal
+                visible={infoVisible}
+                setVisible={setInfoVisible}
+            >
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ minWidth: 325 }}>
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center'>
+                            <Octicons name="info" size={24} color="black" />
+                            <Text className='text-xl font-semibold ml-2'>Instructions</Text>
+                        </View>
+                        <View>
+                            <TouchableOpacity onPress={() => setInfoVisible(false)}>
+                                <Octicons name="x" size={24} color="black" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <View className='w-[85%]'>
+                        <Text className='text-md font-semibold'>The current Member of the Month is displayed.</Text>
+                    </View>
+
+                    <View className='w-[85%]'>
+                        <Text className='text-md font-semibold'>Change the the member of the month by either selecting the suggested member or the listed member</Text>
+                    </View>
+
+                    <View className='w-[85%]'>
+                        <Text className='text-md font-semibold'>The suggested member is chosen based on the highest point for the month, non-repeated member, and not an office, representative or lead</Text>
+                    </View>
+                </View>
+            </DismissibleModal>
         </SafeAreaView >
     )
 }

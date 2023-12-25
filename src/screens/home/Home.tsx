@@ -12,6 +12,8 @@ import { HomeStackParams } from "../../types/Navigation"
 import { Images } from '../../../assets';
 import FeaturedSlider from '../../components/FeaturedSlider';
 import OfficeSignIn from './OfficeSignIn';
+import MOTMCard from '../../components/MOTMCard';
+
 
 /**
  * Renders the home screen of the application.
@@ -21,40 +23,22 @@ import OfficeSignIn from './OfficeSignIn';
  * @returns The rendered home screen.
  */
 const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, setUserInfo, signOutUser } = useContext(UserContext)!;
-    const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfo | null>(null);
-
-    const screenWidth = Dimensions.get('window').width;
-    const imageHeight = screenWidth * 0.34;
+    const { userInfo, signOutUser } = useContext(UserContext)!;
+    const [memberOfTheMonth, setMemberOfTheMonth] = useState<PublicUserInfo>();
 
     useFocusEffect(
         useCallback(() => {
-            const fetchEvents = async () => {
+            const fetchMemberOfTheMonth = async () => {
                 try {
-                    const getLocalMemberOfTheMonthUser = async (uid: string) => {
-                        const fetchedInfo = await getPublicUserData(uid);
-                        if (fetchedInfo) {
-                            setLocalMemberOfTheMonth({
-                                ...fetchedInfo,
-                                uid,
-                            });
-                        }
-                    };
-
-                    const loadData = async () => {
-                        const { uid, name } = await getMemberOfTheMonth() || {};
-                        if (uid) {
-                            await getLocalMemberOfTheMonthUser(uid);
-                        } else {
-                            setLocalMemberOfTheMonth({ uid: "", name: name });
-                        }
-                    };
-                    loadData();
+                    const fetchedMemberOfTheMonth = await getMemberOfTheMonth();
+                    setMemberOfTheMonth(fetchedMemberOfTheMonth);
                 } catch (error) {
-                    console.error('An error occurred while fetching events:', error);
+                    console.error('Error fetching member of the month:', error);
                 }
-            };
-            fetchEvents();
+
+            }
+            fetchMemberOfTheMonth();
+
         }, [])
     );
 
@@ -73,32 +57,15 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
     return (
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
+
             <FeaturedSlider route={route} />
-            <View className='flex-row justify-center mt-4'>
-                {MemberOfTheMonth && (
-                    <View className="items-center p-4 w-1/2">
-                        <Text className='text-2xl text-pale-blue font-bold text-center'>Member of the Month </Text>
-                        <View className='w-full items-center justify-center'>
-                            <TouchableOpacity
-                                disabled={MemberOfTheMonth.uid === ""}
-                                onPress={() => navigation.navigate("PublicProfile", { uid: MemberOfTheMonth?.uid! })}
-                                className='w-full p-4'
-                            >
-                                <Image
-                                    style={{ height: imageHeight }}
-                                    className='rounded-lg w-full'
-                                    source={MemberOfTheMonth?.photoURL ? { uri: MemberOfTheMonth?.photoURL } : Images.DEFAULT_USER_PICTURE}
-                                />
-                            </TouchableOpacity>
-                            <Text className='font-bold'>{MemberOfTheMonth?.name}</Text>
-                        </View>
-                    </View>
-                )}
-            </View>
+
             {userInfo?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
 
-            <View className='my-10 py-6 mx-7 justify-center items-center rounded-md'>
-            </View>
+            <MOTMCard
+                userData={memberOfTheMonth}
+                navigation={navigation} handleCardPress={() => { navigation.navigate("PublicProfile", { uid: memberOfTheMonth?.uid! }) }} />
+
         </ScrollView>
     );
 }
