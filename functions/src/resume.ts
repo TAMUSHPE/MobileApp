@@ -8,16 +8,16 @@ const generateSignedUrl = async (fileName: string) => {
     const expiresAt = new Date(createdAt.getTime() + 1000 * 60 * 60); // URL valid for 1 hour
 
     const options = {
-      action: 'read' as const,
-      expires: expiresAt,
+        action: 'read' as const,
+        expires: expiresAt,
     };
-  
+
     try {
-      const [url] = await bucket.file(fileName).getSignedUrl(options);
-      return { url, createdAt, expiresAt };
+        const [url] = await bucket.file(fileName).getSignedUrl(options);
+        return { url, createdAt, expiresAt };
     } catch (error) {
-      console.error('Error generating signed URL:', error);
-      throw error; 
+        console.error('Error generating signed URL:', error);
+        throw error;
     }
 };
 
@@ -28,7 +28,7 @@ export const zipResume = functions.https.onRequest(async (req, res) => {
     const zipFileName = 'SHPEResumes.zip';
 
     const zipFile = bucket.file(zipFileName);
-    
+
     const archive = archiver('zip', { zlib: { level: 9 } });
     const zipStream = zipFile.createWriteStream();
     archive.pipe(zipStream);
@@ -38,17 +38,18 @@ export const zipResume = functions.https.onRequest(async (req, res) => {
         prefix: 'user-docs/',
     });
 
-    let resumeCount = 0;
     for (const file of files) {
-        if (file.name.endsWith('/user-resume')) {
-            if (file.metadata.contentType === 'application/pdf') {
-                const userId = file.name.split('/')[1];
-                console.log(`Appending file for user: ${userId}`);
-                
+        if (file.name.endsWith('/user-resume') && file.metadata.contentType === 'application/pdf') {
+            const userId = file.name.split('/')[1];
+
+            try {
+                const userDoc = await db.collection('users').doc(userId).get();
+                const displayName = userDoc.exists ? userDoc.data()?.displayName || userId : userId;
+
                 const fileStream = file.createReadStream();
-                archive.append(fileStream, { name: `${userId}-resume.pdf` });
-                resumeCount++;
-                if (resumeCount == 5) break; // temp limit
+                archive.append(fileStream, { name: `${displayName}-resume.pdf` });
+            } catch (error) {
+                console.error(`Error fetching user data for ${userId}:`, error);
             }
         }
     }
@@ -65,7 +66,7 @@ export const zipResume = functions.https.onRequest(async (req, res) => {
                 createdAt,
                 expiresAt
             });
-    
+
             res.status(200).send({ data: { docId: docRef } });
         } catch (error) {
             console.error('Error:', error);
