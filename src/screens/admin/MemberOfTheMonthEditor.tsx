@@ -82,7 +82,7 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                 <View className='flex-1 items-center'>
                     <Text className="text-2xl font-bold text-black">MOTM</Text>
                 </View>
-                <View className="pr-4">
+                <View className="pr-6">
                     <TouchableOpacity activeOpacity={1} onPress={() => setInfoVisible(true)}>
                         <Octicons name="info" size={25} color="black" />
                     </TouchableOpacity>
