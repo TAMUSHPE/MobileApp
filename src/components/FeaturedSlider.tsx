@@ -24,6 +24,45 @@ const FeaturedSlider: React.FC<FeaturedSliderProps> = ({ route, getDelete }) => 
         return array;
     };
 
+    const resetAndStartAutoSlide = () => {
+        if (slideInterval.current) {
+            clearInterval(slideInterval.current);
+        }
+        slideInterval.current = setInterval(() => {
+            setCurrentIndex(prevIndex => {
+                let nextIndex = prevIndex + 1;
+                if (nextIndex >= slides.length) {
+                    slideListRef.current?.scrollToIndex({ animated: false, index: 1 });
+                    nextIndex = 1;
+                } else {
+                    slideListRef.current?.scrollToIndex({ animated: true, index: nextIndex });
+                }
+                return nextIndex;
+            });
+        }, 3000); // Change slide every 3 seconds
+    };
+
+    const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const contentOffset = e.nativeEvent.contentOffset.x;
+        const newIndex = Math.floor(contentOffset / windowWidth);
+
+        if (newIndex === 0) {
+            // Jump to the last real slide
+            slideListRef.current?.scrollToIndex({ animated: false, index: slides.length - 2 });
+            setCurrentIndex(slides.length - 2);
+        } else if (newIndex === slides.length - 1) {
+            // Jump to the first real slide
+            slideListRef.current?.scrollToIndex({ animated: false, index: 1 });
+            setCurrentIndex(1);
+        } else {
+            setCurrentIndex(newIndex);
+        }
+
+        // Reset and restart the auto-slide interval
+        resetAndStartAutoSlide();
+    };
+
+
     useEffect(() => {
         const slidesCollection = collection(db, "featured-slides");
         const slideQuery = query(slidesCollection, orderBy("createdAt", "desc"));
@@ -49,23 +88,12 @@ const FeaturedSlider: React.FC<FeaturedSliderProps> = ({ route, getDelete }) => 
 
     useEffect(() => {
         if (route.name !== "FeaturedSlideEditor") {
-            slideInterval.current = setInterval(() => {
-                setCurrentIndex(prevIndex => {
-                    let nextIndex = prevIndex + 1;
-                    if (nextIndex >= slides.length) {
-                        // Immediately jump to the first real slide (index 1) when reaching the end
-                        slideListRef.current?.scrollToIndex({ animated: false, index: 1 });
-                        nextIndex = 1;
-                    } else {
-                        slideListRef.current?.scrollToIndex({ animated: true, index: nextIndex });
-                    }
-                    return nextIndex;
-                });
-            }, 3000); // Change slide every 3 seconds
+            resetAndStartAutoSlide();
         }
-
         return () => clearInterval(slideInterval.current!);
     }, [slides, route.name]);
+
+
     return (
         <View>
             <LinearGradient
@@ -79,6 +107,7 @@ const FeaturedSlider: React.FC<FeaturedSliderProps> = ({ route, getDelete }) => 
                 onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
                     useNativeDriver: false,
                 })}
+                onMomentumScrollEnd={onScrollEnd}
                 ref={slideListRef}
                 keyExtractor={(item, index) => `${item.id}-${index}`}
 
