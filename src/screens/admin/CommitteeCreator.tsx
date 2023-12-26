@@ -3,30 +3,110 @@ import React, { useEffect, useState } from 'react'
 import { Committee, committeeLogos, getLogoComponent } from '../../types/Committees';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { Images } from '../../../assets';
 import { AdminDashboardParams } from '../../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { fetchUserForList, getPublicUserData, setCommitteeData } from '../../api/firebaseUtils';
+import { getLeads, getRepresentatives, getTeamMembers, setCommitteeData } from '../../api/firebaseUtils';
 import MembersList from '../../components/MembersList';
-import { PublicUserInfo, UserFilter } from '../../types/User';
+import { PublicUserInfo } from '../../types/User';
 import CustomColorPicker from '../../components/CustomColorPicker';
 
+
 const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
-    const [localCommitteeData, setLocalCommitteeData] = useState<Committee>({ leads: [], memberCount: 0 });
+    const [localCommitteeData, setLocalCommitteeData] = useState<Committee>({ leads: [], representatives: [], memberCount: 0 });
+    const [teamMembers, setTeamMembers] = useState<PublicUserInfo[]>([])
+    const [representatives, setRepresentatives] = useState<PublicUserInfo[]>([])
+    const [leads, setLeads] = useState<PublicUserInfo[]>([])
     const [headModalVisible, setHeadModalVisible] = useState(false);
     const [leadsModalVisible, setLeadsModalVisible] = useState(false);
+    const [repsModalVisible, setRepsModalVisible] = useState(false);
     const [selectedLogoData, setSelectedLogoData] = useState<{
         LogoComponent: React.ElementType;
         width: number;
         height: number;
     } | null>(null);
 
-    const [officers, setOfficers] = useState<PublicUserInfo[]>([])
-    const [members, setMembers] = useState<PublicUserInfo[]>([])
-    const [numLimit, setNumLimit] = useState<number | null>(null);
-    const [filter, setFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "name" });
-    const [initialLoad, setInitialLoad] = useState(true);
     const insets = useSafeAreaInsets();
+
+    useEffect(() => {
+        const fetchTeamUsers = async () => {
+            const fetchTeamMembers = await getTeamMembers();
+            const fetchRepresentatives = await getRepresentatives();
+            const fetchLeads = await getLeads();
+            if (fetchTeamMembers) {
+                setTeamMembers(fetchTeamMembers)
+            }
+            if (fetchRepresentatives) {
+                setRepresentatives(fetchRepresentatives)
+            }
+            if (fetchLeads) {
+                setLeads(fetchLeads)
+            }
+        }
+
+        fetchTeamUsers();
+    }, [])
+
+    const setHeadUserData = (uid: string,) => {
+        const headInfo = teamMembers.find(member => member.uid === uid);
+        if (headInfo) {
+            setLocalCommitteeData({
+                ...localCommitteeData,
+                head: headInfo
+            });
+        }
+    };
+
+    const setLeadUserData = (uid: string) => {
+        const leadInfo = leads.find(lead => lead.uid === uid);
+        if (leadInfo) {
+            setLocalCommitteeData(prevCommitteeData => ({
+                ...prevCommitteeData,
+                leads: [...(prevCommitteeData?.leads || []), leadInfo]
+            }));
+        }
+    };
+
+    const setRepresentativeUserData = (uid: string) => {
+        const repInfo = representatives.find(rep => rep.uid === uid);
+        if (repInfo) {
+            setLocalCommitteeData(prevCommitteeData => ({
+                ...prevCommitteeData,
+                leads: [...(prevCommitteeData?.leads || []), repInfo]
+            }));
+        }
+    };
+
+    const addLead = (uid: string) => {
+        const currentUIDList = localCommitteeData?.leads || [];
+        if (currentUIDList.some(lead => lead.uid === uid)) {
+            return;
+        }
+
+        setLeadUserData(uid);
+    };
+
+    const addRepresentative = (uid: string) => {
+        const currentUIDList = localCommitteeData?.representatives || [];
+        if (currentUIDList.some(rep => rep.uid === uid)) {
+            return;
+        }
+
+        setRepresentativeUserData(uid);
+    };
+
+    const removeLead = (uid: string) => {
+        setLocalCommitteeData(prevCommitteeData => ({
+            ...prevCommitteeData,
+            leads: prevCommitteeData?.leads?.filter(lead => lead.uid !== uid) || []
+        }));
+    };
+
+    const removeRepresentative = (uid: string) => {
+        setLocalCommitteeData(prevCommitteeData => ({
+            ...prevCommitteeData,
+            representatives: prevCommitteeData?.representatives?.filter(rep => rep.uid !== uid) || []
+        }));
+    };
 
 
     const handleColorChosen = (color: string) => {
@@ -36,86 +116,6 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         });
     };
 
-    const fetchHeadUserData = async (uid: string) => {
-        const fetchedInfo = await getPublicUserData(uid);
-        if (fetchedInfo) {
-            setLocalCommitteeData({
-                ...localCommitteeData,
-                head: { ...fetchedInfo, uid }
-            });
-        }
-    };
-
-    const fetchLeadUserData = async (uid: string) => {
-        const fetchedInfo = await getPublicUserData(uid);
-        if (fetchedInfo) {
-            setLocalCommitteeData(prevCommitteeData => ({
-                ...prevCommitteeData,
-                leads: [...(prevCommitteeData?.leads || []), { ...fetchedInfo, uid }]
-            }));
-        }
-    };
-
-    const addUIDToList = (uid: string) => {
-        const currentUIDList = localCommitteeData?.leads || [];
-        if (currentUIDList.some(lead => lead.uid === uid)) {
-            return;
-        }
-
-        fetchLeadUserData(uid);
-    };
-
-    const removeUIDFromList = (uid: string) => {
-        setLocalCommitteeData(prevCommitteeData => ({
-            ...prevCommitteeData,
-            leads: prevCommitteeData?.leads?.filter(lead => lead.uid !== uid) || []
-        }));
-    };
-
-    // Functions below are for fetching data for Head UID and Lead UIDs list
-    const loadUsers = async () => {
-        const getMembers = await fetchUserForList({ filter: filter });
-        if (getMembers.members.length > 0) {
-            setMembers(getMembers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
-        }
-    }
-
-    useEffect(() => {
-        const fetchData = async () => {
-            loadUsers();
-        };
-        fetchData().then(() => {
-            setInitialLoad(false);
-        });
-    }, []);
-
-    useEffect(() => {
-        const resetData = async () => {
-            setMembers([]);
-        };
-
-        if (!initialLoad) {
-            resetData().then(() => {
-                loadUsers();
-            });
-        }
-
-    }, [filter]);
-
-    const loadOfficers = async () => {
-        const officers = await fetchUserForList({ isOfficer: true, filter: { classYear: "", major: "", orderByField: "name" } });
-        if (officers.members.length > 0) {
-            setOfficers(officers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
-        }
-    }
-
-
-    useEffect(() => {
-        loadOfficers()
-        loadUsers()
-    }, [])
-
-
     // Update the selected logo component whenever localCommitteeData.logo changes
     useEffect(() => {
         if (localCommitteeData.logo) {
@@ -123,8 +123,6 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
             setSelectedLogoData(logoData);
         }
     }, [localCommitteeData.logo]);
-
-
 
     const LogoSelector = ({ onLogoSelected }: { onLogoSelected: (logoName: keyof typeof committeeLogos) => void }) => {
         return (
@@ -138,17 +136,18 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         );
     };
 
-
     return (
         <SafeAreaView>
             <ScrollView>
-                {/* Image */}
-                <View className='justify-center items-center'>
-                    <Image
-                        className="mt-2 h-60 w-[90%] bg-gray-700 rounded-xl"
-                        source={Images.COMMITTEE}
-                    />
+                <View className='flex-row items-center mx-5 mt-1'>
+                    <View className='absolute w-full justify-center items-center'>
+                        <Text className="text-2xl font-semibold" >Committee</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Octicons name="chevron-left" size={30} color="black" />
+                    </TouchableOpacity>
                 </View>
+
 
                 {/* Form */}
                 <View className='mt-9 p-6'>
@@ -206,7 +205,7 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                                 <View key={index}>
                                     <View className='flex-row'>
                                         <Text className='text-lg text-center'>{userInfo.name}</Text>
-                                        <TouchableOpacity className="pl-2" onPress={() => removeUIDFromList(userInfo.uid!)}>
+                                        <TouchableOpacity className="pl-2" onPress={() => removeLead(userInfo.uid!)}>
                                             <Octicons name="x" size={25} color="red" />
                                         </TouchableOpacity>
                                     </View>
@@ -220,8 +219,34 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                                 </TouchableOpacity>
                             }
                         </View>
-                    </View>
 
+
+                        <View className='items-center flex-1'>
+                            <Text className='text-gray-500 text-lg text-center'>Rep UIDs</Text>
+                            <TouchableOpacity onPress={() => setRepsModalVisible(true)}>
+                                {localCommitteeData?.representatives?.length === 0 &&
+                                    <Text className='text-lg text-center'>Select Reps</Text>
+                                }
+                            </TouchableOpacity>
+                            {localCommitteeData?.representatives?.map((userInfo, index) => (
+                                <View key={index}>
+                                    <View className='flex-row'>
+                                        <Text className='text-lg text-center'>{userInfo.name}</Text>
+                                        <TouchableOpacity className="pl-2" onPress={() => removeRepresentative(userInfo.uid!)}>
+                                            <Octicons name="x" size={25} color="red" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            ))}
+                            {localCommitteeData?.representatives?.length! > 0 &&
+                                <TouchableOpacity
+                                    className='text-center bg-pale-orange p-1 mt-2 rounded-md'
+                                    onPress={() => setRepsModalVisible(true)}>
+                                    <Text className='text-lg'>Add Reps</Text>
+                                </TouchableOpacity>
+                            }
+                        </View>
+                    </View>
 
                     <View className='mt-20'>
                         <Text className='text-gray-500 mb-2'>Members Application Link</Text>
@@ -283,15 +308,16 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
                     className='bg-white'>
 
-                    <View className='flex-row items-center h-10 mb-4'>
+                    <View className='flex-row items-center h-10 mb-4 justify-end'>
                         <View className='w-screen absolute'>
                             <Text className="text-2xl font-bold justify-center text-center">Select a Head</Text>
                         </View>
-                        <View className='pl-6'>
-                            <TouchableOpacity className=" bg-pale-orange p-2 rounded-md" onPress={() => setHeadModalVisible(false)} >
-                                <Text className='text-xl font-semibold'>Cancel</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity
+                            className='ml-6 px-4'
+                            onPress={() => setHeadModalVisible(false)}
+                        >
+                            <Octicons name="x" size={26} color="black" />
+                        </TouchableOpacity>
                     </View>
 
 
@@ -299,11 +325,9 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                         <MembersList
                             handleCardPress={(uid) => {
                                 setHeadModalVisible(false)
-                                fetchHeadUserData(uid)
+                                setHeadUserData(uid)
                             }}
-                            officersList={officers}
-                            membersList={[]}
-                            DEFAULT_NUM_LIMIT={null}
+                            users={teamMembers}
                         />
                     </View>
                 </View>
@@ -325,26 +349,60 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                         <View className='w-screen absolute'>
                             <Text className="text-2xl font-bold justify-center text-center">Select a Lead</Text>
                         </View>
-                        <View className='pl-6'>
-                            <TouchableOpacity className=" bg-pale-orange p-2 rounded-md" onPress={() => setLeadsModalVisible(false)} >
-                                <Text className='text-xl font-semibold'>Cancel</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity
+                            className='ml-6 px-4'
+                            onPress={() => setLeadsModalVisible(false)}
+                        >
+                            <Octicons name="x" size={26} color="black" />
+                        </TouchableOpacity>
                     </View>
 
 
                     <View className="h-[100%] w-[100%] bg-white">
                         <MembersList
                             handleCardPress={(uid) => {
-                                addUIDToList(uid)
+                                addLead(uid)
                                 setLeadsModalVisible(false)
                             }}
-                            membersList={members}
-                            officersList={[]}
-                            filter={filter}
-                            setFilter={setFilter}
-                            setNumLimit={setNumLimit}
-                            DEFAULT_NUM_LIMIT={null}
+                            users={leads}
+                        />
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={repsModalVisible}
+                onRequestClose={() => {
+                    setRepsModalVisible(false);
+                }}
+            >
+                <View
+                    style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+                    className='bg-white'>
+
+                    <View className='flex-row items-center h-10 mb-4'>
+                        <View className='w-screen absolute'>
+                            <Text className="text-2xl font-bold justify-center text-center">Select a Rep</Text>
+                        </View>
+                        <TouchableOpacity
+                            className='ml-6 px-4'
+                            onPress={() => setRepsModalVisible(false)}
+                        >
+                            <Octicons name="x" size={26} color="black" />
+                        </TouchableOpacity>
+
+                    </View>
+
+
+                    <View className="h-[100%] w-[100%] bg-white">
+                        <MembersList
+                            handleCardPress={(uid) => {
+                                addRepresentative(uid)
+                                setRepsModalVisible(false)
+                            }}
+                            users={representatives}
                         />
                     </View>
                 </View>

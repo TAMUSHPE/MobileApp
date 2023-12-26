@@ -160,7 +160,7 @@ type UserFilter = {
 type FetchMembersOptions = {
     lastUserSnapshot?: any,
     isOfficer?: boolean,
-    numLimit?: number | null, 
+    numLimit?: number | null,
     filter: UserFilter,
 };
 
@@ -170,7 +170,7 @@ export const fetchUserForList = async (options: FetchMembersOptions) => {
     const {
         lastUserSnapshot = null,
         isOfficer = false,
-        numLimit = null, 
+        numLimit = null,
         filter,
     } = options;
     let userQuery: Query<DocumentData, DocumentData> = collection(db, 'users');
@@ -186,21 +186,21 @@ export const fetchUserForList = async (options: FetchMembersOptions) => {
     }
 
     userQuery = query(userQuery, orderBy(filter.orderByField));
-    
+
     if (numLimit !== null) {
         userQuery = query(userQuery, limit(numLimit));
     }
 
     if (lastUserSnapshot) {
         userQuery = query(userQuery, startAfter(lastUserSnapshot));
-    }   
+    }
 
     try {
         const snapshot = await getDocs(userQuery);
         let hasMoreUser = numLimit !== null ? snapshot.docs.length === numLimit : false;
-        
+
         const memberUID = snapshot.docs.map(doc => {
-            return doc.id 
+            return doc.id
         });
 
         return { members: snapshot.docs, uid: memberUID, hasMoreUser };
@@ -314,7 +314,7 @@ export const getCommittees = async (): Promise<Committee[]> => {
         const committees = snapshot.docs
             .filter(doc => doc.id !== "committeeCounts") // ignore committeeCounts document
             .map(doc => ({
-                firebaseDocName: doc.id, 
+                firebaseDocName: doc.id,
                 ...doc.data()
             }));
         return committees;
@@ -541,7 +541,7 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     return EventLogStatus.ERROR;
 };
 
-export const  getAttendanceNumber = async (eventId: string): Promise<number | null> => {
+export const getAttendanceNumber = async (eventId: string): Promise<number | null> => {
     try {
         const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
         const summaryDocRef = await getDoc(summaryDoc);
@@ -705,22 +705,106 @@ export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => 
     }
 }
 
+export const getTeamMembers = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const querySnapshot = await getDocs(userRef);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const users = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            } as PublicUserInfo
+        });
+
+        const filteredUsers = users.filter(user =>
+            user.roles?.officer === true ||
+            user.roles?.lead === true ||
+            user.roles?.representative === true
+        );
+
+        return filteredUsers;
+
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
+export const getRepresentatives = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const querySnapshot = await getDocs(userRef);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const users = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            } as PublicUserInfo
+        });
+
+        const representatives = users.filter(user => user.roles?.representative === true);
+
+        return representatives;
+
+    } catch (error) {
+        console.error("Error fetching representatives:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
+
+export const getLeads = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const querySnapshot = await getDocs(userRef);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const users = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            } as PublicUserInfo
+        });
+
+        const leads = users.filter(user => user.roles?.lead === true);
+
+        return leads;
+
+    } catch (error) {
+        console.error("Error fetching leads:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
+
+
+
+
 
 export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
     const memberSHPERef = collection(db, 'memberSHPE');
     const memberSHPEQuery = query(memberSHPERef);
     const memberSHPESnapshot = await getDocs(memberSHPEQuery);
     const memberSHPEUserIds = memberSHPESnapshot.docs.map(doc => doc.id);
-  
-    const members:PublicUserInfo[] = [];
+
+    const members: PublicUserInfo[] = [];
     for (const userId of memberSHPEUserIds) {
-      const userDocRef = doc(db, 'users', userId);
-      const userDocSnap = await getDoc(userDocRef);
-      if (userDocSnap.exists()) {
-        members.push({ uid: userId, ...userDocSnap.data() });
-      }
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+            members.push({ uid: userId, ...userDocSnap.data() });
+        }
     }
-    
+
     return members;
 };
 
@@ -729,34 +813,34 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
     const resumeQuery = query(resumeRef);
     const resumeSnapshot = await getDocs(resumeQuery);
     const resumeUserIds = resumeSnapshot.docs.map(doc => doc.id);
-  
-    const members:PublicUserInfo[] = [];
+
+    const members: PublicUserInfo[] = [];
     for (const userId of resumeUserIds) {
-      const userDocRef = doc(db, 'users', userId);
-      const userDocSnap = await getDoc(userDocRef);
-      if (userDocSnap.exists()) {
-        members.push({ uid: userId, ...userDocSnap.data() });
-      }
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+            members.push({ uid: userId, ...userDocSnap.data() });
+        }
     }
-    
+
     return members;
 };
 
-  
-  export const isUsernameUnique = async (username: string): Promise<boolean> => {
+
+export const isUsernameUnique = async (username: string): Promise<boolean> => {
     const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');
-  
+
     try {
-      const result = await checkUsernameUniqueness({ username });
-      return result.data.unique;
+        const result = await checkUsernameUniqueness({ username });
+        return result.data.unique;
     } catch (error) {
-      console.error('Error checking username uniqueness:', error);
-      return false; // handle error appropriately
+        console.error('Error checking username uniqueness:', error);
+        return false; // handle error appropriately
     }
-  };
+};
 
 
-  export const fetchUsersWithPublicResumes = async (filters: {
+export const fetchUsersWithPublicResumes = async (filters: {
     major?: string;
     classYear?: string;
 } = {}) => {
@@ -770,7 +854,7 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
         }
 
         const querySnapshot = await getDocs(query(collection(db, 'users'), ...queryConstraints));
-        
+
         const usersArray = querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
 
         return usersArray;
