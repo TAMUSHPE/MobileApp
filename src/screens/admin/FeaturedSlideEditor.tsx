@@ -1,24 +1,26 @@
-import { View, Text, TouchableOpacity, Image, TextInput, ScrollView } from 'react-native'
+import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { AdminDashboardParams } from '../../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from "expo-image-picker";
-import { deleteObject, ref } from "firebase/storage";
+import { Octicons } from '@expo/vector-icons';
 import { db, storage } from '../../config/firebaseConfig';
 import { getBlobFromURI, selectImage, uploadFile } from '../../api/fileSelection';
+import { deleteObject, ref } from "firebase/storage";
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
-import FeaturedSlider from '../../components/FeaturedSlider';
+import { AdminDashboardParams } from '../../types/Navigation';
 import { Slide } from '../../types/slides';
 import { CommonMimeTypes } from '../../helpers/validation';
+import FeaturedSlider from '../../components/FeaturedSlider';
+import DismissibleModal from '../../components/DismissibleModal';
 
 const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [image, setImage] = useState<Blob | null>(null);
     const [imageName, setImageName] = useState<string | null | undefined>();
     const [localImageURI, setLocalImageURI] = useState<string>("");
-    const [eventName, setEventName] = useState<string>("");
     const [slideDelete, setSlideDelete] = useState<Slide | null>(null);
     const [imageLocation, setImageLocation] = useState<string | null>(null);
+    const [infoVisible, setInfoVisible] = useState<boolean>(false);
 
     const getDelete = async (id: Slide) => {
         setSlideDelete(id);
@@ -74,7 +76,6 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
     const onImageUploadSuccess = async (URL: string) => {
         setLocalImageURI("");
         setImage(null);
-        setEventName("");
         setImageName("");
         setImageLocation(null);
         saveRecord(URL, Date.now());
@@ -83,7 +84,6 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
     const saveRecord = async (url: string, createdAt: number) => {
         try {
             const docRef = await addDoc(collection(db, "featured-slides"), {
-                eventName,
                 url,
                 createdAt,
                 fireStoreLocation: `/featured-slides/${imageLocation}`
@@ -98,51 +98,105 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
     }
 
     return (
-        <ScrollView>
-            <SafeAreaView>
-                <FeaturedSlider route={route} getDelete={getDelete} />
+        <SafeAreaView edges={["top"]}>
+            <View className='flex-row items-center h-10'>
+                <View className='pl-6'>
+                    <TouchableOpacity activeOpacity={1} className="px-2" onPress={() => navigation.goBack()}>
+                        <Octicons name="chevron-left" size={30} color="black" />
+                    </TouchableOpacity>
+                </View>
+                <View className='flex-1 items-center'>
+                    <Text className="text-2xl font-bold text-black">Feature Images</Text>
+                </View>
+                <View className="pr-6">
+                    <TouchableOpacity activeOpacity={1} onPress={() => setInfoVisible(true)}>
+                        <Octicons name="info" size={25} color="black" />
+                    </TouchableOpacity>
+                </View>
+            </View>
 
-                <View className='justify-center items-center '>
-                    {localImageURI != "" &&
+            <FeaturedSlider route={route} getDelete={getDelete} />
+
+
+            {localImageURI == "" && (
+                <TouchableOpacity
+                    className='bg-pale-blue w-36 py-2 m-4 items-center justify-center rounded-lg'
+                    onPress={() => selectFeaturedImage()}
+                >
+                    <Text className='text-white text-lg font-semibold'>Choose Image</Text>
+                </TouchableOpacity>
+
+            )}
+            {localImageURI != "" && (
+                <View className='m-6'>
+                    <Text className='text-2xl font-bold'>Preview</Text>
+                    <View className='items-center justify-center mt-4'>
                         <Image
-                            className="h-48 w-[92%] rounded-2xl"
+                            className="h-40 w-[92%] rounded-3xl"
                             source={{ uri: localImageURI as string }}
                         />
-                    }
-                    <TouchableOpacity
-                        className='bg-blue-400 h-10 w-16 items-center justify-center'
-                        onPress={() => selectFeaturedImage()}
-                    >
-                        <Text>Select Image</Text>
-                    </TouchableOpacity>
-                    <View className='pb-96'>
-                        <View className='mt-20'>
-                            <Text className='text-gray-500 mb-2'>Event Name</Text>
-                            <TextInput
-                                className='w-full rounded-md text-lg px-2 py-1 bg-white'
-                                value={eventName}
-                                onChangeText={(text) => setEventName(text)}
-                                placeholder="Event Name"
-                            />
-                        </View>
+                    </View>
+
+                    <View className='flex-row w-full items-center justify-around mt-4'>
                         <TouchableOpacity
-                            className='bg-blue-400 h-10 w-16 items-center justify-center'
+                            className='bg-pale-blue items-center justify-center w-36 py-2 rounded-md'
+                            onPress={() => selectFeaturedImage()}
+
+                        >
+                            <Text className='text-white font-semibold text-xl'>Choose Image</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            className='bg-pale-blue items-center justify-center w-36 py-2 rounded-md'
                             onPress={() => {
                                 uploadFile(
                                     image!,
-                                    CommonMimeTypes.RESUME_FILES,
+                                    CommonMimeTypes.IMAGE_FILES,
                                     `/featured-slides/${imageLocation}`,
                                     onImageUploadSuccess
                                 );
-                            }
-                            }
+                            }}
                         >
-                            <Text>Upload Image</Text>
+                            <Text className='text-white font-semibold text-xl'>Upload Image</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
-            </SafeAreaView>
-        </ScrollView>
+            )}
+
+            <DismissibleModal
+                visible={infoVisible}
+                setVisible={setInfoVisible}
+            >
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ minWidth: 325 }}>
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center'>
+                            <Octicons name="info" size={24} color="black" />
+                            <Text className='text-2xl font-semibold ml-2'>Instructions</Text>
+                        </View>
+                        <View>
+                            <TouchableOpacity onPress={() => setInfoVisible(false)}>
+                                <Octicons name="x" size={24} color="black" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <View className='w-[85%]'>
+                        <Text className='text-md font-semibold'>Featured Images are located on the home screen of the app</Text>
+                    </View>
+
+                    <View className='w-[85%]'>
+                        <Text className='text-md font-semibold'>Click “Choose Image” to choose an image to be added to featured images</Text>
+                    </View>
+
+                    <View className='w-[85%]'>
+                        <Text className='text-md font-semibold'>Click “upload image” once you confirm with the preview and to upload or click “choose image to upload another image”</Text>
+                    </View>
+
+                    <View className='w-[85%]'>
+                        <Text className='text-md font-semibold'>
+                            Click Approve or Deny and the member will be notified.</Text>
+                    </View>
+                </View>
+            </DismissibleModal>
+        </SafeAreaView>
     )
 }
 
