@@ -119,13 +119,17 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                 <View className='mt-11'>
                     <Text className='text-2xl font-bold mb-1'>Meet the Team</Text>
                     <View className='px-3 pt-5 bg-white rounded-lg shadow-sm shadow-slate-300'>
-                        <Text className='font-bold text-lg mb-2' style={{ color: color }}>Head</Text>
-                        <CommitteeTeamCard userData={head!} navigation={navigation} />
+                        <View className='mb-6'>
+                            <Text className='font-bold text-lg mb-2' style={{ color: color }}>Head</Text>
+                            <CommitteeTeamCard userData={head!} navigation={navigation} />
+                        </View>
                         {representatives && representatives.length > 0 && (
                             <>
                                 <Text className='font-bold text-lg mb-2' style={{ color: color }}>Representatives</Text>
                                 {representatives.map((representative, index) => (
-                                    <CommitteeTeamCard key={index} userData={representative} navigation={navigation} />
+                                    <View className='mb-6'>
+                                        <CommitteeTeamCard key={index} userData={representative} navigation={navigation} />
+                                    </View>
                                 ))}
                             </>
                         )}
@@ -133,7 +137,9 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                             <>
                                 <Text className='font-bold text-lg mb-2' style={{ color: color }}>Leads</Text>
                                 {leads.map((representative, index) => (
-                                    <CommitteeTeamCard key={index} userData={representative} navigation={navigation} />
+                                    <View className='mb-6'>
+                                        <CommitteeTeamCard key={index} userData={representative} navigation={navigation} />
+                                    </View>
                                 ))}
                             </>
                         )}

@@ -1,29 +1,43 @@
-import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal } from 'react-native'
+import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Committee, committeeLogos, getLogoComponent } from '../../types/Committees';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Octicons } from '@expo/vector-icons';
+import { Octicons, FontAwesome } from '@expo/vector-icons';
 import { AdminDashboardParams } from '../../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getLeads, getRepresentatives, getTeamMembers, setCommitteeData } from '../../api/firebaseUtils';
 import MembersList from '../../components/MembersList';
 import { PublicUserInfo } from '../../types/User';
 import CustomColorPicker from '../../components/CustomColorPicker';
+import DismissibleModal from '../../components/DismissibleModal';
+import CommitteeTeamCard from '../involvement/CommitteeTeamCard';
 
 
 const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
-    const [localCommitteeData, setLocalCommitteeData] = useState<Committee>({ leads: [], representatives: [], memberCount: 0 });
+    const [localCommitteeData, setLocalCommitteeData] = useState<Committee>({
+        leads: [],
+        representatives: [],
+        memberCount: 0,
+        memberApplicationLink: '',
+        representativeApplicationLink: '',
+        leadApplicationLink: ''
+    });
     const [teamMembers, setTeamMembers] = useState<PublicUserInfo[]>([])
     const [representatives, setRepresentatives] = useState<PublicUserInfo[]>([])
     const [leads, setLeads] = useState<PublicUserInfo[]>([])
     const [headModalVisible, setHeadModalVisible] = useState(false);
     const [leadsModalVisible, setLeadsModalVisible] = useState(false);
     const [repsModalVisible, setRepsModalVisible] = useState(false);
+    const [logoSelectModal, setLogoSelectModal] = useState(false);
     const [selectedLogoData, setSelectedLogoData] = useState<{
         LogoComponent: React.ElementType;
         width: number;
         height: number;
     } | null>(null);
+
+    const [isMemberLinkActive, setIsMemberLinkActive] = useState(false);
+    const [isRepLinkActive, setIsRepLinkActive] = useState(false);
+    const [isLeadLinkActive, setIsLeadLinkActive] = useState(false);
 
     const insets = useSafeAreaInsets();
 
@@ -71,7 +85,7 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         if (repInfo) {
             setLocalCommitteeData(prevCommitteeData => ({
                 ...prevCommitteeData,
-                leads: [...(prevCommitteeData?.leads || []), repInfo]
+                representatives: [...(prevCommitteeData?.representatives || []), repInfo]
             }));
         }
     };
@@ -124,40 +138,86 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         }
     }, [localCommitteeData.logo]);
 
-    const LogoSelector = ({ onLogoSelected }: { onLogoSelected: (logoName: keyof typeof committeeLogos) => void }) => {
+    const BubbleToggle = ({ isActive, onToggle, label }: {
+        isActive: boolean,
+        onToggle: () => void,
+        label: string
+    }) => {
         return (
-            <View>
-                {Object.entries(committeeLogos).map(([name, logoData]) => (
-                    <TouchableOpacity key={name} onPress={() => onLogoSelected(name as keyof typeof committeeLogos)}>
-                        <logoData.LogoComponent width={logoData.width} height={logoData.height} />
-                    </TouchableOpacity>
-                ))}
+            <View className='flex-row items-center py-1 mb-3'>
+                <Pressable onPress={onToggle}>
+                    <View className={`w-7 h-7 mr-3 rounded-md border-2 border-pale-blue ${isActive && 'bg-pale-blue'}`} />
+                </Pressable>
+                <Text className=" text-lg">{label}</Text>
             </View>
         );
     };
 
     return (
         <SafeAreaView>
-            <ScrollView>
-                <View className='flex-row items-center mx-5 mt-1'>
-                    <View className='absolute w-full justify-center items-center'>
-                        <Text className="text-2xl font-semibold" >Committee</Text>
-                    </View>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Octicons name="chevron-left" size={30} color="black" />
-                    </TouchableOpacity>
+            {/* Header */}
+            <View className='flex-row items-center mx-5 mt-1'>
+                <View className='absolute w-full justify-center items-center'>
+                    <Text className="text-2xl font-semibold" >Committee</Text>
                 </View>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Octicons name="chevron-left" size={30} color="black" />
+                </TouchableOpacity>
+            </View>
 
+            <ScrollView className='mt-8'>
+                {/* Logo, Name, and Color Selection */}
+                <View className='flex-row mx-9 h-32'>
+                    {selectedLogoData && (() => {
+                        const { LogoComponent, width, height } = selectedLogoData;
+                        return (
+                            <View
+                                className='w-[30%] rounded-lg'
+                                style={{ backgroundColor: localCommitteeData?.color }}
+                            >
+                                <View style={{ backgroundColor: "rgba(255,255,255,0.4)" }} className='h-full w-full absolute' />
+                                <TouchableOpacity
+                                    className='items-center justify-center h-full'
+                                    onPress={() => setLogoSelectModal(true)}
+                                >
+                                    <LogoComponent width={width} height={height} />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    className='absolute left-0 -ml-4 mt-4 rounded-full h-8 w-8 items-center justify-center'
+                                    style={{ backgroundColor: localCommitteeData?.color }}
+                                    onPress={() => {
+                                        setLocalCommitteeData({ ...localCommitteeData, logo: undefined })
+                                        setSelectedLogoData(null)
+                                    }}
+                                >
+                                    <Octicons name="x" size={22} color="white" />
+                                </TouchableOpacity>
+                            </View>
+                        );
+                    })()}
 
-                {/* Form */}
-                <View className='mt-9 p-6'>
-                    <View>
-                        <Text className='text-gray-500 mb-1'>Committee Name</Text>
+                    {!selectedLogoData && (
+                        <TouchableOpacity
+                            className='w-[30%]'
+                            onPress={() => setLogoSelectModal(true)}
+                        >
+                            <View className='border-2 border-pale-blue h-full rounded-2xl border-dashed'>
+                                <View className='items-center justify-center h-full'>
+                                    <FontAwesome name="camera" size={40} color="#72A9BE" />
+                                    <Text className='text-center text-pale-blue text-lg'>UPLOAD</Text>
+                                </View>
+                            </View>
+                            <View className='absolute left-0 -ml-4 mt-4 bg-pale-blue rounded-full h-8 w-8 items-center justify-center'>
+                                <Octicons name="plus" size={24} color="white" />
+                            </View>
+                        </TouchableOpacity>
+                    )}
+                    <View className='w-[70%] pl-4'>
                         <View className='flex-row border-b-2 border-slate-400'>
                             <TextInput
                                 className="text-lg text-center py-1"
                                 onChangeText={(text: string) => {
-                                    const trimmedText = text.trim(); // Remove spaces from both ends
+                                    const trimmedText = text.trim();
                                     const formattedFirebaseName = trimmedText.toLowerCase().replace(/\s+/g, '-');
                                     setLocalCommitteeData({
                                         ...localCommitteeData,
@@ -169,128 +229,184 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                                 placeholder='Select a committee name'
                             />
                         </View>
+                        {selectedLogoData && (
+                            <View className='z-50 flex-1'>
+                                <CustomColorPicker onColorChosen={handleColorChosen} />
+                            </View>
+                        )}
                     </View>
+                </View>
 
-                    <View className='mt-8'>
-                        <Text className='text-gray-500 mb-1'>Select a logo</Text>
-                    </View>
-                    <LogoSelector onLogoSelected={(logoName) => setLocalCommitteeData({ ...localCommitteeData, logo: logoName })} />
-
-                    {selectedLogoData && (() => {
-                        const { LogoComponent, width, height } = selectedLogoData;
-                        return (
-                            <LogoComponent width={width} height={height} />
-                        );
-                    })()}
-
-                    <View className='z-50 mt-4'>
-                        <CustomColorPicker onColorChosen={handleColorChosen} />
-                    </View>
-                    <View className='flex-row mt-4 w-full '>
-                        <View className='items-center flex-1'>
-                            <Text className='text-gray-500 text-lg text-center'>Head UID</Text>
-                            <TouchableOpacity onPress={() => setHeadModalVisible(true)}>
-                                <Text className='text-lg text-center'>{localCommitteeData?.head?.name || "Select a Head"}</Text>
-                            </TouchableOpacity>
-                        </View>
-
-                        <View className='items-center flex-1'>
-                            <Text className='text-gray-500 text-lg text-center'>Lead UIDs</Text>
-                            <TouchableOpacity onPress={() => setLeadsModalVisible(true)}>
-                                {localCommitteeData?.leads?.length === 0 &&
-                                    <Text className='text-lg text-center'>Select Leads</Text>
-                                }
-                            </TouchableOpacity>
-                            {localCommitteeData?.leads?.map((userInfo, index) => (
-                                <View key={index}>
-                                    <View className='flex-row'>
-                                        <Text className='text-lg text-center'>{userInfo.name}</Text>
-                                        <TouchableOpacity className="pl-2" onPress={() => removeLead(userInfo.uid!)}>
-                                            <Octicons name="x" size={25} color="red" />
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            ))}
-                            {localCommitteeData?.leads?.length! > 0 &&
+                {/* Team Selection */}
+                <View className='mt-8 mx-6'>
+                    <Text className='text-2xl font-bold mb-4'>Choose your team</Text>
+                    <View>
+                        <View className='flex-row items-center'>
+                            <Text className='text-gray-600 font-semibold text-lg'>Head</Text>
+                            {!localCommitteeData.head && (
                                 <TouchableOpacity
-                                    className='text-center bg-pale-orange p-1 mt-2 rounded-md'
-                                    onPress={() => setLeadsModalVisible(true)}>
-                                    <Text className='text-lg'>Add Leads</Text>
+                                    className='bg-pale-blue rounded-full h-5 w-5 ml-2 items-center justify-center'
+                                    onPress={() => setHeadModalVisible(true)}
+                                >
+                                    <Octicons name="plus" size={16} color="white" />
                                 </TouchableOpacity>
-                            }
+                            )}
                         </View>
+                        {localCommitteeData.head && (
+                            <View className='flex-row items-center mt-3 mb-6'>
+                                <CommitteeTeamCard
+                                    userData={localCommitteeData.head}
+                                />
 
-
-                        <View className='items-center flex-1'>
-                            <Text className='text-gray-500 text-lg text-center'>Rep UIDs</Text>
-                            <TouchableOpacity onPress={() => setRepsModalVisible(true)}>
-                                {localCommitteeData?.representatives?.length === 0 &&
-                                    <Text className='text-lg text-center'>Select Reps</Text>
-                                }
-                            </TouchableOpacity>
-                            {localCommitteeData?.representatives?.map((userInfo, index) => (
-                                <View key={index}>
-                                    <View className='flex-row'>
-                                        <Text className='text-lg text-center'>{userInfo.name}</Text>
-                                        <TouchableOpacity className="pl-2" onPress={() => removeRepresentative(userInfo.uid!)}>
-                                            <Octicons name="x" size={25} color="red" />
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            ))}
-                            {localCommitteeData?.representatives?.length! > 0 &&
                                 <TouchableOpacity
-                                    className='text-center bg-pale-orange p-1 mt-2 rounded-md'
-                                    onPress={() => setRepsModalVisible(true)}>
-                                    <Text className='text-lg'>Add Reps</Text>
+                                    className='px-4'
+                                    onPress={() => {
+                                        setLocalCommitteeData({ ...localCommitteeData, head: undefined })
+                                    }}
+                                >
+                                    <Octicons name="x" size={26} color="red" />
                                 </TouchableOpacity>
-                            }
-                        </View>
+                            </View>
+                        )}
                     </View>
 
-                    <View className='mt-20'>
-                        <Text className='text-gray-500 mb-2'>Members Application Link</Text>
+                    <View>
+                        <View className='flex-row items-center'>
+                            <Text className='text-gray-600 font-semibold text-lg'>Representative</Text>
+                            <TouchableOpacity
+                                className='bg-pale-blue rounded-full h-5 w-5 ml-2 items-center justify-center'
+                                onPress={() => setRepsModalVisible(true)}
+                            >
+                                <Octicons name="plus" size={16} color="white" />
+                            </TouchableOpacity>
+                        </View>
+                        {localCommitteeData.representatives?.map((representative, index) => (
+                            <View className='flex-row items-center mt-3 mb-6'>
+                                <CommitteeTeamCard
+                                    userData={representative}
+                                />
+
+                                <TouchableOpacity
+                                    className='px-4'
+                                    onPress={() => { removeRepresentative(representative?.uid!) }}
+                                >
+                                    <Octicons name="x" size={26} color="red" />
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                    </View>
+
+                    <View>
+                        <View className='flex-row items-center mt-1'>
+                            <Text className='text-gray-600 font-semibold text-lg'>Leads</Text>
+                            <TouchableOpacity
+                                className='bg-pale-blue rounded-full h-5 w-5 ml-2 items-center justify-center'
+                                onPress={() => setLeadsModalVisible(true)}
+                            >
+                                <Octicons name="plus" size={16} color="white" />
+                            </TouchableOpacity>
+                        </View>
+                        {localCommitteeData.leads?.map((lead, index) => (
+                            <View className='flex-row items-center mt-3 mb-6'>
+                                <CommitteeTeamCard
+                                    userData={lead}
+                                />
+                                <TouchableOpacity
+                                    className='px-4'
+                                    onPress={() => { removeLead(lead?.uid!) }}
+                                >
+                                    <Octicons name="x" size={26} color="red" />
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                    </View>
+                </View>
+
+                {/* Description Form */}
+                <View className='mt-8 mx-6'>
+                    <Text className='text-2xl font-bold mb-2'>Description</Text>
+                    <TextInput
+                        className='w-full rounded-md text-lg px-2 py-1 bg-slate-300 h-32'
+                        value={localCommitteeData?.description}
+                        onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, description: text })}
+                        placeholder="Add a description"
+                        multiline={true}
+                        style={{ textAlignVertical: 'top' }}
+                    />
+                </View>
+
+                {/* Application */}
+                <View className='mt-8 mx-6'>
+                    <Text className='text-2xl font-bold mb-2'>Applications</Text>
+                    <BubbleToggle
+                        isActive={isMemberLinkActive}
+                        onToggle={() => {
+                            setIsMemberLinkActive(!isMemberLinkActive);
+                            if (isMemberLinkActive) {
+                                setLocalCommitteeData({ ...localCommitteeData, memberApplicationLink: '' });
+                            }
+                        }}
+                        label="Members Application Link"
+                    />
+                    {isMemberLinkActive && (
                         <TextInput
-                            className='w-full rounded-md text-lg px-2 py-1 bg-white'
-                            value={localCommitteeData?.memberApplicationLink}
+                            className='w-full rounded-md text-lg px-2 py-1 bg-slate-300 mb-6'
+                            value={localCommitteeData.memberApplicationLink}
                             onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, memberApplicationLink: text })}
                             placeholder="Add member application link"
                         />
-                    </View>
+                    )}
 
-                    <View className='mt-8'>
-                        <Text className='text-gray-500 mb-2'>Leads Application Link</Text>
+                    {/* Representatives Application Link */}
+                    <BubbleToggle
+                        isActive={isRepLinkActive}
+                        onToggle={() => {
+                            setIsRepLinkActive(!isRepLinkActive);
+                            if (isRepLinkActive) {
+                                setLocalCommitteeData({ ...localCommitteeData, representativeApplicationLink: '' });
+                            }
+                        }}
+                        label="Representatives Application Link"
+                    />
+                    {isRepLinkActive && (
                         <TextInput
-                            className='w-full rounded-md text-lg px-2 py-1 bg-white'
-                            value={localCommitteeData?.leadApplicationLink}
+                            className='w-full rounded-md text-lg px-2 py-1 bg-slate-300 mb-6'
+                            value={localCommitteeData.representativeApplicationLink}
+                            onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, representativeApplicationLink: text })}
+                            placeholder="Add representative application link"
+                        />
+                    )}
+
+                    {/* Leads Application Link */}
+                    <BubbleToggle
+                        isActive={isLeadLinkActive}
+                        onToggle={() => {
+                            setIsLeadLinkActive(!isLeadLinkActive);
+                            if (isLeadLinkActive) {
+                                setLocalCommitteeData({ ...localCommitteeData, leadApplicationLink: '' });
+                            }
+                        }}
+                        label="Leads Application Link"
+                    />
+                    {isLeadLinkActive && (
+                        <TextInput
+                            className='w-full rounded-md text-lg px-2 py-1 bg-slate-300 mb-6'
+                            value={localCommitteeData.leadApplicationLink}
                             onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, leadApplicationLink: text })}
-                            placeholder="Add member application link"
+                            placeholder="Add lead application link"
                         />
-                    </View>
-
-                    <View className='mt-8'>
-                        <Text className='text-gray-500 mb-2'>Description</Text>
-                        <TextInput
-                            className='w-full rounded-md text-lg px-2 py-1 bg-white h-32'
-                            value={localCommitteeData?.description}
-                            onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, description: text })}
-                            placeholder="Add a description"
-                            multiline={true}
-                            style={{ textAlignVertical: 'top' }}
-                        />
-                    </View>
-
+                    )}
                 </View>
 
 
                 <View className='w-screen justify-center items-center pt-4 space-x-7'>
-                    <TouchableOpacity className='bg-blue-400 justify-center items-center rounded-md p-2'
+                    <TouchableOpacity className='bg-pale-blue justify-center items-center rounded-md p-2'
                         onPress={async () => {
                             setCommitteeData(localCommitteeData);
                             setLocalCommitteeData({ leads: [] });
                         }}
                     >
-                        <Text className='text-xl text-semibold'>Create Committee</Text>
+                        <Text className='text-xl text-semibold text-white px-3 py-1'>Create Committee</Text>
                     </TouchableOpacity>
                 </View>
                 <View className='pb-32'></View>
@@ -407,6 +523,40 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                     </View>
                 </View>
             </Modal>
+
+            <DismissibleModal
+                visible={logoSelectModal}
+                setVisible={setLogoSelectModal}
+            >
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ maxWidth: 350 }}>
+                    <View className='flex-row items-center justify-between'>
+                        <View className='items-center'>
+                            <Text className='text-2xl font-semibold ml-2'>Select a Logo</Text>
+                        </View>
+                        <View>
+                            <TouchableOpacity onPress={() => setLogoSelectModal(false)}>
+                                <Octicons name="x" size={24} color="black" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <View className='flex-row flex-wrap w-full bg-gray-400 py-4 rounded-xl'>
+                        {Object.entries(committeeLogos).map(([name, logoData]) => (
+                            <TouchableOpacity
+                                className='mx-2 rounded-md selection: w-[28%] items-center justify-center'
+                                key={name}
+                                onPress={() => {
+                                    setLocalCommitteeData({ ...localCommitteeData, logo: name as keyof typeof committeeLogos });
+                                    setLogoSelectModal(false);
+                                }}
+                            >
+                                <logoData.LogoComponent width={logoData.width} height={logoData.height} />
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+            </DismissibleModal>
+
         </SafeAreaView >
     )
 }

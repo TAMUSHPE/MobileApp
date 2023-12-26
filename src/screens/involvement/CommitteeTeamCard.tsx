@@ -23,12 +23,17 @@ const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigat
     }, [nationalExpiration, chapterExpiration])
 
     const handleCardPress = (uid: string): string | void => {
-        console.log(uid)
+        if (!navigation) {
+            return
+        }
         navigation.navigate("PublicProfile", { uid });
     };
 
     return (
-        <TouchableOpacity className='mb-8' onPress={() => handleCardPress(uid!)}>
+        <TouchableOpacity
+            onPress={() => (navigation && handleCardPress(uid!))}
+            activeOpacity={!!handleCardPress && 1 || 0.6}
+        >
             <View className="flex-row">
                 <Image
                     className="flex w-12 h-12 rounded-full"
