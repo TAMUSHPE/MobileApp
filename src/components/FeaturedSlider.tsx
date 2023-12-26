@@ -1,66 +1,89 @@
-import { View, FlatList, Animated, ViewToken } from 'react-native';
-import React, { useState, useRef, RefObject, useEffect } from 'react';
+import { View, FlatList, Animated, NativeSyntheticEvent, NativeScrollEvent, Dimensions } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
 import FeaturedItem from './FeaturedItem';
 import Paginator from './Paginator';
-import { Slide } from '../types/slides'
+import { Slide } from '../types/slides';
 import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { db } from '../config/firebaseConfig';
 
-/**
- * This component renders a horizontal list of slides with pagination.
- * It utilizes the `FeaturedItem` component to render each individual slide.
- * Additionally, it uses the `Paginator` component for the pagination of slides.
- * 
- * @returns The rendered featured slider component.
- */
+const windowWidth = Dimensions.get('window').width;
 
 const FeaturedSlider: React.FC<FeaturedSliderProps> = ({ route, getDelete }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [slides, setSlides] = useState<Slide[]>([]);
-    const slideListRef: RefObject<FlatList<Slide>> = useRef(null);
+    const slideListRef = useRef<FlatList>(null);
     const scrollX = useRef(new Animated.Value(0)).current;
+    const slideInterval = useRef<NodeJS.Timeout>();
 
-    const viewableItemsChanged = useRef(({ viewableItems }: { viewableItems: Array<ViewToken> }) => {
-        if (viewableItems.length > 0) {
-            setCurrentIndex(viewableItems[0].index ?? 0);
+    const shuffleSlides = (array: Slide[]) => {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
         }
-    }).current;
-
-    const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
+        return array;
+    };
 
     useEffect(() => {
         const slidesCollection = collection(db, "featured-slides");
         const slideQuery = query(slidesCollection, orderBy("createdAt", "desc"));
 
         const unsubscribe = onSnapshot(slideQuery, (snapshot) => {
-            const newSlides = snapshot.docs.map(doc => doc.data() as Slide);
-            setSlides(newSlides);
+            let slidesData = snapshot.docs.map(doc => doc.data() as Slide);
+
+            // Check if not in FeaturedSlideEditor route
+            if (route.name !== "FeaturedSlideEditor") {
+                // Shuffle slides and add first and last slide to the beginning and end
+                slidesData = shuffleSlides([...slidesData]);
+                if (slidesData.length > 1) {
+                    slidesData = [slidesData[slidesData.length - 1], ...slidesData, slidesData[0]];
+                }
+            }
+
+            setSlides(slidesData);
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [route.name]);
 
+
+    useEffect(() => {
+        if (route.name !== "FeaturedSlideEditor") {
+            slideInterval.current = setInterval(() => {
+                setCurrentIndex(prevIndex => {
+                    let nextIndex = prevIndex + 1;
+                    if (nextIndex >= slides.length) {
+                        // Immediately jump to the first real slide (index 1) when reaching the end
+                        slideListRef.current?.scrollToIndex({ animated: false, index: 1 });
+                        nextIndex = 1;
+                    } else {
+                        slideListRef.current?.scrollToIndex({ animated: true, index: nextIndex });
+                    }
+                    return nextIndex;
+                });
+            }, 3000); // Change slide every 3 seconds
+        }
+
+        return () => clearInterval(slideInterval.current!);
+    }, [slides, route.name]);
     return (
-        <View className='mt-0'>
-            <View>
-                <LinearGradient
-                    className='absolute top-0 left-0 bottom-0 right-0'
-                    colors={['#191740', '#72A9BE']}
-                />
-                <FlatList
-                    data={slides}
-                    renderItem={({ item }) => <FeaturedItem item={item} route={route} getDelete={getDelete} />}
-                    {...flatListProps}
-                    onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
-                        useNativeDriver: false,
-                    })}
-                    onViewableItemsChanged={viewableItemsChanged}
-                    viewabilityConfig={viewConfig}
-                    ref={slideListRef}
-                />
-            </View>
-            <Paginator data={slides} scrollX={scrollX} />
+        <View>
+            <LinearGradient
+                className='absolute top-0 left-0 bottom-0 right-0'
+                colors={['#ffffff', '#72A9BE']}
+            />
+            <FlatList
+                data={slides}
+                renderItem={({ item }) => <FeaturedItem item={item} route={route} getDelete={getDelete} />}
+                {...flatListProps}
+                onScroll={Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+                    useNativeDriver: false,
+                })}
+                ref={slideListRef}
+                keyExtractor={(item, index) => `${item.id}-${index}`}
+
+            />
+            {route.name === "FeaturedSlideEditor" && <Paginator data={slides} scrollX={scrollX} />}
         </View>
     )
 }

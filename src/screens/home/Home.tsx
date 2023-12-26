@@ -1,17 +1,16 @@
-import { ScrollView, Text, TouchableOpacity, Image, View, Dimensions } from 'react-native';
+import { ScrollView } from 'react-native';
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/core';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
-import { getPublicUserData, getMemberOfTheMonth } from '../../api/firebaseUtils';
+import { getMemberOfTheMonth } from '../../api/firebaseUtils';
 import manageNotificationPermissions from '../../helpers/pushNotification';
 import { PublicUserInfo } from '../../types/User';
 import { HomeStackParams } from "../../types/Navigation"
-import { Images } from '../../../assets';
-import FeaturedSlider from '../../components/FeaturedSlider';
 import OfficeSignIn from './OfficeSignIn';
+import FeaturedSlider from '../../components/FeaturedSlider';
 import MOTMCard from '../../components/MOTMCard';
 
 
