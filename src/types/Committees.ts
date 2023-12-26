@@ -11,20 +11,20 @@ import DefaultIcon from '../../assets/generic_course_icon.svg';
  * But should be adjusted according to the dimension of added logo
  */
 export const committeeLogos = {
-    shpetinas: { 
-        LogoComponent: SHPEtinas, 
-        width: 100, 
-        height: 90 
+    shpetinas: {
+        LogoComponent: SHPEtinas,
+        width: 100,
+        height: 100
     },
-    technicalAffairs: { 
-        LogoComponent: TechnicalAffairs, 
-        width: 75, 
-        height: 80 
+    technicalAffairs: {
+        LogoComponent: TechnicalAffairs,
+        width: 75,
+        height: 80
     },
-    default: { 
-        LogoComponent: DefaultIcon, 
-        width: 75, 
-        height: 75 
+    default: {
+        LogoComponent: DefaultIcon,
+        width: 60,
+        height: 60
     },
 };
 
@@ -46,6 +46,7 @@ export type Committee = {
     memberCount?: number;
     memberApplicationLink?: string;
     leadApplicationLink?: string;
+    representativeApplicationLink?: string;
     logo?: keyof typeof committeeLogos;
 }
 

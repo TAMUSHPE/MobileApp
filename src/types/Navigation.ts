@@ -115,7 +115,7 @@ export type HomeDrawerParams = {
     PublicProfile: {
         uid: string;
     }
-    
+
     ProfileSettingsScreen: undefined;
 };
 
@@ -157,10 +157,10 @@ export type MembersProps = {
     userData?: PublicUserInfo
     handleCardPress?: (uid: string) => string | void;
     navigation?: NativeStackNavigationProp<MembersStackParams>
-    officersList? : PublicUserInfo[]
-    membersList? : PublicUserInfo[]
+    officersList?: PublicUserInfo[]
+    membersList?: PublicUserInfo[]
     loadMoreUsers?: () => void;
-    hasMoreUser?:  boolean;
+    hasMoreUser?: boolean;
     setFilter?: React.Dispatch<SetStateAction<UserFilter>>;
     filter?: UserFilter;
     setLastUserSnapshot?: React.Dispatch<SetStateAction<QueryDocumentSnapshot<DocumentData> | null>>;
@@ -194,8 +194,8 @@ export type CommitteesListProps = {
 }
 
 export type CommitteeTeamCardProps = {
-    navigation: NativeStackNavigationProp<InvolvementStackParams>
     userData: PublicUserInfo;
+    navigation?: NativeStackNavigationProp<InvolvementStackParams>
 }
 
 
