@@ -223,22 +223,26 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     }
                 </View>
 
-                <Text className='text-2xl italic mt-5'>Involvement</Text>
-                <View className='flex-row flex-wrap mt-2'>
-                    {committees?.map((committeeName, index) => {
-                        const committeeData = committeesData.find(c => c.firebaseDocName === committeeName);
+                {committees && committees.length > 0 && (
+                    <View>
+                        <Text className='text-2xl italic mt-5'>Involvement</Text>
+                        <View className='flex-row flex-wrap mt-2'>
+                            {committees?.map((committeeName, index) => {
+                                const committeeData = committeesData.find(c => c.firebaseDocName === committeeName);
 
-                        return (
-                            <ProfileBadge
-                                badgeClassName='p-2 max-w-2/5 rounded-md mr-1 mb-2'
-                                textClassName='text-lg'
-                                text={committeeData?.name || "Unknown Committee"}
-                                badgeColor={committeeData?.color || ""}
-                                key={index}
-                            />
-                        );
-                    })}
-                </View>
+                                return (
+                                    <ProfileBadge
+                                        badgeClassName='p-2 max-w-2/5 rounded-md mr-1 mb-2'
+                                        textClassName='text-lg'
+                                        text={committeeData?.name || "Unknown Committee"}
+                                        badgeColor={committeeData?.color || ""}
+                                        key={index}
+                                    />
+                                );
+                            })}
+                        </View>
+                    </View>
+                )}
             </View>
 
             {/* Role Modal */}

@@ -10,6 +10,7 @@ import { handleLinkPress } from '../../helpers/links';
 import { ResumeProps } from '../../types/Navigation'
 import TwitterSvg from '../../components/TwitterSvg';
 import { Images } from '../../../assets';
+import DismissibleModal from '../../components/DismissibleModal';
 
 const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ resumeData, navigation, onResumeRemoved }) => {
     // Data related to user's resume
@@ -17,6 +18,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
     const isOfficer = roles ? roles.officer : false;
     const [isVerified, setIsVerified] = useState<boolean>(false);
     let badgeColor = getBadgeColor(isOfficer!, isVerified);
+    const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
 
     // Data related to currently authenticated user
     const { userInfo } = useContext(UserContext)!;
@@ -54,7 +56,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
     };
 
     return (
-        <View className="flex-row bg-white py-5 px-4 mx-4 mt-4 rounded-xl items-center shadow-md shadow-slate-300">
+        <View className="flex-row bg-white py-5 px-4 mx-4 mt-6 rounded-xl items-center shadow-md shadow-slate-300">
             <View className='flex-row'>
                 {/* User Information */}
                 <TouchableOpacity
@@ -87,7 +89,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
                 </TouchableOpacity>
 
                 {/* Resume Information and Controls*/}
-                <View className='w-[30%]items-center justify-center items-center'>
+                <View className='justify-center items-center w-[20%]'>
                     <TouchableOpacity
                         className='px-4 py-2'
                         activeOpacity={0.5}
@@ -95,19 +97,50 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
                     >
                         <Octicons name="chevron-right" size={30} color="black" />
                     </TouchableOpacity>
+                </View>
+            </View>
+            {hasPrivileges && (
+                <View className='absolute -top-3 -right-3'>
+                    <TouchableOpacity
+                        onPress={() => setConfirmVisible(true)}
+                        className="rounded-full w-8 h-8 justify-center items-center bg-gray-300"
+                    >
+                        <Octicons name="x" size={25} color="red" />
+                    </TouchableOpacity>
+                </View>
+            )}
 
-                    {hasPrivileges && (
+            <DismissibleModal
+                visible={confirmVisible}
+                setVisible={setConfirmVisible}
+            >
+                <View className='flex opacity-100 bg-white rounded-md p-6'>
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center'>
+                            <Octicons name="alert" size={24} color="black" />
+                            <Text className='text-xl font-semibold ml-2'>Delete Resume</Text>
+                        </View>
+                    </View>
+
+
+                    <View className='flex-row justify-around mt-8'>
                         <TouchableOpacity
-                            className='items-center justify-center px-4 py-2'
-                            activeOpacity={0.5}
+                            className='w-[40%] items-center py-2 rounded-md'
+                            style={{ backgroundColor: "red" }}
                             onPress={() => removeResume()}
                         >
-                            <Text className='text-red-500 text-lg'>Remove</Text>
+                            <Text className='font-semibold text-lg'>Delete</Text>
                         </TouchableOpacity>
-                    )}
-                </View>
 
-            </View>
+                        <TouchableOpacity
+                            className='w-[40%] items-center py-2 rounded-md'
+                            onPress={() => setConfirmVisible(false)}
+                        >
+                            <Text className='font-semibold text-lg'>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </DismissibleModal>
         </View>
     )
 }
