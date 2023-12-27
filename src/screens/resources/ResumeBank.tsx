@@ -143,6 +143,8 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                         onResumeRemoved={() => fetchResumes()}
                     />
                 ))}
+
+                <View className='pb-20'></View>
             </ScrollView>
 
             <DismissibleModal

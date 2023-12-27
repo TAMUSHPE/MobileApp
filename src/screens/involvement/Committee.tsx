@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
@@ -29,6 +29,7 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
 
     useEffect(() => {
@@ -70,7 +71,11 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                             className={`px-4 py-[2px] rounded-lg items-center mt-2 mx-2 ${isInCommittee ? "bg-[#FF4545]" : "bg-[#AEF359]"}`}
                             onPress={() => setConfirmVisible(!confirmVisible)}
                         >
-                            <Text className='text-lg font-semibold'>{isInCommittee ? "Leave" : "Join"}</Text>
+                            {loading ? (
+                                <ActivityIndicator color="#000000" />
+                            ) : (
+                                <Text className='text-lg font-semibold'>{isInCommittee ? "Leave" : "Join"}</Text>
+                            )}
                         </TouchableOpacity>
                     </View>
 
@@ -162,6 +167,7 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                                 className="bg-pale-blue rounded-xl justify-center items-center"
                                 onPress={async () => {
                                     setConfirmVisible(false);
+                                    setLoading(true);
                                     const fetchCommitteeData = async () => {
                                         try {
                                             const docRef = doc(db, `committees/${initialCommittee.firebaseDocName}`);
@@ -200,6 +206,8 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
                                         });
                                     } catch (err) {
                                         console.error(err);
+                                    } finally {
+                                        setLoading(false);
                                     }
                                 }}
                             >
