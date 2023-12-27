@@ -80,9 +80,13 @@ export const uploadFile = async (
     validMimeTypes: string[] = [],
     storagePath: string,
     onSuccess: ((url: string) => Promise<void>) | null = null,
-    onProgress: ((progress: number) => void) | null = null
+    onProgress: ((progress: number) => void) | null = null,
+    setLoading: ((load: boolean) => void) | null = null
 ) => {
     if (validMimeTypes.length > 0 && !validateFileBlob(blob, validMimeTypes, true)) {
+        if (setLoading !== null) {
+            setLoading(false);
+        }
         return;
     }
 
@@ -92,11 +96,14 @@ export const uploadFile = async (
         (snapshot) => {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             if (onProgress !== null) {
-                onProgress(progress); 
+                onProgress(progress);
             }
             console.log(`Upload is ${progress}% done`);
         },
         (error) => {
+            if (setLoading !== null) {
+                setLoading(false);
+            }
             switch (error.code) {
                 case "storage/unauthorized":
                     alert("File could not be uploaded due to user permissions.");
@@ -117,6 +124,10 @@ export const uploadFile = async (
                 }
             } catch (error) {
                 console.error("Error in uploadFile:", error);
+            } finally {
+                if (setLoading !== null) {
+                    setLoading(false);
+                }
             }
         }
     );
