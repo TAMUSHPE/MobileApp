@@ -6,7 +6,7 @@ import { Images } from '../../assets'
 const MOTMCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation }) => {
     return (
         <TouchableOpacity
-            className='mx-4'
+            className='mx-4 mt-10'
             onPress={() => {
                 if (handleCardPress) {
                     handleCardPress()
