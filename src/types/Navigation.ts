@@ -179,7 +179,7 @@ export type MemberListProps = {
 
 
 export type MemberCardProp = {
-    handleCardPress?: (uid: string) => string | void;
+    handleCardPress?: () => void;
     userData?: PublicUserInfo;
     navigation?: NativeStackNavigationProp<any>
 }

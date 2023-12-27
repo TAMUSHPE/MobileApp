@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { useNavigationState } from '@react-navigation/native';
 import { UserContext } from '../context/UserContext';
 import { auth } from '../config/firebaseConfig';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
@@ -124,8 +125,25 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     );
 };
 
-const HomeDrawerHeader = (props: DrawerHeaderProps) => {
+const HomeDrawerHeader = ({ navigation }: { navigation: any }) => {
     const insets = useSafeAreaInsets();
+
+    const currentRouteName = useNavigationState((state) => {
+        if (state && state.routes && state.index != null) {
+            const homeStack = state.routes.find(route => route.name === 'HomeStack');
+            if (homeStack && homeStack.state && typeof homeStack.state.index === 'number') {
+                const activeRoute = homeStack.state.routes[homeStack.state.index];
+                if (activeRoute) {
+                    return activeRoute.name;
+                }
+            }
+        }
+        return '';
+    });
+    // Do not render the header if the current route is PublicProfile
+    if (currentRouteName === 'PublicProfile') {
+        return null;
+    }
     return (
         <View
             style={{ paddingTop: insets.top }}
@@ -141,7 +159,7 @@ const HomeDrawerHeader = (props: DrawerHeaderProps) => {
 
                 <TouchableOpacity
                     activeOpacity={0.6}
-                    onPress={() => props.navigation.openDrawer()}
+                    onPress={() => navigation.openDrawer()}
                 >
                     <Image
                         className="flex w-12 h-12 rounded-full"
@@ -161,25 +179,28 @@ const HomeDrawer = () => {
             initialRouteName="HomeStack"
             drawerContent={(props) => <HomeDrawerContent {...props} />}
             screenOptions={{
-                headerShown: false,
                 drawerPosition: "right",
             }}
         >
             <Drawer.Screen
                 name="HomeStack"
                 component={HomeStack}
-                options={{
+                options={({ navigation }) => ({
                     headerShown: true,
-                    header: HomeDrawerHeader,
-                }}
+                    header: () => <HomeDrawerHeader navigation={navigation} />
+                })}
             />
             <Drawer.Screen
                 name="PublicProfile"
                 component={PublicProfileScreen}
+                options={{
+                    headerShown: false,
+                }}
             />
         </Drawer.Navigator>
     );
 };
+
 
 type FontAwesomeIconName = React.ComponentProps<typeof FontAwesome>['name'];
 
