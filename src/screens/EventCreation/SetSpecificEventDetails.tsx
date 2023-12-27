@@ -17,13 +17,13 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     // Form Data Hooks
-    const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType);
-    const [signInPoints, setSignInPoints] = useState<number | undefined>(event.signInPoints);
-    const [signOutPoints, setSignOutPoints] = useState<number | undefined>(event.signOutPoints);
-    const [pointsPerHour, setPointsPerHour] = useState<number | undefined>(event.pointsPerHour);
-    const [locationName, setLocationName] = useState<string | undefined>(event.locationName);
-    const [geolocation, setGeolocation] = useState<Geolocation | undefined>(event.geolocation);
-    const [tags, setTags] = useState<String[]>([]);
+    const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType ?? undefined);
+    const [signInPoints, setSignInPoints] = useState<number | undefined>(event.signInPoints ?? undefined);
+    const [signOutPoints, setSignOutPoints] = useState<number | undefined>(event.signOutPoints ?? undefined);
+    const [pointsPerHour, setPointsPerHour] = useState<number | undefined>(event.pointsPerHour ?? undefined);
+    const [locationName, setLocationName] = useState<string | undefined>(event.locationName ?? undefined);
+    const [geolocation, setGeolocation] = useState<Geolocation | undefined>(event.geolocation ?? undefined);
+    const [tags, setTags] = useState<string[]>([]);
 
     return (
         <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>

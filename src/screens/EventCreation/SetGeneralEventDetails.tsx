@@ -38,8 +38,8 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
 
     // Form Data Hooks
     const [name, setName] = useState<string>("");
-    const [startTime, setStartTime] = useState<Timestamp | undefined>(event.startTime);
-    const [endTime, setEndTime] = useState<Timestamp | undefined>(event.endTime);
+    const [startTime, setStartTime] = useState<Timestamp | undefined>(event.startTime ?? undefined);
+    const [endTime, setEndTime] = useState<Timestamp | undefined>(event.endTime ?? undefined);
     const [description, setDescription] = useState<string>("");
     const [coverImageURI, setCoverImageURI] = useState<string>();
 
