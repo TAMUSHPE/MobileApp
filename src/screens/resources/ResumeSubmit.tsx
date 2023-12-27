@@ -17,7 +17,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [submittedResume, setSubmittedResume] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         setLoading(true);
@@ -141,8 +141,10 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                                 selectedResume,
                                 CommonMimeTypes.RESUME_FILES,
                                 `user-docs/${auth.currentUser?.uid}/user-resume-public`,
-                                onResumeUploadSuccess
-                            );
+                                onResumeUploadSuccess,
+                                null,
+                                setLoading
+                            )
                         }
                     }}>
                     <AddFileIcon height={55} width={55} />
