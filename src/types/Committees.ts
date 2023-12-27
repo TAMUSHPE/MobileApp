@@ -36,17 +36,17 @@ export type CommitteeLogosName = keyof typeof committeeLogos;
 
 
 export type Committee = {
-    name?: string;
     firebaseDocName?: string;
+    name?: string;
     color?: string,
     description?: string;
     head?: PublicUserInfo;
     representatives?: PublicUserInfo[];
     leads?: PublicUserInfo[];
-    memberCount?: number;
     memberApplicationLink?: string;
-    leadApplicationLink?: string;
     representativeApplicationLink?: string;
+    leadApplicationLink?: string;
     logo?: keyof typeof committeeLogos;
+    memberCount?: number;
 }
 

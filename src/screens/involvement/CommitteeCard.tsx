@@ -1,11 +1,15 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import React from 'react'
+import React, { useContext } from 'react'
+import { UserContext } from '../../context/UserContext';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
 import { Committee, getLogoComponent } from "../../types/Committees";
 import { Images } from "../../../assets"
 
-const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPress }) => {
+const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) => {
     const { name, color, logo, head, memberCount } = committee;
+
+    const { userInfo } = useContext(UserContext)!;
+    const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
 
     const isTextLight = (colorHex: string) => {
         const luminosity = calculateHexLuminosity(colorHex);
@@ -15,8 +19,9 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPres
     const { LogoComponent, height, width } = getLogoComponent(logo);
 
     return (
-        <View className='flex items-center mb-8'>
-            <TouchableOpacity onPress={() => handleCardPress(committee)}
+        <View className='flex items-center mb-8 w-full'>
+            <TouchableOpacity
+                onPress={() => navigation.navigate("CommitteeScreen", { committee })}
                 className='flex-row w-[90%] h-28 rounded-xl'
                 style={{ backgroundColor: color }}
             >
@@ -37,7 +42,16 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPres
                         <Text className={`font-semibold text-${isTextLight(color!) ? "white" : "black"}`}>{memberCount} Members</Text>
                     </View>
                 </View>
+
             </TouchableOpacity>
+            {isSuperUser && (
+                <TouchableOpacity
+                    onPress={() => { navigation.navigate("CommitteeEdit", { committee }) }}
+                    className='absolute right-10 bg-pale-blue rounded-lg px-5 py-1 -top-3'
+                >
+                    <Text className='text-lg text-white font-semibold'>Edit</Text>
+                </TouchableOpacity>
+            )}
         </View>
     );
 };
@@ -45,7 +59,7 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPres
 
 interface CommitteeCardProps {
     committee: Committee
-    handleCardPress: (committee: Committee) => Committee | void;
+    navigation: any
 }
 
 

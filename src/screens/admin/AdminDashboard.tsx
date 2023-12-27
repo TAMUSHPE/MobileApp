@@ -33,18 +33,6 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
             </SafeAreaView>
 
             <ScrollView>
-                <View className='py-4 px-2 w-full mx-5'>
-                    <Text className='text-2xl font-semibold mb-3'>Create</Text>
-                    <View className='flex-row flex-wrap'>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate('CommitteeCreator')}
-                            className='bg-pale-blue rounded-md py-4 px-2 items-center justify-center'
-                        >
-                            <Text className='text-white text-xl'>Committee</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-
                 <View className='py-4 px-2 mx-5'>
                     <Text className='text-2xl font-semibold mb-3'>Verification</Text>
                     <View className='flex-row flex-wrap'>

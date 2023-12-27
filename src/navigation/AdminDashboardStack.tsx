@@ -2,7 +2,6 @@ import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AdminDashboardParams } from '../types/Navigation';
 import { HomeStack } from "./HomeStack";
-import CommitteeCreator from "../screens/admin/CommitteeCreator";
 import RestrictionsEditor from "../screens/admin/RestrictionsEditor";
 import AdminDashboard from "../screens/admin/AdminDashboard";
 import MemberOfTheMonthEditor from "../screens/admin/MemberOfTheMonthEditor";
@@ -21,7 +20,6 @@ const AdminDashboardStack = () => {
             <Stack.Group screenOptions={{ headerShown: false }} >
                 <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
                 <Stack.Screen name="MemberOfTheMonthEditor" component={MemberOfTheMonthEditor} />
-                <Stack.Screen name="CommitteeCreator" component={CommitteeCreator} />
                 <Stack.Screen name="FeaturedSlideEditor" component={FeaturedSlideEditor} />
                 <Stack.Screen name="ResumeDownloader" component={ResumeDownloader} />
                 <Stack.Screen name="ResetOfficeHours" component={ResetOfficeHours} />

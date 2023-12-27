@@ -1,12 +1,12 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference } from "firebase/firestore";
+import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { memberPoints } from "./fetchGoogleSheets";
+import { validateTamuEmail } from "../helpers/validation";
 import { PrivateUserInfo, PublicUserInfo, Roles, User } from "../types/User";
 import { Committee } from "../types/Committees";
 import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
-import { validateTamuEmail } from "../helpers/validation";
-import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 
 
 /**
@@ -333,6 +333,7 @@ export const setCommitteeData = async (committeeData: Committee) => {
             representatives: committeeData.representatives || [],
             leads: committeeData.leads || [],
             memberApplicationLink: committeeData.memberApplicationLink || "",
+            representativeApplicationLink: committeeData.representativeApplicationLink || "",
             leadApplicationLink: committeeData.leadApplicationLink || "",
             logo: committeeData.logo || "default",
             memberCount: committeeData.memberCount || 0,
