@@ -93,7 +93,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
                         activeOpacity={0.5}
                         onPress={() => handleLinkPress(resumePublicURL!)}
                     >
-                        <Octicons name="chevron-right" size={30} color="black px-4" />
+                        <Octicons name="chevron-right" size={30} color="black" />
                     </TouchableOpacity>
 
                     {hasPrivileges && (
