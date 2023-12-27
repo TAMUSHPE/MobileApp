@@ -43,6 +43,9 @@ const FeaturedSlider: React.FC<FeaturedSliderProps> = ({ route, getDelete }) => 
     };
 
     const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+        if (route.name === "FeaturedSlideEditor") {
+            return;
+        }
         const contentOffset = e.nativeEvent.contentOffset.x;
         const newIndex = Math.floor(contentOffset / windowWidth);
 
