@@ -18,6 +18,7 @@ interface ResumeDownloadInfo {
 }
 const ResumeDownloader = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [isGenerated, setIsGenerated] = useState(false);
+    const [loadingShare, setLoadingShare] = useState<boolean>(false);
     const [resumeDownloadInfo, setResumeDownloadInfo] = useState<ResumeDownloadInfo>();
     const { url: downloadUrl, createdAt, expiresAt } = resumeDownloadInfo || {};
 
@@ -49,8 +50,12 @@ const ResumeDownloader = ({ navigation }: NativeStackScreenProps<AdminDashboardP
             if (docSnapshot.exists()) {
                 const statusData = docSnapshot.data();
                 setIsGenerated(statusData.isGenerated);
+            } else {
+                setIsGenerated(false);
             }
         });
+
+        console.log('generate', isGenerated)
 
         const unsubscribeData = onSnapshot(dataRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
@@ -59,6 +64,9 @@ const ResumeDownloader = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                     createdAt: docSnapshot.data().createdAt.toDate(),
                     expiresAt: docSnapshot.data().expiresAt.toDate(),
                 });
+
+            } else {
+                setResumeDownloadInfo(undefined);
             }
         });
 
@@ -80,6 +88,7 @@ const ResumeDownloader = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     };
 
     const shareDownloadUrl = async () => {
+        setLoadingShare(true);
         try {
             const formattedDate = formatDateForFileName(createdAt!);
             const fileName = `TAMU_SHPE_Resumes_${formattedDate}.zip`;
@@ -88,6 +97,8 @@ const ResumeDownloader = ({ navigation }: NativeStackScreenProps<AdminDashboardP
             await Sharing.shareAsync(localUri.uri);
         } catch (error) {
             console.error('Error sharing the file:', error);
+        } finally {
+            setLoadingShare(false);
         }
     };
 
@@ -140,14 +151,14 @@ const ResumeDownloader = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                         <TouchableOpacity
                             className='bg-pale-blue items-center justify-center w-36 py-2 rounded-md'
                             onPress={() => shareDownloadUrl()}>
-                            <Text className='text-white font-semibold text-xl'>Share Link</Text>
+                            <Text className='text-white font-semibold text-xl'>Share</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
             )
 
             }
-            {!isGenerated && (
+            {!isGenerated || loadingShare && (
                 <View className='flex justify-center items-center mt-10'>
                     <ActivityIndicator size="large" />
                 </View>

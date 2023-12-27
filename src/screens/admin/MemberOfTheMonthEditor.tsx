@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -21,6 +21,8 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [infoVisible, setInfoVisible] = useState(false);
     const [invisibleConfirmModal, setInvisibleConfirmModal] = useState(false);
+    const [loadingMember, setLoadingMember] = useState(true);
+    const [loadingMOTM, setLoadingMOTM] = useState(true);
 
     useFocusEffect(
         useCallback(() => {
@@ -40,22 +42,29 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
     );
 
     const fetchMembers = async () => {
+        setLoadingMember(true);
         try {
             const fetchedMembers = await getMembersExcludeOfficers();
             setMembers(fetchedMembers);
         } catch (error) {
             console.error('Error fetching members:', error);
+        } finally {
+            setLoadingMember(false);
         }
     };
+
     const fetchMemberOfTheMonth = async () => {
         try {
             const fetchedMemberOfTheMonth = await getMemberOfTheMonth();
             setLocalMemberOfTheMonth(fetchedMemberOfTheMonth);
         } catch (error) {
             console.error('Error fetching member of the month:', error);
+        } finally {
+            setLoadingMOTM(false);
         }
 
     }
+
     useEffect(() => {
 
         fetchMembers();
@@ -89,30 +98,37 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                 </View>
             </View>
 
-            <View className='mt-9'>
-                <MemberOfTheMonth
-                    userData={localMemberOfTheMonth}
-                    navigation={navigation}
-                    handleCardPress={() => {
-                        navigation.navigate("PublicProfile", { uid: localMemberOfTheMonth?.uid! })
-                    }}
-                />
-            </View>
+            {(loadingMOTM && loadingMember) ? (
+                <ActivityIndicator size="large" className='mt-8' />
+            ) : (
+                <View className='flex-1'>
+                    <MemberOfTheMonth
+                        userData={localMemberOfTheMonth}
+                        navigation={navigation}
+                        handleCardPress={() => {
+                            navigation.navigate("PublicProfile", { uid: localMemberOfTheMonth?.uid! })
+                        }}
+                    />
 
-            <View className='mt-6 mx-5'>
-                <Text className='font-bold text-xl'>Suggest MOTM</Text>
-            </View>
+                    <View className='mt-6 mx-5'>
+                        <Text className='font-bold text-xl'>Suggest MOTM</Text>
+                    </View>
 
-            <View className='mt-6 flex-1'>
-                <Text className='font-bold text-xl mx-5 mb-4'>Members</Text>
+                    <View className='mt-6 flex-1'>
+                        <Text className='font-bold text-xl mx-5 mb-4'>Members</Text>
 
-                <MembersList
-                    handleCardPress={(uid) => {
-                        setSelectedMemberUID(uid)
-                    }}
-                    users={members}
-                />
-            </View>
+                        <MembersList
+                            handleCardPress={(uid) => {
+                                setSelectedMemberUID(uid)
+                            }}
+                            users={members}
+                        />
+                    </View>
+                </View>
+
+            )}
+
+
 
             <DismissibleModal
                 visible={confirmVisible && invisibleConfirmModal}
