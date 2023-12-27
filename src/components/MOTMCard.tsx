@@ -1,11 +1,17 @@
-import { View, Text, Image } from 'react-native'
+import { View, Text, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { MemberCardProp } from '../types/Navigation'
 import { Images } from '../../assets'
 
 const MOTMCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation }) => {
     return (
-        <View className='mx-4'>
+        <TouchableOpacity
+            className='mx-4'
+            onPress={() => {
+                if (handleCardPress) {
+                    handleCardPress()
+                }
+            }}>
             <View className='flex-row'>
                 <View>
                     <Image
@@ -20,7 +26,7 @@ const MOTMCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigat
                     <Text className='font-semibold text-md mt-3'>{userData?.bio}</Text>
                 </View>
             </View>
-        </View>
+        </TouchableOpacity>
     )
 }
 

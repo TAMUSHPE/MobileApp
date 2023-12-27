@@ -21,7 +21,7 @@ import MOTMCard from '../../components/MOTMCard';
  *
  * @returns The rendered home screen.
  */
-const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
+const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
     const { userInfo, signOutUser } = useContext(UserContext)!;
     const [memberOfTheMonth, setMemberOfTheMonth] = useState<PublicUserInfo>();
 
@@ -69,4 +69,4 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
     );
 }
 
-export default HomeScreen;
+export default Home;
