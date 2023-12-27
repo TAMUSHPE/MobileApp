@@ -1,20 +1,19 @@
 import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { Committee, committeeLogos, getLogoComponent } from '../../types/Committees';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
-import { AdminDashboardParams } from '../../types/Navigation';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { getLeads, getRepresentatives, getTeamMembers, setCommitteeData } from '../../api/firebaseUtils';
-import MembersList from '../../components/MembersList';
+import { Committee, committeeLogos, getLogoComponent } from '../../types/Committees';
+import { CommitteeEditProps } from '../../types/Navigation';
 import { PublicUserInfo } from '../../types/User';
+import MembersList from '../../components/MembersList';
 import CustomColorPicker from '../../components/CustomColorPicker';
 import DismissibleModal from '../../components/DismissibleModal';
 import CommitteeTeamCard from '../involvement/CommitteeTeamCard';
 
-
-const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
-    const [localCommitteeData, setLocalCommitteeData] = useState<Committee>({
+const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
+    const committeeData = route?.params?.committee;
+    const [localCommitteeData, setLocalCommitteeData] = useState<Committee>(committeeData || {
         leads: [],
         representatives: [],
         memberCount: 0,
@@ -22,12 +21,7 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         representativeApplicationLink: '',
         leadApplicationLink: ''
     });
-    const [teamMembers, setTeamMembers] = useState<PublicUserInfo[]>([])
-    const [representatives, setRepresentatives] = useState<PublicUserInfo[]>([])
-    const [leads, setLeads] = useState<PublicUserInfo[]>([])
-    const [headModalVisible, setHeadModalVisible] = useState(false);
-    const [leadsModalVisible, setLeadsModalVisible] = useState(false);
-    const [repsModalVisible, setRepsModalVisible] = useState(false);
+
     const [logoSelectModal, setLogoSelectModal] = useState(false);
     const [selectedLogoData, setSelectedLogoData] = useState<{
         LogoComponent: React.ElementType;
@@ -35,9 +29,15 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         height: number;
     } | null>(null);
 
-    const [isMemberLinkActive, setIsMemberLinkActive] = useState(false);
-    const [isRepLinkActive, setIsRepLinkActive] = useState(false);
-    const [isLeadLinkActive, setIsLeadLinkActive] = useState(false);
+    const [teamMembers, setTeamMembers] = useState<PublicUserInfo[]>([])
+    const [representatives, setRepresentatives] = useState<PublicUserInfo[]>([])
+    const [leads, setLeads] = useState<PublicUserInfo[]>([])
+    const [headModalVisible, setHeadModalVisible] = useState(false);
+    const [leadsModalVisible, setLeadsModalVisible] = useState(false);
+    const [repsModalVisible, setRepsModalVisible] = useState(false);
+    const [isMemberLinkActive, setIsMemberLinkActive] = useState<boolean>(!!committeeData?.memberApplicationLink);
+    const [isRepLinkActive, setIsRepLinkActive] = useState<boolean>(!!committeeData?.representativeApplicationLink);
+    const [isLeadLinkActive, setIsLeadLinkActive] = useState<boolean>(!!committeeData?.leadApplicationLink);
 
     const insets = useSafeAreaInsets();
 
@@ -231,7 +231,7 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                         </View>
                         {selectedLogoData && (
                             <View className='z-50 flex-1'>
-                                <CustomColorPicker onColorChosen={handleColorChosen} />
+                                <CustomColorPicker onColorChosen={handleColorChosen} initialColor={localCommitteeData.color} />
                             </View>
                         )}
                     </View>
@@ -340,17 +340,12 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                     <Text className='text-2xl font-bold mb-2'>Applications</Text>
                     <BubbleToggle
                         isActive={isMemberLinkActive}
-                        onToggle={() => {
-                            setIsMemberLinkActive(!isMemberLinkActive);
-                            if (isMemberLinkActive) {
-                                setLocalCommitteeData({ ...localCommitteeData, memberApplicationLink: '' });
-                            }
-                        }}
+                        onToggle={() => { setIsMemberLinkActive(!isMemberLinkActive) }}
                         label="Members Application Link"
                     />
                     {isMemberLinkActive && (
                         <TextInput
-                            className='w-full rounded-md text-lg px-2 py-1 bg-slate-300 mb-6'
+                            className='w-full rounded-md text-lg px-2 py-1 pb-2 bg-slate-300 mb-6'
                             value={localCommitteeData.memberApplicationLink}
                             onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, memberApplicationLink: text })}
                             placeholder="Add member application link"
@@ -360,17 +355,12 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                     {/* Representatives Application Link */}
                     <BubbleToggle
                         isActive={isRepLinkActive}
-                        onToggle={() => {
-                            setIsRepLinkActive(!isRepLinkActive);
-                            if (isRepLinkActive) {
-                                setLocalCommitteeData({ ...localCommitteeData, representativeApplicationLink: '' });
-                            }
-                        }}
+                        onToggle={() => { setIsRepLinkActive(!isRepLinkActive) }}
                         label="Representatives Application Link"
                     />
                     {isRepLinkActive && (
                         <TextInput
-                            className='w-full rounded-md text-lg px-2 py-1 bg-slate-300 mb-6'
+                            className='w-full rounded-md text-lg px-2 py-1 pb-2 bg-slate-300 mb-6'
                             value={localCommitteeData.representativeApplicationLink}
                             onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, representativeApplicationLink: text })}
                             placeholder="Add representative application link"
@@ -380,17 +370,12 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                     {/* Leads Application Link */}
                     <BubbleToggle
                         isActive={isLeadLinkActive}
-                        onToggle={() => {
-                            setIsLeadLinkActive(!isLeadLinkActive);
-                            if (isLeadLinkActive) {
-                                setLocalCommitteeData({ ...localCommitteeData, leadApplicationLink: '' });
-                            }
-                        }}
+                        onToggle={() => { setIsLeadLinkActive(!isLeadLinkActive) }}
                         label="Leads Application Link"
                     />
                     {isLeadLinkActive && (
                         <TextInput
-                            className='w-full rounded-md text-lg px-2 py-1 bg-slate-300 mb-6'
+                            className='w-full rounded-md text-lg px-2 py-1 pb-2 bg-slate-300 mb-6'
                             value={localCommitteeData.leadApplicationLink}
                             onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, leadApplicationLink: text })}
                             placeholder="Add lead application link"
@@ -402,11 +387,17 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                 <View className='w-screen justify-center items-center pt-4 space-x-7'>
                     <TouchableOpacity className='bg-pale-blue justify-center items-center rounded-md p-2'
                         onPress={async () => {
-                            setCommitteeData(localCommitteeData);
-                            setLocalCommitteeData({ leads: [] });
+                            const updatedCommitteeData = {
+                                ...localCommitteeData,
+                                memberApplicationLink: isMemberLinkActive ? localCommitteeData.memberApplicationLink : '',
+                                representativeApplicationLink: isRepLinkActive ? localCommitteeData.representativeApplicationLink : '',
+                                leadApplicationLink: isLeadLinkActive ? localCommitteeData.leadApplicationLink : ''
+                            };
+
+                            setCommitteeData(updatedCommitteeData);
                         }}
                     >
-                        <Text className='text-xl text-semibold text-white px-3 py-1'>Create Committee</Text>
+                        <Text className='text-xl text-semibold text-white px-3 py-1'>{committeeData ? "Update Committee " : "Create Committee"}</Text>
                     </TouchableOpacity>
                 </View>
                 <View className='pb-32'></View>
@@ -561,4 +552,4 @@ const CommitteeCreator = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     )
 }
 
-export default CommitteeCreator
+export default CommitteeEdit

@@ -71,9 +71,9 @@ export type InvolvementStackParams = {
     PublicProfile: {
         uid: string;
     };
-    CommitteeEditor: {
-        committee: Committee;
-    }
+    CommitteeEdit: {
+        committee?: Committee;
+    };
 }
 
 export type EventsStackParams = {
@@ -93,7 +93,6 @@ export type HomeStackParams = {
 
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
-    CommitteeCreator: undefined;
     MemberOfTheMonthEditor: undefined;
     FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
@@ -209,15 +208,21 @@ export type QRCodeProps = {
     navigation: NativeStackNavigationProp<EventsStackParams>
 }
 
+export type CommitteeEditProps = {
+    route: RouteProp<InvolvementStackParams, 'CommitteeEdit'>;
+    navigation: NativeStackNavigationProp<InvolvementStackParams, 'CommitteeEdit'>;
+};
+
+
 export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScreen">;
 
 // routes prop for screens
 export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
 export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
 export type CommitteeScreenRouteProp = RouteProp<InvolvementStackParams, "CommitteeScreen">;
-export type CommitteeEditorScreenRouteProp = RouteProp<InvolvementStackParams, "CommitteeEditor">;
 export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;
 export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "EventInfo">;
 export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;
 export type QRCodeScreenRouteProp = RouteProp<EventsStackParams, "QRCode">;
-
+export type CommitteeEditRouteProp = RouteProp<InvolvementStackParams, 'CommitteeEdit'>;
+export type CommitteeEditNavigationProp = NativeStackNavigationProp<InvolvementStackParams, 'CommitteeEdit'>;
