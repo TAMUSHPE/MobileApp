@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { StatusBar } from 'expo-status-bar';
 import { fetchUsersWithPublicResumes } from '../../api/firebaseUtils'
 import { PublicUserInfo } from '../../types/User'
 import { ResourcesStackParams } from '../../types/Navigation'
@@ -49,6 +50,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
 
     return (
         <View className="flex-1 bg-pale-blue">
+            <StatusBar style="light" />
             {/* Header */}
             <SafeAreaView edges={['top']}>
                 <View className='flex-row justify-between items-center mx-5 mt-1'>
