@@ -60,9 +60,10 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                                     <Picker.Item label="Committee Meeting" value={EventType.COMMITTEE_MEETING} />
                                     <Picker.Item label="Study Hours" value={EventType.STUDY_HOURS} />
                                     <Picker.Item label="Workshop" value={EventType.WORKSHOP} />
-                                    <Picker.Item label="Volunteer" value={EventType.VOLUNTEER_EVENT} />
-                                    <Picker.Item label="Social" value={EventType.SOCIAL_EVENT} />
-                                    <Picker.Item label="Intramural" value={EventType.INTRAMURAL_EVENT} />
+                                    <Picker.Item label="Volunteering Event" value={EventType.VOLUNTEER_EVENT} />
+                                    <Picker.Item label="Social Event" value={EventType.SOCIAL_EVENT} />
+                                    <Picker.Item label="Intramural Event" value={EventType.INTRAMURAL_EVENT} />
+                                    <Picker.Item label="Custom Event" value={EventType.CUSTOM_EVENT} />
                                 </Picker>
                             </View>
                         </View>
