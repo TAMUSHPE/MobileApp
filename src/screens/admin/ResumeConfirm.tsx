@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -22,13 +22,17 @@ const ResumeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardPara
 
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [infoVisible, setInfoVisible] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const fetchMembers = async () => {
+        setLoading(true);
         try {
             const fetchedMembers = await getMembersToResumeVerify();
             setMembers(fetchedMembers);
         } catch (error) {
             console.error('Error fetching members:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -116,23 +120,29 @@ const ResumeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardPara
                 </View>
             </View>
 
-            <View className='items-center justify-center'>
-                {members && members.length === 0 && (
+            {loading && (
+                <ActivityIndicator size="large" className='mt-8' />
+            )}
+            {(members && members.length === 0 && !loading) && (
+                <View className='items-center justify-center'>
                     <View className='flex justify-center mt-4'>
                         <Text className='text-xl font-semibold'>No Resume to verify</Text>
                     </View>
-                )}
-            </View>
+                </View>
+            )}
 
-            <View className='mt-9 flex-1'>
-                <MembersList
-                    handleCardPress={(uid) => {
-                        setSelectedMemberUID(uid)
-                        setConfirmVisible(true)
-                    }}
-                    users={members}
-                />
-            </View>
+            {members && members.length > 0 && (
+                <View className='mt-9 flex-1'>
+                    <Text className='ml-6 text-xl font-semibold mb-5'>Select a user</Text>
+                    <MembersList
+                        handleCardPress={(uid) => {
+                            setSelectedMemberUID(uid)
+                            setConfirmVisible(true)
+                        }}
+                        users={members}
+                    />
+                </View>
+            )}
 
             <DismissibleModal
                 visible={confirmVisible}
