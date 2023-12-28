@@ -158,7 +158,7 @@ const ResumeDownloader = ({ navigation }: NativeStackScreenProps<AdminDashboardP
             )
 
             }
-            {!isGenerated || loadingShare && (
+            {(!isGenerated || loadingShare) && (
                 <View className='flex justify-center items-center mt-10'>
                     <ActivityIndicator size="large" />
                 </View>
