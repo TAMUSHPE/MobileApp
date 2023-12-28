@@ -1,33 +1,47 @@
 import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
-import { MainStackParams } from '../types/Navigation';
-import { Images } from '../../assets';
-import { auth, functions } from '../config/firebaseConfig';
-import { UserContext } from '../context/UserContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { setPublicUserData, setPrivateUserData, getUser, getCommittees } from '../api/firebaseUtils';
-import { updateProfile } from 'firebase/auth';
-import * as ImagePicker from "expo-image-picker";
-import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../api/fileSelection';
-import ProfileBadge from '../components/ProfileBadge';
-import { Committee } from '../types/Committees';
-import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../helpers/validation';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
+import * as ImagePicker from "expo-image-picker";
+import { UserContext } from '../context/UserContext';
+import { auth, functions } from '../config/firebaseConfig';
+import { updateProfile } from 'firebase/auth';
+import { httpsCallable } from 'firebase/functions';
+import { setPublicUserData, setPrivateUserData, getUser, getCommittees } from '../api/firebaseUtils';
+import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../api/fileSelection';
+import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../helpers/validation';
+import { handleLinkPress } from '../helpers/links';
+import { getBadgeColor, isMemberVerified } from '../helpers/membership';
+import { MainStackParams } from '../types/Navigation';
+import { Committee } from '../types/Committees';
+import { MAJORS, classYears } from '../types/User';
+import { Images } from '../../assets';
+import ProfileBadge from '../components/ProfileBadge';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../components/SettingsComponents"
 import InteractButton from '../components/InteractButton';
-import { httpsCallable } from 'firebase/functions';
 import SimpleDropDown from '../components/SimpleDropDown';
-import { MAJORS, classYears } from '../types/User';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { handleLinkPress } from '../helpers/links';
+import TwitterSvg from '../components/TwitterSvg';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
  */
 const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const { userInfo } = useContext(UserContext) ?? {};
+
+    const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration } = userInfo?.publicInfo ?? {};
+    const isOfficer = roles ? roles.officer : false;
+
+    const [isVerified, setIsVerified] = useState<boolean>(false);
+    let badgeColor = getBadgeColor(isOfficer!, isVerified);
+
+    useEffect(() => {
+        if (nationalExpiration && chapterExpiration) {
+            setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
+        }
+    }, [nationalExpiration, chapterExpiration])
+
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
@@ -38,29 +52,41 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
             }}
         >
             <StatusBar style={darkMode ? "light" : "dark"} />
-            <View className='w-full py-8 px-4 flex-row items-center justify-between'>
-                <View className='flex-1'>
-                    <Text className={`text-4xl ${darkMode ? "text-white" : "text-black"}`}>{userInfo?.publicInfo?.displayName}</Text>
-                    <Text className={`text-xl ${darkMode ? "text-white" : "text-black"}`}>{userInfo?.publicInfo?.name}</Text>
-                </View>
-                <TouchableOpacity onPress={() => navigation.navigate("ProfileSettingsScreen")}>
-                    <Image
-                        className='w-24 h-24 rounded-full'
-                        defaultSource={Images.DEFAULT_USER_PICTURE}
-                        source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
-                    />
+
+            <View className='flex-1 w-full px-4 mt-10 mb-4'>
+                <TouchableOpacity
+                    onPress={() => navigation.navigate("ProfileSettingsScreen")}
+                >
+                    <View className="flex-row">
+                        <Image
+                            className="flex w-16 h-16 rounded-full"
+                            defaultSource={Images.DEFAULT_USER_PICTURE}
+                            source={photoURL ? { uri: photoURL as string } : Images.DEFAULT_USER_PICTURE}
+                        />
+                        <View className='ml-3 my-1'>
+                            <View>
+                                <View className="flex-row items-center">
+                                    <Text className={`font-semibold text-2xl ${darkMode && "text-white"}`}>{name}</Text>
+                                    {isOfficer && (
+                                        <View className="ml-2">
+                                            <TwitterSvg color={badgeColor} />
+                                        </View>
+
+                                    )}
+                                    {(!isOfficer && isVerified) && (
+                                        <View className="ml-2">
+                                            <TwitterSvg color={badgeColor} />
+                                        </View>
+                                    )}
+                                </View>
+                                <Text className={`text-md text-grey font-semibold ${darkMode && "text-white"}`}>View Profile</Text>
+                            </View>
+                        </View>
+                    </View>
                 </TouchableOpacity>
             </View>
-            <TouchableHighlight
-                onPress={() => navigation.navigate("SearchSettingsScreen")}
-                className={`rounded-full w-11/12 p-4 mb-5 mt-2 bg-[#E9E9E9]`}
-                underlayColor={"#ccd3d8"}
-            >
-                <View className='flex-row items-center'>
-                    <MaterialCommunityIcons name="text-box-search-outline" size={30} color="#78818a" />
-                    <Text className={`text-xl ml-4 text-[#78818a]`}>Search settings...</Text>
-                </View>
-            </TouchableHighlight>
+
+
             <SettingsButton
                 iconName='pencil-circle'
                 mainText='Profile'
@@ -106,18 +132,6 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
         </ScrollView>
     )
 }
-
-/**
- * Screen where user can search the settings for any option they may need. This will redirect them to the respective screen that they have searched for.
- */
-const SearchSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    Alert.alert("Unimplemented", "Settings Search and Settings Transition Unimplemented")
-    return (
-        <SafeAreaView>
-
-        </SafeAreaView>
-    );
-};
 
 
 /**
@@ -559,7 +573,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 <View className='py-10 w-full items-center'>
                     <TouchableOpacity activeOpacity={0.7} onPress={async () => await selectProfilePicture()}>
                         <Image
-                            className='w-40 h-40 rounded-full'
+                            className='w-36 h-36 rounded-full'
                             defaultSource={Images.DEFAULT_USER_PICTURE}
                             source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
                         />
@@ -776,4 +790,4 @@ const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackPar
 };
 
 
-export { SettingsScreen, SearchSettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen };
+export { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen };

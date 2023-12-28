@@ -1,13 +1,13 @@
 
 import { ImageSourcePropType } from "react-native";
+import { SetStateAction } from "react";
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from '@react-navigation/native';
-import { PublicUserInfo, UserFilter } from "./User";
+import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import { Test } from '../types/GoogleSheetsTypes';
 import { Committee } from "./Committees";
+import { PublicUserInfo, UserFilter } from "./User";
 import { SHPEEventID } from "./Events";
-import { MutableRefObject, SetStateAction } from "react";
-import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 
 // Stacks
 export type MainStackParams = {
@@ -15,7 +15,6 @@ export type MainStackParams = {
     HomeBottomTabs: undefined;
     AdminDashboardStack: undefined;
     SettingsScreen: undefined;
-    SearchSettingsScreen: undefined;
     ProfileSettingsScreen: undefined;
     DisplaySettingsScreen: undefined;
     AccountSettingsScreen: undefined;
@@ -178,7 +177,7 @@ export type MemberListProps = {
 
 
 export type MemberCardProp = {
-    handleCardPress?: () => void;
+    handleCardPress?: (uid: string | void) => void;
     userData?: PublicUserInfo;
     navigation?: NativeStackNavigationProp<any>
 }
