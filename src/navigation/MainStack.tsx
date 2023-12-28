@@ -1,11 +1,11 @@
 import React, { useContext } from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { UserContext } from "../context/UserContext";
+import { MainStackParams } from '../types/Navigation';
 import HomeBottomTabs from "./HomeBottomTabs";
 import AdminDashboardStack from "./AdminDashboardStack";
 import EventVerification from "../screens/EventVerification";
-import { MainStackParams } from '../types/Navigation';
-import { SettingsScreen, SearchSettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen } from "../screens/Settings";
-import { UserContext } from "../context/UserContext";
+import { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen } from "../screens/Settings";
 
 const MainStack = () => {
     const Stack = createNativeStackNavigator<MainStackParams>();
@@ -32,10 +32,10 @@ const MainStack = () => {
                         backgroundColor: darkMode ? "#2a2a2a" : "#FFF",
                     },
                     headerTintColor: darkMode ? "#F2F2F2" : "#000",
+
                 }}
             >
                 <Stack.Screen name="SettingsScreen" component={SettingsScreen} options={{ title: "Settings" }} />
-                <Stack.Screen name="SearchSettingsScreen" component={SearchSettingsScreen} options={{ title: "Search Settings" }} />
                 <Stack.Screen name="ProfileSettingsScreen" component={ProfileSettingsScreen} options={{ title: "Profile Settings" }} />
                 <Stack.Screen name="DisplaySettingsScreen" component={DisplaySettingsScreen} options={{ title: "Display Settings" }} />
                 <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} options={{ title: "Account Settings/Info" }} />
