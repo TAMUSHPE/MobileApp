@@ -21,7 +21,7 @@ const Splash = ({ setIsLoading }: SplashProps) => {
             <StatusBar style="light" />
             <LottieView
                 ref={animationRef}
-                source={require("../../assets/splash_minimal_tamu.json")}
+                source={require("../../assets/splash_minimal.json")}
                 loop={false}
                 resizeMode="cover"
                 onAnimationFinish={() => setIsLoading(false)}
