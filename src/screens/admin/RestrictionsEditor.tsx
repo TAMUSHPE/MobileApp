@@ -2,236 +2,259 @@ import { View, Text, Image, TouchableOpacity, ScrollView, Modal } from 'react-na
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { Images } from '../../../assets';
 import { AdminDashboardParams } from '../../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { getPublicUserData, getWatchlist, getBlacklist } from '../../api/firebaseUtils';
 import MembersList from '../../components/MembersList';
 import { PublicUserInfo } from '../../types/User';
+import { addToBlacklist, addToWatchlist, getBlacklist, getMembersExcludeOfficers, getWatchlist, removeFromWatchlist } from '../../api/firebaseUtils';
+import { Images } from '../../../assets';
+import DismissibleModal from '../../components/DismissibleModal';
+
+
 
 const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
-    const [usersModalVisible, setUsersModalVisible] = useState(false);
-    const [updated, setUpdated] = useState(false);
-    const [watchlistUserInfo, setWatchlistUserInfo] = useState<PublicUserInfo[]>([]);
-    const [blacklistUserInfo, setBlacklistUserInfo] = useState<PublicUserInfo[]>([]);
-    const [changingWatchlist, setChangingWatchlist] = useState(false);
-    const [changingBlacklist, setChangingBlacklist] = useState(false);
+    const [members, setMembers] = useState<PublicUserInfo[]>([])
+    const [watchList, setWatchList] = useState<PublicUserInfo[]>([])
+    const [blackList, setBlackList] = useState<PublicUserInfo[]>([])
+    const [blackListModal, setBlackListModal] = useState(false);
+    const [watchListModal, setWatchListModal] = useState(false);
+    const [infoVisible, setInfoVisible] = useState(false);
+
+    useEffect(() => {
+        const fetchMembers = async () => {
+            try {
+                const fetchedMembers = await getMembersExcludeOfficers();
+                setMembers(fetchedMembers);
+            } catch (error) {
+                console.error('Error fetching members:', error);
+            }
+        };
+
+        const fetchWatchList = async () => {
+            try {
+                const fetchedWatchList = await getWatchlist();
+                setWatchList(fetchedWatchList);
+            } catch (error) {
+                console.error('Error fetching members:', error);
+            }
+        }
+
+        const fetchBlackList = async () => {
+            try {
+                const fetchedBlackList = await getBlacklist();
+                setBlackList(fetchedBlackList);
+            } catch (error) {
+                console.error('Error fetching members:', error);
+            }
+        }
+
+        fetchMembers();
+        fetchWatchList();
+        fetchBlackList();
+    }, [])
 
     const insets = useSafeAreaInsets();
 
-    const fetchWatchlistUserData = async (uid: string) => {
-        const fetchedInfo = await getPublicUserData(uid);
-        if (fetchedInfo) {
-            setWatchlistUserInfo(prevState => [...prevState, { ...fetchedInfo, uid }]);
-        }
-    }
-
-    const fetchBlacklistUserData = async (uid: string) => {
-        const fetchedInfo = await getPublicUserData(uid);
-        if (fetchedInfo) {
-            setBlacklistUserInfo(prevState => [...prevState, { ...fetchedInfo, uid }]);
-        }
-    }
-
-    function getCurrentWatchlist(): string[] {
-        let watchlist: Array<string> = []
-        watchlistUserInfo.forEach((userInfo) => (
-            watchlist.push(userInfo.uid!)
-        ));
-        return watchlist;
-    }
-
-    function getCurrentBlacklist(): string[] {
-        let blacklist: Array<string> = []
-        blacklistUserInfo.forEach((userInfo) => (
-            blacklist.push(userInfo.uid!)
-        ));
-        return blacklist;
-    }
-
-    useEffect(() => {
-        const loadData = async () => {
-            const loadedWatchlist = await getWatchlist();
-            if (loadedWatchlist && loadedWatchlist.length > 0) {
-                loadedWatchlist.forEach((uid: string) => {
-                    fetchWatchlistUserData(uid)
-                });
-            }
-
-            const loadedBlacklist = await getBlacklist();
-            if (loadedBlacklist && loadedBlacklist.length > 0) {
-                loadedBlacklist.forEach((uid: string) => {
-                    fetchBlacklistUserData(uid)
-                });
-            }
-        };
-
-        loadData();
-    }, []);
-
-    useEffect(() => {
-        let timerId: NodeJS.Timeout;
-        if (updated) {
-            timerId = setTimeout(() => {
-                setUpdated(false);
-            }, 3000);
-        }
-        return () => {
-            clearTimeout(timerId);
-        };
-    }, [updated]);
-
-    const removeWatchlist = (uid: string) => {
-        const updatedWatchlistUserInfo = watchlistUserInfo.filter(userInfo => userInfo.uid !== uid);
-        setWatchlistUserInfo(updatedWatchlistUserInfo);
-    };
-
-    const removeBlacklist = (uid: string) => {
-        const updatedBlacklistUserInfo = blacklistUserInfo.filter(userInfo => userInfo.uid !== uid);
-        setBlacklistUserInfo(updatedBlacklistUserInfo);
-    };
-
-
     return (
-        <SafeAreaView>
-            <ScrollView>
-                {/* Image */}
-                <View className='justify-center items-center'>
-                    <Image
-                        className="mt-2 h-60 w-[90%] bg-gray-700 rounded-xl"
-                        source={Images.COMMITTEE}
-                    />
-                </View>
-
-                {/* Form */}
-                <View className='p-6'>
-                    <View className='flex-row mt-4 w-full '>
-                        <View className='items-center flex-1'>
-                            <Text className='text-gray-500 text-lg text-center'>Watchlist</Text>
-                            <TouchableOpacity onPress={() => { setUsersModalVisible(true); setChangingWatchlist(true); }}>
-                                {watchlistUserInfo.length === 0 &&
-                                    <Text className='text-lg text-center'>Select Users</Text>
-                                }
-                            </TouchableOpacity>
-                            {watchlistUserInfo.map((userInfo, index) => (
-                                <View key={index}>
-                                    <View className='flex-row'>
-                                        <Text className='text-lg text-center'>{userInfo.name}</Text>
-                                        <TouchableOpacity className="pl-2" onPress={() => removeWatchlist(userInfo.uid!)}>
-                                            <Octicons name="x" size={25} color="red" />
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            ))}
-                            {watchlistUserInfo.length > 0 &&
-                                <TouchableOpacity
-                                    className='text-center bg-pale-orange p-1 mt-2 rounded-md'
-                                    onPress={() => { setUsersModalVisible(true); setChangingWatchlist(true); }}>
-                                    <Text className='text-lg'>Add Users</Text>
-                                </TouchableOpacity>
-                            }
-                        </View>
-
-                        <View className='items-center flex-1'>
-                            <Text className='text-gray-500 text-lg text-center'>Blacklist</Text>
-                            <TouchableOpacity onPress={() => { setUsersModalVisible(true); setChangingBlacklist(true) }}>
-                                {blacklistUserInfo.length === 0 &&
-                                    <Text className='text-lg text-center'>Select Users</Text>
-                                }
-                            </TouchableOpacity>
-                            {blacklistUserInfo.map((userInfo, index) => (
-                                <View key={index}>
-                                    <View className='flex-row'>
-                                        <Text className='text-lg text-center'>{userInfo.name}</Text>
-                                        <TouchableOpacity className="pl-2" onPress={() => removeBlacklist(userInfo.uid!)}>
-                                            <Octicons name="x" size={25} color="red" />
-                                        </TouchableOpacity>
-                                    </View>
-                                </View>
-                            ))}
-                            {blacklistUserInfo.length > 0 &&
-                                <TouchableOpacity
-                                    className='text-center bg-pale-orange p-1 mt-2 rounded-md'
-                                    onPress={() => { setUsersModalVisible(true); setChangingBlacklist(true) }}>
-                                    <Text className='text-lg'>Add Users</Text>
-                                </TouchableOpacity>
-                            }
-                        </View>
-                    </View>
-                </View>
-
-
-                <View className='w-screen justify-center items-center pt-4 space-x-7'>
-                    <TouchableOpacity className='bg-blue-400 justify-center items-center rounded-md p-2'
-                        onPress={async () => {
-                            // setWatchlist(getCurrentWatchlist())
-                            // setBlacklist(getCurrentBlacklist())
-                            setUpdated(true)
-                        }}
-                    >
-                        <Text className='text-xl text-semibold'>Update Restrictions</Text>
+        <SafeAreaView className='flex-1' edges={["top"]}>
+            <View className='flex-row items-center h-10'>
+                <View className='pl-6'>
+                    <TouchableOpacity activeOpacity={1} className="px-2" onPress={() => navigation.goBack()}>
+                        <Octicons name="chevron-left" size={30} color="black" />
                     </TouchableOpacity>
                 </View>
-                <View className='justify-center items-center'>
-                    {updated && <Text className='text-green-500'>Information has been updated</Text>}
+                <View className='flex-1 items-center'>
+                    <Text className="text-2xl font-bold text-black">Restrictions</Text>
                 </View>
+                <View className="pr-6">
+                    <TouchableOpacity activeOpacity={1} onPress={() => setInfoVisible(true)}>
+                        <Octicons name="info" size={25} color="black" />
+                    </TouchableOpacity>
+                </View>
+            </View>
 
-                <View className='pb-32'></View>
-            </ScrollView >
+            <TouchableOpacity className='mx-8 mt-8 flex-row items-center'
+                onPress={() => setWatchListModal(true)}
+            >
+                <Text className='text-2xl font-bold'>Watch List</Text>
+                <View className='ml-3 bg-pale-blue rounded-full h-5 w-5 items-center justify-center'>
+                    <Octicons name="plus" size={15} color="white" />
+                </View>
+            </TouchableOpacity>
+            <ScrollView className='flex-1 h-screen'>
+                <View className='flex-col mt-4'>
+                    {watchList?.map((userData, index) => {
+                        const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration } = userData
+                        return (
+                            <View className='flex-row items-center' key={index}>
+                                <TouchableOpacity
+                                    className='ml-5 w-[60%]'
+                                    onPress={() => { navigation.navigate('PublicProfile', { uid: uid! }) }}
+                                >
+                                    <View className="flex-row">
+                                        <Image
+                                            className="flex w-12 h-12 rounded-full"
+                                            defaultSource={Images.DEFAULT_USER_PICTURE}
+                                            source={photoURL ? { uri: photoURL as string } : Images.DEFAULT_USER_PICTURE}
+                                        />
+                                        <View className='ml-2 my-1'>
+                                            <View>
+                                                <Text className='font-semibold text-lg'>{name}</Text>
+                                                <Text className='text-md text-grey'> {displayName}</Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    className='px-4 flex-1 h-full justify-center'
+                                    onPress={() => {
+                                        setWatchList(prevWatchList => prevWatchList.filter(member => member.uid !== uid));
+                                        removeFromWatchlist(userData);
+                                    }}
+                                >
+                                    <Octicons name="x" size={26} color="red" />
+                                </TouchableOpacity>
+                            </View>
+                        );
+                    })}
+                </View>
+            </ScrollView>
+
+
+            <TouchableOpacity className='mx-8 mt-8 flex-row items-center'
+                onPress={() => setBlackListModal(true)}
+            >
+                <Text className='text-2xl font-bold'>Black List</Text>
+                <View className='ml-3 bg-pale-blue rounded-full h-5 w-5 items-center justify-center'>
+                    <Octicons name="plus" size={15} color="white" />
+                </View>
+            </TouchableOpacity>
+            <ScrollView className='flex-1 h-screen'>
+                <View className='mx-8 my-5'>
+
+                </View>
+            </ScrollView>
 
             <Modal
                 animationType="slide"
                 transparent={true}
-                visible={usersModalVisible}
+                visible={watchListModal}
                 onRequestClose={() => {
-                    setUsersModalVisible(false);
-                    setChangingBlacklist(false);
-                    setChangingWatchlist(false)
+                    setWatchListModal(false);
                 }}
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
                     className='bg-white'>
 
-                    <View className='flex-row items-center h-10 mb-4'>
+                    <View className='flex-row items-center h-10 mb-4 justify-end'>
                         <View className='w-screen absolute'>
-                            <Text className="text-2xl font-bold justify-center text-center">Select a User</Text>
+                            <Text className="text-2xl font-bold justify-center text-center">Select User</Text>
                         </View>
-                        <View className='pl-6'>
-                            <TouchableOpacity className=" bg-pale-orange p-2 rounded-md" onPress={() => { setUsersModalVisible(false); setChangingBlacklist(false); setChangingWatchlist(false) }} >
-                                <Text className='text-xl font-semibol'>Cancel</Text>
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity
+                            className='px-4 mr-3'
+                            onPress={() => setWatchListModal(false)}
+                        >
+                            <Octicons name="x" size={26} color="black" />
+                        </TouchableOpacity>
                     </View>
 
 
                     <View className="h-[100%] w-[100%] bg-white">
                         <MembersList
                             handleCardPress={(uid) => {
-                                const currentWatchlist = getCurrentWatchlist()
-                                const currentBlacklist = getCurrentBlacklist()
-                                if (changingWatchlist && !currentWatchlist.includes(uid)) {
-                                    if (currentBlacklist.includes(uid)) {
-                                        removeBlacklist(uid)
-                                    }
-                                    fetchWatchlistUserData(uid)
-                                    setChangingWatchlist(false)
+                                const memberToAdd = members.find(member => member.uid === uid);
+                                if (memberToAdd && !watchList.some(watchMember => watchMember.uid === uid)) {
+                                    setWatchList(prevWatchList => [...prevWatchList, memberToAdd]);
+                                    addToWatchlist(memberToAdd);
                                 }
-                                if (changingBlacklist && !currentBlacklist.includes(uid)) {
-                                    if (currentWatchlist.includes(uid)) {
-                                        removeWatchlist(uid)
-                                    }
-                                    fetchBlacklistUserData(uid)
-                                    setChangingBlacklist(false)
-                                }
-                                setUsersModalVisible(false)
+
+                                setWatchListModal(false);
                             }}
-                            DEFAULT_NUM_LIMIT={null}
+                            users={members}
                         />
                     </View>
                 </View>
             </Modal>
-        </SafeAreaView >
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={blackListModal}
+                onRequestClose={() => {
+                    setBlackListModal(false);
+                }}
+            >
+                <View
+                    style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+                    className='bg-white'>
+
+                    <View className='flex-row items-center h-10 mb-4 justify-end'>
+                        <View className='w-screen absolute'>
+                            <Text className="text-2xl font-bold justify-center text-center">Select User</Text>
+                        </View>
+                        <TouchableOpacity
+                            className='px-4 mr-3'
+                            onPress={() => setBlackListModal(false)}
+                        >
+                            <Octicons name="x" size={26} color="black" />
+                        </TouchableOpacity>
+                    </View>
+
+
+                    <View className="h-[100%] w-[100%] bg-white">
+                        <MembersList
+                            handleCardPress={(uid) => {
+                                const memberToAdd = members.find(member => member.uid === uid);
+
+                                if (memberToAdd && !blackList.some(blackMember => blackMember.uid === uid)) {
+                                    setBlackList(prevBlackList => [...prevBlackList, memberToAdd]);
+                                    addToBlacklist(memberToAdd);
+                                }
+
+                                setBlackListModal(false);
+                            }}
+                            users={watchList}
+                        />
+                    </View>
+                </View>
+            </Modal>
+
+            <DismissibleModal
+                visible={infoVisible}
+                setVisible={setInfoVisible}
+            >
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ minWidth: 325 }}>
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center'>
+                            <Octicons name="info" size={24} color="black" />
+                            <Text className='text-2xl font-semibold ml-2'>Instructions</Text>
+                        </View>
+                        <View>
+                            <TouchableOpacity onPress={() => setInfoVisible(false)}>
+                                <Octicons name="x" size={24} color="black" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <View className='w-[85%]'>
+                        <Text className='text-md font-semibold'>User on the watch list have perform an action classified as "bad behavior". This means that this user is using the app in a way that is not intended. </Text>
+                    </View>
+
+                    <View className='w-[85%]'>
+                        <Text className='text-md font-semibold'>This is important to reduce unnecessary cost for the app.</Text>
+                    </View>
+
+                    <View className='w-[85%]'>
+                        <Text className='text-md font-semibold'>A user on the watch list will not be restricted but simply there to keep an eye on. A user on the black list will be restricted from using the app.</Text>
+                    </View>
+
+                    <View className='w-[85%]'>
+                        <Text className='text-md font-semibold'>A user must be manually added to the black list</Text>
+                    </View>
+                </View>
+            </DismissibleModal>
+
+        </SafeAreaView>
     )
 }
 
