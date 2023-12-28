@@ -364,31 +364,51 @@ export const deleteCommittee = async (firebaseDocName: string): Promise<void> =>
 export const getWatchlist = async () => {
     const docRef = doc(db, "restrictions/watchlist");
     const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? docSnap.data().UIDs : [];
+    return docSnap.exists() ? docSnap.data().list : [];
 };
 
 export const getBlacklist = async () => {
     const docRef = doc(db, "restrictions/blacklist");
     const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? docSnap.data().UIDs : [];
+    return docSnap.exists() ? docSnap.data().list : [];
 };
 
 
-export const addToWatchlist = async (uid: string) => {
+export const addToWatchlist = async (userToAdd: PublicUserInfo) => {
     const currentWatchlist = await getWatchlist() || [];
-    if (!currentWatchlist.includes(uid)) {
-        const updatedWatchlist = [...currentWatchlist, uid];
-        await setDoc(doc(db, "restrictions/watchlist"), { UIDs: updatedWatchlist }, { merge: true });
+
+    if (!currentWatchlist.some((user: PublicUserInfo) => user.uid === userToAdd.uid)) {
+        const updatedWatchlist = [...currentWatchlist, userToAdd];
+        console.log(updatedWatchlist.length)
+        await setDoc(doc(db, "restrictions/watchlist"), { list: updatedWatchlist }, { merge: true });
     }
 };
 
-export const addToBlacklist = async (uid: string) => {
+export const addToBlacklist = async (userToAdd: PublicUserInfo) => {
     const currentBlacklist = await getBlacklist() || [];
-    if (!currentBlacklist.includes(uid)) {
-        const updatedBlacklist = [...currentBlacklist, uid];
-        await setDoc(doc(db, "restrictions/blacklist"), { UIDs: updatedBlacklist }, { merge: true });
+
+    if (!currentBlacklist.some((user: PublicUserInfo) => user.uid === userToAdd.uid)) {
+        const updatedBlacklist = [...currentBlacklist, userToAdd];
+        await setDoc(doc(db, "restrictions/blacklist"), { list: updatedBlacklist }, { merge: true });
     }
 };
+
+export const removeFromWatchlist = async (userToRemove: PublicUserInfo) => {
+    const currentWatchlist = await getWatchlist() || [];
+
+    const updatedWatchlist = currentWatchlist.filter((user: PublicUserInfo) => user.uid !== userToRemove.uid);
+
+    await setDoc(doc(db, "restrictions/watchlist"), { list: updatedWatchlist }, { merge: true });
+};
+
+export const removeFromBlacklist = async (userToRemove: PublicUserInfo) => {
+    const currentBlacklist = await getBlacklist() || [];
+
+    const updatedBlacklist = currentBlacklist.filter((user: PublicUserInfo) => user.uid !== userToRemove.uid);
+
+    await setDoc(doc(db, "restrictions/blacklist"), { list: updatedBlacklist }, { merge: true });
+};
+
 
 export const createEvent = async (event: SHPEEvent) => {
     try {
@@ -789,9 +809,6 @@ export const getLeads = async (): Promise<PublicUserInfo[]> => {
         throw new Error("Internal Server Error.");
     }
 }
-
-
-
 
 
 
