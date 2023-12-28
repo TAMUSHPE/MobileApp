@@ -1,4 +1,4 @@
-import { View, Text, ActivityIndicator, Image, Alert, TouchableOpacity, Pressable, TextInput } from 'react-native';
+import { View, Text, ActivityIndicator, Image, Alert, TouchableOpacity, Pressable, TextInput, ScrollView, RefreshControl } from 'react-native';
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { BlurView } from '@react-native-community/blur';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -6,10 +6,11 @@ import { useFocusEffect } from '@react-navigation/core';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../context/UserContext';
 import { auth } from '../config/firebaseConfig';
-import { getCommittees, getPublicUserData, setUserRoles } from '../api/firebaseUtils';
+import { getCommittees, getPublicUserData, getUser, setUserRoles } from '../api/firebaseUtils';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
 import { handleLinkPress } from '../helpers/links';
 import { HomeDrawerParams, MembersScreenRouteProp } from '../types/Navigation';
@@ -33,16 +34,33 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
     const [isVerified, setIsVerified] = useState<boolean>(false);
     const isOfficer = roles ? roles.officer : false;
     const badgeColor = getBadgeColor(isOfficer!, isVerified);
+    const isCurrentUser = uid === auth.currentUser?.uid;
 
     const [loading, setLoading] = useState<boolean>(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [updatingRoles, setUpdatingRoles] = useState<boolean>(false);
     const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
 
     // Data related to currently authenticated user
-    const { userInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
     const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    const onRefresh = useCallback(async () => {
+        if (isCurrentUser) {
+            setRefreshing(true);
+            try {
+                const firebaseUser = await getUser(auth.currentUser?.uid!)
+                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                await setUserInfo(firebaseUser);
+            } catch (error) {
+                console.error("Error updating user:", error);
+            } finally {
+                setRefreshing(false);
+            }
+        }
+    }, [uid]);
 
     useFocusEffect(
         useCallback(() => {
@@ -122,7 +140,15 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
     }
 
     return (
-        <View className='flex-1'>
+        <ScrollView
+            refreshControl={
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                />
+            }
+            bounces={isCurrentUser ? true : false}
+        >
             <StatusBar style="light" />
             {/* Profile Header */}
             <View>
@@ -147,7 +173,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                             <Octicons name="chevron-left" size={30} color="white" />
                         </TouchableOpacity>
                         <View className='flex-col relative items-center'>
-                            {uid === auth.currentUser?.uid &&
+                            {isCurrentUser &&
                                 <TouchableOpacity
                                     onPress={() => navigation.navigate("ProfileSettingsScreen")}
                                     className="rounded-md px-3 py-2"
@@ -360,7 +386,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     {updatingRoles && <ActivityIndicator className='mb-4' size={30} />}
                 </View>
             </DismissibleModal>
-        </View>
+        </ScrollView>
     )
 }
 

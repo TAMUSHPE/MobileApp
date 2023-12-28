@@ -252,11 +252,15 @@ export const initializeCurrentUserData = async (): Promise<User> => {
         },
     };
 
+    const oneWeekFromNow = new Date();
+    oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+
     const defaultPrivateInfo: PrivateUserInfo = {
         completedAccountSetup: false,
         settings: {
             darkMode: false,
         },
+        expirationDate: oneWeekFromNow,
     };
 
     const user = await getUser(auth.currentUser?.uid!);
