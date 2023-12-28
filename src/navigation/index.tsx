@@ -8,6 +8,8 @@ import Splash from '../screens/Splash';
 import { Images } from '../../assets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { eventEmitter } from '../context/eventEmitter';
+import { setPrivateUserData } from '../api/firebaseUtils';
+import { auth } from '../config/firebaseConfig';
 /**
  * Renders the root navigator for the application.
  * It determines whether to show the splash screen, authentication stack, or main stack
@@ -21,6 +23,47 @@ const RootNavigator = () => {
     const [splashLoading, setSplashLoading] = useState<boolean>(true);
 
     useEffect(() => {
+        const checkDataExpiration = async () => {
+            const now = new Date();
+
+            // Use the existing userInfo state to check the expiration date
+            const expirationDateString = userInfo?.private?.privateInfo?.expirationDate;
+            const expirationDate = expirationDateString ? new Date(expirationDateString) : undefined;
+
+            if (!expirationDate || expirationDate < now) {
+                const newExpirationDate = new Date();
+                newExpirationDate.setDate(newExpirationDate.getDate() + 7);
+
+                const updatedPrivateData = {
+                    ...userInfo?.private?.privateInfo,
+                    expirationDate: newExpirationDate,
+                };
+
+                await setPrivateUserData(updatedPrivateData);
+
+                // Update the local user data instead of re-fetching
+                const updatedUserInfo = {
+                    ...userInfo,
+                    private: {
+                        ...userInfo?.private,
+                        privateInfo: updatedPrivateData,
+                    }
+                };
+
+                // Update AsyncStorage and state
+                await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
+                setUserInfo(updatedUserInfo);
+            }
+        };
+
+        if (userInfo) {
+            checkDataExpiration();
+        }
+    }, [userInfo]);
+
+    // fetch user data from async storage from notification
+    // works with app.tsx file to update user data
+    useEffect(() => {
         const handleUserUpdate = async () => {
             const userData = await AsyncStorage.getItem('@user');
             if (userData) {
@@ -33,7 +76,6 @@ const RootNavigator = () => {
             eventEmitter.off('userUpdated', handleUserUpdate);
         };
     }, []);
-
 
     if (splashLoading) {
         return <Splash setIsLoading={setSplashLoading} />;

@@ -60,6 +60,7 @@ export interface PrivateUserInfo {
     completedAccountSetup?: boolean;
     settings?: AppSettings;
     expoPushTokens?: string[];
+    expirationDate?: Date;
 };
 
 
@@ -67,7 +68,7 @@ export interface PrivateUserInfo {
  * Data which is used to moderate a user's functionality in the app.
  * This information should be viewable by the user and app admins. This data should NOT be able to be modified by the user. 
  */
-export interface UserModerationData{
+export interface UserModerationData {
     canUseKnockOnWall?: boolean;
 };
 
