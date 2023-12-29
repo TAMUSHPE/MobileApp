@@ -1,10 +1,10 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { memberPoints } from "./fetchGoogleSheets";
 import { validateTamuEmail } from "../helpers/validation";
-import { PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
+import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
 import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
 
@@ -160,45 +160,50 @@ type FetchMembersOptions = {
 export const fetchUserForList = async (options: FetchMembersOptions) => {
     const {
         lastUserSnapshot,
-        isOfficer = false,
         numLimit = null,
         filter,
     } = options;
     let userQuery: Query<DocumentData, DocumentData> = collection(db, 'users');
-
-    userQuery = query(userQuery, where("roles.officer", "==", isOfficer));
 
     if (filter.classYear != "") {
         userQuery = query(userQuery, where("classYear", "==", filter.classYear));
     }
 
     if (filter.major != "") {
-        userQuery = query(userQuery, where("major", "==", filter.major));
+        const majorUpper = filter.major.toUpperCase();
+        userQuery = query(userQuery, where("major", "==", majorUpper));
     }
 
+    if (filter.role && filter.role !== "") {
+        const roleQuery = `roles.${filter.role}`;
+        userQuery = query(userQuery, where(roleQuery, "==", true));
+    }
+
+    // Limit the number of results
     if (numLimit !== null) {
         userQuery = query(userQuery, limit(numLimit));
     }
 
+    // Start after the last retrieved document
     if (lastUserSnapshot) {
         userQuery = query(userQuery, startAfter(lastUserSnapshot));
     }
 
     try {
         const snapshot = await getDocs(userQuery);
-        let hasMoreUser;
-        if (numLimit !== null) {
-            hasMoreUser = snapshot.docs.length >= numLimit;
-        } else {
-            hasMoreUser = false;
-        }
+        const hasMoreUser = numLimit !== null ? snapshot.docs.length >= numLimit : false;
 
-        return { members: snapshot.docs, lastSnapshot: snapshot.docs[snapshot.docs.length - 1], hasMoreUser };
+        return {
+            members: snapshot.docs,
+            lastSnapshot: snapshot.docs[snapshot.docs.length - 1],
+            hasMoreUser
+        };
     } catch (error) {
         console.error("Error fetching users:", error);
         return { members: [], lastSnapshot: null, hasMoreUser: false };
     }
-}
+};
+
 
 /**
  * Appends an Expo push token to the current user's private data.
@@ -875,5 +880,42 @@ export const fetchUsersWithPublicResumes = async (filters: {
         return [];
     }
 };
+
+
+export const fetchOfficerStatus = async (uid: string) => {
+    try {
+        const officerStatusRef = doc(db, `/office-hours/officers-status/officers/${uid}`);
+        const docSnap = await getDoc(officerStatusRef);
+
+        if (docSnap.exists()) {
+            return docSnap.data();
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error("Error fetching officer status:", err);
+        return null;
+    }
+};
+
+export const addOfficeHourLog = async (data: OfficerStatus) => {
+    const userDocCollection = collection(db, 'office-hours/officer-log/log');
+    await addDoc(userDocCollection, data);
+};
+
+export const updateOfficerStatus = async (data: OfficerStatus) => {
+    const officerDoc = doc(db, `office-hours/officers-status/officers/${data.uid}`);
+    return setDoc(officerDoc, { signedIn: data.signedIn }, { merge: true });
+};
+
+export const incrementOfficeCount = async () => {
+    const officeCountRef = doc(db, 'office-hours/officer-count');
+    await updateDoc(officeCountRef, { "zachary-office": increment(1) });
+}
+
+export const decrementOfficeCount = async () => {
+    const officeCountRef = doc(db, 'office-hours/officer-count');
+    await updateDoc(officeCountRef, { "zachary-office": increment(-1) });
+}
 
 

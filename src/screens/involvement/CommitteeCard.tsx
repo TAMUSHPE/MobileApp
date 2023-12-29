@@ -7,16 +7,14 @@ import { Images } from "../../../assets"
 
 const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) => {
     const { name, color, logo, head, memberCount } = committee;
-
     const { userInfo } = useContext(UserContext)!;
     const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
+    const { LogoComponent, height, width } = getLogoComponent(logo);
 
     const isTextLight = (colorHex: string) => {
         const luminosity = calculateHexLuminosity(colorHex);
         return luminosity < 155;
     };
-
-    const { LogoComponent, height, width } = getLogoComponent(logo);
 
     return (
         <View className='flex items-center mb-8 w-full'>

@@ -5,6 +5,7 @@ import { auth, db } from '../../config/firebaseConfig';
 import { addDoc, collection, doc, serverTimestamp, setDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
 import { OfficerStatus } from '../../types/User';
 import DismissibleModal from '../../components/DismissibleModal';
+import { addOfficeHourLog, decrementOfficeCount, fetchOfficerStatus, incrementOfficeCount, updateOfficerStatus } from '../../api/firebaseUtils';
 
 
 /**
@@ -21,15 +22,8 @@ const OfficeSignIn = () => {
     useEffect(() => {
         const getOfficerStatus = async () => {
             try {
-                if (!auth?.currentUser?.uid) return;
-
-                const officerStatusRef = doc(db, `/office-hours/officers-status/officers/${auth?.currentUser?.uid}`);
-                const docSnap = await getDoc(officerStatusRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    setIsSignedIn(data?.signedIn);
-                }
+                const status = await fetchOfficerStatus(auth.currentUser?.uid!);
+                setIsSignedIn(status?.signedIn || false);
             } catch (err) {
                 console.error("Failed to fetch officer status:", err);
             }
@@ -39,41 +33,29 @@ const OfficeSignIn = () => {
     }, []);
 
 
-    const addOfficeHourLog = async (data: OfficerStatus) => {
-        const userDocCollection = collection(db, 'office-hours/officer-log/log');
-        await addDoc(userDocCollection, data);
-    };
-
-    const updateOfficerStatus = async (data: OfficerStatus) => {
-        const officerDoc = doc(db, `office-hours/officers-status/officers/${data.uid}`);
-        return setDoc(officerDoc, { signedIn: data.signedIn }, { merge: true });
-    };
-
-    const incrementOfficeCount = async () => {
-        const officeCountRef = doc(db, 'office-hours/officer-count');
-        await updateDoc(officeCountRef, { "zachary-office": increment(1) });
-    }
-
-    const decrementOfficeCount = async () => {
-        const officeCountRef = doc(db, 'office-hours/officer-count');
-        await updateDoc(officeCountRef, { "zachary-office": increment(-1) });
-    }
-
     const signInOut = async () => {
-        const data = {
-            uid: auth.currentUser?.uid!,
-            signedIn: !isSignedIn,
-            timestamp: serverTimestamp()
-        } as OfficerStatus;
+        try {
+            const data = {
+                uid: auth.currentUser?.uid!,
+                signedIn: !isSignedIn,
+                timestamp: serverTimestamp()
+            } as OfficerStatus;
 
-        await Promise.all([
-            addOfficeHourLog(data),
-            updateOfficerStatus(data),
-            isSignedIn ? decrementOfficeCount() : incrementOfficeCount()
-        ]);
+            await addOfficeHourLog(data);
+            await updateOfficerStatus(data);
 
-        setIsSignedIn(!isSignedIn)
+            if (isSignedIn) {
+                await decrementOfficeCount();
+            } else {
+                await incrementOfficeCount();
+            }
+
+            setIsSignedIn(!isSignedIn);
+        } catch (error) {
+            console.error("Error during sign-in/out process:", error);
+        }
     }
+
 
     return (
         <View className='my-10 mx-7 py-8 bg-white rounded-md items-center justify-center text-center shadow-md shadow-slate-300'>

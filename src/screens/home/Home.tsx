@@ -25,19 +25,19 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const { userInfo, signOutUser } = useContext(UserContext)!;
     const [memberOfTheMonth, setMemberOfTheMonth] = useState<PublicUserInfo>();
 
+
+    const fetchMemberOfTheMonth = async () => {
+        try {
+            const fetchedMemberOfTheMonth = await getMemberOfTheMonth();
+            setMemberOfTheMonth(fetchedMemberOfTheMonth);
+        } catch (error) {
+            console.error('Error fetching member of the month:', error);
+        }
+    };
+
     useFocusEffect(
         useCallback(() => {
-            const fetchMemberOfTheMonth = async () => {
-                try {
-                    const fetchedMemberOfTheMonth = await getMemberOfTheMonth();
-                    setMemberOfTheMonth(fetchedMemberOfTheMonth);
-                } catch (error) {
-                    console.error('Error fetching member of the month:', error);
-                }
-
-            }
             fetchMemberOfTheMonth();
-
         }, [])
     );
 
@@ -59,12 +59,9 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
             <FeaturedSlider route={route} />
 
-            {userInfo?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
+            {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}
 
-            <MOTMCard
-                userData={memberOfTheMonth}
-                navigation={navigation} handleCardPress={() => { navigation.navigate("PublicProfile", { uid: memberOfTheMonth?.uid! }) }} />
-
+            <MOTMCard userData={memberOfTheMonth} navigation={navigation} />
         </ScrollView>
     );
 }

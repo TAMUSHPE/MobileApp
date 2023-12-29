@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
 import { db, functions } from '../../config/firebaseConfig';
@@ -17,7 +17,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
     const { uid, photoURL, name, resumePublicURL, major, classYear, roles, nationalExpiration, chapterExpiration } = resumeData
     const isOfficer = roles ? roles.officer : false;
     const [isVerified, setIsVerified] = useState<boolean>(false);
-    let badgeColor = getBadgeColor(isOfficer!, isVerified);
+
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
 
     // Data related to currently authenticated user
@@ -30,13 +30,9 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
         }
     }, [nationalExpiration, chapterExpiration])
 
-    const classYearFormat = (classYear: string) => {
-        if (classYear.length === 4) {
-            return "'" + classYear.substring(2);
-        } else {
-            return classYear;
-        }
-    }
+    const classYearFormat = useCallback((year: string) => year.length === 4 ? "'" + year.substring(2) : year, []);
+
+    const badgeColor = getBadgeColor(isOfficer!, isVerified);
 
     const removeResume = async () => {
         const userDocRef = doc(db, 'users', uid!);
@@ -70,17 +66,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
                     <View className='w-[65%]'>
                         <View className="flex-row items-center">
                             <Text className='font-semibold text-lg'>{name}</Text>
-                            {isOfficer && (
-                                <View className="ml-2">
-                                    <TwitterSvg color={badgeColor} />
-                                </View>
-
-                            )}
-                            {(!isOfficer && isVerified) && (
-                                <View className="ml-2">
-                                    <TwitterSvg color={badgeColor} />
-                                </View>
-                            )}
+                            {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
                         </View>
                         <View className='flex-row items-center'>
                             <Text className='text-xl font-medium'>{major} {classYearFormat(classYear!)}  </Text>

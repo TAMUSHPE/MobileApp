@@ -6,14 +6,10 @@ import { Images } from '../../../assets'
 import TwitterSvg from '../../components/TwitterSvg'
 
 const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigation }) => {
-    if (!userData) {
-        return
-    }
-
     const { name, roles, uid, photoURL, chapterExpiration, nationalExpiration, email } = userData
     const isOfficer = roles ? roles.officer : false;
-
     const [isVerified, setIsVerified] = useState<boolean>(false);
+
     let badgeColor = getBadgeColor(isOfficer!, isVerified);
 
     useEffect(() => {
@@ -23,10 +19,7 @@ const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigat
     }, [nationalExpiration, chapterExpiration])
 
     const handleCardPress = (uid: string): string | void => {
-        if (!navigation) {
-            return
-        }
-        navigation.navigate("PublicProfile", { uid });
+        navigation!.navigate("PublicProfile", { uid });
     };
 
     return (
@@ -44,16 +37,7 @@ const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigat
                     <View>
                         <View className="flex-row items-center">
                             <Text className='font-bold text-lg'>{name}</Text>
-                            {isOfficer && (
-                                <View className="ml-2">
-                                    <TwitterSvg color={badgeColor} />
-                                </View>
-                            )}
-                            {(!isOfficer && isVerified) && (
-                                <View className="ml-2">
-                                    <TwitterSvg color={badgeColor} />
-                                </View>
-                            )}
+                            {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
                         </View>
                         <Text className='text-md text-gray-500 font-semibold'>{email}</Text>
                     </View>

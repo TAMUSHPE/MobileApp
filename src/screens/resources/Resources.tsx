@@ -26,10 +26,9 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
         </TouchableOpacity>
     );
 
-    const ResourceButton = ({ title, navigation, navigateTo, IconComponent }: {
+    const ResourceButton = ({ title, navigateTo, IconComponent }: {
         title: string;
-        navigation: NativeStackNavigationProp<any, any>;
-        navigateTo: string;
+        navigateTo: "PointsLeaderboard" | "TestBank" | "ResumeBank";
         IconComponent: React.ElementType;
     }) => (
         <TouchableOpacity
@@ -91,19 +90,16 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                 <View className='flex-col mt-12 items-center'>
                     <ResourceButton
                         title="Points Leaderboard"
-                        navigation={navigation}
                         navigateTo="PointsLeaderboard"
                         IconComponent={LeaderBoardIcon}
                     />
                     <ResourceButton
                         title="Test Bank"
-                        navigation={navigation}
                         navigateTo="TestBank"
                         IconComponent={ExamIcon}
                     />
                     <ResourceButton
                         title="Resume Bank"
-                        navigation={navigation}
                         navigateTo="ResumeBank"
                         IconComponent={ResumeIcon}
                     />

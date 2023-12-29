@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext'
@@ -18,24 +18,24 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
     const [submittedResume, setSubmittedResume] = useState(false);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
+    const [resumeName, setResumeName] = useState<string | undefined>(undefined);
+
+    const truncateStringWithEllipsis = (name: string, limit = 10) => {
+        if (name.length > limit) {
+            return `${name.substring(0, limit)}...`;
+        }
+        return name;
+    };
 
     useEffect(() => {
-        setLoading(true);
-
         const docRef = doc(db, `resumeVerification/${auth.currentUser?.uid}`);
-        const unsubscribe = onSnapshot(docRef, (doc) => {
-            if (doc.exists()) {
-                setSubmittedResume(true);
-            } else {
-                setSubmittedResume(false);
-            }
+        const unsubscribe = onSnapshot(docRef, (docSnapshot) => {
             setLoading(false);
-        },
-            (error) => {
-                console.error("Error fetching document:", error);
-                setLoading(false);
-            });
-
+            setSubmittedResume(docSnapshot.exists());
+        }, (error) => {
+            console.error("Error fetching document:", error);
+            setLoading(false);
+        });
         return unsubscribe;
     }, []);
 
@@ -43,15 +43,16 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
         const result = await selectFile();
         if (result) {
             const resumeBlob = await getBlobFromURI(result.assets![0].uri);
+            setResumeName(result.assets![0].name);
             return resumeBlob;
         }
         return null;
     }
 
-    const onResumeUploadSuccess = async (URL: string) => {
+    const onResumeUploadSuccess = useCallback(async (URL: string) => {
         try {
             // Remove from resume verification if submitted
-            await removedSubmittedResume();
+            await removeSubmittedResume();
 
             // Team Members are automatically approved
             const isTeamMember = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer || userInfo?.publicInfo?.roles?.representative || userInfo?.publicInfo?.roles?.lead;
@@ -80,26 +81,26 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
             setLoading(false);
         }
 
-    };
+    }, [userInfo]);
 
-    const submitResume = async () => {
+    const submitResume = useCallback(async () => {
         if (auth.currentUser) {
             await setDoc(doc(db, `resumeVerification/${auth.currentUser?.uid}`), {
                 uploadDate: new Date().toISOString(),
                 resumePublicURL: userInfo?.publicInfo?.resumePublicURL
             }, { merge: true });
         }
-    }
+    }, [userInfo]);
 
-    const removedSubmittedResume = async () => {
+    const removeSubmittedResume = useCallback(async () => {
         if (submittedResume) {
             const resumeVerificationDoc = doc(db, 'resumeVerification', auth.currentUser?.uid!);
             await deleteDoc(resumeVerificationDoc);
             setSubmittedResume(false);
         }
-    }
+    }, [submittedResume]);
 
-    const updatePublicInfoAndPersist = async (publicInfoChanges: PublicUserInfo) => {
+    const updatePublicInfoAndPersist = useCallback(async (publicInfoChanges: PublicUserInfo) => {
         if (userInfo) {
             const updatedUserInfo = {
                 ...userInfo,
@@ -116,16 +117,10 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                 console.error("Error updating user info:", error);
             }
         }
-    };
+    }, [userInfo, setUserInfo]);
 
     if (loading) {
-        return (
-            <View className="flex-row bg-white py-3 mx-4 px-4 mt-8 rounded-lg h-24">
-                <View className='flex-1 items-center justify-center'>
-                    <ActivityIndicator size="large" />
-                </View>
-            </View>
-        )
+        return <LoadingComponent />;
     }
 
     return (
@@ -169,14 +164,14 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                                 activeOpacity={0.5}
                                 onPress={() => handleLinkPress(userInfo?.publicInfo?.resumePublicURL!)}
                             >
-                                <Text className='font-semibold text-lg'>Your Resume</Text>
+                                <Text className='font-semibold text-lg'>{truncateStringWithEllipsis(resumeName!)}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
                                 onPress={async () => {
                                     try {
                                         // Remove from resume verification if submitted
-                                        await removedSubmittedResume();
+                                        await removeSubmittedResume();
 
                                         // Delete resume from user data in Firebase
                                         const userDocRef = doc(db, 'users', auth.currentUser?.uid!);
@@ -267,5 +262,13 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
         </View>
     )
 }
+
+const LoadingComponent = () => (
+    <View className="flex-row bg-white py-3 mx-4 px-4 mt-8 rounded-lg h-24">
+        <View className='flex-1 items-center justify-center'>
+            <ActivityIndicator size="large" />
+        </View>
+    </View>
+);
 
 export default ResumeSubmit

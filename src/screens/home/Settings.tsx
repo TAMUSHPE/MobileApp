@@ -30,7 +30,7 @@ import TwitterSvg from '../../components/TwitterSvg';
 const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const { userInfo } = useContext(UserContext) ?? {};
 
-    const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration } = userInfo?.publicInfo ?? {};
+    const { name, roles, photoURL, chapterExpiration, nationalExpiration } = userInfo?.publicInfo ?? {};
     const isOfficer = roles ? roles.officer : false;
 
     const [isVerified, setIsVerified] = useState<boolean>(false);
@@ -67,17 +67,8 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
                             <View>
                                 <View className="flex-row items-center">
                                     <Text className={`font-semibold text-2xl ${darkMode && "text-white"}`}>{name}</Text>
-                                    {isOfficer && (
-                                        <View className="ml-2">
-                                            <TwitterSvg color={badgeColor} />
-                                        </View>
+                                    {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
 
-                                    )}
-                                    {(!isOfficer && isVerified) && (
-                                        <View className="ml-2">
-                                            <TwitterSvg color={badgeColor} />
-                                        </View>
-                                    )}
                                 </View>
                                 <Text className={`text-md text-grey font-semibold ${darkMode && "text-white"}`}>View Profile</Text>
                             </View>

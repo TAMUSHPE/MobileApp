@@ -1,4 +1,4 @@
-import { View, ScrollView, Text, TouchableOpacity } from 'react-native'
+import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import React, { useCallback, useContext, useEffect } from 'react'
 import { useFocusEffect } from '@react-navigation/core'
 import { Octicons } from '@expo/vector-icons';
@@ -11,8 +11,8 @@ import CommitteeCard from './CommitteeCard'
 const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
     const [committees, setCommittees] = React.useState<Committee[]>([]);
     const [loading, setLoading] = React.useState(true);
-
     const { userInfo } = useContext(UserContext)!;
+
     const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
 
     const fetchCommittees = async () => {
@@ -33,7 +33,7 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
                 fetchCommittees();
             }
             return () => { };
-        }, [userInfo])
+        }, [isSuperUser])
     );
 
     return (
@@ -61,6 +61,9 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
                     </View>
                 )}
 
+                {loading && (
+                    <ActivityIndicator size="large" />
+                )}
                 {!loading && committees.map((committee) => (
                     <CommitteeCard
                         key={committee.name}
@@ -72,5 +75,7 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
         </ScrollView>
     )
 }
+
+
 
 export default CommitteesList

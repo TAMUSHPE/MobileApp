@@ -6,15 +6,15 @@ import { Octicons } from '@expo/vector-icons';
 import { httpsCallable, getFunctions } from 'firebase/functions';
 import { AdminDashboardParams } from '../../types/Navigation';
 
+const functions = getFunctions();
+
 const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const updateRanks = async () => {
-        const functions = getFunctions();
         const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
         updateRanksOnCall()
     }
 
     const getCommitteesCount = async () => {
-        const functions = getFunctions();
         const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
         committeeCountCheckOnCall()
     }
@@ -36,6 +36,8 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                 <View className='py-4 px-2 mx-5'>
                     <Text className='text-2xl font-semibold mb-3'>Verification</Text>
                     <View className='flex-row flex-wrap'>
+
+
                         <TouchableOpacity
                             onPress={() => navigation.navigate('MemberSHPEConfirm')}
                             className='bg-red-orange rounded-md py-4 px-2 items-center justify-center mr-4'

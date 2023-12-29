@@ -38,17 +38,7 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
                     <View>
                         <View className="flex-row items-center">
                             <Text className='font-semibold text-lg'>{name}</Text>
-                            {isOfficer && (
-                                <View className="ml-2">
-                                    <TwitterSvg color={badgeColor} />
-                                </View>
-
-                            )}
-                            {(!isOfficer && isVerified) && (
-                                <View className="ml-2">
-                                    <TwitterSvg color={badgeColor} />
-                                </View>
-                            )}
+                            {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
                         </View>
                         <Text className='text-md text-grey'> {displayName}</Text>
                     </View>

@@ -3,10 +3,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
 import { auth, db, functions } from '../../config/firebaseConfig';
-import { addToWatchlist } from '../../api/firebaseUtils';
 import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { MemberStatus } from '../../types/User';
 import DismissibleModal from '../../components/DismissibleModal';
 
 /**
@@ -18,8 +16,6 @@ import DismissibleModal from '../../components/DismissibleModal';
 const OfficeHours = () => {
     const [officeCount, setOfficeCount] = useState<number>(0);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
-    const [lastPassTime, setLastPassTime] = useState(0)
-    const DEBOUNCE_TIME = 10000; // 10 seconds
 
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
@@ -37,26 +33,16 @@ const OfficeHours = () => {
     }, []);
 
     const knockOnWall = async () => {
-        const data: MemberStatus = {
-            uid: auth.currentUser?.uid!,
-            timestamp: serverTimestamp()
-        };
         try {
-            const currentTime = Date.now();
-            if (currentTime - lastPassTime >= DEBOUNCE_TIME) {
-                const userDocCollection = collection(db, 'office-hours/member-log/log');
-                await addDoc(userDocCollection, data);
+            const data = {
+                uid: auth.currentUser?.uid!,
+                timestamp: serverTimestamp()
+            };
+            const userDocCollection = collection(db, 'office-hours/member-log/log');
+            await addDoc(userDocCollection, data);
 
-                setLastPassTime(currentTime);
-
-                const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
-                await sendNotificationOfficeHours({
-                    userData: userInfo?.publicInfo
-                });
-            }
-            else {
-                await addToWatchlist(auth.currentUser?.uid!);
-            }
+            const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
+            await sendNotificationOfficeHours({ userData: userInfo?.publicInfo });
         } catch (err) {
             console.error("Error sending knock:", err);
         }
