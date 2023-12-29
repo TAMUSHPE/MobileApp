@@ -1,6 +1,6 @@
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Modal } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Octicons } from '@expo/vector-icons';
 import { getMemberOfTheMonth, getMembersExcludeOfficers, setMemberOfTheMonth } from '../../api/firebaseUtils';
@@ -21,8 +21,12 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [infoVisible, setInfoVisible] = useState(false);
     const [invisibleConfirmModal, setInvisibleConfirmModal] = useState(false);
+    const [membersModal, setMembersModal] = useState(false);
     const [loadingMember, setLoadingMember] = useState(true);
     const [loadingMOTM, setLoadingMOTM] = useState(true);
+
+    const insets = useSafeAreaInsets();
+
 
     useFocusEffect(
         useCallback(() => {
@@ -114,21 +118,50 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                         <Text className='font-bold text-xl'>Suggest MOTM</Text>
                     </View>
 
-                    <View className='mt-6 flex-1'>
-                        <Text className='font-bold text-xl mx-5 mb-4'>Members</Text>
+                    <TouchableOpacity className='flex-row p-5 mt-2'
+                        onPress={() => setMembersModal(true)}
+                    >
+                        <Text className='font-bold text-xl'>Select another member</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={membersModal}
+                onRequestClose={() => {
+                    setMembersModal(false);
+                }}
+            >
+                <View
+                    style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+                    className='bg-white'>
+
+                    <View className='flex-row items-center h-10 mb-4 justify-end'>
+                        <View className='w-screen absolute'>
+                            <Text className="text-2xl font-bold justify-center text-center">Select User</Text>
+                        </View>
+                        <TouchableOpacity
+                            className='px-4 mr-3'
+                            onPress={() => setMembersModal(false)}
+                        >
+                            <Octicons name="x" size={26} color="black" />
+                        </TouchableOpacity>
+                    </View>
+
+
+                    <View className="h-[100%] w-[100%] bg-white">
                         <MembersList
                             handleCardPress={(uid) => {
                                 setSelectedMemberUID(uid)
+                                setMembersModal(false);
                             }}
                             users={members}
                         />
                     </View>
                 </View>
-
-            )}
-
-
+            </Modal>
 
             <DismissibleModal
                 visible={confirmVisible && invisibleConfirmModal}
@@ -199,7 +232,7 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                     </View>
 
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>Change the the member of the month by either selecting the suggested member or the listed member</Text>
+                        <Text className='text-md font-semibold'>Change the the member of the month by either selecting the suggested member or select another user from the list</Text>
                     </View>
 
                     <View className='w-[85%]'>
