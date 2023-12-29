@@ -1,10 +1,10 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { memberPoints } from "./fetchGoogleSheets";
 import { validateTamuEmail } from "../helpers/validation";
-import { PrivateUserInfo, PublicUserInfo, Roles, User } from "../types/User";
+import { PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
 import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
 
@@ -150,25 +150,16 @@ export const getUserByEmail = async (email: string): Promise<{ userData: PublicU
     }
 }
 
-
-
-type UserFilter = {
-    classYear: string,
-    major: string,
-    orderByField: string
-}
 type FetchMembersOptions = {
-    lastUserSnapshot?: any,
+    lastUserSnapshot?: QueryDocumentSnapshot<DocumentData> | null,
     isOfficer?: boolean,
     numLimit?: number | null,
     filter: UserFilter,
 };
 
-
-
 export const fetchUserForList = async (options: FetchMembersOptions) => {
     const {
-        lastUserSnapshot = null,
+        lastUserSnapshot,
         isOfficer = false,
         numLimit = null,
         filter,
@@ -185,8 +176,6 @@ export const fetchUserForList = async (options: FetchMembersOptions) => {
         userQuery = query(userQuery, where("major", "==", filter.major));
     }
 
-    userQuery = query(userQuery, orderBy(filter.orderByField));
-
     if (numLimit !== null) {
         userQuery = query(userQuery, limit(numLimit));
     }
@@ -197,16 +186,17 @@ export const fetchUserForList = async (options: FetchMembersOptions) => {
 
     try {
         const snapshot = await getDocs(userQuery);
-        let hasMoreUser = numLimit !== null ? snapshot.docs.length === numLimit : false;
+        let hasMoreUser;
+        if (numLimit !== null) {
+            hasMoreUser = snapshot.docs.length >= numLimit;
+        } else {
+            hasMoreUser = false;
+        }
 
-        const memberUID = snapshot.docs.map(doc => {
-            return doc.id
-        });
-
-        return { members: snapshot.docs, uid: memberUID, hasMoreUser };
+        return { members: snapshot.docs, lastSnapshot: snapshot.docs[snapshot.docs.length - 1], hasMoreUser };
     } catch (error) {
         console.error("Error fetching users:", error);
-        return { members: [], hasMoreUser: false };
+        return { members: [], lastSnapshot: null, hasMoreUser: false };
     }
 }
 
