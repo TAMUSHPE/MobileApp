@@ -1,14 +1,15 @@
 import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, NativeScrollEvent } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
-import { MemberListProps } from '../types/Navigation'
+import { MemberListProps, MembersStackParams } from '../types/Navigation'
 import MemberCard from '../components/MemberCard'
 import { PublicUserInfo, UserFilter } from '../types/User';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { fetchUserForList } from '../api/firebaseUtils';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-const Members: React.FC<MemberListProps> = ({ navigation }) => {
+const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [filter, setFilter] = useState<UserFilter>({ major: "", classYear: "", role: "" });
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
