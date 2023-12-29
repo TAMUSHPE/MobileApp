@@ -767,7 +767,7 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
  * This screen contains information about the app and info that may be useful to developers.
  */
 const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    const pkg: any = require("../../package.json");
+    const pkg: any = require("../../../package.json");
     const { userInfo } = useContext(UserContext) ?? {};
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
