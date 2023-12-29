@@ -97,7 +97,7 @@ export interface OfficerStatus extends MemberStatus {
 export type UserFilter = {
     classYear: string,
     major: string,
-    orderByField: string
+    role: string
 }
 
 const generateClassYears = (): { year: string }[] => {
