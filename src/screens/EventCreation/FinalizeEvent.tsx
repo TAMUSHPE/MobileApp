@@ -6,6 +6,9 @@ import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
 import { useRoute } from '@react-navigation/core';
 import { Images } from '../../../assets';
+import InteractButton from '../../components/InteractButton';
+import { formatDate, formatDateTime } from '../../helpers/timeUtils';
+import { createEvent } from '../../api/firebaseUtils';
 
 
 const FinalizeEvent = ({ navigation }: EventProps) => {
@@ -26,18 +29,29 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                 </TouchableOpacity>
             </View>
             <ScrollView className={`flex flex-col flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`}>
-                <Image
-                    source={event.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
-                    resizeMode='contain'
-                    style={{
-                        width: "100%",
-                        height: undefined,
-                        aspectRatio: 16 / 9,
+                <View className='flex flex-col p-4'>
+                    <Image
+                        source={event.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
+                        resizeMode='contain'
+                        style={{
+                            width: "100%",
+                            height: undefined,
+                            aspectRatio: 16 / 9,
+                        }}
+                    />
+                    <View className='py-2'>
+                        <Text className={`text-xl ${darkMode ? "text-[#229fff]" : "text-[#5233ff]"}`}><Octicons name='calendar' size={24} /> {formatDateTime(event.startTime!.toDate())}</Text>
+                        <Text className={`text-4xl ${darkMode ? "text-white" : "text-black"}`}>{event.name}</Text>
+                        <Text className={`text-2xl ${darkMode ? "text-[#DDD]" : "text-[#333]"}`}>{event.description}</Text>
+                    </View>
+                </View>
+                <InteractButton
+                    label='Create Event'
+                    onPress={async () => {
+                        await createEvent(event);
+                        navigation.navigate("EventsScreen");
                     }}
                 />
-                <View className='py-2 px-4'>
-                    <Text className={`text-4xl text-center ${darkMode ? "text-white" : "text-black"}`}>{event.name}</Text>
-                </View>
             </ScrollView>
         </SafeAreaView>
     );

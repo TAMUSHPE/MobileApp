@@ -21,17 +21,37 @@ export const getNextHourMillis = (): number => {
 
 export const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-export const formatDate = (date: Date) => {
+/**
+ * Constructs a readable string that represents the month and day of a given `Date` object
+ * @param date 
+ * @returns Formatted date string
+ */
+export const formatDate = (date: Date): string => {
     const day = date.getDate();
     const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
 
-    return `${month} ${day}`;
+    return `${month} ${day} ${year}`;
 }
 
-export const formatTime = (date: Date) => {
+/**
+ * Constructs a readable string that represents the time of day of a given `Date` object
+ * @param date 
+ * @returns Formatted time string
+ */
+export const formatTime = (date: Date): string => {
     const hour = date.getHours();
     const minute = date.getMinutes();
 
     return `${hour % 12}:${minute.toString().padStart(2, '0')} ${hour > 11 ? "PM" : "AM"}`
+}
+
+/**
+ * Constructs a readable string that represents the date and time of day of a given `Date` object and it's timezone offset.
+ * @param date 
+ * @returns Formatted date-time string
+ */
+export const formatDateTime = (date: Date): string => {
+    return `${formatDate(date)}, ${formatTime(date)} GMT${date.getTimezoneOffset() < 0 ? "+" : "-"}${(date.getTimezoneOffset() / 60).toString().padStart(2, '0')}`
 }
 
