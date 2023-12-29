@@ -141,6 +141,7 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
                                 key={index}
                                 userData={userData}
                                 navigation={navigation}
+                                handleCardPress={() => { navigation.navigate("PublicProfile", { uid: userData.uid! }) }}
                             />
                         );
                     })}
