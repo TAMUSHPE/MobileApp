@@ -46,7 +46,7 @@ export abstract class SHPEEvent {
     /**
      * Instantiates all fields that are required for all SHPE Events
      */
-    constructor(){
+    public constructor(){
         this.name = null;
         this.description = null;
         this.eventType = null;
@@ -56,6 +56,11 @@ export abstract class SHPEEvent {
         this.coverImageURI = null;
     }
 
+    /**
+     * Copies a given event's fields into the current object. 
+     * This will only copy fields that are currently defined in this object.
+     * @param event Event to copy
+     */
     public copyFromObject?(event: SHPEEvent) {
         for (const [key, value] of Object.entries(event)) {
             if (this[key as keyof SHPEEvent] !== undefined && value !== undefined) {
@@ -66,7 +71,7 @@ export abstract class SHPEEvent {
 }
 
 /**
- * Log 
+ * Log which tracks an event sign in
  */
 export interface SHPEEventLog {
     uid: string;
@@ -96,7 +101,7 @@ export class GeneralMeeting extends SHPEEvent {
         this.name = null;
         this.description = null;
         this.eventType = EventType.GENERAL_MEETING;
-        this.tags = null;
+        this.tags = [];
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
         this.signInPoints = 0;
@@ -125,7 +130,7 @@ export class CommitteeMeeting extends SHPEEvent {
     public constructor() {
         super();
         this.name = "Committee Meeting";
-        this.tags = null;
+        this.tags = [];
         this.description = null;
         this.eventType = EventType.COMMITTEE_MEETING;
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
@@ -159,7 +164,7 @@ export class StudyHours extends SHPEEvent {
         this.name = "Study Hours";
         this.description = null;
         this.eventType = EventType.STUDY_HOURS;
-        this.tags = null;
+        this.tags = [];
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR * 4);
         this.signInPoints = 0;
@@ -191,7 +196,7 @@ export class Workshop extends SHPEEvent {
         super();
         this.name = "Workshop";
         this.description = null;
-        this.tags = null;
+        this.tags = [];
         this.eventType = EventType.WORKSHOP;
         this.workshopType = "None";
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
@@ -219,7 +224,7 @@ export class VolunteerEvent extends SHPEEvent {
     public constructor() {
         super();
         this.name = "Volunteer Event";
-        this.tags = null;
+        this.tags = [];
         this.description = null;
         this.eventType = EventType.VOLUNTEER_EVENT;
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
@@ -247,7 +252,7 @@ export class SocialEvent extends SHPEEvent {
     public constructor() {
         super();
         this.name = "Social Event";
-        this.tags = null;
+        this.tags = [];
         this.description = null;
         this.eventType = EventType.SOCIAL_EVENT;
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
@@ -275,7 +280,7 @@ export class IntramuralEvent extends SHPEEvent {
     public constructor() {
         super();
         this.name = "Intramural Event";
-        this.tags = null;
+        this.tags = [];
         this.description = null;
         this.eventType = EventType.INTRAMURAL_EVENT;
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
@@ -307,7 +312,7 @@ export class CustomEvent extends SHPEEvent {
         this.name = "Custom Event";
         this.description = null;
         this.eventType = EventType.CUSTOM_EVENT;
-        this.tags = null;
+        this.tags = [];
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
         this.signInPoints = null;

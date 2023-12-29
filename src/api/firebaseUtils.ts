@@ -391,22 +391,9 @@ export const setBlacklist = async (blacklist: string[]) => {
     }
 };
 
-export const createEvent = async (event: SHPEEvent) => {
+export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
     try {
-        const docRef = await addDoc(collection(db, "events"), {
-            name: event.name,
-            description: event.description,
-            pointsCategory: event.pointsCategory,
-            notificationGroup: event.notificationGroup,
-            startDate: event.startDate,
-            endDate: event.endDate,
-            location: event.location,
-        });
-
-        await setDoc(doc(db, `events/${docRef.id}/summaries/default`), {
-            attendance: 0
-        });
-
+        const docRef = await addDoc(collection(db, "events"), {...event});
         return docRef.id;
     } catch (error) {
         console.error("Error adding document: ", error);
@@ -446,7 +433,7 @@ export const getEvent = async (eventID: string) => {
 export const getUpcomingEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endDate", ">", currentTime));
+    const q = query(eventsRef, where("endTime", ">", currentTime));
     const querySnapshot = await getDocs(q);
     const events: SHPEEvent[] = [];
     querySnapshot.forEach((doc) => {
@@ -454,8 +441,8 @@ export const getUpcomingEvents = async () => {
     });
 
     events.sort((a, b) => {
-        const dateA = a.startDate ? a.startDate.toDate() : undefined;
-        const dateB = b.startDate ? b.startDate.toDate() : undefined;
+        const dateA = a.startTime ? a.startTime.toDate() : undefined;
+        const dateB = b.startTime ? b.startTime.toDate() : undefined;
 
         if (dateA && dateB) {
             return dateA.getTime() - dateB.getTime();
@@ -469,15 +456,15 @@ export const getUpcomingEvents = async () => {
 export const getPastEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endDate", "<", currentTime));
+    const q = query(eventsRef, where("endTime", "<", currentTime));
     const querySnapshot = await getDocs(q);
     const events: SHPEEvent[] = [];
     querySnapshot.forEach((doc) => {
         events.push({ id: doc.id, ...doc.data() });
     });
     events.sort((a, b) => {
-        const dateA = a.startDate ? a.startDate.toDate() : undefined;
-        const dateB = b.startDate ? b.startDate.toDate() : undefined;
+        const dateA = a.startTime ? a.startTime.toDate() : undefined;
+        const dateB = b.startTime ? b.startTime.toDate() : undefined;
 
         if (dateA && dateB) {
             return dateA.getTime() - dateB.getTime();

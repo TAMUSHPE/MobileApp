@@ -372,9 +372,9 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                     name,
                                     startTime,
                                     endTime,
-                                    description
+                                    description,
+                                    coverImageURI,
                                 });
-                                event.coverImageURI = coverImageURI;
                                 navigation.navigate("SetSpecificEventDetails", { event })
                             }
                             else {
