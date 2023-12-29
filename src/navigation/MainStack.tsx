@@ -5,7 +5,7 @@ import { MainStackParams } from '../types/Navigation';
 import HomeBottomTabs from "./HomeBottomTabs";
 import AdminDashboardStack from "./AdminDashboardStack";
 import EventVerification from "../screens/EventVerification";
-import { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen } from "../screens/Settings";
+import { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen } from "../screens/home/Settings";
 
 const MainStack = () => {
     const Stack = createNativeStackNavigator<MainStackParams>();

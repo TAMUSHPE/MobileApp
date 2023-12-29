@@ -5,24 +5,24 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from "expo-image-picker";
-import { UserContext } from '../context/UserContext';
-import { auth, functions } from '../config/firebaseConfig';
+import { UserContext } from '../../context/UserContext';
+import { auth, functions } from '../../config/firebaseConfig';
 import { updateProfile } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
-import { setPublicUserData, setPrivateUserData, getUser, getCommittees } from '../api/firebaseUtils';
-import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../api/fileSelection';
-import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../helpers/validation';
-import { handleLinkPress } from '../helpers/links';
-import { getBadgeColor, isMemberVerified } from '../helpers/membership';
-import { MainStackParams } from '../types/Navigation';
-import { Committee } from '../types/Committees';
-import { MAJORS, classYears } from '../types/User';
-import { Images } from '../../assets';
-import ProfileBadge from '../components/ProfileBadge';
-import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../components/SettingsComponents"
-import InteractButton from '../components/InteractButton';
-import SimpleDropDown from '../components/SimpleDropDown';
-import TwitterSvg from '../components/TwitterSvg';
+import { setPublicUserData, setPrivateUserData, getUser, getCommittees } from '../../api/firebaseUtils';
+import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/fileSelection';
+import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../../helpers/validation';
+import { handleLinkPress } from '../../helpers/links';
+import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
+import { MainStackParams } from '../../types/Navigation';
+import { Committee } from '../../types/Committees';
+import { MAJORS, classYears } from '../../types/User';
+import { Images } from '../../../assets';
+import ProfileBadge from '../../components/ProfileBadge';
+import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../../components/SettingsComponents"
+import InteractButton from '../../components/InteractButton';
+import SimpleDropDown from '../../components/SimpleDropDown';
+import TwitterSvg from '../../components/TwitterSvg';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
