@@ -49,6 +49,16 @@ const MemberSHPE = () => {
         return unsubscribe();
     }, [])
 
+    const uploadDocument = async (type: 'national' | 'chapter') => {
+        const document = await selectDocument();
+        if (document) {
+            setLoading(true);
+            const path = `user-docs/${auth.currentUser?.uid}/${type}-verification`;
+            const onSuccess = type === 'national' ? onNationalUploadSuccess : onChapterUploadSuccess;
+            uploadFile(document, CommonMimeTypes.MEMBERSHIP_DOC_FILES, path, onSuccess);
+        }
+    };
+
     const selectDocument = async () => {
         const result = await selectFile();
         if (result) {
@@ -86,6 +96,7 @@ const MemberSHPE = () => {
 
     };
 
+
     return (
         <ScrollView>
             {/* Not Verified Member */}
@@ -97,18 +108,7 @@ const MemberSHPE = () => {
                         <View className='flex-row mt-8 justify-between'>
                             <TouchableOpacity
                                 className={`px-3 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-500" : "bg-maroon"}`}
-                                onPress={async () => {
-                                    const chapterDocument = await selectDocument();
-                                    if (chapterDocument) {
-                                        setLoading(true);
-                                        uploadFile(
-                                            chapterDocument,
-                                            CommonMimeTypes.MEMBERSHIP_DOC_FILES,
-                                            `user-docs/${auth.currentUser?.uid}/chapter-verification`,
-                                            onChapterUploadSuccess
-                                        );
-                                    }
-                                }}
+                                onPress={() => uploadDocument('national')}
                                 disabled={uploadedChapter}
                             >
                                 <View className='flex-row'>
@@ -119,18 +119,7 @@ const MemberSHPE = () => {
 
                             <TouchableOpacity
                                 className={`px-3 py-2 rounded-lg items-center ${uploadedNational ? "bg-gray-500" : "bg-pale-orange"}`}
-                                onPress={async () => {
-                                    const nationalDocument = await selectDocument();
-                                    if (nationalDocument) {
-                                        setLoading(true);
-                                        uploadFile(
-                                            nationalDocument,
-                                            CommonMimeTypes.MEMBERSHIP_DOC_FILES,
-                                            `user-docs/${auth.currentUser?.uid}/national-verification`,
-                                            onNationalUploadSuccess
-                                        );
-                                    }
-                                }}
+                                onPress={() => uploadDocument('chapter')}
                                 disabled={uploadedNational}
                             >
                                 <View className='flex-row'>

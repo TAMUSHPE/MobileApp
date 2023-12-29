@@ -16,7 +16,7 @@ import { getLogoComponent } from '../../types/Committees';
 import CommitteeTeamCard from './CommitteeTeamCard';
 import DismissibleModal from '../../components/DismissibleModal';
 
-const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
+const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
     const route = useRoute<CommitteeScreenRouteProp>();
     const initialCommittee = route.params.committee;
 
@@ -225,4 +225,4 @@ const CommitteesInfo: React.FC<CommitteesListProps> = ({ navigation }) => {
     )
 }
 
-export default CommitteesInfo
+export default Committee

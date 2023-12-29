@@ -1,7 +1,7 @@
 import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, NativeScrollEvent } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
-import { MemberListProps, MembersStackParams } from '../types/Navigation'
+import { MembersStackParams } from '../types/Navigation'
 import MemberCard from '../components/MemberCard'
 import { PublicUserInfo, UserFilter } from '../types/User';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,7 +17,7 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
     const [lastUserSnapshot, setLastUserSnapshot] = useState<QueryDocumentSnapshot<DocumentData>>();
     const [hasMoreUser, setHasMoreUser] = useState(true);
 
-    const loadUsers = async (appliedFilter: UserFilter, lastSnapshot?: QueryDocumentSnapshot<DocumentData> | null, numLimit: number | null = 10) => {
+    const loadUsers = async (appliedFilter: UserFilter, lastSnapshot?: QueryDocumentSnapshot<DocumentData> | null, numLimit: number | null = 15) => {
         setLoading(true);
 
         const response = await fetchUserForList({
@@ -26,11 +26,12 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
             filter: appliedFilter,
         });
 
+
+        setHasMoreUser(response.hasMoreUser);
+
         if (response.members.length > 0) {
             setLastUserSnapshot(response.lastSnapshot!);
             setMembers(prevMembers => [...prevMembers, ...response.members.map(doc => ({ ...doc.data(), uid: doc.id }))]);
-        } else {
-            setHasMoreUser(false);
         }
 
         setLoading(false);
@@ -62,7 +63,8 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
     };
     return (
         <SafeAreaView className='flex-1' edges={["top"]}>
-            <View className='px-4 mt-2'>
+            <View className='px-4 mt-4'>
+                <Text className='font-bold text-xl'>Members</Text>
                 <View className='flex-row mb-4 justify-end'>
                     <TouchableOpacity
                         onPress={() => setShowFilterMenu(!showFilterMenu)}
@@ -121,7 +123,6 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
             <ScrollView
                 onScroll={({ nativeEvent }) => {
                     if (isCloseToBottom(nativeEvent) && !loading && hasMoreUser) {
-                        console.log("Reached bottom");
                         if (lastUserSnapshot) {
                             loadUsers(filter, lastUserSnapshot);
                         } else {

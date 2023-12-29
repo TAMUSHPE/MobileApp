@@ -27,7 +27,6 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
 
     const insets = useSafeAreaInsets();
 
-
     useFocusEffect(
         useCallback(() => {
             if (selectedMemberUID) {
@@ -70,7 +69,6 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
     }
 
     useEffect(() => {
-
         fetchMembers();
         fetchMemberOfTheMonth();
     }, []);

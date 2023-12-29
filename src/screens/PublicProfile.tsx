@@ -195,9 +195,8 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                         <View className="flex-col justify-center mt-2">
                             <View className="relative flex-row items-center">
                                 <Text className="text-white text-3xl font-semibold">{name ?? "Name"}</Text>
-                                {(isOfficer || isVerified) && (
-                                    <TwitterSvg className="absolute left-full ml-1" color={badgeColor} />
-                                )}
+                                {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
+
                             </View>
                         </View>
                         <View className='items-center justify-center'>

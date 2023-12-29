@@ -39,7 +39,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
         if (!auth.currentUser?.uid) {
             navigation.navigate("LoginScreen");
         }
-    }, [])
+    }, [navigation]);
 
     return (
         <SafeAreaView className={safeAreaViewStyle}>
@@ -348,6 +348,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
 const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
     const [resumeURL, setResumeURL] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [resumeName, setResumeName] = useState<string | null>(null);
 
     const progress = useRef(new Animated.Value(0)).current;
     const setProgress = (newProgress: number) => {
@@ -375,8 +376,10 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
         const result = await selectFile();
         if (result) {
             const resumeBlob = await getBlobFromURI(result.assets![0].uri);
+            setResumeName(result.assets![0].name);
             return resumeBlob;
         }
+
         return null;
     }
 
@@ -390,6 +393,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
         }
         setLoading(false);
     }
+
 
     return (
         <SafeAreaView className={safeAreaViewStyle}>
@@ -414,7 +418,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                                 onPress={async () => { handleLinkPress(resumeURL!) }}
                             >
                                 <View className='relative flex-row items-center border-b border-white'>
-                                    <Text className="text-white font-semibold text-lg">My Resume</Text>
+                                    <Text className="text-white font-semibold text-lg">{resumeName}</Text>
                                     <View className='absolute left-full ml-1'>
                                         <DownloadIcon width={15} height={15} />
                                     </View>

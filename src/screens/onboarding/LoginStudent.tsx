@@ -15,7 +15,7 @@ import { AuthStackParams } from "../../types/Navigation";
 import { Images } from "../../../assets";
 import InteractButton from "../../components/InteractButton";
 
-const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
+const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
 
@@ -32,7 +32,6 @@ const LoginStudent = ({ route, navigation }: NativeStackScreenProps<AuthStackPar
     useFocusEffect(
         useCallback(() => {
             signOutUser(false);
-            return () => { };
         }, [])
     );
 

@@ -23,13 +23,9 @@ const TestCard: React.FC<TestBankProps> = ({ testData }) => {
 
     const getGradeColor = (grade: string) => {
         const numericGrade = Number(grade);
-        if (numericGrade >= 80) {
-            return '#B6FF5D'; // Green
-        } else if (numericGrade >= 60) {
-            return '#FFE454'; // Yellow
-        } else {
-            return '#FF4545'; // Red
-        }
+        if (numericGrade >= 80) return '#B6FF5D'; // Green
+        if (numericGrade >= 60) return '#FFE454'; // Yellow
+        return '#FF4545'; // Red
     };
 
     const getSubjectIcon = (subject: string): React.FC<React.SVGProps<SVGSVGElement>> => {
@@ -50,11 +46,9 @@ const TestCard: React.FC<TestBankProps> = ({ testData }) => {
                         </View>
                     </View>
 
-                    {(grade && grade != "N/A") && (
-                        <View className='rounded-full w-9 h-9 items-center justify-center absolute bottom-0 right-0 -mb-2 -mr-1'
-                            style={{ backgroundColor: getGradeColor(grade) }}
-                        >
-                            <Text className='text-xl font-medium text-center'>{Number(grade).toFixed(0)}</Text>
+                    {(grade && grade !== "N/A") && (
+                        <View style={{ backgroundColor: getGradeColor(grade) }} className='rounded-full w-9 h-9 absolute bottom-0 right-0 -mb-2 -mr-1 items-center justify-center'>
+                            <Text className='text-xl font-medium'>{parseInt(grade, 10)}</Text>
                         </View>
                     )}
                 </View>

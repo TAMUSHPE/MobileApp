@@ -14,8 +14,8 @@ import { RankChange } from '../../types/User';
 const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
     const { uid, photoURL, name, points, pointsRank, rankChange } = userData
 
-    const getRankChangeIcon = (rankChange: RankChange | undefined) => {
-        switch (rankChange) {
+    const renderRankChangeIcon = (change: RankChange | undefined) => {
+        switch (change) {
             case "increased":
                 return <Octicons name="chevron-up" size={24} color="#AEF359" />;
             case "decreased":
@@ -49,7 +49,7 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
                 <View className='flex-row'>
                     <Text className='text-xl font-medium mr-4'>{pointsRank}</Text>
                     <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
-                        {getRankChangeIcon(rankChange)}
+                        {renderRankChangeIcon(rankChange)}
                     </View>
                 </View>
             </View>

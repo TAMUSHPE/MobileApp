@@ -3,15 +3,11 @@ import React from 'react'
 import { MemberCardProp } from '../types/Navigation'
 import { Images } from '../../assets'
 
-const MOTMCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation }) => {
+const MOTMCard: React.FC<MemberCardProp> = ({ userData, navigation }) => {
     return (
         <TouchableOpacity
             className='mx-4 mt-10'
-            onPress={() => {
-                if (handleCardPress) {
-                    handleCardPress()
-                }
-            }}>
+            onPress={() => { navigation?.navigate("PublicProfile", userData?.uid!) }}>
             <View className='flex-row'>
                 <View>
                     <Image

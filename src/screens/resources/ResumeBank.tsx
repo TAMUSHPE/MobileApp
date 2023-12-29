@@ -1,8 +1,8 @@
 import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
+import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { fetchUsersWithPublicResumes } from '../../api/firebaseUtils'
 import { PublicUserInfo } from '../../types/User'

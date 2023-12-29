@@ -15,7 +15,7 @@ import TextInputWithFloatingTitle from "../../components/TextInputWithFloatingTi
 import InteractButton from "../../components/InteractButton";
 
 
-const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
+const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
@@ -29,17 +29,11 @@ const LoginGuest = ({ route, navigation }: NativeStackScreenProps<AuthStackParam
      * is changed until it's either true or false.
      */
 
-    // Occurs when a user back swipe to this screen from the ProfileSetup screen
     useFocusEffect(
         useCallback(() => {
             signOutUser(false);
-            return () => { };
         }, [])
     );
-
-    useEffect(() => {
-        signOutUser(false);
-    }, [])
 
     useEffect(() => {
         if (userInfo?.private?.privateInfo?.completedAccountSetup === false) {

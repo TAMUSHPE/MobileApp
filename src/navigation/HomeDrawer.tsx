@@ -73,9 +73,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                     <View className='flex-1 flex-col max-w-full'>
                         <View className='flex-row items-center'>
                             <Text className='text-white text-xl break-words font-semibold'>{userInfo?.publicInfo?.displayName ?? "Name"}</Text>
-                            {(isOfficer || isVerified) && (
-                                <TwitterSvg className="ml-2" color={badgeColor} />
-                            )}
+                            {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
                         </View>
                         <Text className='text-white text-sm break-words font-semibold'>{`${userInfo?.publicInfo?.points ?? 0} points`}</Text>
                     </View>

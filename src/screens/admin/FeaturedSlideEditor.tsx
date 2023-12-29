@@ -28,29 +28,30 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
 
     useEffect(() => {
         const deleteData = async () => {
-            if (slideDelete) {
-                try {
-                    const slidesSnapshot = await getDocs(collection(db, "featured-slides"));
-                    if (slidesSnapshot.size > 1) {
-                        const deleteDocRef = doc(db, "featured-slides", slideDelete.id);
-                        await deleteDoc(deleteDocRef);
+            if (!slideDelete) return;
 
-                        const storageRef = ref(storage, slideDelete.fireStoreLocation);
-                        await deleteObject(storageRef);
-                    } else {
-                        alert("cannot delete last slide");
-                    }
-
-                    setSlideDelete(null);
-                } catch (error) {
-                    console.error("Error in deletion process:", error);
+            try {
+                const slidesSnapshot = await getDocs(collection(db, "featured-slides"));
+                if (slidesSnapshot.size <= 1) {
+                    alert("Cannot delete the last slide");
+                    return;
                 }
+
+                const deleteDocRef = doc(db, "featured-slides", slideDelete.id);
+                await deleteDoc(deleteDocRef);
+
+                const storageRef = ref(storage, slideDelete.fireStoreLocation);
+                await deleteObject(storageRef);
+
+            } catch (error) {
+                console.error("Error in deletion process:", error);
+            } finally {
+                setSlideDelete(null);
             }
         };
 
         deleteData();
     }, [slideDelete]);
-
 
     /**
      * This will launch the native image picker of the user's device and allow the user to crop it to an aspect ratio of 1:1.
@@ -96,6 +97,8 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
             console.log(e);
         }
     }
+
+
 
     return (
         <SafeAreaView edges={["top"]}>
@@ -148,6 +151,8 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
                         <TouchableOpacity
                             className='bg-pale-blue items-center justify-center w-36 py-2 rounded-md'
                             onPress={() => {
+                                if (!image || !imageLocation) return;
+
                                 uploadFile(
                                     image!,
                                     CommonMimeTypes.IMAGE_FILES,

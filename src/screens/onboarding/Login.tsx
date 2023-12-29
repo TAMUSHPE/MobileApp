@@ -7,7 +7,7 @@ import { AuthStackParams } from "../../types/Navigation";
 import { Images } from "../../../assets";
 import InteractButton from "../../components/InteractButton";
 
-const LoginScreen = ({ route, navigation }: NativeStackScreenProps<AuthStackParams>) => {
+const LoginScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const userContext = useContext(UserContext);
     const { signOutUser } = userContext!;
 
