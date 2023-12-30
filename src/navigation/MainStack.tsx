@@ -9,7 +9,7 @@ import { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSe
 
 const MainStack = () => {
     const Stack = createNativeStackNavigator<MainStackParams>();
-    const { userInfo } = useContext(UserContext) ?? {};
+    const { userInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (

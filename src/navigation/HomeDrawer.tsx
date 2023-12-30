@@ -19,8 +19,7 @@ import { HomeStack } from './HomeStack'
  * @param {DrawerContentComponentProps} props - Props for the component.
  */
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
-    const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo, signOutUser } = userContext!;
+    const { userInfo, signOutUser } = useContext(UserContext)!;
 
     const [isVerified, setIsVerified] = useState<boolean>(false);
     const { nationalExpiration, chapterExpiration, roles } = userInfo?.publicInfo ?? {};

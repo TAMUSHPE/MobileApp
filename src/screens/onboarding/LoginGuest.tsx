@@ -21,8 +21,7 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string>("");
 
-    const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo, signOutUser } = userContext!;
+    const { userInfo, setUserInfo, signOutUser } = useContext(UserContext)!;
     /**
      * Due to asynchronous problem, the value of completedAccountSetup may
      * initially be undefined. This function will check the value when userInfo

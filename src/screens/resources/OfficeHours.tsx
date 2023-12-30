@@ -17,8 +17,7 @@ const OfficeHours = () => {
     const [officeCount, setOfficeCount] = useState<number>(0);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
 
-    const userContext = useContext(UserContext);
-    const { userInfo } = userContext!;
+    const { userInfo } = useContext(UserContext)!;
 
 
     useEffect(() => {

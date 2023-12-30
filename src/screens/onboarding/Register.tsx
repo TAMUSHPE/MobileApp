@@ -28,8 +28,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
     const [validUsername, setValidUsername] = useState<boolean>(true);
     const [error, setError] = useState<string>("");
 
-    const userContext = useContext(UserContext);
-    const { setUserInfo, signOutUser } = userContext!;
+    const { setUserInfo, signOutUser } = useContext(UserContext)!;
 
     // Occurs when a user back swipe to this screen from the ProfileSetup screen
     useFocusEffect(

@@ -28,7 +28,7 @@ import TwitterSvg from '../../components/TwitterSvg';
  * Settings entrance screen which has a search function and paths to every other settings screen
  */
 const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    const { userInfo } = useContext(UserContext) ?? {};
+    const { userInfo } = useContext(UserContext)!;
 
     const { name, roles, photoURL, chapterExpiration, nationalExpiration } = userInfo?.publicInfo ?? {};
     const isOfficer = roles ? roles.officer : false;
@@ -653,8 +653,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
  * These changes are synced in firebase.
  */
 const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    const userContext = useContext(UserContext)
-    const { userInfo, setUserInfo } = userContext!;
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [loading, setLoading] = useState<boolean>(false);
     const [darkModeToggled, setDarkModeToggled] = useState<boolean>(userInfo?.private?.privateInfo?.settings?.darkMode ?? false);
 
@@ -759,7 +758,7 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
  */
 const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const pkg: any = require("../../../package.json");
-    const { userInfo } = useContext(UserContext) ?? {};
+    const { userInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
