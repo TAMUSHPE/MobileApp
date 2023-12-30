@@ -77,14 +77,6 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
                 </TouchableOpacity>
             </View>
 
-
-            <SettingsButton
-                iconName='pencil-circle'
-                mainText='Profile'
-                subText='Photo, Display Name, etc...'
-                darkMode={darkMode}
-                onPress={() => navigation.navigate("ProfileSettingsScreen")}
-            />
             <SettingsButton
                 iconName='brightness-6'
                 mainText='Display'
