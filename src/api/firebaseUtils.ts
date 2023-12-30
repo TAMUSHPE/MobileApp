@@ -157,7 +157,7 @@ type FetchMembersOptions = {
     filter: UserFilter,
 };
 
-export const fetchUserForList = async (options: FetchMembersOptions) => {
+export const getUserForMemberList = async (options: FetchMembersOptions) => {
     const {
         lastUserSnapshot,
         numLimit = null,
@@ -173,6 +173,8 @@ export const fetchUserForList = async (options: FetchMembersOptions) => {
         const majorUpper = filter.major.toUpperCase();
         userQuery = query(userQuery, where("major", "==", majorUpper));
     }
+
+    userQuery = query(userQuery, where("roles.officer", "==", false));
 
     if (filter.role && filter.role !== "") {
         const roleQuery = `roles.${filter.role}`;
@@ -753,6 +755,18 @@ export const getTeamMembers = async (): Promise<PublicUserInfo[]> => {
         throw new Error("Internal Server Error.");
     }
 }
+
+export const getOfficers = async () => {
+    try {
+        const userQuery = query(collection(db, 'users'), where('roles.officer', '==', true));
+        const querySnapshot = await getDocs(userQuery);
+        const officers = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return officers;
+    } catch (error) {
+        console.error('Error fetching officers:', error);
+        return [];
+    }
+};
 
 export const getRepresentatives = async (): Promise<PublicUserInfo[]> => {
     try {

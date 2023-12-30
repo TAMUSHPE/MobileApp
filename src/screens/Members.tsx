@@ -5,13 +5,14 @@ import { MembersStackParams } from '../types/Navigation'
 import MemberCard from '../components/MemberCard'
 import { PublicUserInfo, UserFilter } from '../types/User';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { fetchUserForList } from '../api/firebaseUtils';
+import { getOfficers, getUserForMemberList } from '../api/firebaseUtils';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [filter, setFilter] = useState<UserFilter>({ major: "", classYear: "", role: "" });
+    const [officers, setOfficers] = useState<PublicUserInfo[]>([]);
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
     const [loading, setLoading] = useState(false);
     const [lastUserSnapshot, setLastUserSnapshot] = useState<QueryDocumentSnapshot<DocumentData>>();
@@ -20,7 +21,7 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
     const loadUsers = async (appliedFilter: UserFilter, lastSnapshot?: QueryDocumentSnapshot<DocumentData> | null, numLimit: number | null = 15) => {
         setLoading(true);
 
-        const response = await fetchUserForList({
+        const response = await getUserForMemberList({
             lastUserSnapshot: lastSnapshot,
             numLimit: numLimit,
             filter: appliedFilter,
@@ -54,7 +55,13 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
     };
 
     useEffect(() => {
+        const fetchOfficers = async () => {
+            const officers = await getOfficers() as PublicUserInfo[];
+            setOfficers(officers);
+        }
+
         loadUsers(filter); // Initial load
+        fetchOfficers();
     }, []);
 
     const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
@@ -133,6 +140,19 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
                 scrollEventThrottle={400}
             >
                 <View className='px-4'>
+                    {officers?.map((userData, index) => {
+                        if (!userData.name) {
+                            return null; // this is a hacky fix for user that have not completed registration
+                        }
+                        return (
+                            <MemberCard
+                                key={index}
+                                userData={userData}
+                                navigation={navigation}
+                                handleCardPress={() => { navigation.navigate("PublicProfile", { uid: userData.uid! }) }}
+                            />
+                        );
+                    })}
                     {members?.map((userData, index) => {
                         if (!userData.name) {
                             return null; // this is a hacky fix for user that have not completed registration
