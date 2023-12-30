@@ -8,8 +8,7 @@ import { Images } from "../../../assets";
 import InteractButton from "../../components/InteractButton";
 
 const LoginScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
-    const userContext = useContext(UserContext);
-    const { signOutUser } = userContext!;
+    const { signOutUser } = useContext(UserContext)!;
 
     useEffect(() => {
         signOutUser(false);

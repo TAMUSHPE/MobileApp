@@ -31,9 +31,8 @@ const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
     const [name, setName] = useState<string>("");
     const [bio, setBio] = useState<string>("");
-
-    const userContext = useContext(UserContext);
-    const { signOutUser } = userContext!;
+    ;
+    const { signOutUser } = useContext(UserContext)!;
 
     useEffect(() => {
         if (!auth.currentUser?.uid) {
@@ -503,8 +502,7 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     const [userCommittees, setUserCommittees] = useState<string[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
-    const userContext = useContext(UserContext);
-    const { setUserInfo } = userContext!;
+    const { setUserInfo } = useContext(UserContext)!;
 
 
     useEffect(() => {

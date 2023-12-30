@@ -16,8 +16,7 @@ const EventInfo = ({ navigation }: EventProps) => {
     const [event, setEvent] = useState<SHPEEventID>();
     const [userSignedIn, setUserSignedIn] = useState(false);
     const [attendance, setAttendance] = useState<number | null>(0);
-    const userContext = useContext(UserContext);
-    const { userInfo } = userContext!;
+    const { userInfo } = useContext(UserContext)!;
 
     const startDateAsDate = event?.startDate ? event?.startDate.toDate() : null;
     const endDateAsDate = event?.endDate ? event?.endDate.toDate() : null;

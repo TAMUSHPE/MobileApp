@@ -17,8 +17,7 @@ import { setPrivateUserData } from '../api/firebaseUtils';
  * @returns  The rendered root navigator.
  */
 const RootNavigator = () => {
-    const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo, userLoading } = userContext!;
+    const { userInfo, setUserInfo, userLoading } = useContext(UserContext)!;
     const [splashLoading, setSplashLoading] = useState<boolean>(true);
 
     useEffect(() => {
