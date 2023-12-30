@@ -55,7 +55,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
 
             <View className='flex-1 w-full px-4 mt-10 mb-4'>
                 <TouchableOpacity
-                    onPress={() => navigation.navigate("ProfileSettingsScreen")}
+                    onPress={() => navigation.navigate("PublicProfile", { uid: auth.currentUser?.uid! })}
                 >
                     <View className="flex-row">
                         <Image
