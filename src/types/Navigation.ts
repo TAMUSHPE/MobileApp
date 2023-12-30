@@ -22,6 +22,9 @@ export type MainStackParams = {
     EventVerificationScreen: {
         id: string;
     };
+    PublicProfile: {
+        uid: string;
+    };
 };
 
 export type AuthStackParams = {
