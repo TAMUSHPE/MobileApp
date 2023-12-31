@@ -1,6 +1,6 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { memberPoints } from "./fetchGoogleSheets";
 import { validateTamuEmail } from "../helpers/validation";
@@ -346,15 +346,53 @@ export const setCommitteeData = async (committeeData: Committee) => {
     }
 };
 
-export const deleteCommittee = async (firebaseDocName: string): Promise<void> => {
-    // TODO: Delete committee from all users
+export const resetCommittee = async (firebaseDocName: string) => {
+    const committeeRef = doc(db, 'committees', firebaseDocName);
+
     try {
-        const committeeRef = doc(db, `committees/${firebaseDocName}`);
-        await deleteDoc(committeeRef);
-        console.log(`Committee with ID ${firebaseDocName} has been deleted.`);
+        await runTransaction(db, async (transaction) => {
+            transaction.update(committeeRef, {
+                memberCount: 0,
+                memberApplicationLink: '',
+                leadApplicationLink: '',
+                representativeApplicationLink: '',
+                head: deleteField(),
+                leads: [],
+                representatives: []
+            });
+
+            const usersSnapshot = await getDocs(collection(db, 'users'));
+            usersSnapshot.forEach((userDoc) => {
+                if (userDoc.data().committees.includes(firebaseDocName)) {
+                    const updatedCommittees = userDoc.data().committees.filter((committee: string) => committee !== firebaseDocName);
+                    transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
+                }
+            });
+        });
+        console.log('Committee reset successfully');
     } catch (error) {
-        console.error(`Error deleting committee with ID ${firebaseDocName}:`, error);
-        throw new Error(`Error deleting committee: ${error}`);
+        console.error('Failed to reset committee:', error);
+    }
+};
+
+export const deleteCommittee = async (firebaseDocName: string) => {
+    const committeeRef = doc(db, 'committees', firebaseDocName);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            transaction.delete(committeeRef);
+
+            const usersSnapshot = await getDocs(collection(db, 'users'));
+            usersSnapshot.forEach((userDoc) => {
+                if (userDoc.data().committees.includes(firebaseDocName)) {
+                    const updatedCommittees = userDoc.data().committees.filter((committee: string) => committee !== firebaseDocName);
+                    transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
+                }
+            });
+        });
+        console.log('Committee deleted successfully');
+    } catch (error) {
+        console.error('Failed to delete committee:', error);
     }
 };
 
