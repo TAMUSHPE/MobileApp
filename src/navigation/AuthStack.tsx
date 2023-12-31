@@ -2,13 +2,14 @@ import React, { useEffect } from "react";
 import { Alert } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigationState } from '@react-navigation/native';
+import { AuthStackParams } from '../types/Navigation';
 import { ProfileSetupStack } from "./ProfileSetupStack";
 import LoginScreen from "../screens/onboarding/Login";
 import RegisterScreen from "../screens/onboarding/Register";
 import LoginStudent from "../screens/onboarding/LoginStudent";
 import LoginGuest from "../screens/onboarding/LoginGuest";
-import { AuthStackParams } from '../types/Navigation';
 import GuestVerification from "../screens/onboarding/GuestVerification";
+import GuestRecoveryAccount from "../screens/onboarding/GuestRecoveryAccount";
 
 const AuthStackWarning = () => {
     const state = useNavigationState((state) => state);
@@ -45,6 +46,7 @@ const AuthStack = () => {
                     <Stack.Screen name="LoginGuest" component={LoginGuest} />
                     <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
                     <Stack.Screen name="GuestVerification" component={GuestVerification} />
+                    <Stack.Screen name="GuestRecoveryAccount" component={GuestRecoveryAccount} />
                 </Stack.Group>
 
             </Stack.Navigator>
