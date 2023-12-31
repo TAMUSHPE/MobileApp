@@ -62,12 +62,12 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         >
                             <Text className='text-white text-xl'>MOTM</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity
+                        {/* <TouchableOpacity
                             onPress={() => navigation.navigate('FeaturedSlideEditor')}
                             className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center'
                         >
                             <Text className='text-white text-xl'>Featured Images</Text>
-                        </TouchableOpacity>
+                        </TouchableOpacity> */}
                         <TouchableOpacity
                             onPress={() => navigation.navigate('ResumeDownloader')}
                             className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center mt-3'

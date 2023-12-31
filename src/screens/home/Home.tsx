@@ -12,6 +12,7 @@ import { HomeStackParams } from "../../types/Navigation"
 import OfficeSignIn from './OfficeSignIn';
 import FeaturedSlider from '../../components/FeaturedSlider';
 import MOTMCard from '../../components/MOTMCard';
+import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
 
 
 /**
@@ -57,7 +58,8 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
 
-            <FeaturedSlider route={route} />
+            {/* <FeaturedSlider route={route} /> */}
+            <FlickrPhotoGallery />
 
             {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}
 
