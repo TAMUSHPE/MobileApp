@@ -8,7 +8,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
 import { auth, functions } from '../../config/firebaseConfig';
-import { updateProfile } from 'firebase/auth';
+import { sendPasswordResetEmail, updateProfile } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { setPublicUserData, setPrivateUserData, getUser, getCommittees, submitFeedback } from '../../api/firebaseUtils';
 import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/fileSelection';
@@ -711,7 +711,11 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     return (
         <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />
-            <SettingsSectionTitle text='Info' darkMode={darkMode} />
+            <SettingsListItem
+                mainText='Email'
+                subText={auth.currentUser?.email ?? "EMAIL"}
+                darkMode={darkMode}
+            />
             <SettingsListItem
                 mainText='Unique Identifier'
                 subText={auth.currentUser?.uid ?? "UID"}
@@ -722,26 +726,17 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 subText={auth.currentUser?.metadata.creationTime}
                 darkMode={darkMode}
             />
-            <SettingsSectionTitle text='Authentication' darkMode={darkMode} />
-            <SettingsButton
-                mainText='Change Email'
-                subText={auth.currentUser?.email ?? "EMAIL"}
-                onPress={() => Alert.alert("Unimplemented", "This button's function is unimplemented")}
-                darkMode={darkMode}
-            />
+
             {!validateTamuEmail(auth.currentUser?.email ?? "") &&
-                <SettingsToggleButton
-                    mainText='Use TAMU Email'
-                    subText={userInfo?.publicInfo?.tamuEmail ?? "No TAMU email set"}
-                    onPress={() => Alert.alert("Unimplemented", "This button's function is unimplemented")}
+                <SettingsButton
+                    mainText='Password Reset'
+                    onPress={() => {
+                        Alert.alert("Password Reset", "An email reset link will be sent to your email.")
+                        sendPasswordResetEmail(auth, auth.currentUser?.email!)
+                    }}
                     darkMode={darkMode}
                 />
             }
-            <SettingsButton
-                mainText='Password Reset'
-                onPress={() => Alert.alert("Unimplemented", "This button's function is unimplemented")}
-                darkMode={darkMode}
-            />
         </ScrollView>
     );
 };
@@ -761,11 +756,11 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStack
     };
 
     return (
-        <View className="flex-1 bg-white pt-10 px-6">
+        <View className="flex-1 selection:pt-10 px-6 bg-primary-bg-light">
             <Text className='text-xl font-bold mb-2'>Tell us what can be improved</Text>
             <View className='items-center'>
                 <TextInput
-                    className="border  border-gray-300 py-4 px-2 rounded-lg w-[100%] h-32"
+                    className="border bg-white border-gray-300 py-4 px-2 rounded-lg w-[100%] h-32"
                     multiline
                     numberOfLines={4}
                     onChangeText={setFeedback}
@@ -789,12 +784,11 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParam
 
     const toggleQuestion = (questionNumber: number) => {
         if (activeQuestion === questionNumber) {
-            setActiveQuestion(null); // Close the currently open question
+            setActiveQuestion(null);
         } else {
-            setActiveQuestion(questionNumber); // Open the selected question
+            setActiveQuestion(questionNumber);
         }
     };
-
 
     const faqData = [
         {
@@ -832,11 +826,11 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParam
     ];
 
     return (
-        <ScrollView className='flex-1 px-4 bg-white py-10'>
+        <ScrollView className='flex-1 px-4 bg-primary-bg-light py-10'>
             {faqData.map((faq, index) => (
                 <TouchableOpacity
                     key={index}
-                    className={`mb-2 p-4 rounded-lg ${activeQuestion === index ? 'bg-blue-100' : 'bg-gray-100'}`}
+                    className={`mb-2 p-4 rounded-lg ${activeQuestion === index ? 'bg-blue-100' : 'bg-white'}`}
                     onPress={() => toggleQuestion(index)}
                 >
                     <View className='flex-row justify-between items-center px-2'>
@@ -870,7 +864,6 @@ const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackPar
     return (
         <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />
-            <SettingsSectionTitle text='App Metadata' darkMode={darkMode} />
             <SettingsListItem
                 mainText='App Version'
                 subText={`${pkg.name} ${pkg.version}`}
