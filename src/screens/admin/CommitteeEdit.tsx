@@ -13,6 +13,7 @@ import CommitteeTeamCard from '../involvement/CommitteeTeamCard';
 
 const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
     const committeeData = route?.params?.committee;
+    console.log(committeeData)
     const [localCommitteeData, setLocalCommitteeData] = useState<Committee>(committeeData || {
         leads: [],
         representatives: [],
@@ -213,7 +214,7 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                         </TouchableOpacity>
                     )}
                     <View className='w-[70%] pl-4'>
-                        <View className='flex-row border-b-2 border-slate-400'>
+                        <View className="flex-row border-b-2">
                             <TextInput
                                 className="text-lg text-center py-1"
                                 onChangeText={(text: string) => {
@@ -226,6 +227,8 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                                     });
                                 }}
                                 value={localCommitteeData?.name}
+                                editable={!committeeData}
+                                selectTextOnFocus={!committeeData}
                                 placeholder='Select a committee name'
                             />
                         </View>
