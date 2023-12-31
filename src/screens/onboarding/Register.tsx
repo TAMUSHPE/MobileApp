@@ -9,7 +9,7 @@ import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
 import { getUser, initializeCurrentUserData } from '../../api/firebaseUtils';
 import { isUsernameUnique } from '../../api/firebaseUtils';
-import { createUserWithEmailAndPassword, UserCredential, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, UserCredential, updateProfile, sendEmailVerification } from "firebase/auth";
 import { evaluatePasswordStrength, validateUsername, validateEmail, validatePassword, validateTamuEmail } from '../../helpers/validation';
 import { AuthStackParams } from '../../types/Navigation';
 import { Images } from "../../../assets";
@@ -69,6 +69,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
 
         createUserWithEmailAndPassword(auth, email, password)
             .then(async (authUser: UserCredential) => {
+                await sendEmailVerification(authUser.user)
                 await updateProfile(authUser.user, {
                     displayName: displayName,
                     photoURL: ""
@@ -82,9 +83,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                 const firebaseUser = await getUser(auth.currentUser?.uid!)
                 await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
                 setUserInfo(firebaseUser); // Navigates to Home
-            })
-            .then(() => {
-                navigation.navigate("ProfileSetup");
+                navigation.navigate("GuestVerification");
             })
             .catch((error) => {
                 const errorCode = error.message.split('(')[1].split(')')[0]

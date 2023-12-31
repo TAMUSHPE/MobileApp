@@ -8,6 +8,7 @@ import RegisterScreen from "../screens/onboarding/Register";
 import LoginStudent from "../screens/onboarding/LoginStudent";
 import LoginGuest from "../screens/onboarding/LoginGuest";
 import { AuthStackParams } from '../types/Navigation';
+import GuestVerification from "../screens/onboarding/GuestVerification";
 
 const AuthStackWarning = () => {
     const state = useNavigationState((state) => state);
@@ -43,6 +44,7 @@ const AuthStack = () => {
                     <Stack.Screen name="LoginStudent" component={LoginStudent} />
                     <Stack.Screen name="LoginGuest" component={LoginGuest} />
                     <Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+                    <Stack.Screen name="GuestVerification" component={GuestVerification} />
                 </Stack.Group>
 
             </Stack.Navigator>
