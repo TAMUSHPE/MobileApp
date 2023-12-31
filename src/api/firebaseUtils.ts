@@ -798,7 +798,7 @@ export const getOfficers = async () => {
     try {
         const userQuery = query(collection(db, 'users'), where('roles.officer', '==', true));
         const querySnapshot = await getDocs(userQuery);
-        const officers = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const officers = querySnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
         return officers;
     } catch (error) {
         console.error('Error fetching officers:', error);
