@@ -935,7 +935,7 @@ export const decrementOfficeCount = async () => {
 export const submitFeedback = async (feedback: string, userInfo: User) => {
     try {
         await addDoc(collection(db, 'feedback'), {
-            text: feedback,
+            message: feedback,
             userInfo: userInfo.publicInfo,
             timestamp: new Date()
         });
@@ -944,4 +944,20 @@ export const submitFeedback = async (feedback: string, userInfo: User) => {
         console.error('Error submitting feedback:', error);
         return { success: false, error };
     }
+};
+
+export const getAllFeedback = async () => {
+    const feedbackCol = collection(db, 'feedback');
+    const feedbackSnapshot = await getDocs(feedbackCol);
+    const feedbackList = feedbackSnapshot.docs.map(doc => ({
+        id: doc.id,
+        message: doc.data().message,
+        user: doc.data().userInfo,
+        Timestamp: doc.data().timestamp
+    }));
+    return feedbackList;
+};
+export const removeFeedback = async (feedbackId: string) => {
+    const feedbackDoc = doc(db, 'feedback', feedbackId);
+    await deleteDoc(feedbackDoc);
 };
