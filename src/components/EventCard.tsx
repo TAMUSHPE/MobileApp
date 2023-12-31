@@ -4,7 +4,7 @@ import { EventProps, UpdateEventScreenRouteProp } from '../types/Navigation'
 import { monthNames } from '../helpers/timeUtils';
 
 const EventCard: React.FC<EventProps> = ({ event, navigation }) => {
-    const startDateAsDate = event?.startDate ? event?.startDate.toDate() : null;
+    const startDateAsDate = event?.startTime?.toDate() ?? null;
 
     const formatDate = (date: Date) => {
         const day = date.getDate();
@@ -28,7 +28,7 @@ const EventCard: React.FC<EventProps> = ({ event, navigation }) => {
                         <Text className='text-red-500 text-lg font-bold'>{formatDate(startDateAsDate)}</Text>
                     }
                     <Text className='text-xl font-bold'>{event?.name}</Text>
-                    <Text className='text-lg text-grey'>{event?.location}</Text>
+                    <Text className='text-lg text-grey'>{event?.locationName}</Text>
                 </View>
             </View>
         </TouchableOpacity>
