@@ -16,7 +16,6 @@ import DismissibleModal from '../../components/DismissibleModal';
 
 const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [image, setImage] = useState<Blob | null>(null);
-    const [imageName, setImageName] = useState<string | null | undefined>();
     const [localImageURI, setLocalImageURI] = useState<string>("");
     const [slideDelete, setSlideDelete] = useState<Slide | null>(null);
     const [imageLocation, setImageLocation] = useState<string | null>(null);
@@ -69,7 +68,6 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
             const imageBlob = await getBlobFromURI(result.assets![0].uri);
             setImage(imageBlob);
             setLocalImageURI(result.assets![0].uri);
-            setImageName(result.assets![0].fileName);
             setImageLocation(`${Date.now()}_${result.assets![0].fileName}`);
         }
     };
@@ -77,7 +75,6 @@ const FeaturedSlideEditor = ({ navigation, route }: NativeStackScreenProps<Admin
     const onImageUploadSuccess = async (URL: string) => {
         setLocalImageURI("");
         setImage(null);
-        setImageName("");
         setImageLocation(null);
         saveRecord(URL, Date.now());
     }
