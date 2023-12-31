@@ -104,6 +104,7 @@ export type AdminDashboardParams = {
     ResumeDownloader: undefined;
     ResetOfficeHours: undefined;
     RestrictionsEditor: undefined;
+    Feedback: undefined;
     MemberSHPEConfirm: undefined;
     ResumeConfirm: undefined;
     Home: undefined;

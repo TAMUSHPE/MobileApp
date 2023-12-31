@@ -86,6 +86,13 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         >
                             <Text className='text-white text-xl'>Restriction</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('Feedback')}
+                            className='bg-pale-orange rounded-md py-4 px-2 items-center justify-center ml-2'
+                        >
+                            <Text className='text-white text-xl'>Feedback</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
 
