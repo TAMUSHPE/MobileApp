@@ -932,4 +932,16 @@ export const decrementOfficeCount = async () => {
     await updateDoc(officeCountRef, { "zachary-office": increment(-1) });
 }
 
-
+export const submitFeedback = async (feedback: string, userInfo: User) => {
+    try {
+        await addDoc(collection(db, 'feedback'), {
+            text: feedback,
+            userInfo: userInfo.publicInfo,
+            timestamp: new Date()
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error submitting feedback:', error);
+        return { success: false, error };
+    }
+};

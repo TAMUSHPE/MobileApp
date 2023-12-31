@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, StyleSheet } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, StyleSheet, Pressable } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -10,7 +10,7 @@ import { UserContext } from '../../context/UserContext';
 import { auth, functions } from '../../config/firebaseConfig';
 import { updateProfile } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
-import { setPublicUserData, setPrivateUserData, getUser, getCommittees } from '../../api/firebaseUtils';
+import { setPublicUserData, setPrivateUserData, getUser, getCommittees, submitFeedback } from '../../api/firebaseUtils';
 import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/fileSelection';
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
@@ -97,7 +97,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
                 mainText='Feedback'
                 subText='Help us by sending app feedback!'
                 darkMode={darkMode}
-                onPress={() => Alert.alert("Unimplemented", "Feature Unimplemented")}
+                onPress={() => navigation.navigate("FeedbackSettingsScreen")}
             />
             <SettingsButton
                 iconName='frequently-asked-questions'
@@ -705,7 +705,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
  * These changes will go through firebase where an email will be sent to the user. 
  */
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const { userInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
@@ -743,6 +743,44 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 darkMode={darkMode}
             />
         </ScrollView>
+    );
+};
+
+const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
+    const [feedback, setFeedback] = useState('');
+    const { userInfo } = useContext(UserContext)!;
+
+    const handleFeedbackSubmit = async () => {
+        const response = await submitFeedback(feedback, userInfo!);
+        if (response.success) {
+            setFeedback('');
+            alert('Feedback submitted successfully');
+        } else {
+            alert('Failed to submit feedback');
+        }
+    };
+
+    return (
+        <View className="flex-1 bg-white pt-10 px-6">
+            <Text className='text-xl font-bold mb-2'>Tell us what can be improved</Text>
+            <View className='items-center'>
+                <TextInput
+                    className="border  border-gray-300 py-4 px-2 rounded-lg w-[100%] h-32"
+                    multiline
+                    numberOfLines={4}
+                    onChangeText={setFeedback}
+                    value={feedback}
+                    placeholder="Type your feedback here"
+                />
+            </View>
+            <Pressable
+                onPress={handleFeedbackSubmit}
+                className={`mt-4 rounded-md w-[50%] py-2 items-center justify-center ${feedback.length === 0 ? 'bg-gray-300' : 'bg-pale-blue'}`}
+                disabled={feedback.length === 0}
+            >
+                <Text className='text-white text-lg font-semibold'>Submit FeedBack</Text>
+            </Pressable>
+        </View>
     );
 };
 
@@ -794,33 +832,31 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParam
     ];
 
     return (
-        <View className='flex-1 px-4 bg-white'>
-            <ScrollView className='py-10'>
-                {faqData.map((faq, index) => (
-                    <TouchableOpacity
-                        key={index}
-                        className={`mb-2 p-4 rounded-lg ${activeQuestion === index ? 'bg-blue-100' : 'bg-gray-100'}`}
-                        onPress={() => toggleQuestion(index)}
-                    >
-                        <View className='flex-row justify-between items-center px-2'>
-                            <Text className='text-xl font-semibold w-[85%]'>{faq.question}</Text>
-                            <View className='flex-1 items-center justify-center'>
-                                <Octicons
-                                    name={activeQuestion === index ? 'chevron-up' : 'chevron-down'}
-                                    size={24}
-                                    color='black'
-                                />
-                            </View>
+        <ScrollView className='flex-1 px-4 bg-white py-10'>
+            {faqData.map((faq, index) => (
+                <TouchableOpacity
+                    key={index}
+                    className={`mb-2 p-4 rounded-lg ${activeQuestion === index ? 'bg-blue-100' : 'bg-gray-100'}`}
+                    onPress={() => toggleQuestion(index)}
+                >
+                    <View className='flex-row justify-between items-center px-2'>
+                        <Text className='text-xl font-semibold w-[85%]'>{faq.question}</Text>
+                        <View className='flex-1 items-center justify-center'>
+                            <Octicons
+                                name={activeQuestion === index ? 'chevron-up' : 'chevron-down'}
+                                size={24}
+                                color='black'
+                            />
                         </View>
-                        {activeQuestion === index && (
-                            <Text className='text-gray-600 mt-2 text-lg'>
-                                {faq.answer}
-                            </Text>
-                        )}
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
-        </View>
+                    </View>
+                    {activeQuestion === index && (
+                        <Text className='text-gray-600 mt-2 text-lg'>
+                            {faq.answer}
+                        </Text>
+                    )}
+                </TouchableOpacity>
+            ))}
+        </ScrollView>
     );
 };
 /**
@@ -851,4 +887,4 @@ const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackPar
 
 
 
-export { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, FAQSettingsScreen, AboutSettingsScreen };
+export { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, FeedBackSettingsScreen, FAQSettingsScreen, AboutSettingsScreen };
