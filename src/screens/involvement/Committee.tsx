@@ -132,8 +132,8 @@ const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
                             <>
                                 <Text className='font-bold text-lg mb-2' style={{ color: color }}>Representatives</Text>
                                 {representatives.map((representative, index) => (
-                                    <View className='mb-6'>
-                                        <CommitteeTeamCard key={index} userData={representative} navigation={navigation} />
+                                    <View className='mb-6' key={index}>
+                                        <CommitteeTeamCard userData={representative} navigation={navigation} />
                                     </View>
                                 ))}
                             </>
@@ -142,8 +142,8 @@ const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
                             <>
                                 <Text className='font-bold text-lg mb-2' style={{ color: color }}>Leads</Text>
                                 {leads.map((representative, index) => (
-                                    <View className='mb-6'>
-                                        <CommitteeTeamCard key={index} userData={representative} navigation={navigation} />
+                                    <View className='mb-6' key={index}>
+                                        <CommitteeTeamCard userData={representative} navigation={navigation} />
                                     </View>
                                 ))}
                             </>

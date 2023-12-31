@@ -2,7 +2,7 @@ import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Pres
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
-import { getLeads, getRepresentatives, getTeamMembers, setCommitteeData } from '../../api/firebaseUtils';
+import { deleteCommittee, getLeads, getRepresentatives, getTeamMembers, resetCommittee, setCommitteeData } from '../../api/firebaseUtils';
 import { Committee, committeeLogos, getLogoComponent } from '../../types/Committees';
 import { CommitteeEditProps } from '../../types/Navigation';
 import { PublicUserInfo } from '../../types/User';
@@ -13,7 +13,6 @@ import CommitteeTeamCard from '../involvement/CommitteeTeamCard';
 
 const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
     const committeeData = route?.params?.committee;
-    console.log(committeeData)
     const [localCommitteeData, setLocalCommitteeData] = useState<Committee>(committeeData || {
         leads: [],
         representatives: [],
@@ -22,20 +21,20 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
         representativeApplicationLink: '',
         leadApplicationLink: ''
     });
-
     const [logoSelectModal, setLogoSelectModal] = useState(false);
     const [selectedLogoData, setSelectedLogoData] = useState<{
         LogoComponent: React.ElementType;
         width: number;
         height: number;
     } | null>(null);
-
     const [teamMembers, setTeamMembers] = useState<PublicUserInfo[]>([])
     const [representatives, setRepresentatives] = useState<PublicUserInfo[]>([])
     const [leads, setLeads] = useState<PublicUserInfo[]>([])
     const [headModalVisible, setHeadModalVisible] = useState(false);
     const [leadsModalVisible, setLeadsModalVisible] = useState(false);
     const [repsModalVisible, setRepsModalVisible] = useState(false);
+    const [resetModalVisible, setResetModalVisible] = useState(false);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [isMemberLinkActive, setIsMemberLinkActive] = useState<boolean>(!!committeeData?.memberApplicationLink);
     const [isRepLinkActive, setIsRepLinkActive] = useState<boolean>(!!committeeData?.representativeApplicationLink);
     const [isLeadLinkActive, setIsLeadLinkActive] = useState<boolean>(!!committeeData?.leadApplicationLink);
@@ -129,6 +128,18 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
             ...localCommitteeData,
             color: color
         });
+    };
+
+    const handleResetCommittee = async () => {
+        if (localCommitteeData.firebaseDocName) {
+            await resetCommittee(localCommitteeData.firebaseDocName);
+        }
+    };
+
+    const handleDeleteCommittee = async () => {
+        if (localCommitteeData.firebaseDocName) {
+            await deleteCommittee(localCommitteeData.firebaseDocName);
+        }
     };
 
     // Update the selected logo component whenever localCommitteeData.logo changes
@@ -284,7 +295,7 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                             </TouchableOpacity>
                         </View>
                         {localCommitteeData.representatives?.map((representative, index) => (
-                            <View className='flex-row items-center mt-3 mb-6'>
+                            <View className='flex-row items-center mt-3 mb-6' key={index}>
                                 <CommitteeTeamCard
                                     userData={representative}
                                 />
@@ -310,7 +321,7 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                             </TouchableOpacity>
                         </View>
                         {localCommitteeData.leads?.map((lead, index) => (
-                            <View className='flex-row items-center mt-3 mb-6'>
+                            <View className='flex-row items-center mt-3 mb-6' key={index}>
                                 <CommitteeTeamCard
                                     userData={lead}
                                 />
@@ -397,12 +408,38 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                                 leadApplicationLink: isLeadLinkActive ? localCommitteeData.leadApplicationLink : ''
                             };
 
-                            setCommitteeData(updatedCommitteeData);
+                            await setCommitteeData(updatedCommitteeData);
+                            navigation.goBack();
                         }}
                     >
                         <Text className='text-xl text-semibold text-white px-3 py-1'>{committeeData ? "Update Committee " : "Create Committee"}</Text>
                     </TouchableOpacity>
                 </View>
+                {committeeData && (
+                    <View className='w-screen'>
+                        <View className='flex-row justify-center items-center '>
+                            <View className='justify-center items-center pt-4 space-x-7'>
+                                <TouchableOpacity
+                                    className='justify-center items-center rounded-md p-2 mr-3'
+                                    style={{ backgroundColor: "red" }}
+                                    onPress={async () => { setResetModalVisible(true) }}
+                                >
+                                    <Text className='text-xl text-semibold text-white px-3 py-1'>Reset</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View className='justify-center items-center pt-4 space-x-7'>
+                                <TouchableOpacity
+                                    className='justify-center items-center rounded-md p-2 ml-3'
+                                    style={{ backgroundColor: "red" }}
+                                    onPress={async () => { setDeleteModalVisible(true) }}
+                                >
+                                    <Text className='text-xl text-semibold text-white px-3 py-1'>Delete</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                )}
+
                 <View className='pb-32'></View>
             </ScrollView>
 
@@ -551,6 +588,76 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                 </View>
             </DismissibleModal>
 
+            <DismissibleModal
+                visible={resetModalVisible}
+                setVisible={setResetModalVisible}
+            >
+                <View className='flex opacity-100 bg-white rounded-md p-6'>
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center'>
+                            <Octicons name="alert" size={24} color="black" />
+                            <Text className='text-xl font-semibold ml-2'>Reset Committee</Text>
+                        </View>
+                    </View>
+
+
+                    <View className='flex-row justify-around mt-8'>
+                        <TouchableOpacity
+                            className='w-[40%] items-center py-2 rounded-md'
+                            style={{ backgroundColor: "red" }}
+                            onPress={async () => {
+                                await handleResetCommittee()
+                                setResetModalVisible(false)
+                                navigation.goBack()
+                            }}
+                        >
+                            <Text className='font-semibold text-lg text-white'>Reset</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            className='w-[40%] items-center py-2 rounded-md'
+                            onPress={() => setResetModalVisible(false)}
+                        >
+                            <Text className='font-semibold text-lg'>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </DismissibleModal>
+
+            <DismissibleModal
+                visible={deleteModalVisible}
+                setVisible={setDeleteModalVisible}
+            >
+                <View className='flex opacity-100 bg-white rounded-md p-6'>
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center'>
+                            <Octicons name="alert" size={24} color="black" />
+                            <Text className='text-xl font-semibold ml-2'>Delete Committee</Text>
+                        </View>
+                    </View>
+
+                    <View className='flex-row justify-around mt-8'>
+                        <TouchableOpacity
+                            className='w-[40%] items-center py-2 rounded-md'
+                            style={{ backgroundColor: "red" }}
+                            onPress={async () => {
+                                await handleDeleteCommittee()
+                                setDeleteModalVisible(false)
+                                navigation.goBack()
+                            }}
+                        >
+                            <Text className='font-semibold text-lg text-white'>Delete</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            className='w-[40%] items-center py-2 rounded-md'
+                            onPress={() => setDeleteModalVisible(false)}
+                        >
+                            <Text className='font-semibold text-lg'>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </DismissibleModal>
         </SafeAreaView >
     )
 }
