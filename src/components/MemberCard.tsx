@@ -6,9 +6,7 @@ import TwitterSvg from './TwitterSvg'
 import { getBadgeColor, isMemberVerified } from '../helpers/membership'
 
 const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation }) => {
-    if (!userData) {
-        return
-    }
+    if (!userData) { return }
 
     const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration } = userData
     const isOfficer = roles ? roles.officer : false;
