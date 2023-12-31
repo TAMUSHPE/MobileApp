@@ -34,6 +34,7 @@ export type AuthStackParams = {
     MainStack: undefined;
     LoginStudent: undefined;
     LoginGuest: undefined;
+    GuestVerification: undefined;
 };
 
 export type MembersStackParams = {

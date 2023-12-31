@@ -23,10 +23,10 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
 
     const { userInfo, setUserInfo, signOutUser } = useContext(UserContext)!;
     /**
-     * Due to asynchronous problem, the value of completedAccountSetup may
-     * initially be undefined. This function will check the value when userInfo
-     * is changed until it's either true or false.
-     */
+ * Due to asynchronous problem, the value of completedAccountSetup may
+ * initially be undefined. This function will check the value when userInfo
+ * is changed until it's either true or false.
+ */
 
     useFocusEffect(
         useCallback(() => {
@@ -35,9 +35,12 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
     );
 
     useEffect(() => {
-        if (userInfo?.private?.privateInfo?.completedAccountSetup === false) {
+        if (userInfo && !auth.currentUser?.emailVerified) {
+            navigation.navigate("GuestVerification");
+        } else if (userInfo?.private?.privateInfo?.completedAccountSetup === false) {
             navigation.navigate("ProfileSetup");
         }
+
     }, [userInfo]);
 
     const handleUserAuth = () => {
