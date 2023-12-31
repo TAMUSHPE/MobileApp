@@ -72,9 +72,12 @@ const GuestVerification = ({ navigation }: NativeStackScreenProps<AuthStackParam
                 <Octicons name="chevron-left" size={30} color="white" />
             </TouchableOpacity>
 
+            <Text className='text-white text-center text-3xl'>Please verify your email</Text>
             <View className='flex-col items-center mb-12 mx-6 h-[75%]'>
-                <Text className='text-white text-center text-3xl'>Email Verification</Text>
-                <Text className='text-white text-center text-lg mt-4'>Please check your email an email has been sent to <Text className='text-pale-orange'>{auth.currentUser?.email}</Text></Text>
+                <View className='rounded-full border-4 border-white h-32 w-32 items-center justify-center my-8'>
+                    <Octicons name="mail" size={65} color="white" />
+                </View>
+                <Text className='text-white text-lg'>We sent an email to <Text className='text-pale-orange'>{auth.currentUser?.email}</Text> {"\n"}If you don't see it, you may need to check your spam folder</Text>
 
             </View>
             {(!auth.currentUser?.emailVerified && !resend) && (
@@ -85,7 +88,9 @@ const GuestVerification = ({ navigation }: NativeStackScreenProps<AuthStackParam
                 </Pressable>
             )}
 
-
+            {resend && (
+                <Text className='text-white text-xl'>Another verification email has been resend</Text>
+            )}
         </SafeAreaView>
     );
 };

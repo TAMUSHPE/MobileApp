@@ -141,7 +141,7 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
                     </KeyboardAvoidingView>
                     <View className="flex-col">
                         <TouchableOpacity
-                            className="pr-4" onPress={() => alert("To be implemented")}
+                            className="pr-4" onPress={() => navigation.navigate("GuestRecoveryAccount")}
                             activeOpacity={1}
                         >
                             <Text className="text-slate-400 text-xl">Forgot Your Password?</Text>
