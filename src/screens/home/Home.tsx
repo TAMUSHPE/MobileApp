@@ -24,23 +24,6 @@ import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
  */
 const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
     const { userInfo, signOutUser } = useContext(UserContext)!;
-    const [memberOfTheMonth, setMemberOfTheMonth] = useState<PublicUserInfo>();
-
-
-    const fetchMemberOfTheMonth = async () => {
-        try {
-            const fetchedMemberOfTheMonth = await getMemberOfTheMonth();
-            setMemberOfTheMonth(fetchedMemberOfTheMonth);
-        } catch (error) {
-            console.error('Error fetching member of the month:', error);
-        }
-    };
-
-    useFocusEffect(
-        useCallback(() => {
-            fetchMemberOfTheMonth();
-        }, [])
-    );
 
     useEffect(() => {
         try {
@@ -63,7 +46,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
             {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}
 
-            <MOTMCard userData={memberOfTheMonth} navigation={navigation} />
+            <MOTMCard navigation={navigation} />
         </ScrollView>
     );
 }
