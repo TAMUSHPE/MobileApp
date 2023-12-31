@@ -1,5 +1,5 @@
-import { View, Text, Alert, Platform, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState, useRef } from 'react'
+import { View, Text, Alert, ActivityIndicator } from 'react-native'
+import React, { useState, useRef } from 'react'
 import { QRCodeProps, QRCodeScreenRouteProp } from '../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import QRCode from 'react-native-qrcode-svg';
