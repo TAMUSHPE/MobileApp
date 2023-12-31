@@ -18,6 +18,7 @@ export type MainStackParams = {
     ProfileSettingsScreen: undefined;
     DisplaySettingsScreen: undefined;
     AccountSettingsScreen: undefined;
+    FeedbackSettingsScreen: undefined;
     FAQSettingsScreen: undefined;
     AboutSettingsScreen: undefined;
     EventVerificationScreen: {
