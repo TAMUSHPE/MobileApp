@@ -16,10 +16,7 @@ const GuestVerification = ({ navigation }: NativeStackScreenProps<AuthStackParam
     const checkVerification = async (user: User) => {
         await reload(user); // Refresh user data
         if (user.emailVerified) {
-            console.log("Email is verified");
             navigation.navigate("ProfileSetup");
-        } else {
-            console.log("Email is not verified");
         }
     };
 
