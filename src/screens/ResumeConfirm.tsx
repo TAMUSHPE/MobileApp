@@ -1,23 +1,23 @@
 import { View, Text, Modal, TouchableOpacity, TouchableWithoutFeedback, Linking } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { PublicUserInfo } from '../types/User'
-import { getMembersToVerify, getPublicUserData } from '../api/firebaseUtils'
+import { getMembersToResumeVerify, getMembersToVerify, getPublicUserData } from '../api/firebaseUtils'
 import MembersList from '../components/MembersList'
 import { db, functions } from '../config/firebaseConfig'
 import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
 import MemberCard from '../components/MemberCard'
 import { httpsCallable } from 'firebase/functions'
 
-const MemberSHPEConfirm = () => {
+const ResumeConfirm = () => {
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [currentConfirmMember, setCurrentConfirmMember] = useState<string>();
-    const [memberDetails, setMemberDetails] = useState<memberSHPEResponse | null>(null);
+    const [memberDetails, setMemberDetails] = useState<resumeResponse | null>(null);
     const [confirmMemberData, setConfirmMemberData] = useState<PublicUserInfo>();
 
     const fetchMembers = async () => {
         try {
-            const fetchedMembers = await getMembersToVerify();
+            const fetchedMembers = await getMembersToResumeVerify();
             setMembers(fetchedMembers);
         } catch (error) {
             console.error('Error fetching members:', error);
@@ -28,11 +28,11 @@ const MemberSHPEConfirm = () => {
     }, []);
 
     const fetchMemberDetails = async (userId: string) => {
-        const memberDocRef = doc(db, 'memberSHPE', userId);
+        const memberDocRef = doc(db, 'resumeVerification', userId);
         const memberDocSnap = await getDoc(memberDocRef);
 
         if (memberDocSnap.exists()) {
-            const memberData = memberDocSnap.data() as memberSHPEResponse;
+            const memberData = memberDocSnap.data() as resumeResponse;
             setMemberDetails(memberData);
         } else {
             console.log('No such document!');
@@ -83,19 +83,15 @@ const MemberSHPEConfirm = () => {
     const handleApprove = async () => {
         const userDocRef = doc(db, 'users', currentConfirmMember!);
         await updateDoc(userDocRef, {
-            chapterExpiration: memberDetails?.chapterExpiration,
-            nationalExpiration: memberDetails?.nationalExpiration,
+            resumeVerified: true,
         });
 
 
-        const memberDocRef = doc(db, 'memberSHPE', currentConfirmMember!);
+        const memberDocRef = doc(db, 'resumeVerification', currentConfirmMember!);
         await deleteDoc(memberDocRef);
         await fetchMembers();
 
-        console.log(JSON.stringify(confirmMemberData, null, 2), "data send")
-        console.log(currentConfirmMember, "uid")
-
-        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationResumeConfirm');
         await sendNotificationToMember({
             uid: currentConfirmMember,
             type: "approved",
@@ -107,22 +103,19 @@ const MemberSHPEConfirm = () => {
         const userDocRef = doc(db, 'users', currentConfirmMember!);
 
         await updateDoc(userDocRef, {
-            chapterExpiration: deleteField(),
-            nationalExpiration: deleteField()
+            resumePublicURL: deleteField(),
+            resumeVerified: false,
         });
 
-        const memberDocRef = doc(db, 'memberSHPE', currentConfirmMember!);
+        const memberDocRef = doc(db, 'resumeVerification', currentConfirmMember!);
         await deleteDoc(memberDocRef);
-
         await fetchMembers();
 
-        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationResumeConfirm');
         await sendNotificationToMember({
             uid: currentConfirmMember,
             type: "denied",
         });
-
-        // Refresh the members list
     };
 
     return (
@@ -152,16 +145,10 @@ const MemberSHPEConfirm = () => {
                             <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'>
                                 <MemberCard userData={confirmMemberData} handleCardPress={() => { }} />
                                 <TouchableOpacity
-                                    className='px-6 py-4 rounded-lg  items-center bg-maroon'
-                                    onPress={async () => { handleOpenLink(memberDetails?.chapterURL) }}
-                                >
-                                    <Text className="text-white">National Proof</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
                                     className='px-6 py-4 rounded-lg  items-center bg-dark-navy'
-                                    onPress={async () => { handleOpenLink(memberDetails?.nationalURL) }}
+                                    onPress={async () => { handleOpenLink(memberDetails?.resumePublicURL) }}
                                 >
-                                    <Text className="text-white">Chapter Proof</Text>
+                                    <Text className="text-white">View Resume</Text>
                                 </TouchableOpacity>
 
                                 <TouchableOpacity
@@ -192,11 +179,8 @@ const MemberSHPEConfirm = () => {
 }
 
 
-interface memberSHPEResponse {
-    chapterURL: string;
-    nationalURL: string;
-    chapterExpiration: string;
-    nationalExpiration: string;
+interface resumeResponse {
+    resumePublicURL: string;
 }
 
-export default MemberSHPEConfirm
+export default ResumeConfirm

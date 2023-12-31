@@ -2,10 +2,11 @@ import { View, Text, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'r
 import React, { useState, useEffect, useContext } from 'react';
 import { onSnapshot, doc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { httpsCallable, getFunctions } from 'firebase/functions';
-import { auth, db } from '../config/firebaseConfig';
+import { auth, db, functions } from '../config/firebaseConfig';
 import { MemberStatus } from '../types/User';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../context/UserContext';
+import { getWatchlist, addToWatchlist } from '../api/firebaseUtils';
 
 /**
  * This component displays the office hours information and provides an interface 
@@ -16,9 +17,12 @@ import { UserContext } from '../context/UserContext';
 const OfficeHours = () => {
     const [officeCount, setOfficeCount] = useState<number>(0);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
+    const [lastPassTime, setLastPassTime] = useState(0)
+    const DEBOUNCE_TIME = 10000; // 10 seconds
 
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
+
 
     useEffect(() => {
         const officeCountRef = doc(db, "office-hours/officer-count");
@@ -34,22 +38,25 @@ const OfficeHours = () => {
 
     const knockOnWall = async (data: MemberStatus) => {
         try {
-            // Log Member Knock in Firestore
-            const userDocCollection = collection(db, 'office-hours/member-log/log');
-            await addDoc(userDocCollection, data);
+            const currentTime = Date.now();
+            if (currentTime - lastPassTime >= DEBOUNCE_TIME) {
+                const userDocCollection = collection(db, 'office-hours/member-log/log');
+                await addDoc(userDocCollection, data);
 
-            // Send Notification to Officers using Firebase Functions
-            const functions = getFunctions();
-            const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
-            await sendNotificationOfficeHours(
+                setLastPassTime(currentTime);
+
+                const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
                 await sendNotificationOfficeHours({
                     userData: userInfo?.publicInfo
-                })
-            );
+                });
+            }
+            else {
+                await addToWatchlist(auth.currentUser?.uid!);
+            }
         } catch (err) {
             console.error("Error sending knock:", err);
         }
-    }
+    };
 
     const handleKnock = () => {
         const data: MemberStatus = {
@@ -57,8 +64,8 @@ const OfficeHours = () => {
             timestamp: serverTimestamp()
         };
         knockOnWall(data);
-
     };
+
 
     return (
         <View className='my-10 py-6 mx-7 justify-center items-center bg-pale-blue rounded-md'>
