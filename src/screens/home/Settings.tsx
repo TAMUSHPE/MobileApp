@@ -1,10 +1,11 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, StyleSheet } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from "expo-image-picker";
+import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
 import { auth, functions } from '../../config/firebaseConfig';
 import { updateProfile } from 'firebase/auth';
@@ -103,7 +104,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
                 mainText='FAQ'
                 subText='Frequently asked questions'
                 darkMode={darkMode}
-                onPress={() => Alert.alert("Unimplemented", "Screen does not currently exist")}
+                onPress={() => navigation.navigate("FAQSettingsScreen")}
             />
             <SettingsButton
                 iconName='information-outline'
@@ -745,6 +746,83 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     );
 };
 
+const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
+    const [activeQuestion, setActiveQuestion] = useState<number | null>(null);
+
+    const toggleQuestion = (questionNumber: number) => {
+        if (activeQuestion === questionNumber) {
+            setActiveQuestion(null); // Close the currently open question
+        } else {
+            setActiveQuestion(questionNumber); // Open the selected question
+        }
+    };
+
+
+    const faqData = [
+        {
+            question: "What resources does SHPE provide?",
+            answer: "SHPE offers networking opportunities, professional development workshops, mentorship programs, scholarship opportunities, and community outreach initiatives."
+        },
+        {
+            question: "How do I become an official SHPE member?",
+            answer: "To become an official member, register on the SHPE national website, pay the annual membership fee, and join your local chapter activities."
+        },
+        {
+            question: "What is the Technical Affairs Committee?",
+            answer: "The Technical Affairs Committee organizes technical events and workshops, promotes STEM education, and provides members with opportunities to develop technical skills."
+        },
+        {
+            question: "What is the MentorSHPE Committee?",
+            answer: "The MentorSHPE Committee facilitates mentoring relationships between professional members and students, offering guidance, career advice, and academic support."
+        },
+        {
+            question: "What is the Scholastic Committee?",
+            answer: "The Scholastic Committee focuses on academic excellence by providing study sessions, educational resources, and academic advising to members."
+        },
+        {
+            question: "What is the Secretary Committee?",
+            answer: "The Secretary Committee is responsible for maintaining organization records, documenting meetings and events, and ensuring effective communication within the chapter."
+        },
+        {
+            question: "What is the SHPEtinas Committee?",
+            answer: "The SHPEtinas Committee empowers and supports female members of SHPE through networking events, workshops, and mentorship programs."
+        },
+        {
+            question: "What do the points I acquire allow me to do?",
+            answer: "Points earned through participation in events and activities can be used for priority access to certain events, eligibility for exclusive opportunities, and recognition within the organization."
+        }
+    ];
+
+    return (
+        <View className='flex-1 px-4 bg-white'>
+            <ScrollView className='py-10'>
+                {faqData.map((faq, index) => (
+                    <TouchableOpacity
+                        key={index}
+                        className={`mb-2 p-4 rounded-lg ${activeQuestion === index ? 'bg-blue-100' : 'bg-gray-100'}`}
+                        onPress={() => toggleQuestion(index)}
+                    >
+                        <View className='flex-row justify-between items-center px-2'>
+                            <Text className='text-xl font-semibold w-[85%]'>{faq.question}</Text>
+                            <View className='flex-1 items-center justify-center'>
+                                <Octicons
+                                    name={activeQuestion === index ? 'chevron-up' : 'chevron-down'}
+                                    size={24}
+                                    color='black'
+                                />
+                            </View>
+                        </View>
+                        {activeQuestion === index && (
+                            <Text className='text-gray-600 mt-2 text-lg'>
+                                {faq.answer}
+                            </Text>
+                        )}
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    );
+};
 /**
  * This screen contains information about the app and info that may be useful to developers.
  */
@@ -772,4 +850,5 @@ const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackPar
 };
 
 
-export { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen };
+
+export { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, FAQSettingsScreen, AboutSettingsScreen };
