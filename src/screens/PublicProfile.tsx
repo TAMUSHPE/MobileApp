@@ -28,7 +28,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
     const route = useRoute<MembersScreenRouteProp>();
     const { uid } = route.params;
     const [publicUserData, setPublicUserData] = useState<PublicUserInfo | undefined>();
-    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, tamuEmail, committees } = publicUserData || {};
+    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, tamuEmail, committees, pointsRank } = publicUserData || {};
     const [committeesData, setCommitteesData] = useState<Committee[]>([]);
     const [modifiedRoles, setModifiedRoles] = useState<Roles | undefined>(undefined);
     const [isVerified, setIsVerified] = useState<boolean>(false);
@@ -200,7 +200,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                             </View>
                         </View>
                         <View className='items-center justify-center'>
-                            <Text className="text-white text-lg font-semibold" >{`${major} ${"'" + classYear?.substring(2)}`} • {`${points?.toFixed(2)} pts`}  </Text>
+                            <Text className="text-white text-lg font-semibold" >{`${major} ${"'" + classYear?.substring(2)}`} • {`${points?.toFixed(2)} pts`} {pointsRank && `• rank ${pointsRank}`} </Text>
                         </View>
                     </View>
                 </SafeAreaView>
