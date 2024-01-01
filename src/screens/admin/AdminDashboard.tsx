@@ -70,7 +70,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         </TouchableOpacity> */}
                         <TouchableOpacity
                             onPress={() => navigation.navigate('ResumeDownloader')}
-                            className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center mt-3'
+                            className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center'
                         >
                             <Text className='text-white text-xl'>Resumes Download</Text>
                         </TouchableOpacity>
