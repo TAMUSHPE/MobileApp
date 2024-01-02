@@ -4,6 +4,9 @@ import { SHPEEvent, SHPEEventLog } from '../../src/types/Events'
 import { Timestamp } from 'firebase/firestore';
 import { MillisecondTimes } from '../../src/helpers';
 
+/**
+ * Handles a request from a user to sign into an event.
+ */
 export const eventSignIn = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
@@ -51,6 +54,10 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     db.collection(`users/${context.auth.uid}/event-logs/${data.eventID}`).doc(context.auth.uid).set(eventLog, { merge: true });
 });
 
+
+/**
+ * Handles a request from a user to sign out of an event.
+ */
 export const eventSignOut = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
