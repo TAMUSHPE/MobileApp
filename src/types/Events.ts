@@ -74,8 +74,8 @@ export abstract class SHPEEvent {
  * Log which tracks an event sign in
  */
 export interface SHPEEventLog {
-    uid: string;
-    points: number;
+    uid?: string;
+    points?: number;
     eventId?: string; // Used when data is copied to user collection
     signInTime?: Timestamp;
     signOutTime?: Timestamp;

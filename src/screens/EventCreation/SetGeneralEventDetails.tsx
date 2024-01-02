@@ -303,9 +303,11 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             placeholder='What is this event about?'
                             placeholderTextColor={darkMode ? "#DDD" : "#777"}
                             onChangeText={(text) => setDescription(text)}
+                            numberOfLines={2}
                             keyboardType='ascii-capable'
                             autoCapitalize='sentences'
                             multiline
+                            style={{ textAlignVertical: 'top' }}
                             enterKeyHint='enter'
                         />
                     </KeyboardAvoidingView>

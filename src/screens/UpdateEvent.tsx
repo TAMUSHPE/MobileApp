@@ -23,8 +23,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [showEndTime, setShowEndTime] = useState(false);
 
 
-    const startDate = updatedEvent.startDate!.toDate()
-    const endDate = updatedEvent.endDate!.toDate()
+    const startDate = updatedEvent.startTime?.toDate()
+    const endDate = updatedEvent.endTime?.toDate()
 
     const handleUpdateEvent = async () => {
         const newEvent = await updateEvent(updatedEvent);
