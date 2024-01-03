@@ -1,27 +1,27 @@
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { EventProps, SHPEEventScreenRouteProp } from '../types/Navigation'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { SHPEEventID, monthNames } from '../types/Events';
+import { SHPEEvent } from '../types/Events';
 import { getEvent, getAttendanceNumber, isUserSignedIn } from '../api/firebaseUtils';
 import { auth } from "../config/firebaseConfig";
 import { UserContext } from '../context/UserContext';
+import { formatDateTime, monthNames } from '../helpers/timeUtils';
+import { Images } from '../../assets';
 
 
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<SHPEEventScreenRouteProp>();
     const { eventId } = route.params;
-    const [event, setEvent] = useState<SHPEEventID>();
+    const [event, setEvent] = useState<SHPEEvent>();
     const [userSignedIn, setUserSignedIn] = useState(false);
     const [attendance, setAttendance] = useState<number | null>(0);
     const { userInfo } = useContext(UserContext)!;
 
-    const startDateAsDate = event?.startDate ? event?.startDate.toDate() : null;
-    const endDateAsDate = event?.endDate ? event?.endDate.toDate() : null;
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
-
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     useFocusEffect(
         useCallback(() => {
@@ -60,20 +60,6 @@ const EventInfo = ({ navigation }: EventProps) => {
     );
 
 
-    const formatDate = (date: Date) => {
-        const day = date.getDate();
-        const month = monthNames[date.getMonth()];
-        const hours = date.getHours();
-        const minutes = date.getMinutes();
-        const year = date.getFullYear();
-
-        const formattedHours = hours % 12 || 12;
-        const formattedMinutes = minutes.toString().padStart(2, "0");
-        const amPm = hours >= 12 ? 'PM' : 'AM';
-
-        return `${month} ${day}, ${year} - ${formattedHours}:${formattedMinutes} ${amPm}`;
-    }
-
     if (!event) {
         return (
             <View className='h-screen w-screen justify-center items-center'>
@@ -82,40 +68,41 @@ const EventInfo = ({ navigation }: EventProps) => {
         )
     } else {
         return (
-            <SafeAreaView>
-                <View className='flex-row mt-4 w-screen'>
-                    <View className='justify-center w-[33%]'>
-                        <TouchableOpacity className="ml-4" onPress={() => navigation.navigate("EventsScreen")} >
-                            <Octicons name="chevron-left" size={30} color="black" />
-                        </TouchableOpacity>
-                    </View>
-                    <View className='justify-center items-center '>
-                        <Text className="text-3xl h-10 text-center">{event.name}</Text>
-                    </View>
-                    {hasPrivileges &&
-                        <View className='justify-center items-end'>
-                            <TouchableOpacity className='bg-blue-400 w-16 h-10 items-center justify-center rounded-md mr-4'
-                                onPress={() => navigation.navigate("UpdateEvent", { event: event })}>
-                                <Text className='font-bold'>Edit</Text>
-                            </TouchableOpacity>
+            <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+                {/* Header */}
+                <View className='flex-row items-center justify-center h-10'>
+                    <TouchableOpacity className='px-6 flex-1' onPress={() => navigation.goBack()} >
+                        <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
+                    </TouchableOpacity>
+                    <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>{event.name}</Text>
+                    {
+                        hasPrivileges ?
+                            <TouchableOpacity className='px-6 flex-1 flex flex-row-reverse' onPress={() => navigation.navigate("UpdateEvent", { event })} >
+                                <View className={`rounded pl-4 pr-1 py-1`}>
+                                    <Octicons name="pencil" size={24} color={darkMode ? "white" : "black"} />
+                                </View>
+                            </TouchableOpacity> :
+                            <View className='flex-1' />
+                    }
+                </View>
+                <ScrollView className={`flex flex-col flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`}>
+                    <View className='flex flex-col p-4'>
+                        <Image
+                            source={event.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
+                            resizeMode='contain'
+                            style={{
+                                width: "100%",
+                                height: undefined,
+                                aspectRatio: 16 / 9,
+                            }}
+                        />
+                        <View className='py-2'>
+                            <Text className={`text-xl ${darkMode ? "text-[#229fff]" : "text-[#5233ff]"}`}><Octicons name='calendar' size={24} /> {formatDateTime(event.startTime!.toDate())}</Text>
+                            <Text className={`text-4xl ${darkMode ? "text-white" : "text-black"}`}>{event.name}</Text>
+                            <Text className={`text-2xl ${darkMode ? "text-[#DDD]" : "text-[#333]"}`}>{event.description}</Text>
                         </View>
-                    }
-                </View>
-
-                <View className='w-screen h-[80%] items-center justify-center'>
-                    {hasPrivileges &&
-                        <Text className='text-lg font-bold'>Attendance: {attendance}</Text>
-                    }
-                    <Text className='text-lg font-bold'>Description: {event.description}</Text>
-                    <Text className='text-lg font-bold'>Location: {event.location}</Text>
-                    {startDateAsDate &&
-                        <Text className='text-lg font-bold'>Start Date: {formatDate(startDateAsDate)}</Text>
-                    }
-                    {endDateAsDate &&
-                        <Text className='text-lg font-bold'>End Date: {formatDate(endDateAsDate)}</Text>
-                    }
-                    <Text className="text-lg font-bold">{userSignedIn && "You are signed in to this event"}</Text>
-                </View>
+                    </View>
+                </ScrollView>
             </SafeAreaView>
         )
     }
