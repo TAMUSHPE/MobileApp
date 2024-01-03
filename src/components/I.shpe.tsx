@@ -56,7 +56,6 @@ const Ishpe = () => {
     const [currentTab, setCurrentTab] = useState<string>()
     const [weekStartDate, setWeekStartDate] = useState(getCurrentSunday()); // Initialize with current week
     const forwardButtonDisabled = (weekStartDate.toISOString().split('T')[0] == getCurrentSunday().toISOString().split('T')[0]);
-    // const [starStates, setStarStates] = useState({});
 
     const getEvents = async() => {
         try{
@@ -67,17 +66,8 @@ const Ishpe = () => {
         }
     }
     getEvents();
-    const firstEvent = events?.length > 0 ? events[0] : null;
-    // const toggleStar = (eventId: string | number) => {
-    //     setStarStates(prev => ({
-    //         ...prev,
-    //         [eventId]: !prev[eventId]
-    //     }));
-    // };
-    // console.log("events",events)
-    // console.log("firstEvent",firstEvent)
 
-    const EventComponent = () => {
+    const ishpeEventComponent = () => {
         return (
             <View>
                 {events.map((event: { id: React.Key | null ; image: any; startDate: {seconds: number; nanoseconds: number;}; name: string | null; location: string | null;  color: string | null}) => (
@@ -107,14 +97,6 @@ const Ishpe = () => {
             </View>
         );
     };
-
-    // useEffect(() => {
-    //     const initialStars = events.reduce((acc: { [x: string]: boolean; }, event: { id: string | number; }) => {
-    //         acc[event.id] = false; // Initialize all as not active
-    //         return acc;
-    //     }, {});
-    //     setStarStates(initialStars);
-    // }, [events]);
 
     return (
         <View className="mx-7 bg-gray-100 rounded-md flex-column"> 
@@ -146,7 +128,7 @@ const Ishpe = () => {
                 </TouchableOpacity>
             </View>
 
-            {EventComponent()}
+            {currentTab === 'I.SHPE' && ishpeEventComponent()}
         </View>
     );
 };
