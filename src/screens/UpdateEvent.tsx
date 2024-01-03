@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { SHPEEventID, monthNames } from '../types/Events';
+import { monthNames, SHPEEvent } from '../types/Events';
 import { destroyEvent, updateEvent } from '../api/firebaseUtils';
 import { Octicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
@@ -14,7 +14,7 @@ import { Timestamp } from 'firebase/firestore';
 const UpdateEvent = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
     const { event } = route.params;
-    const [updatedEvent, setUpdatedEvent] = useState<SHPEEventID>(event);
+    const [updatedEvent, setUpdatedEvent] = useState<SHPEEvent>(event);
     const [updated, setUpdated] = useState(false);
     const [showStartDate, setShowStartDate] = useState(false);
     const [showStartTime, setShowStartTime] = useState(false);

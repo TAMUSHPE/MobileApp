@@ -338,11 +338,11 @@ export enum EventType {
 }
 
 export enum EventLogStatus {
-    SUCCESS = "success",
-    EVENT_OVER = "event_over",
-    EVENT_ONGOING  = "event_ongoing",
-    ALREADY_LOGGED = "already_logged",
-    ERROR = "error",
+    SUCCESS,
+    EVENT_OVER,
+    EVENT_ONGOING ,
+    ALREADY_LOGGED,
+    ERROR,
 }
 
 export const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

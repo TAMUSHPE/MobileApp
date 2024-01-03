@@ -5,7 +5,7 @@ import { EventVerificationProps, EventVerificationScreenRouteProp } from '../typ
 import { addEventLog, getEvent } from '../api/firebaseUtils';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LottieView from "lottie-react-native";
-import { EventLogStatus, SHPEEventID } from '../types/Events';
+import { EventLogStatus, SHPEEvent } from '../types/Events';
 import { ActivityIndicator } from "react-native";
 
 const EventVerification = ({ navigation }: EventVerificationProps) => {

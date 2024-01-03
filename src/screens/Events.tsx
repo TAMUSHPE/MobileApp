@@ -15,7 +15,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
     const userContext = useContext(UserContext);
     const [isLoading, setIsLoading] = useState(true);
-    const { userInfo, setUserInfo } = userContext!;
+    const { userInfo } = userContext!;
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
@@ -58,9 +58,9 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     {
                         hasPrivileges &&
                         < View className='absolute w-full items-end justify-center'>
-                            <TouchableOpacity className='bg-blue-400 w-16 h-10 items-center justify-center rounded-md mr-4'
+                            <TouchableOpacity className='bg-pale-blue w-16 h-10 items-center justify-center rounded-md mr-4'
                                 onPress={() => navigation.navigate("CreateEvent")}>
-                                <Text className='font-bold'>Create</Text>
+                                <Text className='font-bold text-gray-100'>Create</Text>
                             </TouchableOpacity>
                         </View>
                     }
