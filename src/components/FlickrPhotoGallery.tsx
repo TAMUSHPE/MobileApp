@@ -1,12 +1,29 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useState, useRef } from 'react';
-import { Animated, StyleSheet, Image, Dimensions, View, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import React, { useEffect, useState, useRef, memo } from 'react';
+import { Animated, Image, Dimensions, View, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 const windowWidth = Dimensions.get('window').width;
 
 const API_KEY = "***REMOVED***";
 const USER_ID = "143848472@N03";
 
+
+const FlickrPhotoItem = memo(({ item }: { item: FlickrPhoto }) => {
+    if (!item) return null;
+
+    const photoUrl = `https://live.staticflickr.com/${item.server}/${item.id}_${item.secret}_w.jpg`;
+    return (
+        <View style={{ width: windowWidth }}>
+            <LinearGradient
+                className='absolute top-0 left-0 bottom-0 right-0'
+                colors={['#ffffff', '#72A9BE']}
+            />
+            <View className="mt-5 pb-4 ml-7">
+                <Image source={{ uri: photoUrl }} className="h-40 w-[92%] rounded-3xl" />
+            </View>
+        </View>
+    );
+});
 
 const FlickrPhotoGallery = () => {
     const [currentIndex, setCurrentIndex] = useState(1);
@@ -87,22 +104,7 @@ const FlickrPhotoGallery = () => {
         index,
     });
 
-    const renderItem = ({ item }: { item: FlickrPhoto }) => {
-        if (!item) return null;
-
-        const photoUrl = `https://live.staticflickr.com/${item.server}/${item.id}_${item.secret}_w.jpg`;
-        return (
-            <View style={{ width: windowWidth }}>
-                <LinearGradient
-                    className='absolute top-0 left-0 bottom-0 right-0'
-                    colors={['#ffffff', '#72A9BE']}
-                />
-                <View className="mt-5 pb-4 ml-7">
-                    <Image source={{ uri: photoUrl }} className="h-40 w-[92%] rounded-3xl" />
-                </View>
-            </View>
-        );
-    };
+    const renderItem = ({ item }: { item: FlickrPhoto }) => <FlickrPhotoItem item={item} />;
 
     return (
         <Animated.FlatList
