@@ -10,7 +10,7 @@ import { MillisecondTimes } from './timeUtils';
 export const eventSignIn = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
-    } else if (typeof data.roles !== "object" || typeof data.eventID !== "string") {
+    } else if (typeof data !== "object" || typeof data.eventID !== "string") {
         throw new functions.https.HttpsError("invalid-argument", "Invalid data types passed into function");
     }
 
@@ -49,9 +49,13 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
             break;
     }
 
-    // Sets log in both event and user collection. 
-    eventLogDocRef.set(eventLog, { merge: true });
-    db.collection(`users/${context.auth.uid}/event-logs/${data.eventID}`).doc(context.auth.uid).set(eventLog, { merge: true });
+    // Sets log in both event and user collection and ensures both happen by the end of the function. 
+    const firstPromise = eventLogDocRef.set(eventLog, { merge: true });
+    const secondPromise = db.collection(`users/${context.auth.uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
+    await firstPromise;
+    await secondPromise;
+
+    return { success: true };
 });
 
 
@@ -61,7 +65,7 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
 export const eventSignOut = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
-    } else if (typeof data.roles !== "object" || typeof data.eventID !== "string") {
+    } else if (typeof data !== "object" || typeof data.eventID !== "string") {
         throw new functions.https.HttpsError("invalid-argument", "Invalid data types passed into function");
     }
 
@@ -79,7 +83,7 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     };
 
     if (eventLog !== undefined && eventLog.signOutTime !== undefined) {
-        throw new functions.https.HttpsError("already-exists", "Sign in time already exists.");
+        throw new functions.https.HttpsError("already-exists", "Sign out time already exists.");
     }
     else if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
         throw new functions.https.HttpsError("deadline-exceeded", "Event has already ended.");
@@ -113,7 +117,11 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
             break;
     }
 
-    // Sets log in both event and user collection. 
-    eventLogDocRef.set(eventLog, { merge: true });
-    db.collection(`users/${context.auth.uid}/event-logs/${data.eventID}`).doc(context.auth.uid).set(eventLog, { merge: true });
+    // Sets log in both event and user collection and ensures both happen by the end of the function. 
+    const firstPromise = eventLogDocRef.set(eventLog, { merge: true });
+    const secondPromise = db.collection(`users/${context.auth.uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
+    await firstPromise;
+    await secondPromise;
+
+    return { success: true };
 });
