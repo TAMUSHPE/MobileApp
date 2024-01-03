@@ -15,7 +15,7 @@ import { HomeStackParams } from "../types/Navigation"
 import { getPublicUserData, getMemberOfTheMonth, fetchEventsForCommittees } from '../api/firebaseUtils';
 import { useFocusEffect } from '@react-navigation/core';
 import { Images } from '../../assets';
-import Committees from './Committees';
+import Ishpe from '../components/I.shpe';
 
 /**
  * Renders the home screen of the application.
@@ -113,20 +113,11 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
     return (
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
-            <TouchableOpacity
-                className='bg-pale-orange justify-center items-center py-1'
-                onPress={() => navigation.navigate("GoogleCalendar")}
-            >
-                <Text className='font-semibold'>General Meeting</Text>
-            </TouchableOpacity>
             <FeaturedSlider route={route} />
+            <Ishpe />
             <View className='flex-row justify-center mt-4'>
-                <View className='bg-gray-100 rounded-md items-center w-1/2 p-4'>
-                    <Text className='text-2xl text-pale-blue font-bold pb-2 text-center'>Upcoming Events</Text>
-                    <Text>TODO: This is the content of column 1.</Text>
-                </View>
                 {MemberOfTheMonth && (
-                    <View className="items-center p-4 w-1/2">
+                    <View className="items-center p-4">
                         <Text className='text-2xl text-pale-blue font-bold text-center'>Member of the Month </Text>
                         <View className='w-full items-center justify-center'>
                             <TouchableOpacity
@@ -148,7 +139,7 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
             <OfficeHours />
             {localUser?.publicInfo?.roles?.officer?.valueOf() && <OfficeSignIn />}
 
-            <View className='my-10 py-6 mx-7 justify-center items-center rounded-md'>
+            <View className='my-10 py-6 mx-7 justify-center items-center rounded-md' >
             </View>
         </ScrollView>
     );
