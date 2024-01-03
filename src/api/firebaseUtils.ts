@@ -4,7 +4,7 @@ import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, ord
 import { memberPoints } from "./fetchGoogleSheets";
 import { PrivateUserInfo, PublicUserInfo, Roles, User } from "../types/User";
 import { UserContext } from '../context/UserContext';
-import { Committee } from "../types/Committees";
+import { Committee, CommitteeConstants, CommitteeKey } from "../types/Committees";
 import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
 import { validateTamuEmail } from "../helpers/validation";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
@@ -320,6 +320,8 @@ export const getCommitteeInfo = async (committeeName: string) => {
                     memberCount: responseData?.memberCount,
                     memberApplicationLink: responseData?.memberApplicationLink,
                     leadApplicationLink: responseData?.leadApplicationLink,
+                    color: responseData?.color,
+                    image: responseData?.coverImageURI,
                 } as Committee;
             }
             else {
@@ -547,7 +549,7 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     return EventLogStatus.ERROR;
 };
 
-export const  getAttendanceNumber = async (eventId: string): Promise<number | null> => {
+export const getAttendanceNumber = async (eventId: string): Promise<number | null> => {
     try {
         const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
         const summaryDocRef = await getDoc(summaryDoc);
@@ -762,7 +764,7 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
     }
   };
 
-  export const fetchUsersWithPublicResumes = async (): Promise<PublicUserInfo[]> => {
+export const fetchUsersWithPublicResumes = async (): Promise<PublicUserInfo[]> => {
     try {
         const publicResumeQuery = query(collection(db, 'users'), where("resumeVerified", "==", true));
         const publicResumeSnapshot = await getDocs(publicResumeQuery);
@@ -799,20 +801,29 @@ export const fetchEventsForCommittees = async (committees: string []) => {
         const currentTime = Timestamp.now();
 
         for (const committee of committees) {
-            const eventsRef = collection(db, 'events');
-            const eventsQuery = query(
-                eventsRef, 
-                where("notificationGroup", "==", committee),
-                where("endDate", ">=", currentTime)  // Fetch only current and future events
-            );
-            const querySnapshot = await getDocs(eventsQuery);
+            try{
+                const eventsRef = collection(db, 'events');
+                const eventsQuery = query(
+                    eventsRef, 
+                    where("notificationGroup", "==", committee),
+                    where("endDate", ">=", currentTime)  // Fetch only current and future events
+                );
+                const querySnapshot = await getDocs(eventsQuery);
 
-            querySnapshot.forEach((doc) => {
-                allEvents.push({ id: doc.id, ...doc.data() });
-            });
+                const committeeInfo = CommitteeConstants[committee as CommitteeKey];
+                const committeeData = await getCommitteeInfo(committeeInfo.firebaseDocName);
+                querySnapshot.forEach((doc) => {
+                    if (committeeData) {
+                        allEvents.push({ id: doc.id, ...doc.data(), ...committeeData });
+                    } else {
+                        allEvents.push({ id: doc.id, ...doc.data() });
+                    }
+                });
+            } catch(innerError) {
+                console.error(`Error fetching events for committee ${committee}:`, innerError);
+            }
         }
-
-        // Remove duplicates, if any
+        
         const uniqueEvents = Array.from(new Map(allEvents.map(event => [event.id, event])).values());
 
         return uniqueEvents;
