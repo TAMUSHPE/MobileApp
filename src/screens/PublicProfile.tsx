@@ -1,6 +1,5 @@
 import { View, Text, ActivityIndicator, Image, Alert, TouchableOpacity, Pressable, TextInput, ScrollView, RefreshControl } from 'react-native';
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { BlurView } from '@react-native-community/blur';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/core';
 import { useRoute } from '@react-navigation/native';
@@ -117,14 +116,10 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
         darkMode: boolean
     }) => {
         return (
-            <View className='flex-row items-center py-1 mb-3'>
-                <Pressable
-                    onPress={onToggle}
-                >
-                    <View className={`w-7 h-7 mr-3 rounded-full border ${isActive && "bg-black"}`} />
-                </Pressable>
+            <Pressable onPress={onToggle} className='flex-row items-center py-1 mb-3'>
+                <View className={`w-7 h-7 mr-3 rounded-full border ${isActive && "bg-black"}`} />
                 <Text className={`${darkMode ? "text-white" : "text-black"} text-lg`}>{roleName}</Text>
-            </View>
+            </Pressable>
         );
     };
 
@@ -156,12 +151,9 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     className="flex w-full absolute h-full"
                     defaultSource={Images.DEFAULT_USER_PICTURE}
                     source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
+                    blurRadius={15}
                 />
-                <BlurView
-                    style={{ position: 'absolute', width: '100%', height: '100%' }}
-                    blurType="dark"
-                    blurAmount={20}
-                />
+                <View className='absolute w-full h-full bg-[#0007]' />
 
                 <SafeAreaView edges={['top']} >
                     <View className='flex-row justify-between items-center mx-5 mt-1'>
@@ -222,7 +214,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                                 onPress={() => setShowRoleModal(true)}
                                 className='rounded-md px-2 py-1 ml-4 bg-pale-blue'
                             >
-                                <Text className='text-white text-xl'>Select Role</Text>
+                                <Text className='text-white text-xl'>Edit Role</Text>
                             </TouchableOpacity>
                         </View>
                     }
