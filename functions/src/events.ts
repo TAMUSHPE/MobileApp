@@ -1,8 +1,8 @@
 import * as functions from 'firebase-functions';
 import { db } from './firebaseConfig';
-import { SHPEEvent, SHPEEventLog } from '../../src/types/Events'
-import { Timestamp } from 'firebase/firestore';
-import { MillisecondTimes } from '../../src/helpers';
+import { SHPEEvent, SHPEEventLog } from './types'
+import { Timestamp } from 'firebase-admin/firestore';
+import { MillisecondTimes } from './timeUtils';
 
 /**
  * Handles a request from a user to sign into an event.
