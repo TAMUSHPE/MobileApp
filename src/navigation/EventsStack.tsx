@@ -1,14 +1,14 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import Events from "../screens/Events";
+import Events from "../screens/events/Events";
 import { EventsStackParams } from '../types/Navigation';
-import CreateEvent from "../screens/EventCreation/CreateEvent";
-import UpdateEvent from "../screens/UpdateEvent";
-import EventInfo from "../screens/EventInfo";
+import CreateEvent from "../screens/events/CreateEvent";
+import UpdateEvent from "../screens/events/UpdateEvent";
+import EventInfo from "../screens/events/EventInfo";
 import QRCodeManager from "../screens/admin/QRCodeManager";
-import SetGeneralEventDetails from "../screens/EventCreation/SetGeneralEventDetails";
-import SetSpecificEventDetails from "../screens/EventCreation/SetSpecificEventDetails";
-import FinalizeEvent from "../screens/EventCreation/FinalizeEvent";
+import SetGeneralEventDetails from "../screens/events/SetGeneralEventDetails";
+import SetSpecificEventDetails from "../screens/events/SetSpecificEventDetails";
+import FinalizeEvent from "../screens/events/FinalizeEvent";
 
 const EventsStack = () => {
     const Stack = createNativeStackNavigator<EventsStackParams>();

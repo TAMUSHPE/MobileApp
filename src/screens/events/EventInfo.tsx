@@ -1,15 +1,15 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { EventProps, SHPEEventScreenRouteProp } from '../types/Navigation'
+import { EventProps, SHPEEventScreenRouteProp } from '../../types/Navigation'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { SHPEEvent } from '../types/Events';
-import { getEvent, getAttendanceNumber, isUserSignedIn } from '../api/firebaseUtils';
-import { auth } from "../config/firebaseConfig";
-import { UserContext } from '../context/UserContext';
-import { formatDateTime, monthNames } from '../helpers/timeUtils';
-import { Images } from '../../assets';
+import { SHPEEvent } from '../../types/Events';
+import { getEvent, getAttendanceNumber, isUserSignedIn } from '../../api/firebaseUtils';
+import { auth } from "../../config/firebaseConfig";
+import { UserContext } from '../../context/UserContext';
+import { formatDateTime, monthNames } from '../../helpers/timeUtils';
+import { Images } from '../../../assets';
 
 
 const EventInfo = ({ navigation }: EventProps) => {

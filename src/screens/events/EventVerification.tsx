@@ -1,11 +1,11 @@
 import { View, Text, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react';
 import { useRoute } from '@react-navigation/core';
-import { EventVerificationProps, EventVerificationScreenRouteProp } from '../types/Navigation'
-import { signInToEvent, signOutOfEvent } from '../api/firebaseUtils';
+import { EventVerificationProps, EventVerificationScreenRouteProp } from '../../types/Navigation'
+import { signInToEvent, signOutOfEvent } from '../../api/firebaseUtils';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LottieView from "lottie-react-native";
-import { EventLogStatus } from '../types/Events';
+import { EventLogStatus } from '../../types/Events';
 import { ActivityIndicator } from "react-native";
 
 const EventVerification = ({ navigation }: EventVerificationProps) => {
@@ -121,7 +121,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                 <View className='w-screen h-[70%] items-center justify-center'>
                     <View className=' w-screen h-40 '>
                         <LottieView
-                            source={require("../../assets/check_animation.json")}
+                            source={require("../../../assets/check_animation.json")}
                             autoPlay
                             loop={false}
                             onAnimationFinish={() => redirectToPage()}

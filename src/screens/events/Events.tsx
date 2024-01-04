@@ -2,12 +2,12 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from 'rea
 import React, { useCallback, useContext, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { EventsStackParams } from '../types/Navigation';
-import { getUpcomingEvents, getPastEvents } from '../api/firebaseUtils';
-import { SHPEEvent } from '../types/Events';
-import EventCard from '../components/EventCard';
+import { EventsStackParams } from '../../types/Navigation';
+import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
+import { SHPEEvent } from '../../types/Events';
+import EventCard from '../../components/EventCard';
 import { useFocusEffect } from '@react-navigation/native';
-import { UserContext } from '../context/UserContext';
+import { UserContext } from '../../context/UserContext';
 
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {

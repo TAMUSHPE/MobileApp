@@ -212,8 +212,8 @@ export type CommitteeTeamCardProps = {
 
 
 export type EventVerificationProps = {
-    id: string;
-    mode: "sign-in" | "sign-out";
+    id?: string;
+    mode?: "sign-in" | "sign-out";
     navigation?: NativeStackNavigationProp<MainStackParams>;
 }
 
