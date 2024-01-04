@@ -337,10 +337,15 @@ export enum EventType {
     CUSTOM_EVENT = "Custom Event",
 }
 
+/**
+ * Status of an event that user attempts to sign in to or out of
+ */
 export enum EventLogStatus {
     SUCCESS,
     EVENT_OVER,
-    EVENT_ONGOING ,
+    EVENT_ONGOING,
+    EVENT_NOT_STARTED,
+    EVENT_NOT_FOUND,
     ALREADY_LOGGED,
     ERROR,
 }
