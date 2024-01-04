@@ -26,7 +26,7 @@ const FeedbackScreen = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
     };
 
     return (
-        <SafeAreaView>
+        <SafeAreaView className='flex-1'>
             <View className='flex-row items-center mx-5 mt-1'>
                 <View className='absolute w-full justify-center items-center'>
                     <Text className="text-2xl font-semibold" >Feedback</Text>
@@ -57,7 +57,7 @@ const FeedbackScreen = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                             </TouchableOpacity>
                         </View>
                         <View className='px-2 mt-5'>
-                            <Text>By {item.user.name}</Text>
+                            <Text>{item.user.name}</Text>
                         </View>
                     </View>
                 )}
