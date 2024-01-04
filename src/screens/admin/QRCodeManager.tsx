@@ -53,10 +53,10 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
     }
 
     const saveSignOutQRCode = async () => {
-        if (signInQRCodeRef.current) {
+        if (signOutQRCodeRef.current) {
             try {
                 setLoading(true);
-                signInQRCodeRef.current.toDataURL(async (data: string) => {
+                signOutQRCodeRef.current.toDataURL(async (data: string) => {
                     const currentDate = new Date().toISOString().replace(/[-:.]/g, '');
                     const sanitizedEventName = event.name?.replace(/[\/\\:\*\?"<>\|#]/g, '_');
 
@@ -127,7 +127,7 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                                         value={`tamu-shpe://event?id=${event.id}&mode=sign-out`}
                                     />
                                     <View className='my-2'>
-                                        <Button title="Save QR Code" onPress={saveSignInQRCode} />
+                                        <Button title="Save QR Code" onPress={saveSignOutQRCode} />
                                     </View>
                                 </View>
                             }
