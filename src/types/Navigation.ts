@@ -23,6 +23,7 @@ export type MainStackParams = {
     AboutSettingsScreen: undefined;
     EventVerificationScreen: {
         id: string;
+        mode: "sign-in" | "sign-out";
     };
     PublicProfile: {
         uid: string;
@@ -211,8 +212,9 @@ export type CommitteeTeamCardProps = {
 
 
 export type EventVerificationProps = {
-    id?: string;
-    navigation?: NativeStackNavigationProp<MainStackParams>
+    id: string;
+    mode: "sign-in" | "sign-out";
+    navigation?: NativeStackNavigationProp<MainStackParams>;
 }
 
 export type QRCodeProps = {

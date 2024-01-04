@@ -570,7 +570,7 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
                 if (currentTime > eventEndTime) {
                     return EventLogStatus.EVENT_OVER;
                 } else {
-                    return EventLogStatus.EVENT_ONGOING
+                    return EventLogStatus.EVENT_ONGOING;
                 }
             }
         }
@@ -597,42 +597,69 @@ export const getAttendanceNumber = async (eventId: string): Promise<number | nul
     }
 }
 
-
-export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
-    const status = await getEventStatus(eventId);
-    if (status != EventLogStatus.EVENT_ONGOING) {
-        return status;
-    }
-
-    try {
-        const logDoc = doc(db, `events/${eventId}/logs/${auth.currentUser?.uid!}`);
-        const logDocRef = await getDoc(logDoc);
-
-        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
-        const summaryDocRef = await getDoc(summaryDoc);
-
-
-        if (!logDocRef.exists()) {
-            await setDoc(logDoc, { signedInTime: serverTimestamp() }, { merge: true });
-
-            if (!summaryDocRef.exists()) {
-                await setDoc(summaryDoc, { attendance: 1 });
-                return EventLogStatus.SUCCESS;
-            } else {
-                const currentCount = summaryDocRef.data().attendance || 0;
-                await updateDoc(summaryDoc, { attendance: currentCount + 1 });
-                return EventLogStatus.SUCCESS;
+/**
+ * Signs a user into an event given an event id
+ * @param eventID ID of event to sign into. This is the name of the event document in firestore
+ * @returns Status representing the status of the cloud function
+ */
+export const signInToEvent = async (eventID: string): Promise<EventLogStatus> => {
+    return await httpsCallable(functions, "eventSignIn")
+        .call(null, { eventID })
+        .then((result) => {
+            if (typeof result.data == "object" && result.data && (result.data as any).success) {
+                return EventLogStatus.SUCCESS
             }
-        } else {
-            return EventLogStatus.ALREADY_LOGGED;
-        }
+            else {
+                return EventLogStatus.ERROR
+            }
+        })
+        .catch(err => {
+            switch (err.code) {
+                case 'functions/already-exists':
+                    return EventLogStatus.ALREADY_LOGGED;
+                case 'functions/failed-precondition':
+                    return EventLogStatus.EVENT_NOT_STARTED;
+                case 'functions/not-found':
+                    return EventLogStatus.EVENT_NOT_FOUND;
+                case 'functions/deadline-exceeded':
+                    return EventLogStatus.EVENT_OVER;
+                default:
+                    console.error(err);
+                    return EventLogStatus.ERROR;
+            }
+        });
+}
 
-    } catch (e) {
-        console.error("Error adding log: ", e);
-    }
-
-    return EventLogStatus.ERROR;
-};
+/**
+ * Signs a user into an event given an event id
+ * @param eventID ID of event to sign into. This is the name of the event document in firestore
+ * @returns Status representing the status of the cloud function
+ */
+export const signOutOfEvent = async (eventID: string): Promise<EventLogStatus> => {
+    return await httpsCallable(functions, "eventSignOut")
+        .call(null, { eventID })
+        .then((result) => {
+            if (typeof result.data == "object" && result.data && (result.data as any).success) {
+                return EventLogStatus.SUCCESS
+            }
+            else {
+                return EventLogStatus.ERROR
+            }
+        })
+        .catch(err => {
+            switch (err.code) {
+                case 'functions/failed-precondition':
+                    return EventLogStatus.EVENT_NOT_STARTED;
+                case 'functions/not-found':
+                    return EventLogStatus.EVENT_NOT_FOUND;
+                case 'functions/deadline-exceeded':
+                    return EventLogStatus.EVENT_OVER;
+                default:
+                    console.error(err);
+                    return EventLogStatus.ERROR;
+            }
+        });
+}
 
 export const isUserSignedIn = async (eventId: string, uid: string) => {
     const eventLogDocRef = doc(db, 'events', eventId, 'logs', uid);
