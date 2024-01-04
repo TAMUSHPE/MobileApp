@@ -104,7 +104,7 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                     <View className='w-screen'>
                         <View className='justify-center items-center'>
                             {
-                                event.signInPoints &&
+                                typeof event.signInPoints == "number" &&
                                 <View className='my-4'>
                                     <Text className='text-2xl text-center'>Sign In QR Code</Text>
                                     <QRCode
@@ -118,7 +118,7 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                                 </View>
                             }
                             {
-                                event.signOutPoints &&
+                                typeof event.signOutPoints == "number" &&
                                 <View className='border border-t-2 border-x-0 border-b-0 border-gray-400 py-4'>
                                     <Text className='text-2xl text-center'>Sign Out QR Code</Text>
                                     <QRCode
