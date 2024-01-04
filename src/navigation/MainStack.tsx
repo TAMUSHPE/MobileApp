@@ -4,7 +4,7 @@ import { UserContext } from "../context/UserContext";
 import { MainStackParams } from '../types/Navigation';
 import HomeBottomTabs from "./HomeBottomTabs";
 import AdminDashboardStack from "./AdminDashboardStack";
-import EventVerification from "../screens/EventVerification";
+import EventVerification from "../screens/events/EventVerification";
 import { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen, FAQSettingsScreen, FeedBackSettingsScreen } from "../screens/home/Settings";
 import PublicProfileScreen from "../screens/PublicProfile";
 
@@ -46,7 +46,6 @@ const MainStack = () => {
             </Stack.Group>
 
             <Stack.Screen name="EventVerificationScreen" component={EventVerification} options={{ headerShown: false }} />
-
             <Stack.Screen name="PublicProfile" component={PublicProfileScreen} options={{ headerShown: false }} />
 
         </Stack.Navigator>

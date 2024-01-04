@@ -1,14 +1,14 @@
 import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform } from 'react-native'
 import React, { useState } from 'react'
-import { EventProps, UpdateEventScreenRouteProp } from '../types/Navigation'
+import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { monthNames, SHPEEvent } from '../types/Events';
-import { destroyEvent, updateEvent } from '../api/firebaseUtils';
+import { monthNames, SHPEEvent } from '../../types/Events';
+import { destroyEvent, updateEvent } from '../../api/firebaseUtils';
 import { Octicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Images } from '../../assets';
+import { Images } from '../../../assets';
 import { Timestamp } from 'firebase/firestore';
 
 const UpdateEvent = ({ navigation }: EventProps) => {
