@@ -337,11 +337,3 @@ export enum EventType {
     INTRAMURAL_EVENT = "Intramural Event",
     CUSTOM_EVENT = "Custom Event",
 }
-
-export enum EventLogStatus {
-    SUCCESS = "success",
-    EVENT_OVER = "event_over",
-    EVENT_ONGOING = "event_ongoing",
-    ALREADY_LOGGED = "already_logged",
-    ERROR = "error",
-}
