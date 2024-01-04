@@ -111,7 +111,15 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         <Picker
                             selectedValue={workshopType}
                             style={{ color: darkMode ? "white" : "black" }}
-                            onValueChange={(selectedWorkshopType: WorkshopType) => setWorkshopType(selectedWorkshopType)}
+                            onValueChange={(selectedWorkshopType: WorkshopType) => {
+                                setWorkshopType(selectedWorkshopType);
+                                switch (selectedWorkshopType) {
+                                    case "Academic":
+                                        setSignInPoints(2);
+                                    case "Professional":
+                                        setSignInPoints(3);
+                                }
+                            }}
                             selectionColor={darkMode ? "#ffffff" : "#000000"}
                             dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
                         >
