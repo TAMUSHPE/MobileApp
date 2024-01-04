@@ -444,6 +444,18 @@ export const removeFromBlacklist = async (userToRemove: PublicUserInfo) => {
     await setDoc(doc(db, "restrictions/blacklist"), { list: updatedBlacklist }, { merge: true });
 };
 
+export const isUserInBlacklist = async (uid: string): Promise<boolean> => {
+    const blacklistDocRef = doc(db, "restrictions/blacklist");
+    const docSnap = await getDoc(blacklistDocRef);
+
+    if (docSnap.exists()) {
+        const blacklist = docSnap.data().list;
+        return blacklist.some((user: PublicUserInfo) => user.uid === uid);
+    } else {
+        // Blacklist document does not exist or has no data
+        return false;
+    }
+};
 
 export const createEvent = async (event: SHPEEvent) => {
     try {

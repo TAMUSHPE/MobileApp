@@ -7,8 +7,8 @@ import { useFocusEffect } from "@react-navigation/core";
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from "../../context/UserContext";
 import { auth } from "../../config/firebaseConfig";
-import { initializeCurrentUserData } from "../../api/firebaseUtils";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { initializeCurrentUserData, isUserInBlacklist } from "../../api/firebaseUtils";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { AuthStackParams } from "../../types/Navigation";
 import { Images } from "../../../assets";
 import TextInputWithFloatingTitle from "../../components/TextInputWithFloatingTitle";
@@ -22,11 +22,6 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
     const [error, setError] = useState<string>("");
 
     const { userInfo, setUserInfo, signOutUser } = useContext(UserContext)!;
-    /**
- * Due to asynchronous problem, the value of completedAccountSetup may
- * initially be undefined. This function will check the value when userInfo
- * is changed until it's either true or false.
- */
 
     useFocusEffect(
         useCallback(() => {
@@ -46,7 +41,15 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
     const handleUserAuth = () => {
         setLoading(true);
         initializeCurrentUserData()
-            .then(userFromFirebase => {
+            .then(async userFromFirebase => {
+                const checkBlackList = await isUserInBlacklist(auth.currentUser?.uid!)
+                if (checkBlackList) {
+                    signOut(auth)
+                    setError("You have been banned from the app")
+                    return;
+                }
+
+
                 AsyncStorage.setItem("@user", JSON.stringify(userFromFirebase))
                     .then(() => {
                         setUserInfo(userFromFirebase);
