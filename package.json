@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.18.2",
+    "@react-native-community/blur": "^4.3.2",
     "@react-native-community/datetimepicker": "7.2.0",
     "@react-native-picker/picker": "2.4.10",
     "@react-navigation/bottom-tabs": "^6.5.8",
@@ -82,7 +83,8 @@
     "@types/react": "~18.2.14",
     "@types/react-native": "^0.72.2",
     "@types/react-test-renderer": "^18.0.3",
-    "eas-cli": "^5.9.2",
+    "eas-cli": "^5.2.0",
+    "react-native-svg-transformer": "^1.2.0",
     "sharp-cli": "^4.1.1",
     "tailwindcss": "^3.3.2",
     "ts-node": "^10.9.1",

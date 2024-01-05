@@ -1,11 +1,11 @@
 import 'react-native-gesture-handler';
-import React, { useContext, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import { Alert } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from 'expo-notifications';
 import { UserProvider } from './src/context/UserContext';
 import RootNavigator from './src/navigation';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { auth } from './src/config/firebaseConfig';
 import { getUser } from './src/api/firebaseUtils';
 import { eventEmitter } from './src/context/eventEmitter'; // Adjust the path as necessary

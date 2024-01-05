@@ -3,9 +3,8 @@ import { StyleSheet, Text, View, TouchableOpacity, Modal, TextInput } from 'reac
 import ColorPicker, { Panel3, colorKit, SaturationSlider } from 'reanimated-color-picker';
 import { calculateHexLuminosity, validateHexColor } from '../helpers/colorUtils';
 
-export default function CustomColorPicker({ onColorChosen }: CustomColorPickerProps) {
+export default function CustomColorPicker({ onColorChosen, initialColor = "#500000" }: CustomColorPickerProps) {
   const [showPicker, setShowPicker] = useState(false);
-  const initialColor = colorKit.randomRgbColor().hex();
   const [selectedColor, setSelectedColor] = useState(initialColor);
   const [hexInput, setHexInput] = useState(initialColor);
 
@@ -14,12 +13,6 @@ export default function CustomColorPicker({ onColorChosen }: CustomColorPickerPr
     setHexInput(color.hex);
   };
 
-  const handleHexInputChange = (hex: string) => {
-    if (validateHexColor(hex)) {
-      setSelectedColor(hex);
-      setHexInput(hex);
-    }
-  };
 
   const handleClose = () => {
     setShowPicker(false);
@@ -52,10 +45,15 @@ export default function CustomColorPicker({ onColorChosen }: CustomColorPickerPr
       >
         <View style={styles.modalOverlay}>
           <View style={styles.pickerPopup}>
-            <Text style={styles.modalTitle}>Select a Color Committee</Text>
+            <Text style={styles.modalTitle}>Select a Color</Text>
             <TextInput
               style={styles.hexInput}
-              onChangeText={handleHexInputChange}
+              onChangeText={(text) => {
+                setHexInput(text);
+                if (validateHexColor(text)) {
+                  setSelectedColor(text);
+                }
+              }}
               value={hexInput}
               placeholder="Enter Hex Code"
               autoCapitalize="characters"
@@ -90,6 +88,7 @@ export default function CustomColorPicker({ onColorChosen }: CustomColorPickerPr
 
 type CustomColorPickerProps = {
   onColorChosen: (color: string) => void;
+  initialColor?: string;
 };
 
 const styles = StyleSheet.create({
@@ -117,8 +116,6 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   pickerPopup: {
     width: 300,
