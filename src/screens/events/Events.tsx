@@ -9,7 +9,6 @@ import EventCard from '../../components/EventCard';
 import { useFocusEffect } from '@react-navigation/native';
 import { UserContext } from '../../context/UserContext';
 
-
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
     const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
@@ -65,6 +64,12 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                         </View>
                     }
                 </View>
+                <TouchableOpacity
+                    className='w-full bg-blue-200'
+                    onPress={() => navigation.navigate("QRCodeScanningScreen")}
+                >
+                    <Text className='text-center text-lg'>Scan QR Code</Text>
+                </TouchableOpacity>
 
                 {isLoading && upcomingEvents.length == 0 && pastEvents.length == 0 &&
                     <View className='h-64 justify-center items-center'>
@@ -103,8 +108,8 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     })}
                 </View>
             </ScrollView>
-        </SafeAreaView >
-    )
-}
+        </SafeAreaView>
+    );
+};
 
-export default Events
+export default Events;
