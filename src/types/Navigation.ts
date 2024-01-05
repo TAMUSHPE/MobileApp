@@ -88,6 +88,7 @@ export type EventsStackParams = {
     UpdateEvent: { event: SHPEEvent };
     EventInfo: { eventId: string };
     QRCode: { event: SHPEEvent };
+    QRCodeScanningScreen: undefined;
 
     // Events related to event creation
     CreateEvent: undefined;

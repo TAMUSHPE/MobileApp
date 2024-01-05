@@ -42,6 +42,8 @@ export abstract class SHPEEvent {
     public geolocation?: Geolocation | null;
     /** Attribute used specifically for workshops */
     public workshopType?: WorkshopType;
+    /** Specifies which committee this event is associated with */
+    public commmittee?: string;
 
     /**
      * Instantiates all fields that are required for all SHPE Events
