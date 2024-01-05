@@ -1,12 +1,12 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference } from "firebase/firestore";
-import { memberPoints } from "./fetchGoogleSheets";
-import { PrivateUserInfo, PublicUserInfo, Roles, User } from "../types/User";
-import { Committee } from "../types/Committees";
-import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
-import { validateTamuEmail } from "../helpers/validation";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
+import { memberPoints } from "./fetchGoogleSheets";
+import { validateTamuEmail } from "../helpers/validation";
+import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
+import { Committee } from "../types/Committees";
+import { SHPEEvent, EventLogStatus } from "../types/Events";
 
 
 /**
@@ -150,65 +150,62 @@ export const getUserByEmail = async (email: string): Promise<{ userData: PublicU
     }
 }
 
-
-
-type UserFilter = {
-    classYear: string,
-    major: string,
-    orderByField: string
-}
 type FetchMembersOptions = {
-    lastUserSnapshot?: any,
+    lastUserSnapshot?: QueryDocumentSnapshot<DocumentData> | null,
     isOfficer?: boolean,
-    numLimit?: number | null, 
+    numLimit?: number | null,
     filter: UserFilter,
 };
 
-
-
-export const fetchUserForList = async (options: FetchMembersOptions) => {
+export const getUserForMemberList = async (options: FetchMembersOptions) => {
     const {
-        lastUserSnapshot = null,
-        isOfficer = false,
-        numLimit = null, 
+        lastUserSnapshot,
+        numLimit = null,
         filter,
     } = options;
     let userQuery: Query<DocumentData, DocumentData> = collection(db, 'users');
-
-    userQuery = query(userQuery, where("roles.officer", "==", isOfficer));
 
     if (filter.classYear != "") {
         userQuery = query(userQuery, where("classYear", "==", filter.classYear));
     }
 
     if (filter.major != "") {
-        userQuery = query(userQuery, where("major", "==", filter.major));
+        const majorUpper = filter.major.toUpperCase();
+        userQuery = query(userQuery, where("major", "==", majorUpper));
     }
 
-    userQuery = query(userQuery, orderBy(filter.orderByField));
-    
+    userQuery = query(userQuery, where("roles.officer", "==", false));
+
+    if (filter.role && filter.role !== "") {
+        const roleQuery = `roles.${filter.role}`;
+        userQuery = query(userQuery, where(roleQuery, "==", true));
+    }
+
+    // Limit the number of results
     if (numLimit !== null) {
         userQuery = query(userQuery, limit(numLimit));
     }
 
+    // Start after the last retrieved document
     if (lastUserSnapshot) {
         userQuery = query(userQuery, startAfter(lastUserSnapshot));
-    }   
+    }
 
     try {
         const snapshot = await getDocs(userQuery);
-        let hasMoreUser = numLimit !== null ? snapshot.docs.length === numLimit : false;
-        
-        const memberUID = snapshot.docs.map(doc => {
-            return doc.id 
-        });
+        const hasMoreUser = numLimit !== null ? snapshot.docs.length >= numLimit : false;
 
-        return { members: snapshot.docs, uid: memberUID, hasMoreUser };
+        return {
+            members: snapshot.docs,
+            lastSnapshot: snapshot.docs[snapshot.docs.length - 1],
+            hasMoreUser
+        };
     } catch (error) {
         console.error("Error fetching users:", error);
-        return { members: [], hasMoreUser: false };
+        return { members: [], lastSnapshot: null, hasMoreUser: false };
     }
-}
+};
+
 
 /**
  * Appends an Expo push token to the current user's private data.
@@ -252,11 +249,15 @@ export const initializeCurrentUserData = async (): Promise<User> => {
         },
     };
 
+    const oneWeekFromNow = new Date();
+    oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+
     const defaultPrivateInfo: PrivateUserInfo = {
         completedAccountSetup: false,
         settings: {
             darkMode: false,
         },
+        expirationDate: oneWeekFromNow,
     };
 
     const user = await getUser(auth.currentUser?.uid!);
@@ -312,9 +313,9 @@ export const getCommittees = async (): Promise<Committee[]> => {
         const committeeCollectionRef = collection(db, 'committees');
         const snapshot = await getDocs(committeeCollectionRef);
         const committees = snapshot.docs
-            .filter(doc => doc.id !== "committeeCounts") 
+            .filter(doc => doc.id !== "committeeCounts") // ignore committeeCounts document
             .map(doc => ({
-                firebaseDocName: doc.id, 
+                firebaseDocName: doc.id,
                 ...doc.data()
             }));
         return committees;
@@ -323,17 +324,20 @@ export const getCommittees = async (): Promise<Committee[]> => {
         return [];
     }
 };
-export const setCommitteeInfo = async (committeeData: Committee) => {
+export const setCommitteeData = async (committeeData: Committee) => {
     try {
         await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
             name: committeeData.name || "",
-            color: committeeData.color || "#fff",
+            color: committeeData.color || "#500000",
             description: committeeData.description || "",
             head: committeeData.head || "",
+            representatives: committeeData.representatives || [],
             leads: committeeData.leads || [],
             memberApplicationLink: committeeData.memberApplicationLink || "",
+            representativeApplicationLink: committeeData.representativeApplicationLink || "",
             leadApplicationLink: committeeData.leadApplicationLink || "",
-
+            logo: committeeData.logo || "default",
+            memberCount: committeeData.memberCount || 0,
         }, { merge: true });
         return true;
     } catch (err) {
@@ -342,62 +346,108 @@ export const setCommitteeInfo = async (committeeData: Committee) => {
     }
 };
 
-export const deleteCommittee = async (firebaseDocName: string): Promise<void> => {
+export const resetCommittee = async (firebaseDocName: string) => {
+    const committeeRef = doc(db, 'committees', firebaseDocName);
+
     try {
-        const committeeRef = doc(db, `committees/${firebaseDocName}`);
-        await deleteDoc(committeeRef);
-        console.log(`Committee with ID ${firebaseDocName} has been deleted.`);
+        await runTransaction(db, async (transaction) => {
+            transaction.update(committeeRef, {
+                memberCount: 0,
+                memberApplicationLink: '',
+                leadApplicationLink: '',
+                representativeApplicationLink: '',
+                head: deleteField(),
+                leads: [],
+                representatives: []
+            });
+
+            const usersSnapshot = await getDocs(collection(db, 'users'));
+            usersSnapshot.forEach((userDoc) => {
+                if (userDoc.data().committees.includes(firebaseDocName)) {
+                    const updatedCommittees = userDoc.data().committees.filter((committee: string) => committee !== firebaseDocName);
+                    transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
+                }
+            });
+        });
+        console.log('Committee reset successfully');
     } catch (error) {
-        console.error(`Error deleting committee with ID ${firebaseDocName}:`, error);
-        throw new Error(`Error deleting committee: ${error}`);
+        console.error('Failed to reset committee:', error);
+    }
+};
+
+export const deleteCommittee = async (firebaseDocName: string) => {
+    const committeeRef = doc(db, 'committees', firebaseDocName);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            transaction.delete(committeeRef);
+
+            const usersSnapshot = await getDocs(collection(db, 'users'));
+            usersSnapshot.forEach((userDoc) => {
+                if (userDoc.data().committees.includes(firebaseDocName)) {
+                    const updatedCommittees = userDoc.data().committees.filter((committee: string) => committee !== firebaseDocName);
+                    transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
+                }
+            });
+        });
+        console.log('Committee deleted successfully');
+    } catch (error) {
+        console.error('Failed to delete committee:', error);
     }
 };
 
 export const getWatchlist = async () => {
     const docRef = doc(db, "restrictions/watchlist");
     const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? docSnap.data().UIDs : [];
+    return docSnap.exists() ? docSnap.data().list : [];
 };
 
 export const getBlacklist = async () => {
     const docRef = doc(db, "restrictions/blacklist");
     const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? docSnap.data().UIDs : [];
+    return docSnap.exists() ? docSnap.data().list : [];
 };
 
 
-export const addToWatchlist = async (uid: string) => {
+export const addToWatchlist = async (userToAdd: PublicUserInfo) => {
     const currentWatchlist = await getWatchlist() || [];
-    if (!currentWatchlist.includes(uid)) {
-        const updatedWatchlist = [...currentWatchlist, uid];
-        await setDoc(doc(db, "restrictions/watchlist"), { UIDs: updatedWatchlist }, { merge: true });
+
+    if (!currentWatchlist.some((user: PublicUserInfo) => user.uid === userToAdd.uid)) {
+        const updatedWatchlist = [...currentWatchlist, userToAdd];
+        console.log(updatedWatchlist.length)
+        await setDoc(doc(db, "restrictions/watchlist"), { list: updatedWatchlist }, { merge: true });
     }
 };
 
-export const addToBlacklist = async (uid: string) => {
+export const addToBlacklist = async (userToAdd: PublicUserInfo) => {
     const currentBlacklist = await getBlacklist() || [];
-    if (!currentBlacklist.includes(uid)) {
-        const updatedBlacklist = [...currentBlacklist, uid];
-        await setDoc(doc(db, "restrictions/blacklist"), { UIDs: updatedBlacklist }, { merge: true });
+
+    if (!currentBlacklist.some((user: PublicUserInfo) => user.uid === userToAdd.uid)) {
+        const updatedBlacklist = [...currentBlacklist, userToAdd];
+        await setDoc(doc(db, "restrictions/blacklist"), { list: updatedBlacklist }, { merge: true });
     }
 };
 
-export const createEvent = async (event: SHPEEvent) => {
+export const removeFromWatchlist = async (userToRemove: PublicUserInfo) => {
+    const currentWatchlist = await getWatchlist() || [];
+
+    const updatedWatchlist = currentWatchlist.filter((user: PublicUserInfo) => user.uid !== userToRemove.uid);
+
+    await setDoc(doc(db, "restrictions/watchlist"), { list: updatedWatchlist }, { merge: true });
+};
+
+export const removeFromBlacklist = async (userToRemove: PublicUserInfo) => {
+    const currentBlacklist = await getBlacklist() || [];
+
+    const updatedBlacklist = currentBlacklist.filter((user: PublicUserInfo) => user.uid !== userToRemove.uid);
+
+    await setDoc(doc(db, "restrictions/blacklist"), { list: updatedBlacklist }, { merge: true });
+};
+
+
+export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
     try {
-        const docRef = await addDoc(collection(db, "events"), {
-            name: event.name,
-            description: event.description,
-            pointsCategory: event.pointsCategory,
-            notificationGroup: event.notificationGroup,
-            startDate: event.startDate,
-            endDate: event.endDate,
-            location: event.location,
-        });
-
-        await setDoc(doc(db, `events/${docRef.id}/summaries/default`), {
-            attendance: 0
-        });
-
+        const docRef = await addDoc(collection(db, "events"), { ...event });
         return docRef.id;
     } catch (error) {
         console.error("Error adding document: ", error);
@@ -405,17 +455,11 @@ export const createEvent = async (event: SHPEEvent) => {
     }
 };
 
-export const updateEvent = async (event: SHPEEventID) => {
+export const updateEvent = async (event: SHPEEvent) => {
     try {
         const docRef = doc(db, "events", event.id!);
         await updateDoc(docRef, {
-            name: event.name,
-            description: event.description,
-            pointsCategory: event.pointsCategory || [],
-            notificationGroup: event.notificationGroup || [],
-            startDate: event.startDate,
-            endDate: event.endDate,
-            location: event.location,
+            ...event
         });
         return event.id;
     } catch (error) {
@@ -429,7 +473,7 @@ export const getEvent = async (eventID: string) => {
         const eventRef = doc(db, "events", eventID);
         const eventDoc = await getDoc(eventRef);
         if (eventDoc.exists()) {
-            return eventDoc.data() as SHPEEventID;
+            return eventDoc.data() as SHPEEvent;
         } else {
             console.error("No such document!");
             return null;
@@ -443,16 +487,16 @@ export const getEvent = async (eventID: string) => {
 export const getUpcomingEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endDate", ">", currentTime));
+    const q = query(eventsRef, where("endTime", ">", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEventID[] = [];
+    const events: SHPEEvent[] = [];
     querySnapshot.forEach((doc) => {
         events.push({ id: doc.id, ...doc.data() });
     });
 
     events.sort((a, b) => {
-        const dateA = a.startDate ? a.startDate.toDate() : undefined;
-        const dateB = b.startDate ? b.startDate.toDate() : undefined;
+        const dateA = a.startTime ? a.startTime.toDate() : undefined;
+        const dateB = b.startTime ? b.startTime.toDate() : undefined;
 
         if (dateA && dateB) {
             return dateA.getTime() - dateB.getTime();
@@ -466,15 +510,15 @@ export const getUpcomingEvents = async () => {
 export const getPastEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endDate", "<", currentTime));
+    const q = query(eventsRef, where("endTime", "<", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEventID[] = [];
+    const events: SHPEEvent[] = [];
     querySnapshot.forEach((doc) => {
         events.push({ id: doc.id, ...doc.data() });
     });
     events.sort((a, b) => {
-        const dateA = a.startDate ? a.startDate.toDate() : undefined;
-        const dateB = b.startDate ? b.startDate.toDate() : undefined;
+        const dateA = a.startTime ? a.startTime.toDate() : undefined;
+        const dateB = b.startTime ? b.startTime.toDate() : undefined;
 
         if (dateA && dateB) {
             return dateA.getTime() - dateB.getTime();
@@ -484,8 +528,6 @@ export const getPastEvents = async () => {
 
     return events;
 };
-
-
 
 export const destroyEvent = async (eventID: string) => {
     try {
@@ -528,7 +570,7 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
                 if (currentTime > eventEndTime) {
                     return EventLogStatus.EVENT_OVER;
                 } else {
-                    return EventLogStatus.EVENT_ONGOING
+                    return EventLogStatus.EVENT_ONGOING;
                 }
             }
         }
@@ -538,7 +580,7 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     return EventLogStatus.ERROR;
 };
 
-export const  getAttendanceNumber = async (eventId: string): Promise<number | null> => {
+export const getAttendanceNumber = async (eventId: string): Promise<number | null> => {
     try {
         const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
         const summaryDocRef = await getDoc(summaryDoc);
@@ -555,42 +597,69 @@ export const  getAttendanceNumber = async (eventId: string): Promise<number | nu
     }
 }
 
-
-export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
-    const status = await getEventStatus(eventId);
-    if (status != EventLogStatus.EVENT_ONGOING) {
-        return status;
-    }
-
-    try {
-        const logDoc = doc(db, `events/${eventId}/logs/${auth.currentUser?.uid!}`);
-        const logDocRef = await getDoc(logDoc);
-
-        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
-        const summaryDocRef = await getDoc(summaryDoc);
-
-
-        if (!logDocRef.exists()) {
-            await setDoc(logDoc, { signedInTime: serverTimestamp() }, { merge: true });
-
-            if (!summaryDocRef.exists()) {
-                await setDoc(summaryDoc, { attendance: 1 });
-                return EventLogStatus.SUCCESS;
-            } else {
-                const currentCount = summaryDocRef.data().attendance || 0;
-                await updateDoc(summaryDoc, { attendance: currentCount + 1 });
-                return EventLogStatus.SUCCESS;
+/**
+ * Signs a user into an event given an event id
+ * @param eventID ID of event to sign into. This is the name of the event document in firestore
+ * @returns Status representing the status of the cloud function
+ */
+export const signInToEvent = async (eventID: string): Promise<EventLogStatus> => {
+    return await httpsCallable(functions, "eventSignIn")
+        .call(null, { eventID })
+        .then((result) => {
+            if (typeof result.data == "object" && result.data && (result.data as any).success) {
+                return EventLogStatus.SUCCESS
             }
-        } else {
-            return EventLogStatus.ALREADY_LOGGED;
-        }
+            else {
+                return EventLogStatus.ERROR
+            }
+        })
+        .catch(err => {
+            switch (err.code) {
+                case 'functions/already-exists':
+                    return EventLogStatus.ALREADY_LOGGED;
+                case 'functions/failed-precondition':
+                    return EventLogStatus.EVENT_NOT_STARTED;
+                case 'functions/not-found':
+                    return EventLogStatus.EVENT_NOT_FOUND;
+                case 'functions/deadline-exceeded':
+                    return EventLogStatus.EVENT_OVER;
+                default:
+                    console.error(err);
+                    return EventLogStatus.ERROR;
+            }
+        });
+}
 
-    } catch (e) {
-        console.error("Error adding log: ", e);
-    }
-
-    return EventLogStatus.ERROR;
-};
+/**
+ * Signs a user into an event given an event id
+ * @param eventID ID of event to sign into. This is the name of the event document in firestore
+ * @returns Status representing the status of the cloud function
+ */
+export const signOutOfEvent = async (eventID: string): Promise<EventLogStatus> => {
+    return await httpsCallable(functions, "eventSignOut")
+        .call(null, { eventID })
+        .then((result) => {
+            if (typeof result.data == "object" && result.data && (result.data as any).success) {
+                return EventLogStatus.SUCCESS
+            }
+            else {
+                return EventLogStatus.ERROR
+            }
+        })
+        .catch(err => {
+            switch (err.code) {
+                case 'functions/failed-precondition':
+                    return EventLogStatus.EVENT_NOT_STARTED;
+                case 'functions/not-found':
+                    return EventLogStatus.EVENT_NOT_FOUND;
+                case 'functions/deadline-exceeded':
+                    return EventLogStatus.EVENT_OVER;
+                default:
+                    console.error(err);
+                    return EventLogStatus.ERROR;
+            }
+        });
+}
 
 export const isUserSignedIn = async (eventId: string, uid: string) => {
     const eventLogDocRef = doc(db, 'events', eventId, 'logs', uid);
@@ -606,9 +675,9 @@ export const isUserSignedIn = async (eventId: string, uid: string) => {
 export const getMemberOfTheMonth = async () => {
     return getDoc(doc(db, `member-of-the-month/member`))
         .then((res) => {
-            const responseData = res.data()
+            const responseData = res.data();
             if (responseData) {
-                return { uid: responseData?.uid, name: responseData?.name };
+                return responseData.member as PublicUserInfo;
             }
             else {
                 return undefined;
@@ -620,11 +689,10 @@ export const getMemberOfTheMonth = async () => {
         });
 }
 
-export const setMemberOfTheMonth = async (uid: string, name: string) => {
+export const setMemberOfTheMonth = async (member: PublicUserInfo) => {
     try {
         await setDoc(doc(db, `member-of-the-month/member`), {
-            uid: uid,
-            name: name
+            member: member
         }, { merge: true });
         return true;
     } catch (err) {
@@ -703,22 +771,115 @@ export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => 
     }
 }
 
+export const getTeamMembers = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const querySnapshot = await getDocs(userRef);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const users = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            } as PublicUserInfo
+        });
+
+        const filteredUsers = users.filter(user =>
+            user.roles?.officer === true ||
+            user.roles?.lead === true ||
+            user.roles?.representative === true
+        );
+
+        return filteredUsers;
+
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
+export const getOfficers = async () => {
+    try {
+        const userQuery = query(collection(db, 'users'), where('roles.officer', '==', true));
+        const querySnapshot = await getDocs(userQuery);
+        const officers = querySnapshot.docs.map(doc => ({ uid: doc.id, ...doc.data() }));
+        return officers;
+    } catch (error) {
+        console.error('Error fetching officers:', error);
+        return [];
+    }
+};
+
+export const getRepresentatives = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const querySnapshot = await getDocs(userRef);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const users = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            } as PublicUserInfo
+        });
+
+        const representatives = users.filter(user => user.roles?.representative === true);
+
+        return representatives;
+
+    } catch (error) {
+        console.error("Error fetching representatives:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
+
+export const getLeads = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const querySnapshot = await getDocs(userRef);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const users = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            } as PublicUserInfo
+        });
+
+        const leads = users.filter(user => user.roles?.lead === true);
+
+        return leads;
+
+    } catch (error) {
+        console.error("Error fetching leads:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
+
 
 export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
     const memberSHPERef = collection(db, 'memberSHPE');
     const memberSHPEQuery = query(memberSHPERef);
     const memberSHPESnapshot = await getDocs(memberSHPEQuery);
     const memberSHPEUserIds = memberSHPESnapshot.docs.map(doc => doc.id);
-  
-    const members:PublicUserInfo[] = [];
+
+    const members: PublicUserInfo[] = [];
     for (const userId of memberSHPEUserIds) {
-      const userDocRef = doc(db, 'users', userId);
-      const userDocSnap = await getDoc(userDocRef);
-      if (userDocSnap.exists()) {
-        members.push({ uid: userId, ...userDocSnap.data() });
-      }
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+            members.push({ uid: userId, ...userDocSnap.data() });
+        }
     }
-    
+
     return members;
 };
 
@@ -727,60 +888,120 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
     const resumeQuery = query(resumeRef);
     const resumeSnapshot = await getDocs(resumeQuery);
     const resumeUserIds = resumeSnapshot.docs.map(doc => doc.id);
-  
-    const members:PublicUserInfo[] = [];
+
+    const members: PublicUserInfo[] = [];
     for (const userId of resumeUserIds) {
-      const userDocRef = doc(db, 'users', userId);
-      const userDocSnap = await getDoc(userDocRef);
-      if (userDocSnap.exists()) {
-        members.push({ uid: userId, ...userDocSnap.data() });
-      }
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+            members.push({ uid: userId, ...userDocSnap.data() });
+        }
     }
-    
+
     return members;
 };
 
-  
-  export const isUsernameUnique = async (username: string): Promise<boolean> => {
+
+export const isUsernameUnique = async (username: string): Promise<boolean> => {
     const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');
-  
+
     try {
-      const result = await checkUsernameUniqueness({ username });
-      return result.data.unique;
+        const result = await checkUsernameUniqueness({ username });
+        return result.data.unique;
     } catch (error) {
-      console.error('Error checking username uniqueness:', error);
-      return false; // handle error appropriately
+        console.error('Error checking username uniqueness:', error);
+        return false; // handle error appropriately
     }
-  };
+};
 
-  export const fetchUsersWithPublicResumes = async (): Promise<PublicUserInfo[]> => {
+
+export const fetchUsersWithPublicResumes = async (filters: {
+    major?: string;
+    classYear?: string;
+} = {}) => {
     try {
-        const publicResumeQuery = query(collection(db, 'users'), where("resumeVerified", "==", true));
-        const publicResumeSnapshot = await getDocs(publicResumeQuery);
+        let queryConstraints = [where("resumeVerified", "==", true)];
+        if (filters.major) {
+            queryConstraints.push(where("major", "==", filters.major));
+        }
+        if (filters.classYear) {
+            queryConstraints.push(where("classYear", "==", filters.classYear));
+        }
 
-        const officerQuery = query(collection(db, 'users'), where("roles.officer", "==", true));
-        const officerSnapshot = await getDocs(officerQuery);
+        const querySnapshot = await getDocs(query(collection(db, 'users'), ...queryConstraints));
 
-        const combinedUsers = new Map();
-        publicResumeSnapshot.forEach(doc => {
-            const userData = doc.data();
-            if (userData.resumePublicURL) { 
-                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
-            }
-        });
-        officerSnapshot.forEach(doc => {
-            const userData = doc.data();
-            if (userData.resumePublicURL) { 
-                combinedUsers.set(doc.id, { ...userData, uid: doc.id });
-            }
-        });
-
-        const usersArray = Array.from(combinedUsers.values());
+        const usersArray = querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
 
         return usersArray;
     } catch (error) {
         console.error("Error fetching users:", error);
         return [];
     }
+};
+
+
+export const fetchOfficerStatus = async (uid: string) => {
+    try {
+        const officerStatusRef = doc(db, `/office-hours/officers-status/officers/${uid}`);
+        const docSnap = await getDoc(officerStatusRef);
+
+        if (docSnap.exists()) {
+            return docSnap.data();
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error("Error fetching officer status:", err);
+        return null;
+    }
+};
+
+export const addOfficeHourLog = async (data: OfficerStatus) => {
+    const userDocCollection = collection(db, 'office-hours/officer-log/log');
+    await addDoc(userDocCollection, data);
+};
+
+export const updateOfficerStatus = async (data: OfficerStatus) => {
+    const officerDoc = doc(db, `office-hours/officers-status/officers/${data.uid}`);
+    return setDoc(officerDoc, { signedIn: data.signedIn }, { merge: true });
+};
+
+export const incrementOfficeCount = async () => {
+    const officeCountRef = doc(db, 'office-hours/officer-count');
+    await updateDoc(officeCountRef, { "zachary-office": increment(1) });
 }
 
+export const decrementOfficeCount = async () => {
+    const officeCountRef = doc(db, 'office-hours/officer-count');
+    await updateDoc(officeCountRef, { "zachary-office": increment(-1) });
+}
+
+export const submitFeedback = async (feedback: string, userInfo: User) => {
+    try {
+        await addDoc(collection(db, 'feedback'), {
+            message: feedback,
+            userInfo: userInfo.publicInfo,
+            timestamp: new Date()
+        });
+        return { success: true };
+    } catch (error) {
+        console.error('Error submitting feedback:', error);
+        return { success: false, error };
+    }
+};
+
+export const getAllFeedback = async () => {
+    const feedbackCol = collection(db, 'feedback');
+    const feedbackSnapshot = await getDocs(feedbackCol);
+    const feedbackList = feedbackSnapshot.docs.map(doc => ({
+        id: doc.id,
+        message: doc.data().message,
+        user: doc.data().userInfo,
+        Timestamp: doc.data().timestamp
+    }));
+    return feedbackList;
+};
+export const removeFeedback = async (feedbackId: string) => {
+    const feedbackDoc = doc(db, 'feedback', feedbackId);
+    await deleteDoc(feedbackDoc);
+};

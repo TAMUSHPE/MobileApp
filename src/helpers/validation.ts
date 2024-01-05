@@ -45,6 +45,7 @@ export const validatePassword = (password: any, alertUser: boolean = false): boo
     const isValid = typeof password == 'string' && passwordRegex.test(password);
 
     if (!isValid && alertUser) {
+        console.log(alertUser)
         Alert.alert("Invalid password.", "Password must be between 6-64 characters long and use valid characters.");
     }
 
@@ -168,7 +169,7 @@ export enum PasswordStrength {
  */
 export const evaluatePasswordStrength = (password: string): number => {
     const averagePasswordRegex: RegExp = /^[A-Z ]{7,14}$|^[0-9]{7,14}$/i;
-    if (!validatePassword(password, false)) {
+    if (!validatePassword(password)) {
         return PasswordStrength.INVALID;
     }
     else if (password.length <= 7) {

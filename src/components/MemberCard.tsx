@@ -1,53 +1,32 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { MembersProps } from '../types/Navigation'
+import { MemberCardProp } from '../types/Navigation'
 import { Images } from '../../assets'
-import { Octicons } from '@expo/vector-icons';
+import TwitterSvg from './TwitterSvg'
+import { getBadgeColor, isMemberVerified } from '../helpers/membership'
 
-const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigation }) => {
-    if (!userData) {
-        return
-    }
+const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation }) => {
+    if (!userData) { return }
+
     const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration } = userData
     const isOfficer = roles ? roles.officer : false;
 
     const [isVerified, setIsVerified] = useState<boolean>(false);
-
+    let badgeColor = getBadgeColor(isOfficer!, isVerified);
 
     useEffect(() => {
-        const checkVerificationStatus = () => {
-            if (!nationalExpiration || !chapterExpiration) {
-                return;
-            }
-            const nationalExpirationString = nationalExpiration;
-            const chapterExpirationString = chapterExpiration;
-
-            const currentDate = new Date();
-            let isNationalValid = true;
-            let isChapterValid = true;
-
-            if (nationalExpirationString) {
-                const nationalExpirationDate = new Date(nationalExpirationString);
-                isNationalValid = currentDate <= nationalExpirationDate;
-            }
-
-            if (chapterExpirationString) {
-                const chapterExpirationDate = new Date(chapterExpirationString);
-                isChapterValid = currentDate <= chapterExpirationDate;
-            }
-
-            setIsVerified(isNationalValid && isChapterValid);
-        };
-
-        checkVerificationStatus();
-    }, [])
+        if (nationalExpiration && chapterExpiration) {
+            setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
+        }
+    }, [nationalExpiration, chapterExpiration])
 
     return (
-        <TouchableOpacity className='mb-8'
-            onPress={() => handleCardPress(uid!)}
+        <TouchableOpacity
+            className='mb-8'
+            onPress={() => handleCardPress && handleCardPress(uid!)}
+            activeOpacity={!!handleCardPress && 1 || 0.6}
         >
             <View className="flex-row">
-
                 <Image
                     className="flex w-12 h-12 rounded-full"
                     defaultSource={Images.DEFAULT_USER_PICTURE}
@@ -57,17 +36,7 @@ const MemberCard: React.FC<MembersProps> = ({ userData, handleCardPress, navigat
                     <View>
                         <View className="flex-row items-center">
                             <Text className='font-semibold text-lg'>{name}</Text>
-                            {isOfficer && (
-                                <View className="ml-2">
-                                    <Octicons name="star" size={15} color="gold" />
-                                </View>
-
-                            )}
-                            {(!isOfficer && isVerified) && (
-                                <View className="ml-2">
-                                    <Octicons name="check-circle" size={15} color="green" />
-                                </View>
-                            )}
+                            {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
                         </View>
                         <Text className='text-md text-grey'> {displayName}</Text>
                     </View>
