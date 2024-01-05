@@ -4,8 +4,8 @@ import { Animated, Image, Dimensions, View, NativeScrollEvent, NativeSyntheticEv
 
 const windowWidth = Dimensions.get('window').width;
 
-const API_KEY = "***REMOVED***";
-const USER_ID = "143848472@N03";
+const API_KEY = "***REMOVED***"; // Flicker API Key Generated using https://www.flickr.com/services/api/
+const USER_ID = "143848472@N03"; // Flicker User for SHPE 
 
 
 const FlickrPhotoItem = memo(({ item }: { item: FlickrPhoto }) => {
