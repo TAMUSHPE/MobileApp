@@ -37,7 +37,12 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                     <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                 </TouchableOpacity>
             </View>
-            <ScrollView className={`flex flex-col px-4 pt-6 flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}>
+            <ScrollView
+                className={`flex flex-col px-4 pt-6 flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}
+                contentContainerStyle={{
+                    paddingBottom: 60
+                }}
+            >
                 {
                     event.signInPoints !== undefined &&
                     <>
@@ -45,9 +50,12 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         <KeyboardAvoidingView>
                             <Picker
                                 selectedValue={signInPoints}
-                                style={{ color: darkMode ? "white" : "black" }}
                                 onValueChange={(points) => setSignInPoints(points)}
-                                selectionColor={darkMode ? "#ffffff" : "#000000"}
+                                style={{ color: darkMode ? "white" : "black" }}
+                                selectionColor={darkMode ? "#FFF4" : "0004"}
+                                itemStyle={{
+                                    color: darkMode ? "white" : "black"
+                                }}
                                 dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
                             >
                                 <Picker.Item label='0' value={0} />
@@ -67,9 +75,12 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         <KeyboardAvoidingView>
                             <Picker
                                 selectedValue={signOutPoints}
-                                style={{ color: darkMode ? "white" : "black" }}
                                 onValueChange={(points) => setSignOutPoints(points)}
-                                selectionColor={darkMode ? "#ffffff" : "#000000"}
+                                style={{ color: darkMode ? "white" : "black" }}
+                                selectionColor={darkMode ? "#FFF4" : "0004"}
+                                itemStyle={{
+                                    color: darkMode ? "white" : "black"
+                                }}
                                 dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
                             >
                                 <Picker.Item label='0' value={0} />
@@ -89,9 +100,12 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         <KeyboardAvoidingView>
                             <Picker
                                 selectedValue={pointsPerHour}
-                                style={{ color: darkMode ? "white" : "black" }}
                                 onValueChange={(points) => setPointsPerHour(points)}
-                                selectionColor={darkMode ? "#ffffff" : "#000000"}
+                                style={{ color: darkMode ? "white" : "black" }}
+                                selectionColor={darkMode ? "#FFF4" : "0004"}
+                                itemStyle={{
+                                    color: darkMode ? "white" : "black"
+                                }}
                                 dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
                             >
                                 <Picker.Item label='0' value={0} />
@@ -110,7 +124,6 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Workshop Type <Text className='text-[#f00]'>*</Text></Text>
                         <Picker
                             selectedValue={workshopType}
-                            style={{ color: darkMode ? "white" : "black" }}
                             onValueChange={(selectedWorkshopType: WorkshopType) => {
                                 setWorkshopType(selectedWorkshopType);
                                 switch (selectedWorkshopType) {
@@ -120,7 +133,11 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         setSignInPoints(3);
                                 }
                             }}
-                            selectionColor={darkMode ? "#ffffff" : "#000000"}
+                            style={{ color: darkMode ? "white" : "black" }}
+                            selectionColor={darkMode ? "#FFF4" : "0004"}
+                            itemStyle={{
+                                color: darkMode ? "white" : "black"
+                            }}
                             dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
                         >
                             <Picker.Item label='None' value={'None'} />
