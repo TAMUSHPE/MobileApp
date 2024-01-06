@@ -166,6 +166,9 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     }}
                 />
             }
+            {
+                Platform.OS == 'ios'
+            }
 
 
             {/* End Date Pickers */}
@@ -220,7 +223,12 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     </TouchableOpacity>
                 </View>
                 {/* Form */}
-                <ScrollView className={`flex flex-col px-4 flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}>
+                <ScrollView
+                    className={`flex flex-col px-4 flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}
+                    contentContainerStyle={{
+                        paddingBottom: 60
+                    }}
+                >
                     <KeyboardAvoidingView className='py-3'>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Name <Text className='text-[#f00]'>*</Text></Text>
                         <TextInput
@@ -239,29 +247,82 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     <View className='flex flex-row py-3'>
                         <View className='flex flex-col w-[60%]'>
                             <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Start Date <Text className='text-[#f00]'>*</Text></Text>
-                            <TouchableHighlight
-                                underlayColor={darkMode ? "" : "#EEE"}
-                                onPress={() => setShowStartDatePicker(true)}
-                                className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                            >
-                                <>
-                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
-                                    <Octicons name='calendar' size={24} />
-                                </>
-                            </TouchableHighlight>
+                            {Platform.OS == 'android' &&
+                                <TouchableHighlight
+                                    underlayColor={darkMode ? "" : "#EEE"}
+                                    onPress={() => setShowStartDatePicker(true)}
+                                    className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                >
+                                    <>
+                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
+                                        <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
+                                    </>
+                                </TouchableHighlight>
+                            }
+                            {Platform.OS == 'ios' &&
+                                <View className='flex flex-row items-center'>
+                                    <Octicons className='flex-1' name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
+                                    <DateTimePicker
+                                        themeVariant={darkMode ? 'dark' : 'light'}
+                                        testID='Start Time Picker'
+                                        value={startTime?.toDate() ?? new Date()}
+                                        minimumDate={new Date(Date.now())}
+                                        maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
+                                        mode='date'
+                                        onChange={(_, date) => {
+                                            if (!date) {
+                                                console.warn("Date picked is undefined.")
+                                            }
+                                            else {
+                                                setStartTime(Timestamp.fromDate(date));
+                                                if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
+                                                    setEndTime(Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR));
+                                                }
+                                            }
+                                            setShowStartDatePicker(false);
+                                        }}
+                                    />
+                                </View>
+                            }
                         </View>
                         <View className='flex flex-col w-[40%]'>
                             <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Start Time <Text className='text-[#f00]'>*</Text></Text>
-                            <TouchableHighlight
-                                underlayColor={darkMode ? "" : "#EEE"}
-                                onPress={() => setShowStartTimePicker(true)}
-                                className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                            >
-                                <>
-                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
-                                    <Octicons name='chevron-down' size={24} />
-                                </>
-                            </TouchableHighlight>
+                            {Platform.OS == 'android' &&
+                                <TouchableHighlight
+                                    underlayColor={darkMode ? "" : "#EEE"}
+                                    onPress={() => setShowStartTimePicker(true)}
+                                    className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                >
+                                    <>
+                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
+                                        <Octicons name='chevron-down' size={24} />
+                                    </>
+                                </TouchableHighlight>
+                            }
+                            {Platform.OS == 'ios' &&
+                                <View className='flex flex-row items-center'>
+                                    <Octicons name='clock' size={24} color={darkMode ? 'white' : 'black'} />
+                                    <DateTimePicker
+                                        themeVariant={darkMode ? 'dark' : 'light'}
+                                        value={startTime?.toDate() ?? new Date()}
+                                        mode='time'
+                                        onChange={(_, date) => {
+                                            if (isUploading) {
+                                                Alert.alert("Image upload in progress.", "Please wait for image to finish uploading.")
+                                            }
+                                            else if (!date) {
+                                                console.warn("Date picked is undefined.")
+                                            }
+                                            else if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
+                                                Alert.alert("Invalid Start Time", "Event cannot stard after end time.")
+                                            }
+                                            else {
+                                                setStartTime(Timestamp.fromDate(date));
+                                            }
+                                        }}
+                                    />
+                                </View>
+                            }
                         </View>
                     </View>
 
@@ -269,29 +330,79 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     <View className='flex flex-row pb-3'>
                         <View className='flex flex-col w-[60%]'>
                             <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>End Date <Text className='text-[#f00]'>*</Text></Text>
-                            <TouchableHighlight
-                                underlayColor={darkMode ? "" : "#EEE"}
-                                onPress={() => setShowEndDatePicker(true)}
-                                className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                            >
-                                <>
-                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
-                                    <Octicons name='calendar' size={24} />
-                                </>
-                            </TouchableHighlight>
+                            {Platform.OS == 'android' &&
+                                <TouchableHighlight
+                                    underlayColor={darkMode ? "" : "#EEE"}
+                                    onPress={() => setShowEndDatePicker(true)}
+                                    className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                >
+                                    <>
+                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
+                                        <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
+                                    </>
+                                </TouchableHighlight>
+                            }
+                            {Platform.OS == 'ios' &&
+                                <View className='flex flex-row items-center'>
+                                    <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
+                                    <DateTimePicker
+                                        themeVariant={darkMode ? 'dark' : 'light'}
+                                        testID='Start Time Picker'
+                                        value={endTime?.toDate() ?? new Date()}
+                                        minimumDate={new Date(Date.now())}
+                                        maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
+                                        mode='date'
+                                        onChange={(_, date) => {
+                                            if (!date) {
+                                                console.warn("Date picked is undefined.")
+                                            }
+                                            else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
+                                                Alert.alert("Invalid End Date", "Event cannot end before start date.")
+                                            }
+                                            else {
+                                                setEndTime(Timestamp.fromDate(date));
+                                            }
+                                        }}
+                                    />
+                                </View>
+                            }
                         </View>
                         <View className='flex flex-col w-[40%]'>
                             <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>End Time <Text className='text-[#f00]'>*</Text></Text>
-                            <TouchableHighlight
-                                underlayColor={darkMode ? "" : "#EEE"}
-                                onPress={() => setShowEndTimePicker(true)}
-                                className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                            >
-                                <>
-                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
-                                    <Octicons name='chevron-down' size={24} />
-                                </>
-                            </TouchableHighlight>
+                            {Platform.OS == 'android' &&
+                                <TouchableHighlight
+                                    underlayColor={darkMode ? "" : "#EEE"}
+                                    onPress={() => setShowEndTimePicker(true)}
+                                    className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                >
+                                    <>
+                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
+                                        <Octicons name='chevron-down' size={24} />
+                                    </>
+                                </TouchableHighlight>
+                            }
+                            {Platform.OS == 'ios' &&
+                                <View className='flex flex-row items-center'>
+                                    <Octicons name='clock' size={24} color={darkMode ? 'white' : 'black'} />
+                                    <DateTimePicker
+                                        themeVariant={darkMode ? 'dark' : 'light'}
+                                        value={endTime?.toDate() ?? new Date()}
+                                        mode='time'
+                                        onChange={(_, date) => {
+                                            if (!date) {
+                                                console.warn("Date picked is undefined.")
+                                            }
+                                            else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
+                                                Alert.alert("Invalid End Time", "Event cannot end before start time.")
+                                            }
+                                            else {
+                                                setEndTime(Timestamp.fromDate(date));
+                                            }
+                                            setShowEndTimePicker(false);
+                                        }}
+                                    />
+                                </View>
+                            }
                         </View>
                     </View>
 
@@ -368,6 +479,9 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             }
                             else if (!startTime || !endTime) {
                                 Alert.alert("Empty Start Time or End Time", "Event MUST have start and end times.")
+                            }
+                            else if (startTime.toMillis() > endTime.toMillis()) {
+                                Alert.alert("Event ends before start time", "Event cannot end before it starts.")
                             }
                             else if (event.copyFromObject) {
                                 event.copyFromObject({

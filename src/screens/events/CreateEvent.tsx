@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, ScrollView, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, Image, ScrollView, Alert, Platform } from 'react-native'
 import React, { useContext, useState } from 'react'
 import { CommitteeMeeting, CustomEvent, EventType, GeneralMeeting, IntramuralEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop } from '../../types/Events'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -30,7 +30,12 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                 </TouchableOpacity>
             </View>
             {/* Form */}
-            <ScrollView className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}>
+            <ScrollView
+                className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}
+                contentContainerStyle={{
+                    paddingBottom: 60
+                }}
+            >
                 {/* Image */}
                 <View className='justify-center items-center'>
                     <Image
@@ -50,9 +55,12 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                             <View className='w-full border-b-2 border-gray-400'>
                                 <Picker
                                     selectedValue={eventType}
-                                    style={{ color: darkMode ? "white" : "black" }}
                                     onValueChange={(eventType) => setEventType(eventType)}
-                                    selectionColor={darkMode ? "#ffffff" : "#000000"}
+                                    style={{ color: darkMode ? "white" : "black" }}
+                                    selectionColor={darkMode ? "#FFF4" : "0004"}
+                                    itemStyle={{
+                                        color: darkMode ? "white" : "black"
+                                    }}
                                     dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
                                 >
                                     <Picker.Item label="None" value={undefined} />
@@ -68,47 +76,6 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                             </View>
                         </View>
                     </View>
-
-                    {/* {Platform.OS === 'ios' &&
-                        <View className='mt-4'>
-                            <View className='flex-row items-center'>
-                                <Text className='text-gray-500 text-lg text-center'>Start Date</Text>
-                                <View className='flex-row py-1 h-10 border-gray-400'>
-                                    <DateTimePicker
-                                        testID="dateTimePicker"
-                                        value={startDate}
-                                        mode={"datetime"}
-                                        onChange={(event, selectedDate) => {
-                                            setIsInitialDatePicked(true);
-                                            setIsStartDatePicked(true);
-                                            setNewEvent({
-                                                ...newEvent,
-                                                startDate: Timestamp.fromDate(selectedDate!)
-                                            });
-                                        }}
-                                    />
-                                </View>
-                            </View>
-
-                            <View className='flex-row items-center'>
-                                <Text className='text-gray-500 text-lg text-center'>End Date</Text>
-                                <View className='flex-row py-1 h-10 border-gray-400'>
-                                    <DateTimePicker
-                                        testID="dateTimePicker"
-                                        value={endDate}
-                                        mode={"datetime"}
-                                        onChange={(event, selectedDate) => {
-                                            setIsInitialDatePicked(true);
-                                            setNewEvent({
-                                                ...newEvent,
-                                                endDate: Timestamp.fromDate(selectedDate!)
-                                            });
-                                        }}
-                                    />
-                                </View>
-                            </View>
-                        </View> }*/
-                    }
                     <InteractButton
                         buttonClassName='bg-orange mt-10 mb-4 py-1 rounded-xl'
                         textClassName='text-center text-white text-lg'
