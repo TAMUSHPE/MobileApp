@@ -71,7 +71,7 @@ const EventInfo = ({ navigation }: EventProps) => {
             <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                 {/* Header */}
                 <View className='flex-row items-center justify-center h-10'>
-                    <TouchableOpacity className='px-6 flex-1' onPress={() => navigation.goBack()} >
+                    <TouchableOpacity className='px-6 flex-1' onPress={() => navigation.navigate("EventsScreen")} >
                         <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
                     <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>{event.name}</Text>

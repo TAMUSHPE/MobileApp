@@ -21,6 +21,7 @@ export type MainStackParams = {
     FeedbackSettingsScreen: undefined;
     FAQSettingsScreen: undefined;
     AboutSettingsScreen: undefined;
+    QRCodeScanningScreen: undefined;
     EventVerificationScreen: {
         id: string;
         mode: "sign-in" | "sign-out";

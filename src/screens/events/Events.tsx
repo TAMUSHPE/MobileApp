@@ -8,6 +8,7 @@ import { SHPEEvent } from '../../types/Events';
 import EventCard from '../../components/EventCard';
 import { useFocusEffect } from '@react-navigation/native';
 import { UserContext } from '../../context/UserContext';
+import { AntDesign } from '@expo/vector-icons';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
@@ -65,10 +66,11 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     }
                 </View>
                 <TouchableOpacity
-                    className='w-full bg-blue-200'
+                    className='flex flex-row items-center justify-center space-x-1 border-2 rounded-full py-1 my-2'
                     onPress={() => navigation.navigate("QRCodeScanningScreen")}
                 >
-                    <Text className='text-center text-lg'>Scan QR Code</Text>
+                    <AntDesign name="qrcode" size={30} color={"black"} />
+                    <Text className='text-lg'>Scan QR Code</Text>
                 </TouchableOpacity>
 
                 {isLoading && upcomingEvents.length == 0 && pastEvents.length == 0 &&
