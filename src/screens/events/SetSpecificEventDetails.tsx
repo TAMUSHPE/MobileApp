@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Alert } from 'react-native';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation';
 import { useRoute } from '@react-navigation/core';
@@ -9,14 +9,24 @@ import InteractButton from '../../components/InteractButton';
 import { Picker } from '@react-native-picker/picker';
 import { WorkshopType } from '../../types/Events';
 import { StatusBar } from 'expo-status-bar';
+import { Committee } from '../../types/Committees';
+import { getCommittees } from '../../api/firebaseUtils';
 
 const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
     const { event } = route.params;
     const { userInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const [selectableCommittees, setSelectableCommittees] = useState<Committee[]>([]);
+
+    useEffect(() => {
+        getCommittees()
+            .then((result) => setSelectableCommittees(result))
+            .catch(err => console.error("Issue getting committees:", err));
+    }, []);
 
     // Form Data Hooks
+    const [committee, setCommittee] = useState<string>();
     const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType ?? undefined);
     const [signInPoints, setSignInPoints] = useState<number | undefined>(event.signInPoints ?? undefined);
     const [signOutPoints, setSignOutPoints] = useState<number | undefined>(event.signOutPoints ?? undefined);
@@ -49,6 +59,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Signing In <Text className='text-[#f00]'>*</Text></Text>
                         <KeyboardAvoidingView>
                             <Picker
+                                mode='dropdown'
                                 selectedValue={signInPoints}
                                 onValueChange={(points) => setSignInPoints(points)}
                                 style={{ color: darkMode ? "white" : "black" }}
@@ -74,6 +85,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Signing Out <Text className='text-[#f00]'>*</Text></Text>
                         <KeyboardAvoidingView>
                             <Picker
+                                mode='dropdown'
                                 selectedValue={signOutPoints}
                                 onValueChange={(points) => setSignOutPoints(points)}
                                 style={{ color: darkMode ? "white" : "black" }}
@@ -99,6 +111,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Each Hour Signed In <Text className='text-[#f00]'>*</Text></Text>
                         <KeyboardAvoidingView>
                             <Picker
+                                mode='dropdown'
                                 selectedValue={pointsPerHour}
                                 onValueChange={(points) => setPointsPerHour(points)}
                                 style={{ color: darkMode ? "white" : "black" }}
@@ -146,6 +159,28 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         </Picker>
                     </>
                 }
+                {
+                    <>
+                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Associated Committee</Text>
+                        <Picker
+                            selectedValue={committee}
+                            onValueChange={(selectedCommittee: string) => {
+                                setCommittee(selectedCommittee);
+                            }}
+                            style={{ color: darkMode ? "white" : "black" }}
+                            selectionColor={darkMode ? "#FFF4" : "0004"}
+                            itemStyle={{
+                                color: darkMode ? "white" : "black"
+                            }}
+                            dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
+                        >
+                            <Picker.Item label='None' value={undefined} />
+                            {selectableCommittees.map((item, index) => (
+                                <Picker.Item label={item.name} value={item.firebaseDocName} />
+                            ))}
+                        </Picker>
+                    </>
+                }
                 <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Location Name</Text>
                 <TextInput
                     className={`text-lg p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
@@ -176,6 +211,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 locationName,
                                 geolocation,
                                 tags,
+                                committee,
                             });
                             navigation.navigate("FinalizeEvent", { event: event });
                         }
