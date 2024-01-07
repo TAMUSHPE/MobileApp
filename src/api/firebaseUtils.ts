@@ -513,24 +513,33 @@ export const getEvent = async (eventID: string) => {
     }
 }
 
+type SHPEEventWithCommitteeData = SHPEEvent & { committeeData?: Committee | undefined };
+
+
 export const getUpcomingEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
     const q = query(eventsRef, where("endTime", ">", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEvent[] = [];
-    querySnapshot.forEach((doc) => {
-        events.push({ id: doc.id, ...doc.data() });
-    });
+    const events: SHPEEventWithCommitteeData[] = [];
+
+    for (const doc of querySnapshot.docs) {
+        const eventData = doc.data();
+        let committeeData: Committee | undefined;
+
+        if (eventData.committee) {
+            committeeData = await getCommittee(eventData.committee) || undefined;
+        }
+
+
+        events.push({ id: doc.id, ...eventData, committeeData: committeeData });
+    }
 
     events.sort((a, b) => {
         const dateA = a.startTime ? a.startTime.toDate() : undefined;
         const dateB = b.startTime ? b.startTime.toDate() : undefined;
 
-        if (dateA && dateB) {
-            return dateA.getTime() - dateB.getTime();
-        }
-        return -1; // error
+        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
     });
 
     return events;
@@ -541,22 +550,29 @@ export const getPastEvents = async () => {
     const eventsRef = collection(db, "events");
     const q = query(eventsRef, where("endTime", "<", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEvent[] = [];
-    querySnapshot.forEach((doc) => {
-        events.push({ id: doc.id, ...doc.data() });
-    });
+    const events: SHPEEventWithCommitteeData[] = [];
+
+    for (const doc of querySnapshot.docs) {
+        const eventData = doc.data();
+        let committeeData: Committee | undefined;
+
+        if (eventData.committee) {
+            committeeData = await getCommittee(eventData.committee) || undefined;
+        }
+
+        events.push({ id: doc.id, ...eventData, committeeData });
+    }
+
     events.sort((a, b) => {
         const dateA = a.startTime ? a.startTime.toDate() : undefined;
         const dateB = b.startTime ? b.startTime.toDate() : undefined;
 
-        if (dateA && dateB) {
-            return dateA.getTime() - dateB.getTime();
-        }
-        return -1; // error
+        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
     });
 
     return events;
 };
+
 
 export const destroyEvent = async (eventID: string) => {
     try {
