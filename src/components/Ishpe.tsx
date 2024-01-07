@@ -126,24 +126,24 @@ const Ishpe = () => {
     return (
         <View className="mx-4 bg-gray-100 rounded-md flex-col mt-4">
             {/* Tabs */}
-            <View className="flex-row bg-gray-200 rounded-md p-3 pb-1">
+            <View className="flex-row bg-gray-200 rounded-md px-2 pt-3">
                 <TouchableOpacity
                     className="flex-1 justify-center items-center"
                     onPress={() => setCurrentTab('ISHPE')}>
                     <Text className="font-bold text-center text-lg">I.SHPE</Text>
-                    {currentTab === 'ISHPE' && <View className="pt-1 border-b-2 border-pale-blue w-1/2" />}
+                    <View className={`pt-3 w-1/2 border-b-2 ${currentTab == "ISHPE" ? "border-pale-blue" : "border-transparent"} `} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     className="flex-1 justify-center items-center"
                     onPress={() => setCurrentTab('General')}>
                     <Text className="font-bold text-center text-lg">General</Text>
-                    {currentTab === 'General' && <View className="pt-1 border-b-2 border-pale-blue w-1/2" />}
+                    <View className={`pt-3 w-1/2 border-b-2 ${currentTab == "General" ? "border-pale-blue" : "border-transparent"} `} />
                 </TouchableOpacity>
             </View>
 
             {/* Date Control */}
-            <View className="flex-row justify-end p-3">
+            {/* <View className="flex-row justify-end p-3">
                 <TouchableOpacity onPress={() => setWeekStartDate(adjustWeekRange(weekStartDate, 'backwards'))}>
                     <Octicons name="chevron-left" size={25} color="black" />
                 </TouchableOpacity>
@@ -156,7 +156,7 @@ const Ishpe = () => {
                     className={`${forwardButtonDisabled ? 'opacity-30' : 'opacity-100'}`}>
                     <Octicons name="chevron-right" size={25} color="black" />
                 </TouchableOpacity>
-            </View>
+            </View> */}
 
             {/* Event List */}
             {currentTab === 'ISHPE' && <EventTab events={ishpeEvents} isLoading={loadingIshpeEvents} />}
