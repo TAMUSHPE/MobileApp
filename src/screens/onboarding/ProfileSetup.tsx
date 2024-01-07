@@ -21,6 +21,11 @@ import { ProfileSetupStackParams } from '../../types/Navigation';
 import { Images } from '../../../assets';
 import UploadFileIcon from '../../../assets/file-arrow-up-solid.svg';
 import DownloadIcon from '../../../assets/arrow-down-solid.svg';
+import VolunteerIcon from '../../../assets/volunteering.svg';
+import IntramuralIcon from '../../../assets/futbol-solid.svg';
+import SocialsIcon from '../../../assets/socials.svg';
+import StudyHoursIcon from '../../../assets/study-hours.svg';
+import WorkshopIcon from '../../../assets/workshop.svg';
 import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
 import SimpleDropDown from '../../components/SimpleDropDown';
 import InteractButton from '../../components/InteractButton';
@@ -470,7 +475,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                             <ActivityIndicator className="mb-4" size={"large"} />
                         )}
                         <InteractButton
-                            onPress={() => navigation.navigate("SetupCommittees")}
+                            onPress={() => navigation.navigate("SetupInterests")}
                             label='Continue'
                             buttonClassName={`${!resumeURL ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
                             textClassName={`${!resumeURL ? "text-gray-700" : "text-white"} text-lg font-bold`}
@@ -479,7 +484,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                         />
                     </View>
                     <InteractButton
-                        onPress={() => navigation.navigate("SetupCommittees")}
+                        onPress={() => navigation.navigate("SetupInterests")}
                         label='Skip For Now'
                         buttonClassName='justify-center items-center  rounded-md w-10/12'
                         textClassName='text-pale-orange text-lg font-bold'
@@ -496,7 +501,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
  * choose to skip, or select "None For Now".
  * Skipping and selecting "None For Now" will do the same thing and set their committees as ["None"]
  */
-const SetupInterest = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
+const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
     const [canContinue, setCanContinue] = useState<boolean>(true);
     const [userInterest, setUserInterest] = useState<EventType[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -518,25 +523,32 @@ const SetupInterest = ({ navigation }: NativeStackScreenProps<ProfileSetupStackP
         setCanContinue(userInterest.length > 0);
     }, [userInterest]);
 
-    const InterestButtons = ({ interestEvent, color }: { interestEvent: EventType, color: string }) => {
+    console.log(userInterest)
+
+    const InterestButtons = ({ interestEvent, label, color, Icon }: {
+        interestEvent: EventType;
+        label: string;
+        color: string;
+        Icon: React.FC<React.SVGProps<SVGSVGElement>>;
+    }) => {
         const isSelected = userInterest.includes(interestEvent);
         return (
             <TouchableOpacity
                 onPress={() => handleInterestToggle(interestEvent)}
-                className='flex-col rounded-md w-[45%]'
+                className='flex-col rounded-md w-[45%] mb-4'
                 style={{ minHeight: 90 }}
             >
-                <View className='flex-1 rounded-md items-center' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
+                <View className='flex-1 rounded-md items-center bg-white' >
                     <View className='flex-1 items-center flex-row justify-center py-2'>
                         {isSelected ? (
                             <View className="items-center justify-center h-10 w-10 rounded-full" style={{ backgroundColor: color }}>
                                 <Octicons name="check" size={30} color="white" />
                             </View>
                         ) : (
-                            <Octicons name="check" size={30} color="red" />
+                            <Icon width={35} height={35} />
                         )}
                     </View>
-                    <Text className="justify-end font-bold text-lg text-black">{interestEvent}</Text>
+                    <Text className="justify-end font-bold text-lg text-black">{label}</Text>
                 </View>
             </TouchableOpacity>
         );
@@ -561,12 +573,12 @@ const SetupInterest = ({ navigation }: NativeStackScreenProps<ProfileSetupStackP
                         persistentScrollbar
                         scrollToOverflowEnabled
                     >
-                        <View className='flex-wrap flex-row w-full h-full pb-28 justify-around pt-4'>
-                            <InterestButtons interestEvent={EventType.VOLUNTEER_EVENT} color={"#500000"} />
-                            <InterestButtons interestEvent={EventType.INTRAMURAL_EVENT} color={"#500000"} />
-                            <InterestButtons interestEvent={EventType.SOCIAL_EVENT} color={"#500000"} />
-                            <InterestButtons interestEvent={EventType.STUDY_HOURS} color={"#500000"} />
-                            <InterestButtons interestEvent={EventType.WORKSHOP} color={"#500000"} />
+                        <View className='flex-wrap flex-row w-full h-full pb-28 pt-4 px-2 justify-between'>
+                            <InterestButtons interestEvent={EventType.VOLUNTEER_EVENT} label="Volunteering" color={"#E93535"} Icon={VolunteerIcon} />
+                            <InterestButtons interestEvent={EventType.INTRAMURAL_EVENT} label="Intramural" color={"#000000"} Icon={IntramuralIcon} />
+                            <InterestButtons interestEvent={EventType.SOCIAL_EVENT} label="Socials" color={"#A75EF8"} Icon={SocialsIcon} />
+                            <InterestButtons interestEvent={EventType.STUDY_HOURS} label="Study Hours" color={"#9DB89A"} Icon={StudyHoursIcon} />
+                            <InterestButtons interestEvent={EventType.WORKSHOP} label="Workshops" color={"#FF910A"} Icon={WorkshopIcon} />
                         </View>
                     </ScrollView>
 
@@ -773,4 +785,4 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     );
 };
 
-export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupCommittees, SetupResume };
+export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupResume, SetupInterests, SetupCommittees };
