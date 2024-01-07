@@ -15,7 +15,7 @@ import { HomeStackParams } from "../types/Navigation"
 import { getPublicUserData, getMemberOfTheMonth, fetchEventsForCommittees } from '../api/firebaseUtils';
 import { useFocusEffect } from '@react-navigation/core';
 import { Images } from '../../assets';
-import Ishpe from '../components/I.shpe';
+import Ishpe from '../components/Ishpe';
 
 /**
  * Renders the home screen of the application.
@@ -28,7 +28,7 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
     const [localUser, setLocalUser] = useState<User | undefined>(undefined);
     const { setUserInfo } = useContext(UserContext)!;
     const [MemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfo | null>(null);
-    const [events, setEvents] = useState<any> ();
+    const [events, setEvents] = useState<any>();
     const { userInfo } = useContext(UserContext)!;
     const userComittees = userInfo?.publicInfo?.committees || [];
 
@@ -93,9 +93,9 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
         };
 
         getLocalUser();
-    
-        const getEvents = async() => {
-            try{
+
+        const getEvents = async () => {
+            try {
                 const fetchEvents = await fetchEventsForCommittees(userComittees);
                 setEvents(fetchEvents);
             } catch (error) {
@@ -103,7 +103,7 @@ const HomeScreen = ({ navigation, route }: NativeStackScreenProps<HomeStackParam
             }
         }
         getEvents();
-        
+
         try {
             manageNotificationPermissions();
         } catch (error) {
