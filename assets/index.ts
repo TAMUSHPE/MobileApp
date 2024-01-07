@@ -13,6 +13,8 @@ export const Images =  {
     TAMU_WHITE: require("./TAM-Logo-white.png"),
     TAMU_MAROON: require("./TAM-Logo-maroon.png"),
     GENEVA: require("./geneva.png"),
+    INSTAGRAM: require("./Instagram-Logo.png"),
+    FLICKER: require("./flicker.png"),
     SHPE_LOGO_VERT:require("./SHPE_Logo_Vert.png"),
     COMMITTEE_1: require("./committee_1.png"),
     COMMITTEE_2: require("./committee_2.png"),
