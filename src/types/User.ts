@@ -40,6 +40,7 @@ export interface PublicUserInfo {
     nationalExpiration?: string;
     chapterExpiration?: string;
     resumeVerified?: boolean;
+    interests?: string[];
     // Google Sheets parameters
     points?: number;
 };
