@@ -37,15 +37,15 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     return (
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
-
-            {/* <FeaturedSlider route={route} /> */}
             <FlickrPhotoGallery />
-
             {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}
-
             <Ishpe />
 
+            {/* <FeaturedSlider route={route} /> */}
+
             <MOTMCard navigation={navigation} />
+
+
         </ScrollView>
     );
 }
