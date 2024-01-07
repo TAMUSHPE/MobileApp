@@ -6,7 +6,7 @@ import { memberPoints } from "./fetchGoogleSheets";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
-import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
+import { SHPEEvent, EventLogStatus } from "../types/Events";
 
 
 /**
@@ -454,22 +454,9 @@ export const isUserInBlacklist = async (uid: string): Promise<boolean> => {
     }
 };
 
-export const createEvent = async (event: SHPEEvent) => {
+export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
     try {
-        const docRef = await addDoc(collection(db, "events"), {
-            name: event.name,
-            description: event.description,
-            pointsCategory: event.pointsCategory,
-            notificationGroup: event.notificationGroup,
-            startDate: event.startDate,
-            endDate: event.endDate,
-            location: event.location,
-        });
-
-        await setDoc(doc(db, `events/${docRef.id}/summaries/default`), {
-            attendance: 0
-        });
-
+        const docRef = await addDoc(collection(db, "events"), { ...event });
         return docRef.id;
     } catch (error) {
         console.error("Error adding document: ", error);
@@ -477,17 +464,11 @@ export const createEvent = async (event: SHPEEvent) => {
     }
 };
 
-export const updateEvent = async (event: SHPEEventID) => {
+export const updateEvent = async (event: SHPEEvent) => {
     try {
         const docRef = doc(db, "events", event.id!);
         await updateDoc(docRef, {
-            name: event.name,
-            description: event.description,
-            pointsCategory: event.pointsCategory || [],
-            notificationGroup: event.notificationGroup || [],
-            startDate: event.startDate,
-            endDate: event.endDate,
-            location: event.location,
+            ...event
         });
         return event.id;
     } catch (error) {
@@ -501,7 +482,7 @@ export const getEvent = async (eventID: string) => {
         const eventRef = doc(db, "events", eventID);
         const eventDoc = await getDoc(eventRef);
         if (eventDoc.exists()) {
-            return eventDoc.data() as SHPEEventID;
+            return eventDoc.data() as SHPEEvent;
         } else {
             console.error("No such document!");
             return null;
@@ -515,16 +496,16 @@ export const getEvent = async (eventID: string) => {
 export const getUpcomingEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endDate", ">", currentTime));
+    const q = query(eventsRef, where("endTime", ">", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEventID[] = [];
+    const events: SHPEEvent[] = [];
     querySnapshot.forEach((doc) => {
         events.push({ id: doc.id, ...doc.data() });
     });
 
     events.sort((a, b) => {
-        const dateA = a.startDate ? a.startDate.toDate() : undefined;
-        const dateB = b.startDate ? b.startDate.toDate() : undefined;
+        const dateA = a.startTime ? a.startTime.toDate() : undefined;
+        const dateB = b.startTime ? b.startTime.toDate() : undefined;
 
         if (dateA && dateB) {
             return dateA.getTime() - dateB.getTime();
@@ -538,15 +519,15 @@ export const getUpcomingEvents = async () => {
 export const getPastEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endDate", "<", currentTime));
+    const q = query(eventsRef, where("endTime", "<", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEventID[] = [];
+    const events: SHPEEvent[] = [];
     querySnapshot.forEach((doc) => {
         events.push({ id: doc.id, ...doc.data() });
     });
     events.sort((a, b) => {
-        const dateA = a.startDate ? a.startDate.toDate() : undefined;
-        const dateB = b.startDate ? b.startDate.toDate() : undefined;
+        const dateA = a.startTime ? a.startTime.toDate() : undefined;
+        const dateB = b.startTime ? b.startTime.toDate() : undefined;
 
         if (dateA && dateB) {
             return dateA.getTime() - dateB.getTime();
@@ -556,8 +537,6 @@ export const getPastEvents = async () => {
 
     return events;
 };
-
-
 
 export const destroyEvent = async (eventID: string) => {
     try {
@@ -600,7 +579,7 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
                 if (currentTime > eventEndTime) {
                     return EventLogStatus.EVENT_OVER;
                 } else {
-                    return EventLogStatus.EVENT_ONGOING
+                    return EventLogStatus.EVENT_ONGOING;
                 }
             }
         }
@@ -627,42 +606,69 @@ export const getAttendanceNumber = async (eventId: string): Promise<number | nul
     }
 }
 
-
-export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
-    const status = await getEventStatus(eventId);
-    if (status != EventLogStatus.EVENT_ONGOING) {
-        return status;
-    }
-
-    try {
-        const logDoc = doc(db, `events/${eventId}/logs/${auth.currentUser?.uid!}`);
-        const logDocRef = await getDoc(logDoc);
-
-        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
-        const summaryDocRef = await getDoc(summaryDoc);
-
-
-        if (!logDocRef.exists()) {
-            await setDoc(logDoc, { signedInTime: serverTimestamp() }, { merge: true });
-
-            if (!summaryDocRef.exists()) {
-                await setDoc(summaryDoc, { attendance: 1 });
-                return EventLogStatus.SUCCESS;
-            } else {
-                const currentCount = summaryDocRef.data().attendance || 0;
-                await updateDoc(summaryDoc, { attendance: currentCount + 1 });
-                return EventLogStatus.SUCCESS;
+/**
+ * Signs a user into an event given an event id
+ * @param eventID ID of event to sign into. This is the name of the event document in firestore
+ * @returns Status representing the status of the cloud function
+ */
+export const signInToEvent = async (eventID: string): Promise<EventLogStatus> => {
+    return await httpsCallable(functions, "eventSignIn")
+        .call(null, { eventID })
+        .then((result) => {
+            if (typeof result.data == "object" && result.data && (result.data as any).success) {
+                return EventLogStatus.SUCCESS
             }
-        } else {
-            return EventLogStatus.ALREADY_LOGGED;
-        }
+            else {
+                return EventLogStatus.ERROR
+            }
+        })
+        .catch(err => {
+            switch (err.code) {
+                case 'functions/already-exists':
+                    return EventLogStatus.ALREADY_LOGGED;
+                case 'functions/failed-precondition':
+                    return EventLogStatus.EVENT_NOT_STARTED;
+                case 'functions/not-found':
+                    return EventLogStatus.EVENT_NOT_FOUND;
+                case 'functions/deadline-exceeded':
+                    return EventLogStatus.EVENT_OVER;
+                default:
+                    console.error(err);
+                    return EventLogStatus.ERROR;
+            }
+        });
+}
 
-    } catch (e) {
-        console.error("Error adding log: ", e);
-    }
-
-    return EventLogStatus.ERROR;
-};
+/**
+ * Signs a user into an event given an event id
+ * @param eventID ID of event to sign into. This is the name of the event document in firestore
+ * @returns Status representing the status of the cloud function
+ */
+export const signOutOfEvent = async (eventID: string): Promise<EventLogStatus> => {
+    return await httpsCallable(functions, "eventSignOut")
+        .call(null, { eventID })
+        .then((result) => {
+            if (typeof result.data == "object" && result.data && (result.data as any).success) {
+                return EventLogStatus.SUCCESS
+            }
+            else {
+                return EventLogStatus.ERROR
+            }
+        })
+        .catch(err => {
+            switch (err.code) {
+                case 'functions/failed-precondition':
+                    return EventLogStatus.EVENT_NOT_STARTED;
+                case 'functions/not-found':
+                    return EventLogStatus.EVENT_NOT_FOUND;
+                case 'functions/deadline-exceeded':
+                    return EventLogStatus.EVENT_OVER;
+                default:
+                    console.error(err);
+                    return EventLogStatus.ERROR;
+            }
+        });
+}
 
 export const isUserSignedIn = async (eventId: string, uid: string) => {
     const eventLogDocRef = doc(db, 'events', eventId, 'logs', uid);

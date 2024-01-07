@@ -7,7 +7,7 @@ import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
 import { Test } from '../types/GoogleSheetsTypes';
 import { Committee } from "./Committees";
 import { PublicUserInfo, UserFilter } from "./User";
-import { SHPEEventID } from "./Events";
+import { SHPEEvent } from "./Events";
 
 // Stacks
 export type MainStackParams = {
@@ -21,8 +21,10 @@ export type MainStackParams = {
     FeedbackSettingsScreen: undefined;
     FAQSettingsScreen: undefined;
     AboutSettingsScreen: undefined;
+    QRCodeScanningScreen: undefined;
     EventVerificationScreen: {
         id: string;
+        mode: "sign-in" | "sign-out";
     };
     PublicProfile: {
         uid: string;
@@ -84,10 +86,16 @@ export type InvolvementStackParams = {
 
 export type EventsStackParams = {
     EventsScreen: undefined;
-    CreateEvent: undefined;
-    UpdateEvent: { event: SHPEEventID };
+    UpdateEvent: { event: SHPEEvent };
     EventInfo: { eventId: string };
-    QRCode: { event: SHPEEventID };
+    QRCode: { event: SHPEEvent };
+    QRCodeScanningScreen: undefined;
+
+    // Events related to event creation
+    CreateEvent: undefined;
+    SetGeneralEventDetails: { event: SHPEEvent };
+    SetSpecificEventDetails: { event: SHPEEvent };
+    FinalizeEvent: { event: SHPEEvent };
 }
 
 export type HomeStackParams = {
@@ -191,7 +199,7 @@ export type MemberCardProp = {
 }
 
 export type EventProps = {
-    event?: SHPEEventID;
+    event?: SHPEEvent;
     navigation: NativeStackNavigationProp<EventsStackParams>
 }
 
@@ -207,11 +215,12 @@ export type CommitteeTeamCardProps = {
 
 export type EventVerificationProps = {
     id?: string;
-    navigation?: NativeStackNavigationProp<MainStackParams>
+    mode?: "sign-in" | "sign-out";
+    navigation?: NativeStackNavigationProp<MainStackParams>;
 }
 
 export type QRCodeProps = {
-    event?: SHPEEventID;
+    event?: SHPEEvent;
     navigation: NativeStackNavigationProp<EventsStackParams>
 }
 
