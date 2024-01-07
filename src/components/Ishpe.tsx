@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect, useContext } from 'react';
+import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../context/UserContext';
 import { getCommitteeEvents, getUpcomingEvents } from '../api/firebaseUtils';
 import { Timestamp } from 'firebase/firestore';
@@ -142,7 +143,7 @@ const Ishpe = () => {
             </View>
 
             {/* Date Control */}
-            {/* <View className="flex-row justify-end p-3">
+            <View className="flex-row justify-end p-3">
                 <TouchableOpacity onPress={() => setWeekStartDate(adjustWeekRange(weekStartDate, 'backwards'))}>
                     <Octicons name="chevron-left" size={25} color="black" />
                 </TouchableOpacity>
@@ -155,7 +156,7 @@ const Ishpe = () => {
                     className={`${forwardButtonDisabled ? 'opacity-30' : 'opacity-100'}`}>
                     <Octicons name="chevron-right" size={25} color="black" />
                 </TouchableOpacity>
-            </View> */}
+            </View>
 
             {/* Event List */}
             {currentTab === 'ISHPE' && <EventTab events={ishpeEvents} isLoading={loadingIshpeEvents} />}
