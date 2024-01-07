@@ -24,6 +24,7 @@ import DownloadIcon from '../../../assets/arrow-down-solid.svg';
 import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
 import SimpleDropDown from '../../components/SimpleDropDown';
 import InteractButton from '../../components/InteractButton';
+import { EventType } from '../../types/Events';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
@@ -489,6 +490,128 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
         </SafeAreaView>
     )
 }
+
+/**
+ * This screen is where the user will choose which committees they're in, if any. The user can select committees, 
+ * choose to skip, or select "None For Now".
+ * Skipping and selecting "None For Now" will do the same thing and set their committees as ["None"]
+ */
+const SetupInterest = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
+    const [canContinue, setCanContinue] = useState<boolean>(true);
+    const [userInterest, setUserInterest] = useState<EventType[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const { setUserInfo } = useContext(UserContext)!;
+
+
+    const handleInterestToggle = (interest: EventType) => {
+        setUserInterest(prevInterest => {
+            if (prevInterest.includes(interest)) {
+                return prevInterest.filter(name => name !== interest);
+            } else {
+                return [...prevInterest, interest];
+            }
+        });
+    };
+
+    useEffect(() => {
+        setCanContinue(userInterest.length > 0);
+    }, [userInterest]);
+
+    const InterestButtons = ({ interestEvent, color }: { interestEvent: EventType, color: string }) => {
+        const isSelected = userInterest.includes(interestEvent);
+        return (
+            <TouchableOpacity
+                onPress={() => handleInterestToggle(interestEvent)}
+                className='flex-col rounded-md w-[45%]'
+                style={{ minHeight: 90 }}
+            >
+                <View className='flex-1 rounded-md items-center' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
+                    <View className='flex-1 items-center flex-row justify-center py-2'>
+                        {isSelected ? (
+                            <View className="items-center justify-center h-10 w-10 rounded-full" style={{ backgroundColor: color }}>
+                                <Octicons name="check" size={30} color="white" />
+                            </View>
+                        ) : (
+                            <Octicons name="check" size={30} color="red" />
+                        )}
+                    </View>
+                    <Text className="justify-end font-bold text-lg text-black">{interestEvent}</Text>
+                </View>
+            </TouchableOpacity>
+        );
+    }
+
+    return (
+        <SafeAreaView className={safeAreaViewStyle}>
+            <View className='flex-col'>
+                <TouchableOpacity
+                    className="mb-4"
+                    onPress={() => { navigation.goBack(); }}
+                >
+                    <Octicons name="chevron-left" size={30} color="white" />
+                </TouchableOpacity>
+                <View className='items-center'>
+                    <View className='flex-col items-center'>
+                        <Text className='text-white text-center text-3xl'>What are you interest in?</Text>
+                        <Text className='text-white text-center text-lg mt-4'>Choose activities that you are interested in at SHPE</Text>
+                    </View>
+                    <ScrollView
+                        className='w-11/12 h-1/2 flex-col bg-[#b5b5cc2c] my-5 rounded-md'
+                        persistentScrollbar
+                        scrollToOverflowEnabled
+                    >
+                        <View className='flex-wrap flex-row w-full h-full pb-28 justify-around pt-4'>
+                            <InterestButtons interestEvent={EventType.VOLUNTEER_EVENT} color={"#500000"} />
+                            <InterestButtons interestEvent={EventType.INTRAMURAL_EVENT} color={"#500000"} />
+                            <InterestButtons interestEvent={EventType.SOCIAL_EVENT} color={"#500000"} />
+                            <InterestButtons interestEvent={EventType.STUDY_HOURS} color={"#500000"} />
+                            <InterestButtons interestEvent={EventType.WORKSHOP} color={"#500000"} />
+                        </View>
+                    </ScrollView>
+
+                    <View className='w-10/12 mb-2'>
+                        <InteractButton
+                            onPress={async () => {
+                                if (canContinue && auth.currentUser) {
+                                    await setPublicUserData({
+                                        interests: userInterest,
+                                    });
+
+                                    navigation.navigate("SetupCommittees");
+                                }
+                            }}
+
+                            label='Continue'
+                            buttonClassName={`${!canContinue ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
+                            textClassName={`${!canContinue ? "text-gray-700" : "text-white"} text-lg font-bold`}
+                            opacity={!canContinue ? 1 : 0.8}
+                            underlayColor={`${!canContinue ? "" : "#A22E2B"}`}
+                        />
+                    </View>
+                    <InteractButton
+                        onPress={async () => {
+                            if (auth.currentUser) {
+                                await setPublicUserData({
+                                    interests: [],
+                                });
+
+                                navigation.navigate("SetupCommittees");
+                            }
+                        }}
+                        label='Skip For Now'
+                        buttonClassName='justify-center items-center  rounded-md w-10/12'
+                        textClassName='text-pale-orange text-lg font-bold'
+                        underlayColor='transparent'
+                    />
+                    {loading && (
+                        <ActivityIndicator className="mb-4" size={"large"} />
+                    )}
+                </View>
+            </View>
+        </SafeAreaView>
+    );
+};
 
 
 /**
