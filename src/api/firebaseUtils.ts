@@ -369,7 +369,6 @@ export const resetCommittee = async (firebaseDocName: string) => {
                 }
             });
         });
-        console.log('Committee reset successfully');
     } catch (error) {
         console.error('Failed to reset committee:', error);
     }
@@ -390,7 +389,6 @@ export const deleteCommittee = async (firebaseDocName: string) => {
                 }
             });
         });
-        console.log('Committee deleted successfully');
     } catch (error) {
         console.error('Failed to delete committee:', error);
     }
@@ -414,7 +412,6 @@ export const addToWatchlist = async (userToAdd: PublicUserInfo) => {
 
     if (!currentWatchlist.some((user: PublicUserInfo) => user.uid === userToAdd.uid)) {
         const updatedWatchlist = [...currentWatchlist, userToAdd];
-        console.log(updatedWatchlist.length)
         await setDoc(doc(db, "restrictions/watchlist"), { list: updatedWatchlist }, { merge: true });
     }
 };

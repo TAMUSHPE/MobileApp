@@ -47,8 +47,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             <Text className="ml-3 font-semibold text-md" style={drawerItemLabelStyle}>{label}</Text>
         </TouchableOpacity>
     );
-    console.log("HomeDrawerContent: ", userInfo?.publicInfo?.roles?.officer?.valueOf());
-
 
     return (
         <DrawerContentScrollView
