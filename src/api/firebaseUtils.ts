@@ -324,6 +324,26 @@ export const getCommittees = async (): Promise<Committee[]> => {
         return [];
     }
 };
+
+export const getCommittee = async (firebaseDocName: string): Promise<Committee | null> => {
+    try {
+        const committeeDocRef = doc(db, 'committees', firebaseDocName);
+        const docSnap = await getDoc(committeeDocRef);
+        if (docSnap.exists()) {
+            return {
+                firebaseDocName: docSnap.id,
+                ...docSnap.data()
+            };
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
+
 export const setCommitteeData = async (committeeData: Committee) => {
     try {
         await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
@@ -1015,40 +1035,41 @@ export const removeFeedback = async (feedbackId: string) => {
     await deleteDoc(feedbackDoc);
 };
 
-export const fetchEventsForCommittees = async (committees: string[]) => {
+export const getCommitteeEvents = async (committees: string[]) => {
     try {
-        let allEvents: { id: string; }[] = [];
+        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
         const currentTime = Timestamp.now();
+
+        const eventsRef = collection(db, 'events');
+
+        // Pre-fetching committee data to avoid duplicate calls in the loop
+        const committeesData = await Promise.all(committees.map(committee => getCommittee(committee)));
 
         for (const committee of committees) {
             try {
-                const eventsRef = collection(db, 'events');
+                const committeeData = committeesData.find(data => data?.firebaseDocName === committee);
                 const eventsQuery = query(
                     eventsRef,
-                    where("notificationGroup", "==", committee),
-                    where("endDate", ">=", currentTime)  // Fetch only current and future events
+                    where("committee", "==", committee),
+                    where("endTime", ">=", currentTime)
                 );
                 const querySnapshot = await getDocs(eventsQuery);
+                querySnapshot.forEach((doc) => {
+                    const eventData = doc.data();
+                    const eventWithCommitteeData = { id: doc.id, ...eventData, committeeData: committeeData };
 
-                // const committeeInfo = CommitteeConstants[committee as CommitteeKey];
-                // const committeeData = await getCommitteeInfo(committeeInfo.firebaseDocName);
-                // querySnapshot.forEach((doc) => {
-                //     if (committeeData) {
-                //         allEvents.push({ id: doc.id, ...doc.data(), ...committeeData });
-                //     } else {
-                //         allEvents.push({ id: doc.id, ...doc.data() });
-                //     }
-                // });
+                    // Using Map to avoid duplicates
+                    allEvents.set(doc.id, eventWithCommitteeData);
+                });
             } catch (innerError) {
                 console.error(`Error fetching events for committee ${committee}:`, innerError);
             }
         }
 
-        const uniqueEvents = Array.from(new Map(allEvents.map(event => [event.id, event])).values());
-
-        return uniqueEvents;
+        // Convert Map values to an array
+        return Array.from(allEvents.values());
     } catch (error) {
-        console.error("Error fetching events for committees:", error);
+        console.error("Error fetching events for user committees:", error);
         return [];
     }
 }
