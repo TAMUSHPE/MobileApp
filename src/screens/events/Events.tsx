@@ -5,10 +5,10 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EventsStackParams } from '../../types/Navigation';
 import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
 import { SHPEEvent } from '../../types/Events';
-import EventCard from '../../components/EventCard';
 import { useFocusEffect } from '@react-navigation/native';
 import { UserContext } from '../../context/UserContext';
 import { AntDesign } from '@expo/vector-icons';
+import EventsList from '../../components/EventsList';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
@@ -84,30 +84,23 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                         <Text>No Events</Text>
                     </View>
                 }
-                <View className='ml-2 mt-4'>
+
+                <View className='ml-4 mt-4'>
                     {upcomingEvents.length != 0 &&
-                        <Text className='text-xl mb-4 text-bold'>Upcoming Events</Text>
+                        <Text className='text-xl mb-4 font-bold'>Upcoming Events</Text>
                     }
 
-                    {upcomingEvents.map((event) => {
-                        return (
-                            <View key={event.id}>
-                                <EventCard key={event.id} event={event} navigation={navigation} />
-                            </View>
-                        )
-                    })}
+                    {upcomingEvents && (
+                        <EventsList events={upcomingEvents} />
+                    )}
 
                     {pastEvents.length != 0 &&
-                        <Text className='text-xl mb-4 text-bold '>Past Events</Text>
+                        <Text className='text-xl mb-4 text-bold mt-8 font-bold '>Past Events</Text>
                     }
 
-                    {pastEvents.map((event) => {
-                        return (
-                            <View key={event.id}>
-                                <EventCard event={event} navigation={navigation} />
-                            </View>
-                        )
-                    })}
+                    {pastEvents && (
+                        <EventsList events={pastEvents} />
+                    )}
                 </View>
             </ScrollView>
         </SafeAreaView>

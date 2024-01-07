@@ -9,7 +9,7 @@ import { HomeStackParams } from "../../types/Navigation"
 import OfficeSignIn from './OfficeSignIn';
 import MOTMCard from '../../components/MOTMCard';
 import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
-import Ishpe from '../../components/Ishpe';
+import Ishpe from './Ishpe';
 
 
 /**
