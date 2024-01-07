@@ -1,11 +1,10 @@
 import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect, useContext } from 'react';
 import { UserContext } from '../context/UserContext';
-import { Octicons } from '@expo/vector-icons';
 import { getCommitteeEvents, getUpcomingEvents } from '../api/firebaseUtils';
+import { Timestamp } from 'firebase/firestore';
 import { SHPEEvent } from '../types/Events';
 import { Committee, getLogoComponent } from '../types/Committees';
-import { Timestamp } from 'firebase/firestore';
 import { Images } from '../../assets';
 
 const Ishpe = () => {
