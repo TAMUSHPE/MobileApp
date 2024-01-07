@@ -47,7 +47,7 @@
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ],
-      "versionCode": 0
+      "versionCode": 1
     },
     "ios": {
       "googleServicesFile": "./GoogleService-Info.plist",

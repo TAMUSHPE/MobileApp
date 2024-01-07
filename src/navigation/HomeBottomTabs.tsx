@@ -1,19 +1,19 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Octicons } from '@expo/vector-icons';
 import { MembersStack } from './MembersStack';
-import { CommitteesStack } from './CommitteesStack';
+import { InvolvementStack } from './InvolvementStack';
 import { ResourcesStack } from './ResourcesStack';
 import HomeDrawer from './HomeDrawer';
 import { EventsStack } from './EventsStack';
 
 const TAB_ICON_CONFIG: Record<TabName, OcticonIconName> = {
     Home: 'home',
-    ResourcesStack: 'repo',
-    Committees: 'people',
-    Members: 'search',
+    ResourcesStack: 'rows',
     Events: "calendar",
+    Involvement: 'stack',
+    Members: 'person',
 };
 
 const activeIconColor = 'maroon';
@@ -24,7 +24,17 @@ const iconSize = 28;
 const generateTabIcon = (routeName: TabName, focused: boolean): JSX.Element => {
     const iconName = TAB_ICON_CONFIG[routeName] || 'x-circle';
     const iconColor = focused ? activeIconColor : inactiveIconColor;
-    return <Octicons name={iconName} size={iconSize} color={iconColor} />;
+    let tabName: string = routeName;
+    if (tabName === 'ResourcesStack') {
+        tabName = 'Resources';
+    }
+    return (
+        <View className='flex-col items-center justify-center pt-2'>
+            <Octicons name={iconName} size={iconSize} color={iconColor} />
+            <Text className='text-maroon'>{focused ? tabName : ""}</Text>
+
+        </View>
+    )
 };
 
 const HomeBottomTabs = () => {
@@ -45,14 +55,13 @@ const HomeBottomTabs = () => {
                 <BottomTabs.Screen name="Home" component={HomeDrawer} />
                 <BottomTabs.Screen name="ResourcesStack" component={ResourcesStack} />
                 <BottomTabs.Screen name="Events" component={EventsStack} />
-                <BottomTabs.Screen name="Committees" component={CommitteesStack} />
+                <BottomTabs.Screen name="Involvement" component={InvolvementStack} />
                 <BottomTabs.Screen name="Members" component={MembersStack} />
             </BottomTabs.Navigator >
         </View>
     );
 };
-
-type OcticonIconName = 'number' | 'home' | 'repo' | 'people' | 'search' | 'calendar' | 'x-circle' // Manually define, expo doesn't provide type
-type TabName = 'Home' | 'ResourcesStack' | 'Committees' | 'Members' | 'Events';
+type OcticonIconName = React.ComponentProps<typeof Octicons>['name'];
+type TabName = 'Home' | 'ResourcesStack' | 'Involvement' | 'Members' | 'Events';
 
 export default HomeBottomTabs;
