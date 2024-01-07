@@ -93,7 +93,7 @@ const Ishpe = () => {
                                             <View className='h-full items-center justify-center'>
                                                 <Image
                                                     className="flex w-20 h-20 rounded-full"
-                                                    resizeMode='contain'
+                                                    resizeMode='cover'
                                                     defaultSource={Images.EVENT}
                                                     source={event?.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
                                                 />
@@ -105,14 +105,14 @@ const Ishpe = () => {
 
                             {/* Event Details */}
                             <View>
-                                <Text className="text-pale-blue font-semibold">{formatDate(event?.startTime!)}</Text>
-                                <Text className="font-bold">{event?.name}</Text>
+                                <Text className="text-pale-blue font-semibold text-lg">{formatDate(event?.startTime!)}</Text>
+                                <Text className="font-bold text-lg">{event?.name}</Text>
                                 <View className="flex-row items-center">
                                     <View className='flex-row items-center'>
-                                        <Text className="text-sm semibold">{event?.locationName || "TBD"}</Text>
-                                        <Text className="text-lg text-pale-blue semibold"> • </Text>
+                                        <Text className="semibold text-md">{event?.locationName || "TBD"}</Text>
+                                        <Text className="text-2xl text-pale-blue semibold"> • </Text>
                                     </View>
-                                    <Text className="text-sm semibold">{formatStartTime(event?.startTime!)}</Text>
+                                    <Text className="semibold text-md">{formatStartTime(event?.startTime!)}</Text>
                                 </View>
                             </View>
                         </View>
@@ -166,7 +166,7 @@ const Ishpe = () => {
                                             <View className='h-full items-center justify-center'>
                                                 <Image
                                                     className="flex h-full w-full rounded-lg"
-                                                    resizeMode='contain'
+                                                    resizeMode='cover'
                                                     defaultSource={Images.EVENT}
                                                     source={event?.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
                                                 />
@@ -178,14 +178,14 @@ const Ishpe = () => {
 
                             {/* Event Details */}
                             <View>
-                                <Text className="text-pale-blue font-semibold">{formatDate(event?.startTime!)}</Text>
-                                <Text className="font-bold">{event?.name}</Text>
+                                <Text className="text-pale-blue font-semibold text-lg">{formatDate(event?.startTime!)}</Text>
+                                <Text className="font-bold text-lg">{event?.name}</Text>
                                 <View className="flex-row items-center">
                                     <View className='flex-row items-center'>
-                                        <Text className="text-sm semibold">{event?.locationName || "TBD"}</Text>
-                                        <Text className="text-lg text-pale-blue semibold"> • </Text>
+                                        <Text className="semibold text-md">{event?.locationName || "TBD"}</Text>
+                                        <Text className="text-2xl text-pale-blue semibold"> • </Text>
                                     </View>
-                                    <Text className="text-sm semibold">{formatStartTime(event?.startTime!)}</Text>
+                                    <Text className="semibold text-md">{formatStartTime(event?.startTime!)}</Text>
                                 </View>
                             </View>
                         </View>
@@ -203,14 +203,14 @@ const Ishpe = () => {
                 <TouchableOpacity
                     className="flex-1 justify-center items-center"
                     onPress={() => setCurrentTab('ISHPE')}>
-                    <Text className="font-bold text-center">I.SHPE</Text>
+                    <Text className="font-bold text-center text-lg">I.SHPE</Text>
                     {currentTab === 'ISHPE' && <View className="pt-1 border-b-2 border-pale-blue w-1/2" />}
                 </TouchableOpacity>
 
                 <TouchableOpacity
                     className="flex-1 justify-center items-center"
                     onPress={() => setCurrentTab('General')}>
-                    <Text className="font-bold text-center">General</Text>
+                    <Text className="font-bold text-center text-lg">General</Text>
                     {currentTab === 'General' && <View className="pt-1 border-b-2 border-pale-blue w-1/2" />}
                 </TouchableOpacity>
             </View>
@@ -235,6 +235,7 @@ const Ishpe = () => {
             {currentTab === 'ISHPE' && IshpeEventTab()}
             {currentTab === 'General' && GeneralTab()}
 
+            <View className='pb-8' />
         </View>
     );
 };
