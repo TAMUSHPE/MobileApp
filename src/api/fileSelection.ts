@@ -1,7 +1,8 @@
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 import * as DocumentPicker from 'expo-document-picker';
-import { Platform } from 'react-native';
+import { uploadFileToFirebase } from './firebaseUtils';
+import { validateFileBlob } from '../helpers/validation';
+import { getDownloadURL } from 'firebase/storage';
 
 /**
  * Prompts the user to select an image and returns the result of the user's selection. 
@@ -71,4 +72,63 @@ export const getBlobFromURI = async (uri: string): Promise<Blob | null> => {
             console.error(err);
             return null;
         });
+};
+
+
+export const uploadFile = async (
+    blob: Blob,
+    validMimeTypes: string[] = [],
+    storagePath: string,
+    onSuccess: ((url: string) => Promise<void>) | null = null,
+    onProgress: ((progress: number) => void) | null = null,
+    setLoading: ((load: boolean) => void) | null = null
+) => {
+    if (validMimeTypes.length > 0 && !validateFileBlob(blob, validMimeTypes, true)) {
+        if (setLoading !== null) {
+            setLoading(false);
+        }
+        return;
+    }
+
+    const uploadTask = uploadFileToFirebase(blob, storagePath);
+
+    uploadTask.on("state_changed",
+        (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            if (onProgress !== null) {
+                onProgress(progress);
+            }
+            console.log(`Upload is ${progress}% done`);
+        },
+        (error) => {
+            if (setLoading !== null) {
+                setLoading(false);
+            }
+            switch (error.code) {
+                case "storage/unauthorized":
+                    alert("File could not be uploaded due to user permissions.");
+                    break;
+                case "storage/canceled":
+                    alert("File upload cancelled");
+                    break;
+                default:
+                    alert("An unknown error has occurred");
+                    break;
+            }
+        },
+        async () => {
+            try {
+                const URL = await getDownloadURL(uploadTask.snapshot.ref);
+                if (onSuccess !== null) {
+                    await onSuccess(URL);
+                }
+            } catch (error) {
+                console.error("Error in uploadFile:", error);
+            } finally {
+                if (setLoading !== null) {
+                    setLoading(false);
+                }
+            }
+        }
+    );
 };
