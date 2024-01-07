@@ -1,6 +1,7 @@
 import React, { useState, ReactElement } from 'react';
-import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { InvolvementStackParams } from '../../types/Navigation';
 import CommitteesList from './CommitteesList';
 import MemberSHPE from './MemberSHPE';
@@ -15,9 +16,8 @@ const Involvement: React.FC<NativeStackScreenProps<InvolvementStackParams>> = ({
     };
 
     return (
-        <View className='h-full'>
-            {/* Top Nav Bar */}
-            <SafeAreaView>
+        <SafeAreaView className='flex-1' edges={["top"]}>
+            <View>
                 <View className='flex flex-row justify-between items-center mx-16 mt-4'>
                     {Object.entries(TABS).map(([key, label]) => (
                         <NavigationTab
@@ -28,13 +28,13 @@ const Involvement: React.FC<NativeStackScreenProps<InvolvementStackParams>> = ({
                         />
                     ))}
                 </View>
-            </SafeAreaView>
+            </View>
 
             {/* Content */}
             <View className='flex-1'>
                 {tabComponents[currentTab]}
             </View>
-        </View>
+        </SafeAreaView>
     )
 }
 

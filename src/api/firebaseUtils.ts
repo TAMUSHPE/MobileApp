@@ -369,7 +369,6 @@ export const resetCommittee = async (firebaseDocName: string) => {
                 }
             });
         });
-        console.log('Committee reset successfully');
     } catch (error) {
         console.error('Failed to reset committee:', error);
     }
@@ -390,7 +389,6 @@ export const deleteCommittee = async (firebaseDocName: string) => {
                 }
             });
         });
-        console.log('Committee deleted successfully');
     } catch (error) {
         console.error('Failed to delete committee:', error);
     }
@@ -414,7 +412,6 @@ export const addToWatchlist = async (userToAdd: PublicUserInfo) => {
 
     if (!currentWatchlist.some((user: PublicUserInfo) => user.uid === userToAdd.uid)) {
         const updatedWatchlist = [...currentWatchlist, userToAdd];
-        console.log(updatedWatchlist.length)
         await setDoc(doc(db, "restrictions/watchlist"), { list: updatedWatchlist }, { merge: true });
     }
 };
@@ -444,6 +441,18 @@ export const removeFromBlacklist = async (userToRemove: PublicUserInfo) => {
     await setDoc(doc(db, "restrictions/blacklist"), { list: updatedBlacklist }, { merge: true });
 };
 
+export const isUserInBlacklist = async (uid: string): Promise<boolean> => {
+    const blacklistDocRef = doc(db, "restrictions/blacklist");
+    const docSnap = await getDoc(blacklistDocRef);
+
+    if (docSnap.exists()) {
+        const blacklist = docSnap.data().list;
+        return blacklist.some((user: PublicUserInfo) => user.uid === uid);
+    } else {
+        // Blacklist document does not exist or has no data
+        return false;
+    }
+};
 
 export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
     try {
