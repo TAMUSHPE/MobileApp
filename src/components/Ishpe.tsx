@@ -49,8 +49,8 @@ const Ishpe = () => {
     }, []);
 
 
-    const IshpeEventTab = () => {
-        if (loadingIshpeEvents) {
+    const EventTab = ({ events, isLoading }: { events: SHPEEventWithCommittee[], isLoading: boolean }) => {
+        if (isLoading) {
             return (
                 <View className="flex-row justify-center items-center pb-8">
                     <ActivityIndicator size="large" />
@@ -60,80 +60,7 @@ const Ishpe = () => {
 
         return (
             <View>
-                {ishpeEvents?.map((event: SHPEEventWithCommittee, index) => {
-                    let LogoComponent, height, width, logo, color;
-
-                    if (event.committeeData) {
-                        ({ logo, color } = event.committeeData);
-                        ({ LogoComponent, height, width } = getLogoComponent(logo));
-                    }
-
-                    return (
-                        <View key={index} className="flex-row space-x-2 pt-4">
-                            {/* If Committee is associated with event, then show Committee Logo */}
-                            {LogoComponent && (
-                                <View className='flex-row'>
-                                    <View className='w-2 h-full mr-2' style={{ backgroundColor: event?.committeeData?.color }} />
-                                    <View className="rounded-lg h-28" style={{ backgroundColor: color, minWidth: 87 }}>
-                                        <View className='rounded-lg' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
-                                            <View className='items-center justify-center h-full'>
-                                                <LogoComponent width={height! / 1.2} height={width! / 1.2} />
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-                            )}
-
-                            {/* Display Cover Image if no committee is associated */}
-                            {!LogoComponent && (
-                                <View className='flex-row'>
-                                    <View className="w-2 h-full mr-2 bg-maroon" />
-                                    <View className="rounded-lg h-28 bg-maroon" style={{ minWidth: 87 }}>
-                                        <View className='rounded-lg' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
-                                            <View className='h-full items-center justify-center'>
-                                                <Image
-                                                    className="flex w-20 h-20 rounded-full"
-                                                    resizeMode='cover'
-                                                    defaultSource={Images.EVENT}
-                                                    source={event?.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
-                                                />
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-                            )}
-
-                            {/* Event Details */}
-                            <View>
-                                <Text className="text-pale-blue font-semibold text-lg">{formatDate(event?.startTime!)}</Text>
-                                <Text className="font-bold text-lg">{event?.name}</Text>
-                                <View className="flex-row items-center">
-                                    <View className='flex-row items-center'>
-                                        <Text className="semibold text-md">{event?.locationName || "TBD"}</Text>
-                                        <Text className="text-2xl text-pale-blue semibold"> • </Text>
-                                    </View>
-                                    <Text className="semibold text-md">{formatStartTime(event?.startTime!)}</Text>
-                                </View>
-                            </View>
-                        </View>
-                    );
-                })}
-            </View>
-        );
-    };
-
-    const GeneralTab = () => {
-        if (loadingGeneralEvents) {
-            return (
-                <View className="flex-row justify-center items-center pb-8">
-                    <ActivityIndicator size="large" />
-                </View>
-            );
-        }
-
-        return (
-            <View>
-                {generalEvents?.map((event: SHPEEventWithCommittee, index) => {
+                {events?.map((event: SHPEEventWithCommittee, index) => {
                     let LogoComponent, height, width, logo, color;
 
                     if (event.committeeData) {
@@ -197,7 +124,7 @@ const Ishpe = () => {
 
 
     return (
-        <View className="mx-7 bg-gray-100 rounded-md flex-col mt-4">
+        <View className="mx-4 bg-gray-100 rounded-md flex-col mt-4">
             {/* Tabs */}
             <View className="flex-row bg-gray-200 rounded-md p-3 pb-1">
                 <TouchableOpacity
@@ -231,9 +158,9 @@ const Ishpe = () => {
                 </TouchableOpacity>
             </View>
 
-            {/* Tab */}
-            {currentTab === 'ISHPE' && IshpeEventTab()}
-            {currentTab === 'General' && GeneralTab()}
+            {/* Event List */}
+            {currentTab === 'ISHPE' && <EventTab events={ishpeEvents} isLoading={loadingIshpeEvents} />}
+            {currentTab === 'General' && <EventTab events={generalEvents} isLoading={loadingGeneralEvents} />}
 
             <View className='pb-8' />
         </View>
