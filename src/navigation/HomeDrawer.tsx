@@ -20,11 +20,11 @@ import { HomeStack } from './HomeStack'
  */
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const { userInfo, signOutUser } = useContext(UserContext)!;
-
     const [isVerified, setIsVerified] = useState<boolean>(false);
     const { nationalExpiration, chapterExpiration, roles } = userInfo?.publicInfo ?? {};
     const isOfficer = roles ? roles.officer : false;
     let badgeColor = getBadgeColor(isOfficer!, isVerified);
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
     useEffect(() => {
         if (nationalExpiration && chapterExpiration) {
@@ -47,6 +47,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             <Text className="ml-3 font-semibold text-md" style={drawerItemLabelStyle}>{label}</Text>
         </TouchableOpacity>
     );
+    console.log("HomeDrawerContent: ", userInfo?.publicInfo?.roles?.officer?.valueOf());
 
 
     return (
@@ -91,7 +92,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                     }}
                 />
 
-                {userInfo?.publicInfo?.roles?.officer?.valueOf() &&
+                {hasPrivileges &&
                     <DrawerButton
                         iconName="superpowers"
                         label='Officer Dashboard'
