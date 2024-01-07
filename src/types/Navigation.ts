@@ -55,9 +55,9 @@ export type ProfileSetupStackParams = {
     SetupProfilePicture: undefined;
     SetupAcademicInformation: undefined;
     SetupCommittees: undefined;
-    MainStack: undefined;
-    SetupNotification: undefined;
+    SetupInterests: undefined;
     SetupResume: undefined;
+    MainStack: undefined;
 }
 
 export type ResourcesStackParams = {
