@@ -503,14 +503,14 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
  */
 const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
     const [canContinue, setCanContinue] = useState<boolean>(true);
-    const [userInterest, setUserInterest] = useState<EventType[]>([]);
+    const [userInterests, setUserInterests] = useState<EventType[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
 
     const { setUserInfo } = useContext(UserContext)!;
 
 
     const handleInterestToggle = (interest: EventType) => {
-        setUserInterest(prevInterest => {
+        setUserInterests(prevInterest => {
             if (prevInterest.includes(interest)) {
                 return prevInterest.filter(name => name !== interest);
             } else {
@@ -520,10 +520,9 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
     };
 
     useEffect(() => {
-        setCanContinue(userInterest.length > 0);
-    }, [userInterest]);
+        setCanContinue(userInterests.length > 0);
+    }, [userInterests]);
 
-    console.log(userInterest)
 
     const InterestButtons = ({ interestEvent, label, color, Icon }: {
         interestEvent: EventType;
@@ -531,7 +530,7 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
         color: string;
         Icon: React.FC<React.SVGProps<SVGSVGElement>>;
     }) => {
-        const isSelected = userInterest.includes(interestEvent);
+        const isSelected = userInterests.includes(interestEvent);
         return (
             <TouchableOpacity
                 onPress={() => handleInterestToggle(interestEvent)}
@@ -587,7 +586,7 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
                             onPress={async () => {
                                 if (canContinue && auth.currentUser) {
                                     await setPublicUserData({
-                                        interests: userInterest,
+                                        interests: userInterests,
                                     });
 
                                     navigation.navigate("SetupCommittees");
