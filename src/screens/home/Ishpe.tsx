@@ -20,19 +20,18 @@ const Ishpe = () => {
     const [generalEvents, setGeneralEvents] = useState<SHPEEvent[]>([]);
     const [committeesData, setCommitteesData] = useState<Committee[]>([]);
     const [currentTab, setCurrentTab] = useState<string>("ISHPE")
-    const [weekStartDate, setWeekStartDate] = useState(getCurrentSunday()); // Initialize with current week
+    const [weekStartDate, setWeekStartDate] = useState(getCurrentSunday());
+    const [displayIshpeEvents, setDisplayIshpeEvents] = useState<SHPEEvent[]>([]);
+    const [displayGeneralEvents, setDisplayGeneralEvents] = useState<SHPEEvent[]>([]);
     const [loadingIshpeEvents, setLoadingIshpeEvents] = useState(true);
     const [loadingGeneralEvents, setLoadingGeneralEvents] = useState(true);
-    const [interestOptionsModal, setInterestOptionsModal] = useState(false);
     const [loading, setLoading] = useState(false);
-
-    const forwardButtonDisabled = (weekStartDate.toISOString().split('T')[0] == getCurrentSunday().toISOString().split('T')[0]);
+    const [interestOptionsModal, setInterestOptionsModal] = useState(false);
 
     const fetchEvents = async () => {
         try {
             setLoadingIshpeEvents(true);
             setLoadingGeneralEvents(true);
-            console.log(userCommittees, "home test")
 
             // Fetch ishpeEvents (committee events) and interestEvents
             const [ishpeResponse, interestResponse] = await Promise.all([
@@ -70,10 +69,41 @@ const Ishpe = () => {
 
             fetchEvents();
             fetchCommittees();
+            setWeekStartDate(getCurrentSunday());
 
             return () => { };
         }, [])
     );
+
+    useEffect(() => {
+        const startOfTheWeek = getStartOfDay(weekStartDate);
+        const weekEndDate = addDays(startOfTheWeek, 6);
+
+        const filterEvents = (events: SHPEEvent[]) => events.filter((event: SHPEEvent) => {
+            const eventDate = new Date(event?.startTime!.toDate());
+            const startOfEventDay = getStartOfDay(eventDate);
+            return startOfEventDay && (startOfEventDay >= startOfTheWeek) && (startOfEventDay <= weekEndDate);
+        });
+
+        setDisplayIshpeEvents(filterEvents(ishpeEvents));
+        setDisplayGeneralEvents(filterEvents(generalEvents));
+    }, [weekStartDate, ishpeEvents, generalEvents]);
+
+    const backwardButtonDisabled = (events: SHPEEvent[]) => {
+        return !events.some((event: SHPEEvent) => {
+            const eventDate = event?.startTime?.toDate();
+            return eventDate && eventDate < weekStartDate;
+        });
+    };
+
+    const forwardButtonDisabled = (events: SHPEEvent[]) => {
+        let nextSunday = addDays(weekStartDate, 7);
+        return !events.some((event: SHPEEvent) => {
+            const eventDate = event?.startTime?.toDate();
+            return eventDate && eventDate > nextSunday;
+        });
+    };
+
     useEffect(() => {
         if (interestOptionsModal) {
             setUserInterests(userInfo?.publicInfo?.interests || []);
@@ -136,7 +166,10 @@ const Ishpe = () => {
                 <View className='relative flex-1 justify-center'>
                     <TouchableOpacity
                         className="justify-center items-center"
-                        onPress={() => setCurrentTab('ISHPE')}>
+                        onPress={() => {
+                            setCurrentTab('ISHPE')
+                            setWeekStartDate(getCurrentSunday())
+                        }}>
                         <Text className="font-bold text-center text-lg">I.SHPE</Text>
                         <View className={`pt-3 w-1/2 border-b-2 ${currentTab == "ISHPE" ? "border-pale-blue" : "border-transparent"} `} />
                     </TouchableOpacity>
@@ -150,31 +183,59 @@ const Ishpe = () => {
 
                 <TouchableOpacity
                     className="flex-1 justify-center items-center"
-                    onPress={() => setCurrentTab('General')}>
+                    onPress={() => {
+                        setCurrentTab('General')
+                        setWeekStartDate(getCurrentSunday())
+                    }}>
                     <Text className="font-bold text-center text-lg">General</Text>
                     <View className={`pt-3 w-1/2 border-b-2 ${currentTab == "General" ? "border-pale-blue" : "border-transparent"} `} />
                 </TouchableOpacity>
             </View>
 
             {/* Date Control */}
-            <View className="flex-row justify-end p-3">
-                <TouchableOpacity onPress={() => setWeekStartDate(adjustWeekRange(weekStartDate, 'backwards'))}>
-                    <Octicons name="chevron-left" size={25} color="black" />
+            <View className="flex-row justify-between items-center p-3">
+                <TouchableOpacity
+                    onPress={() => setWeekStartDate(adjustWeekRange(weekStartDate, 'backwards'))}
+                    disabled={backwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents)}
+                    className={`px-2 ${backwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'opacity-30' : 'opacity-100'}`}
+                >
+                    <Octicons name="chevron-left" size={25} color={backwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'gray' : 'black'} />
                 </TouchableOpacity>
 
-                <Text className="pt-1 px-1"> {formatWeekRange(weekStartDate)} </Text>
+                <Text className="text-lg font-semibold"> {formatWeekRange(weekStartDate)} </Text>
 
                 <TouchableOpacity
                     onPress={() => setWeekStartDate(adjustWeekRange(weekStartDate, 'forwards'))}
-                    disabled={forwardButtonDisabled}
-                    className={`${forwardButtonDisabled ? 'opacity-30' : 'opacity-100'}`}>
-                    <Octicons name="chevron-right" size={25} color="black" />
+                    disabled={forwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents)}
+                    className={`px-2 ${forwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'opacity-30' : 'opacity-100'}`}
+                >
+                    <Octicons name="chevron-right" size={25} color={forwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'gray' : 'black'} />
                 </TouchableOpacity>
             </View>
 
             {/* Event List */}
-            {currentTab === 'ISHPE' && <EventsList events={ishpeEvents} isLoading={loadingIshpeEvents} />}
-            {currentTab === 'General' && <EventsList events={generalEvents} isLoading={loadingGeneralEvents} />}
+            {currentTab === 'ISHPE' && (
+                <View>
+                    <EventsList events={displayIshpeEvents} isLoading={loadingIshpeEvents} />
+                    {(displayIshpeEvents.length === 0 && !loadingIshpeEvents) && (
+                        <View className='flex-1 justify-center items-center'>
+                            <Text className='text-xl font-semibold'>No events this week</Text>
+                        </View>
+                    )}
+                </View>
+            )}
+            {currentTab === 'General' && (
+                <View>
+                    <EventsList events={displayGeneralEvents} isLoading={loadingGeneralEvents} />
+                    {(displayGeneralEvents.length && !loadingGeneralEvents) === 0 && (
+                        <View className='flex-1 justify-center items-center'>
+                            <Text className='text-xl font-semibold'>No events this week</Text>
+                        </View>
+                    )}
+                </View>
+
+            )}
+
 
             <View className='pb-8' />
 
@@ -286,9 +347,23 @@ const Ishpe = () => {
 
 const getCurrentSunday = () => {
     const currentDate = new Date();
-    currentDate.setDate(currentDate.getDate() - currentDate.getDay());
-    return currentDate;
-}
+    currentDate.setHours(0, 0, 0, 0);
+    const day = currentDate.getDay();
+    const diff = currentDate.getDate() - day;
+    return new Date(currentDate.setDate(diff));
+};
+const getStartOfDay = (date: Date) => {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    return start;
+};
+
+const addDays = (date: Date, days: number) => {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+};
+
 
 const adjustWeekRange = (currentStartDate: Date, direction: string) => {
     const oneWeek = 7 * 24 * 60 * 60 * 1000; // milliseconds in one week
