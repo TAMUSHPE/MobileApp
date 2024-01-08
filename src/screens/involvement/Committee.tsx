@@ -6,7 +6,7 @@ import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
 import { db, functions } from '../../config/firebaseConfig';
-import { setPublicUserData } from '../../api/firebaseUtils';
+import { getCommitteeEvents, setPublicUserData } from '../../api/firebaseUtils';
 import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc } from 'firebase/firestore';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
@@ -15,6 +15,8 @@ import { CommitteeScreenRouteProp, CommitteesListProps } from '../../types/Navig
 import { getLogoComponent } from '../../types/Committees';
 import CommitteeTeamCard from './CommitteeTeamCard';
 import DismissibleModal from '../../components/DismissibleModal';
+import { SHPEEvent } from '../../types/Events';
+import EventsList from '../../components/EventsList';
 
 const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
     const route = useRoute<CommitteeScreenRouteProp>();
@@ -22,6 +24,7 @@ const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
 
     const { name, color, logo, head, leads, representatives, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = initialCommittee;
     const [memberCount, setMemberCount] = useState<number>(initialCommittee.memberCount || 0);
+    const [events, setEvents] = useState<SHPEEvent[]>([]);
     const { LogoComponent, height, width } = getLogoComponent(logo);
     const luminosity = calculateHexLuminosity(color!);
     const isLightColor = luminosity < 155;
@@ -29,8 +32,19 @@ const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [loadingCountChange, setLoadingCountChange] = useState<boolean>(false);
 
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            setLoading(true);
+            const response = await getCommitteeEvents([firebaseDocName!]);
+            setEvents(response);
+            setLoading(false);
+        }
+        fetchEvents();
+    }, [])
 
     useEffect(() => {
         const committeeExists = userInfo?.publicInfo?.committees?.includes(firebaseDocName!);
@@ -71,7 +85,7 @@ const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
                             className={`px-4 py-[2px] rounded-lg items-center mt-2 mx-2 ${isInCommittee ? "bg-[#FF4545]" : "bg-[#AEF359]"}`}
                             onPress={() => setConfirmVisible(!confirmVisible)}
                         >
-                            {loading ? (
+                            {loadingCountChange ? (
                                 <ActivityIndicator color="#000000" />
                             ) : (
                                 <Text className='text-lg font-semibold'>{isInCommittee ? "Leave" : "Join"}</Text>
@@ -117,7 +131,7 @@ const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
                 {/* Upcoming Events */}
                 <View className='mt-11'>
                     <Text className='text-2xl font-bold'>Upcoming Events</Text>
-                    <Text>TODO: Upcoming Event for a committee, Do after event is done</Text>
+                    <EventsList events={events} isLoading={loading} showImage={false} />
                 </View>
 
                 {/* Team List */}
@@ -167,7 +181,7 @@ const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
                                 className="bg-pale-blue rounded-xl justify-center items-center"
                                 onPress={async () => {
                                     setConfirmVisible(false);
-                                    setLoading(true);
+                                    setLoadingCountChange(true);
                                     const fetchCommitteeData = async () => {
                                         try {
                                             const docRef = doc(db, `committees/${initialCommittee.firebaseDocName}`);
@@ -207,7 +221,7 @@ const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
                                     } catch (err) {
                                         console.error(err);
                                     } finally {
-                                        setLoading(false);
+                                        setLoadingCountChange(false);
                                     }
                                 }}
                             >

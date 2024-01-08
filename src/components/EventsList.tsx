@@ -5,7 +5,7 @@ import { Timestamp } from 'firebase/firestore';
 import { SHPEEvent } from '../types/Events';
 import { Images } from '../../assets';
 
-const EventsList = ({ events, isLoading }: { events: SHPEEventWithCommitteeData[], isLoading?: boolean }) => {
+const EventsList = ({ events, isLoading, showImage }: { events: SHPEEventWithCommitteeData[], isLoading?: boolean, showImage?: boolean }) => {
     if (isLoading) {
         return (
             <View className="flex-row justify-center items-center pb-8">
@@ -30,13 +30,15 @@ const EventsList = ({ events, isLoading }: { events: SHPEEventWithCommitteeData[
                         {LogoComponent && (
                             <View className='flex-row'>
                                 <View className='w-2 h-full mr-2' style={{ backgroundColor: event?.committeeData?.color }} />
-                                <View className="rounded-lg h-28" style={{ backgroundColor: color, minWidth: 87 }}>
-                                    <View className='rounded-lg' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
-                                        <View className='items-center justify-center h-full'>
-                                            <LogoComponent width={height! / 1.2} height={width! / 1.2} />
+                                {showImage && (
+                                    <View className="rounded-lg h-28" style={{ backgroundColor: color, minWidth: 87 }}>
+                                        <View className='rounded-lg' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
+                                            <View className='items-center justify-center h-full'>
+                                                <LogoComponent width={height! / 1.2} height={width! / 1.2} />
+                                            </View>
                                         </View>
                                     </View>
-                                </View>
+                                )}
                             </View>
                         )}
 
@@ -44,18 +46,20 @@ const EventsList = ({ events, isLoading }: { events: SHPEEventWithCommitteeData[
                         {!LogoComponent && (
                             <View className='flex-row'>
                                 <View className='w-2 h-full mr-2 bg-maroon' />
-                                <View className="rounded-lg h-28 bg-maroon" style={{ minWidth: 87 }}>
-                                    <View className='rounded-lg' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
-                                        <View className='h-full items-center justify-center'>
-                                            <Image
-                                                className="flex h-full w-full rounded-lg"
-                                                resizeMode='cover'
-                                                defaultSource={Images.EVENT}
-                                                source={event?.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
-                                            />
+                                {showImage && (
+                                    <View className="rounded-lg h-28 bg-maroon" style={{ minWidth: 87 }}>
+                                        <View className='rounded-lg' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
+                                            <View className='h-full items-center justify-center'>
+                                                <Image
+                                                    className="flex h-full w-full rounded-lg"
+                                                    resizeMode='cover'
+                                                    defaultSource={Images.EVENT}
+                                                    source={event?.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
+                                                />
+                                            </View>
                                         </View>
                                     </View>
-                                </View>
+                                )}
                             </View>
                         )}
 
