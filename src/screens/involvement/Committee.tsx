@@ -130,7 +130,7 @@ const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
 
                 {/* Upcoming Events */}
                 <View className='mt-11'>
-                    <Text className='text-2xl font-bold'>Upcoming Events</Text>
+                    <Text className='text-2xl font-bold mb-2'>Upcoming Events</Text>
                     <EventsList events={events} isLoading={loading} showImage={false} />
                 </View>
 

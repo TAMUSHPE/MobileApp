@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext';
@@ -10,6 +10,7 @@ import SHPELogo from '../../../assets/SHPE_black.svg';
 import EventsList from '../../components/EventsList';
 import DismissibleModal from '../../components/DismissibleModal';
 import ProfileBadge from '../../components/ProfileBadge';
+import { useFocusEffect } from '@react-navigation/core';
 
 const Ishpe = () => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
@@ -31,6 +32,7 @@ const Ishpe = () => {
         try {
             setLoadingIshpeEvents(true);
             setLoadingGeneralEvents(true);
+            console.log(userCommittees, "home test")
 
             // Fetch ishpeEvents (committee events) and interestEvents
             const [ishpeResponse, interestResponse] = await Promise.all([
@@ -59,16 +61,19 @@ const Ishpe = () => {
         }
     };
 
-    useEffect(() => {
-        const fetchCommittees = async () => {
-            const response = await getCommittees();
-            setCommitteesData(response);
-        }
+    useFocusEffect(
+        useCallback(() => {
+            const fetchCommittees = async () => {
+                const response = await getCommittees();
+                setCommitteesData(response);
+            }
 
-        fetchEvents();
-        fetchCommittees();
-    }, []);
+            fetchEvents();
+            fetchCommittees();
 
+            return () => { };
+        }, [])
+    );
     useEffect(() => {
         if (interestOptionsModal) {
             setUserInterests(userInfo?.publicInfo?.interests || []);
