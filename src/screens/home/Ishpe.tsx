@@ -1,27 +1,37 @@
-import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect, useContext } from 'react';
 import { Octicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext';
-import { getCommitteeEvents, getUpcomingEvents } from '../../api/firebaseUtils';
-import { Timestamp } from 'firebase/firestore';
-import { SHPEEvent } from '../../types/Events';
-import { Committee, getLogoComponent } from '../../types/Committees';
-import { Images } from '../../../assets';
+import { getCommitteeEvents, getCommittees, getUpcomingEvents, setPublicUserData } from '../../api/firebaseUtils';
+import { EventType, SHPEEvent } from '../../types/Events';
+import { Committee } from '../../types/Committees';
+import SHPELogo from '../../../assets/SHPE_black.svg';
 import EventsList from '../../components/EventsList';
+import DismissibleModal from '../../components/DismissibleModal';
+import ProfileBadge from '../../components/ProfileBadge';
 
 const Ishpe = () => {
-    const { userInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
     const userCommittees = userInfo?.publicInfo?.committees || [];
+    const [userInterests, setUserInterests] = useState<string[]>(userInfo?.publicInfo?.interests || []);
     const [ishpeEvents, setIshpeEvents] = useState<SHPEEventWithCommitteeData[]>([]);
     const [generalEvents, setGeneralEvents] = useState<SHPEEvent[]>([]);
+    const [committeesData, setCommitteesData] = useState<Committee[]>([]);
     const [currentTab, setCurrentTab] = useState<string>("ISHPE")
     const [weekStartDate, setWeekStartDate] = useState(getCurrentSunday()); // Initialize with current week
     const [loadingIshpeEvents, setLoadingIshpeEvents] = useState(true);
     const [loadingGeneralEvents, setLoadingGeneralEvents] = useState(true);
+    const [interestOptionsModal, setInterestOptionsModal] = useState(false);
 
     const forwardButtonDisabled = (weekStartDate.toISOString().split('T')[0] == getCurrentSunday().toISOString().split('T')[0]);
 
     useEffect(() => {
+        const fetchCommittees = async () => {
+            const response = await getCommittees();
+            setCommitteesData(response);
+        }
+
         const fetchEvents = async () => {
             try {
                 setLoadingIshpeEvents(true);
@@ -47,18 +57,83 @@ const Ishpe = () => {
         };
 
         fetchEvents();
+        fetchCommittees();
     }, []);
+
+    const isInterestChanged = () => {
+        if (!userInfo?.publicInfo?.interests) {
+            return userInterests.length > 0;
+        }
+
+        const originalInterests = new Set(userInfo.publicInfo.interests);
+        const currentInterests = new Set(userInterests);
+
+        if (originalInterests.size !== currentInterests.size) {
+            return true;
+        }
+
+        for (let interest of originalInterests) {
+            if (!currentInterests.has(interest)) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+
+    const handleInterestToggle = (name: string) => {
+        setUserInterests(prevInterest => {
+            const isCommitteeSelected = prevInterest.includes(name);
+            if (isCommitteeSelected) {
+                return prevInterest.filter(interest => interest !== name);
+            } else {
+                return [...prevInterest, name];
+            }
+        });
+    };
+
+    const InterestButtons = ({ interestEvent, label, color }: {
+        interestEvent: EventType;
+        label: string;
+        color: string;
+    }) => {
+        const isSelected = userInterests.includes(interestEvent);
+        return (
+            <TouchableOpacity
+                onPress={() => handleInterestToggle(interestEvent)}
+                className='rounded-md border-2 mr-5 px-2 py-1 mt-5'
+                style={{ borderColor: isSelected ? "#72A9BE" : "black" }}
+            >
+                <Text className={`font-semibold text-lg ${isSelected && "text-pale-blue"}`}>{label}</Text>
+            </TouchableOpacity>
+        );
+    }
+
+    useEffect(() => {
+        if (interestOptionsModal) {
+            setUserInterests(userInfo?.publicInfo?.interests || []);
+        }
+    }, [interestOptionsModal])
 
     return (
         <View className="mx-4 bg-gray-100 rounded-md flex-col mt-4">
             {/* Tabs */}
             <View className="flex-row bg-gray-200 rounded-md px-2 pt-3">
-                <TouchableOpacity
-                    className="flex-1 justify-center items-center"
-                    onPress={() => setCurrentTab('ISHPE')}>
-                    <Text className="font-bold text-center text-lg">I.SHPE</Text>
-                    <View className={`pt-3 w-1/2 border-b-2 ${currentTab == "ISHPE" ? "border-pale-blue" : "border-transparent"} `} />
-                </TouchableOpacity>
+                <View className='relative flex-1 justify-center'>
+                    <TouchableOpacity
+                        className="justify-center items-center"
+                        onPress={() => setCurrentTab('ISHPE')}>
+                        <Text className="font-bold text-center text-lg">I.SHPE</Text>
+                        <View className={`pt-3 w-1/2 border-b-2 ${currentTab == "ISHPE" ? "border-pale-blue" : "border-transparent"} `} />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        className='absolute top-0'
+                        onPress={() => setInterestOptionsModal(true)}
+                    >
+                        <Octicons name="gear" size={24} color="black" />
+                    </TouchableOpacity>
+                </View>
 
                 <TouchableOpacity
                     className="flex-1 justify-center items-center"
@@ -89,6 +164,102 @@ const Ishpe = () => {
             {currentTab === 'General' && <EventsList events={generalEvents} isLoading={loadingGeneralEvents} />}
 
             <View className='pb-8' />
+
+            <DismissibleModal
+                visible={interestOptionsModal}
+                setVisible={setInterestOptionsModal}
+            >
+                <View className='flex opacity-100 bg-white rounded-md p-6 w-full' style={{ minWidth: 355 }}>
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center'>
+                            <SHPELogo width={40} height={40} />
+                            <Text className='text-2xl font-semibold ml-3'>I.SHPE</Text>
+                        </View>
+                        <View>
+                            <TouchableOpacity onPress={() => {
+                                setInterestOptionsModal(false)
+                                setUserInterests(userInfo?.publicInfo?.interests || [])
+                            }}>
+                                <Octicons name="x" size={24} color="black" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <View className='mt-4'>
+                        <Text className='text-2xl font-bold'>Interest</Text>
+                        <Text className='text-lg text-gray-600'>Select the type of events you are interested in</Text>
+
+                        {/* If any additional interest are added in the future, then update manually in profile setup */}
+                        <View className='flex-row flex-wrap'>
+                            <InterestButtons interestEvent={EventType.VOLUNTEER_EVENT} label="Volunteering" color={"#E93535"} />
+                            <InterestButtons interestEvent={EventType.INTRAMURAL_EVENT} label="Intramural" color={"#000000"} />
+                            <InterestButtons interestEvent={EventType.SOCIAL_EVENT} label="Socials" color={"#A75EF8"} />
+                            <InterestButtons interestEvent={EventType.STUDY_HOURS} label="Study Hours" color={"#9DB89A"} />
+                            <InterestButtons interestEvent={EventType.WORKSHOP} label="Workshops" color={"#FF910A"} />
+                        </View>
+                    </View>
+
+                    <View style={{ minHeight: 60 }}>
+                        {isInterestChanged() && (
+                            <TouchableOpacity
+                                className='w-full mt-4'
+                                onPress={async () => {
+                                    await setPublicUserData({
+                                        interests: userInterests,
+                                    });
+
+                                    // locally update user info
+                                    if (userInfo) {
+                                        const updatedUserInfo = {
+                                            ...userInfo,
+                                            publicInfo: {
+                                                ...userInfo.publicInfo,
+                                                interests: userInterests,
+                                            },
+                                        };
+
+                                        try {
+                                            await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
+                                            setUserInfo(updatedUserInfo);
+                                        } catch (error) {
+                                            console.error("Error updating user info:", error);
+                                        }
+                                    }
+
+                                    setInterestOptionsModal(false);
+                                }}
+                            >
+                                <View className='items-center justify-center bg-pale-blue w-1/2 rounded-md px-2 py-2'>
+                                    <Text className='text-white font-bold text-xl'>Save Changes</Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+
+                    <View className='mt-4'>
+                        <Text className='text-2xl font-bold'>Your Committees</Text>
+                        <Text className="text-lg text-gray-600">Visit committees tab to join or leave a committee</Text>
+                        {userCommittees && userCommittees.length > 0 && (
+                            <View className='mt-2'>
+                                <View className='flex-row flex-wrap mt-2'>
+                                    {userCommittees?.map((committeeName, index) => {
+                                        const committeeData = committeesData.find(c => c.firebaseDocName === committeeName);
+                                        return (
+                                            <ProfileBadge
+                                                badgeClassName='p-2 max-w-2/5 rounded-md mr-1 mb-2'
+                                                textClassName='text-lg'
+                                                text={committeeData?.name || "Unknown Committee"}
+                                                badgeColor={committeeData?.color || ""}
+                                                key={index}
+                                            />
+                                        );
+                                    })}
+                                </View>
+                            </View>
+                        )}
+                    </View>
+                </View>
+            </DismissibleModal>
         </View>
     );
 };

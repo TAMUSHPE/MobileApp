@@ -572,6 +572,7 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
                         persistentScrollbar
                         scrollToOverflowEnabled
                     >
+                        {/* If any additional interest are added in the future, then update manually in ISHPE component */}
                         <View className='flex-wrap flex-row w-full h-full pb-28 pt-4 px-2 justify-between'>
                             <InterestButtons interestEvent={EventType.VOLUNTEER_EVENT} label="Volunteering" color={"#E93535"} Icon={VolunteerIcon} />
                             <InterestButtons interestEvent={EventType.INTRAMURAL_EVENT} label="Intramural" color={"#000000"} Icon={IntramuralIcon} />
