@@ -39,7 +39,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             <StatusBar style='dark' />
             <FlickrPhotoGallery />
             {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}
-            <Ishpe />
+            <Ishpe navigation={navigation} />
 
             {/* <FeaturedSlider route={route} /> */}
 

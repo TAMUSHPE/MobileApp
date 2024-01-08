@@ -2,17 +2,18 @@ import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/core';
 import { UserContext } from '../../context/UserContext';
 import { getCommitteeEvents, getCommittees, getInterestsEvent, getUpcomingEvents, setPublicUserData } from '../../api/firebaseUtils';
 import { EventType, SHPEEvent } from '../../types/Events';
 import { Committee } from '../../types/Committees';
+import { IShpeProps } from '../../types/Navigation';
 import SHPELogo from '../../../assets/SHPE_black.svg';
 import EventsList from '../../components/EventsList';
 import DismissibleModal from '../../components/DismissibleModal';
 import ProfileBadge from '../../components/ProfileBadge';
-import { useFocusEffect } from '@react-navigation/core';
 
-const Ishpe = () => {
+const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const userCommittees = userInfo?.publicInfo?.committees || [];
     const [userInterests, setUserInterests] = useState<string[]>(userInfo?.publicInfo?.interests || []);
@@ -216,7 +217,7 @@ const Ishpe = () => {
             {/* Event List */}
             {currentTab === 'ISHPE' && (
                 <View>
-                    <EventsList events={displayIshpeEvents} isLoading={loadingIshpeEvents} />
+                    <EventsList events={displayIshpeEvents} isLoading={loadingIshpeEvents} navigation={navigation} />
                     {(displayIshpeEvents.length === 0 && !loadingIshpeEvents) && (
                         <View className='flex-1 justify-center items-center'>
                             <Text className='text-xl font-semibold'>No events this week</Text>
@@ -226,7 +227,7 @@ const Ishpe = () => {
             )}
             {currentTab === 'General' && (
                 <View>
-                    <EventsList events={displayGeneralEvents} isLoading={loadingGeneralEvents} />
+                    <EventsList events={displayGeneralEvents} isLoading={loadingGeneralEvents} navigation={navigation} />
                     {(displayGeneralEvents.length && !loadingGeneralEvents) === 0 && (
                         <View className='flex-1 justify-center items-center'>
                             <Text className='text-xl font-semibold'>No events this week</Text>

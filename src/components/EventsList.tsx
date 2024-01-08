@@ -1,11 +1,16 @@
-import { View, Text, ActivityIndicator, Image } from 'react-native'
+import { View, Text, ActivityIndicator, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
-import { Committee, getLogoComponent } from '../types/Committees';
 import { Timestamp } from 'firebase/firestore';
+import { Committee, getLogoComponent } from '../types/Committees';
 import { SHPEEvent } from '../types/Events';
 import { Images } from '../../assets';
 
-const EventsList = ({ events, isLoading, showImage = true }: { events: SHPEEventWithCommitteeData[], isLoading?: boolean, showImage?: boolean }) => {
+const EventsList = ({ events, navigation, isLoading, showImage = true }: {
+    events: SHPEEventWithCommitteeData[],
+    navigation?: any
+    , isLoading?: boolean,
+    showImage?: boolean
+}) => {
     if (isLoading) {
         return (
             <View className="flex-row justify-center items-center pb-8">
@@ -25,7 +30,11 @@ const EventsList = ({ events, isLoading, showImage = true }: { events: SHPEEvent
                 }
 
                 return (
-                    <View key={index} className="flex-row space-x-2 pt-4">
+                    <TouchableOpacity
+                        key={index}
+                        className="flex-row space-x-2 pt-4"
+                        onPress={() => navigation.navigate("EventInfo", { eventId: event.id })}
+                    >
                         {/* If Committee is associated with event, then show Committee Logo */}
                         {LogoComponent && (
                             <View className='flex-row'>
@@ -75,7 +84,7 @@ const EventsList = ({ events, isLoading, showImage = true }: { events: SHPEEvent
                                 <Text className="semibold text-md">{formatStartTime(event?.startTime!)}</Text>
                             </View>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 );
             })}
         </View>

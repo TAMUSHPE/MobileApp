@@ -2,12 +2,12 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from 'rea
 import React, { useCallback, useContext, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { EventsStackParams } from '../../types/Navigation';
-import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
-import { SHPEEvent } from '../../types/Events';
 import { useFocusEffect } from '@react-navigation/native';
-import { UserContext } from '../../context/UserContext';
 import { AntDesign } from '@expo/vector-icons';
+import { UserContext } from '../../context/UserContext';
+import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
+import { EventsStackParams } from '../../types/Navigation';
+import { SHPEEvent } from '../../types/Events';
 import EventsList from '../../components/EventsList';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
@@ -91,7 +91,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     }
 
                     {upcomingEvents && (
-                        <EventsList events={upcomingEvents} />
+                        <EventsList events={upcomingEvents} navigation={navigation} />
                     )}
 
                     {pastEvents.length != 0 &&
@@ -99,7 +99,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     }
 
                     {pastEvents && (
-                        <EventsList events={pastEvents} />
+                        <EventsList events={pastEvents} navigation={navigation} />
                     )}
                 </View>
             </ScrollView>
