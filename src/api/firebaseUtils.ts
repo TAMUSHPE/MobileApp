@@ -1077,3 +1077,38 @@ export const getCommitteeEvents = async (committees: string[]) => {
     }
 }
 
+export const getInterestsEvent = async (interests: string[]) => {
+    try {
+        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
+        const currentTime = Timestamp.now();
+
+        const eventsRef = collection(db, 'events');
+
+        for (const interest of interests) {
+            try {
+                const eventsQuery = query(
+                    eventsRef,
+                    where("eventType", "==", interest),
+                    where("endTime", ">=", currentTime)
+                );
+                const querySnapshot = await getDocs(eventsQuery);
+                querySnapshot.forEach((doc) => {
+                    const eventData = doc.data();
+                    const eventDataWithId = { id: doc.id, ...eventData };
+
+                    // Using Map to avoid duplicates
+                    allEvents.set(doc.id, eventDataWithId);
+                });
+            } catch (innerError) {
+                console.error(`Error fetching events for committee ${interests}:`, innerError);
+            }
+        }
+
+        // Convert Map values to an array
+        return Array.from(allEvents.values());
+    } catch (error) {
+        console.error("Error fetching events for user committees:", error);
+        return [];
+    }
+}
+

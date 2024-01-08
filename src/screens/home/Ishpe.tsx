@@ -1,9 +1,9 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import React, { useState, useEffect, useContext } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext';
-import { getCommitteeEvents, getCommittees, getUpcomingEvents, setPublicUserData } from '../../api/firebaseUtils';
+import { getCommitteeEvents, getCommittees, getInterestsEvent, getUpcomingEvents, setPublicUserData } from '../../api/firebaseUtils';
 import { EventType, SHPEEvent } from '../../types/Events';
 import { Committee } from '../../types/Committees';
 import SHPELogo from '../../../assets/SHPE_black.svg';
@@ -23,8 +23,41 @@ const Ishpe = () => {
     const [loadingIshpeEvents, setLoadingIshpeEvents] = useState(true);
     const [loadingGeneralEvents, setLoadingGeneralEvents] = useState(true);
     const [interestOptionsModal, setInterestOptionsModal] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const forwardButtonDisabled = (weekStartDate.toISOString().split('T')[0] == getCurrentSunday().toISOString().split('T')[0]);
+
+    const fetchEvents = async () => {
+        try {
+            setLoadingIshpeEvents(true);
+            setLoadingGeneralEvents(true);
+
+            // Fetch ishpeEvents (committee events) and interestEvents
+            const [ishpeResponse, interestResponse] = await Promise.all([
+                getCommitteeEvents(userCommittees) as Promise<SHPEEventWithCommitteeData[]>,
+                getInterestsEvent(userInterests) as Promise<SHPEEventWithCommitteeData[]>
+            ]);
+
+            // Merge and sort events by start date in ascending order
+            const mergedEvents = [...ishpeResponse, ...interestResponse];
+            mergedEvents.sort((a, b) => (a.startTime?.toDate().getTime() || 0) - (b.startTime?.toDate().getTime() || 0));
+
+            setIshpeEvents(mergedEvents);
+
+            // Fetch generalEvents and filter out ishpeEvents and interestEvents
+            const generalResponse = await getUpcomingEvents();
+            const filteredGeneralEvents = generalResponse.filter(generalEvent =>
+                !mergedEvents.some(event => event.id === generalEvent.id)
+            );
+            setGeneralEvents(filteredGeneralEvents);
+
+        } catch (error) {
+            console.error("Error retrieving events:", error);
+        } finally {
+            setLoadingIshpeEvents(false);
+            setLoadingGeneralEvents(false);
+        }
+    };
 
     useEffect(() => {
         const fetchCommittees = async () => {
@@ -32,33 +65,15 @@ const Ishpe = () => {
             setCommitteesData(response);
         }
 
-        const fetchEvents = async () => {
-            try {
-                setLoadingIshpeEvents(true);
-                setLoadingGeneralEvents(true);
-
-                // Fetch ishpeEvents
-                const ishpeResponse = await getCommitteeEvents(userCommittees) as SHPEEventWithCommitteeData[];
-                setIshpeEvents(ishpeResponse);
-
-                // Fetch generalEvents and filter out ishpeEvents
-                const generalResponse = await getUpcomingEvents();
-                const filteredGeneralEvents = generalResponse.filter(generalEvent =>
-                    !ishpeResponse.some(ishpeEvent => ishpeEvent.id === generalEvent.id)
-                );
-                setGeneralEvents(filteredGeneralEvents);
-
-            } catch (error) {
-                console.error("Error retrieving events:", error);
-            } finally {
-                setLoadingIshpeEvents(false);
-                setLoadingGeneralEvents(false);
-            }
-        };
-
         fetchEvents();
         fetchCommittees();
     }, []);
+
+    useEffect(() => {
+        if (interestOptionsModal) {
+            setUserInterests(userInfo?.publicInfo?.interests || []);
+        }
+    }, [interestOptionsModal])
 
     const isInterestChanged = () => {
         if (!userInfo?.publicInfo?.interests) {
@@ -80,7 +95,6 @@ const Ishpe = () => {
 
         return false;
     };
-
 
     const handleInterestToggle = (name: string) => {
         setUserInterests(prevInterest => {
@@ -109,12 +123,6 @@ const Ishpe = () => {
             </TouchableOpacity>
         );
     }
-
-    useEffect(() => {
-        if (interestOptionsModal) {
-            setUserInterests(userInfo?.publicInfo?.interests || []);
-        }
-    }, [interestOptionsModal])
 
     return (
         <View className="mx-4 bg-gray-100 rounded-md flex-col mt-4">
@@ -197,45 +205,52 @@ const Ishpe = () => {
                             <InterestButtons interestEvent={EventType.STUDY_HOURS} label="Study Hours" color={"#9DB89A"} />
                             <InterestButtons interestEvent={EventType.WORKSHOP} label="Workshops" color={"#FF910A"} />
                         </View>
-                    </View>
 
-                    <View style={{ minHeight: 60 }}>
-                        {isInterestChanged() && (
-                            <TouchableOpacity
-                                className='w-full mt-4'
-                                onPress={async () => {
-                                    await setPublicUserData({
-                                        interests: userInterests,
-                                    });
+                        {/* Save Changes Button */}
+                        <View style={{ minHeight: 60 }}>
+                            {(isInterestChanged() && !loading) && (
+                                <TouchableOpacity
+                                    className='w-full mt-4'
+                                    onPress={async () => {
+                                        setLoading(true);
+                                        await fetchEvents();
+                                        await setPublicUserData({
+                                            interests: userInterests,
+                                        });
 
-                                    // locally update user info
-                                    if (userInfo) {
-                                        const updatedUserInfo = {
-                                            ...userInfo,
-                                            publicInfo: {
-                                                ...userInfo.publicInfo,
-                                                interests: userInterests,
-                                            },
-                                        };
+                                        // locally update user info
+                                        if (userInfo) {
+                                            const updatedUserInfo = {
+                                                ...userInfo,
+                                                publicInfo: {
+                                                    ...userInfo.publicInfo,
+                                                    interests: userInterests,
+                                                },
+                                            };
 
-                                        try {
-                                            await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
-                                            setUserInfo(updatedUserInfo);
-                                        } catch (error) {
-                                            console.error("Error updating user info:", error);
+                                            try {
+                                                await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
+                                                setUserInfo(updatedUserInfo);
+                                            } catch (error) {
+                                                console.error("Error updating user info:", error);
+                                            }
                                         }
-                                    }
 
-                                    setInterestOptionsModal(false);
-                                }}
-                            >
-                                <View className='items-center justify-center bg-pale-blue w-1/2 rounded-md px-2 py-2'>
-                                    <Text className='text-white font-bold text-xl'>Save Changes</Text>
-                                </View>
-                            </TouchableOpacity>
-                        )}
+                                        setLoading(false);
+                                    }}
+                                >
+                                    <View className='items-center justify-center bg-pale-blue w-1/2 rounded-md px-2 py-2'>
+                                        <Text className='text-white font-bold text-xl'>Save Changes</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                            {loading && (
+                                <ActivityIndicator size="large" className='mt-4' />
+                            )}
+                        </View>
                     </View>
 
+                    {/* User Committees */}
                     <View className='mt-4'>
                         <Text className='text-2xl font-bold'>Your Committees</Text>
                         <Text className="text-lg text-gray-600">Visit committees tab to join or leave a committee</Text>
