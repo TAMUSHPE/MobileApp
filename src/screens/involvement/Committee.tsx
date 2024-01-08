@@ -1,7 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRoute } from '@react-navigation/native';
 import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
@@ -11,15 +10,14 @@ import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc } from 'firebase/firestore';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
 import { handleLinkPress } from '../../helpers/links';
-import { CommitteeScreenRouteProp, CommitteesListProps } from '../../types/Navigation';
+import { CommitteeScreenProps } from '../../types/Navigation';
 import { getLogoComponent } from '../../types/Committees';
+import { SHPEEvent } from '../../types/Events';
 import CommitteeTeamCard from './CommitteeTeamCard';
 import DismissibleModal from '../../components/DismissibleModal';
-import { SHPEEvent } from '../../types/Events';
 import EventsList from '../../components/EventsList';
 
-const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
-    const route = useRoute<CommitteeScreenRouteProp>();
+const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
 
     const { name, color, logo, head, leads, representatives, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = initialCommittee;
@@ -131,7 +129,7 @@ const Committee: React.FC<CommitteesListProps> = ({ navigation }) => {
                 {/* Upcoming Events */}
                 <View className='mt-11'>
                     <Text className='text-2xl font-bold mb-2'>Upcoming Events</Text>
-                    <EventsList events={events} isLoading={loading} showImage={false} />
+                    <EventsList events={events} isLoading={loading} showImage={false} navigation={navigation} />
                 </View>
 
                 {/* Team List */}

@@ -1,14 +1,12 @@
 import React, { useState, ReactElement } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { InvolvementStackParams } from '../../types/Navigation';
+import { InvolvementScreenProps } from '../../types/Navigation';
 import CommitteesList from './CommitteesList';
 import MemberSHPE from './MemberSHPE';
 
-// Define tab components
 
-const Involvement: React.FC<NativeStackScreenProps<InvolvementStackParams>> = ({ navigation }) => {
+const Involvement: React.FC<InvolvementScreenProps> = ({ navigation }) => {
     const [currentTab, setCurrentTab] = useState<keyof typeof TABS>("Committees");
     const tabComponents: Record<string, ReactElement> = {
         Committees: <CommitteesList navigation={navigation} />,
