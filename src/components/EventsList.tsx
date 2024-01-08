@@ -5,7 +5,7 @@ import { Timestamp } from 'firebase/firestore';
 import { SHPEEvent } from '../types/Events';
 import { Images } from '../../assets';
 
-const EventsList = ({ events, isLoading, showImage }: { events: SHPEEventWithCommitteeData[], isLoading?: boolean, showImage?: boolean }) => {
+const EventsList = ({ events, isLoading, showImage = true }: { events: SHPEEventWithCommitteeData[], isLoading?: boolean, showImage?: boolean }) => {
     if (isLoading) {
         return (
             <View className="flex-row justify-center items-center pb-8">
