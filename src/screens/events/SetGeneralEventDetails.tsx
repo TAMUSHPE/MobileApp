@@ -166,10 +166,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     }}
                 />
             }
-            {
-                Platform.OS == 'ios'
-            }
-
 
             {/* End Date Pickers */}
             {Platform.OS == 'android' && showEndDatePicker &&

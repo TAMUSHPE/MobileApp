@@ -113,7 +113,7 @@ const generateClassYears = (): { year: string }[] => {
 
 export const classYears = generateClassYears();
 
-export const MAJORS = [
+export const MAJORS: Array<{ major: string, iso: string }> = [
     { major: 'Aerospace Engineering', iso: 'AERO' },
     { major: 'Architectural Engineering', iso: 'AREN' },
     { major: 'Biomedical Engineering', iso: 'BMEN' },
@@ -137,5 +137,5 @@ export const MAJORS = [
     { major: 'Nuclear Engineering', iso: 'NUEN' },
     { major: 'Ocean Engineering', iso: 'OCEN' },
     { major: 'Petroleum Engineering', iso: 'PETE' },
-    { major: 'Technology Management', iso: 'TCMG' }
+    { major: 'Technology Management', iso: 'TCMG' },
 ];

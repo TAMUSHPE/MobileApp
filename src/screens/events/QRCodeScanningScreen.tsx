@@ -24,7 +24,7 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
         setScanned(true);
         const dataRegex: RegExp = /^tamu-shpe:\/\/event\?id=[a-zA-z0-9]+&mode=(sign-in|sign-out)$/i;
         if (!dataRegex.test(data)) {
-            Alert.alert("Invalid QR Code", "Either this QR Code is invalid or was miscanned. Please try again.", [
+            Alert.alert("Invalid QR Code", "Either this QR Code is invalid or was misscanned. Please try again.", [
                 {
                     text: 'ok',
                     onPress: () => {
