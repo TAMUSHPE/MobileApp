@@ -2,7 +2,7 @@ import { View, Text, ActivityIndicator, Image, TouchableOpacity } from 'react-na
 import React from 'react'
 import { Timestamp } from 'firebase/firestore';
 import { Committee, getLogoComponent } from '../types/Committees';
-import { SHPEEvent } from '../types/Events';
+import { SHPEEvent, monthNames } from '../types/Events';
 import { Images } from '../../assets';
 
 const EventsList = ({ events, navigation, isLoading, showImage = true }: {
@@ -97,7 +97,6 @@ const formatDate = (firestoreTimestamp: Timestamp) => {
 
     const dateNum = date.getDate();
     const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     const day = dayNames[date.getDay()];
     const month = monthNames[date.getMonth()];
