@@ -88,9 +88,10 @@ const RootNavigator = () => {
         config: {
             screens: {
                 EventVerificationScreen: {
-                    path: 'event/:id?',
+                    path: 'event/:id?:mode?',
                     parse: {
-                        id: (id: string) => `${id}`,
+                        id: (id: string) => id,
+                        mode: (mode: string) => mode
                     },
                 },
             },

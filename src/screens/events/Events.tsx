@@ -2,20 +2,20 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from 'rea
 import React, { useCallback, useContext, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { EventsStackParams } from '../types/Navigation';
-import { getUpcomingEvents, getPastEvents } from '../api/firebaseUtils';
-import { SHPEEventID } from '../types/Events';
-import EventCard from '../components/EventCard';
 import { useFocusEffect } from '@react-navigation/native';
-import { UserContext } from '../context/UserContext';
-
+import { AntDesign } from '@expo/vector-icons';
+import { UserContext } from '../../context/UserContext';
+import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
+import { EventsStackParams } from '../../types/Navigation';
+import { SHPEEvent } from '../../types/Events';
+import EventsList from '../../components/EventsList';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
-    const [upcomingEvents, setUpcomingEvents] = useState<SHPEEventID[]>([]);
-    const [pastEvents, setPastEvents] = useState<SHPEEventID[]>([]);
+    const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
+    const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
     const userContext = useContext(UserContext);
     const [isLoading, setIsLoading] = useState(true);
-    const { userInfo, setUserInfo } = userContext!;
+    const { userInfo } = userContext!;
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
@@ -58,13 +58,20 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     {
                         hasPrivileges &&
                         < View className='absolute w-full items-end justify-center'>
-                            <TouchableOpacity className='bg-blue-400 w-16 h-10 items-center justify-center rounded-md mr-4'
+                            <TouchableOpacity className='bg-pale-blue w-16 h-10 items-center justify-center rounded-md mr-4'
                                 onPress={() => navigation.navigate("CreateEvent")}>
-                                <Text className='font-bold'>Create</Text>
+                                <Text className='font-bold text-gray-100'>Create</Text>
                             </TouchableOpacity>
                         </View>
                     }
                 </View>
+                <TouchableOpacity
+                    className='flex flex-row items-center justify-center space-x-1 border-2 rounded-full py-1 my-2'
+                    onPress={() => navigation.navigate("QRCodeScanningScreen")}
+                >
+                    <AntDesign name="qrcode" size={30} color={"black"} />
+                    <Text className='text-lg'>Scan QR Code</Text>
+                </TouchableOpacity>
 
                 {isLoading && upcomingEvents.length == 0 && pastEvents.length == 0 &&
                     <View className='h-64 justify-center items-center'>
@@ -77,34 +84,27 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                         <Text>No Events</Text>
                     </View>
                 }
-                <View className='ml-2 mt-4'>
+
+                <View className='ml-4 mt-4'>
                     {upcomingEvents.length != 0 &&
-                        <Text className='text-xl mb-4 text-bold'>Upcoming Events</Text>
+                        <Text className='text-xl mb-4 font-bold'>Upcoming Events</Text>
                     }
 
-                    {upcomingEvents.map((event) => {
-                        return (
-                            <View key={event.id}>
-                                <EventCard key={event.id} event={event} navigation={navigation} />
-                            </View>
-                        )
-                    })}
+                    {upcomingEvents && (
+                        <EventsList events={upcomingEvents} navigation={navigation} />
+                    )}
 
                     {pastEvents.length != 0 &&
-                        <Text className='text-xl mb-4 text-bold '>Past Events</Text>
+                        <Text className='text-xl mb-4 text-bold mt-8 font-bold '>Past Events</Text>
                     }
 
-                    {pastEvents.map((event) => {
-                        return (
-                            <View key={event.id}>
-                                <EventCard event={event} navigation={navigation} />
-                            </View>
-                        )
-                    })}
+                    {pastEvents && (
+                        <EventsList events={pastEvents} navigation={navigation} />
+                    )}
                 </View>
             </ScrollView>
-        </SafeAreaView >
-    )
-}
+        </SafeAreaView>
+    );
+};
 
-export default Events
+export default Events;
