@@ -31,7 +31,14 @@
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "GOOGLE_SERVICES_FILE": "GOOGLE_SERVICES_JSON",
+        "GOOGLE_SERVICE_INFO_PLIST": "GOOGLE_SERVICE_INFO_PLIST",
+        "FLICKER_API_KEY": "FLICKER_API_KEY",
+        "FLICKER_USER_ID": "FLICKER_USER_ID",
+        "GOOGLE_PLACES_API_KEY": "GOOGLE_PLACES_API_KEY"
+      }
     },
     "development-sim": {
       "distribution": "internal",
