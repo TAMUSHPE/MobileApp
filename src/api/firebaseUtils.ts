@@ -6,7 +6,7 @@ import { memberPoints } from "./fetchGoogleSheets";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
-import { SHPEEvent, SHPEEventID, EventLogStatus } from "../types/Events";
+import { SHPEEvent, EventLogStatus } from "../types/Events";
 
 
 /**
@@ -324,6 +324,26 @@ export const getCommittees = async (): Promise<Committee[]> => {
         return [];
     }
 };
+
+export const getCommittee = async (firebaseDocName: string): Promise<Committee | null> => {
+    try {
+        const committeeDocRef = doc(db, 'committees', firebaseDocName);
+        const docSnap = await getDoc(committeeDocRef);
+        if (docSnap.exists()) {
+            return {
+                firebaseDocName: docSnap.id,
+                ...docSnap.data()
+            };
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
+
 export const setCommitteeData = async (committeeData: Committee) => {
     try {
         await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
@@ -441,35 +461,9 @@ export const removeFromBlacklist = async (userToRemove: PublicUserInfo) => {
     await setDoc(doc(db, "restrictions/blacklist"), { list: updatedBlacklist }, { merge: true });
 };
 
-export const isUserInBlacklist = async (uid: string): Promise<boolean> => {
-    const blacklistDocRef = doc(db, "restrictions/blacklist");
-    const docSnap = await getDoc(blacklistDocRef);
-
-    if (docSnap.exists()) {
-        const blacklist = docSnap.data().list;
-        return blacklist.some((user: PublicUserInfo) => user.uid === uid);
-    } else {
-        // Blacklist document does not exist or has no data
-        return false;
-    }
-};
-
-export const createEvent = async (event: SHPEEvent) => {
+export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
     try {
-        const docRef = await addDoc(collection(db, "events"), {
-            name: event.name,
-            description: event.description,
-            pointsCategory: event.pointsCategory,
-            notificationGroup: event.notificationGroup,
-            startDate: event.startDate,
-            endDate: event.endDate,
-            location: event.location,
-        });
-
-        await setDoc(doc(db, `events/${docRef.id}/summaries/default`), {
-            attendance: 0
-        });
-
+        const docRef = await addDoc(collection(db, "events"), { ...event });
         return docRef.id;
     } catch (error) {
         console.error("Error adding document: ", error);
@@ -477,17 +471,11 @@ export const createEvent = async (event: SHPEEvent) => {
     }
 };
 
-export const updateEvent = async (event: SHPEEventID) => {
+export const updateEvent = async (event: SHPEEvent) => {
     try {
         const docRef = doc(db, "events", event.id!);
         await updateDoc(docRef, {
-            name: event.name,
-            description: event.description,
-            pointsCategory: event.pointsCategory || [],
-            notificationGroup: event.notificationGroup || [],
-            startDate: event.startDate,
-            endDate: event.endDate,
-            location: event.location,
+            ...event
         });
         return event.id;
     } catch (error) {
@@ -501,7 +489,7 @@ export const getEvent = async (eventID: string) => {
         const eventRef = doc(db, "events", eventID);
         const eventDoc = await getDoc(eventRef);
         if (eventDoc.exists()) {
-            return eventDoc.data() as SHPEEventID;
+            return eventDoc.data() as SHPEEvent;
         } else {
             console.error("No such document!");
             return null;
@@ -512,24 +500,33 @@ export const getEvent = async (eventID: string) => {
     }
 }
 
+type SHPEEventWithCommitteeData = SHPEEvent & { committeeData?: Committee | undefined };
+
+
 export const getUpcomingEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endDate", ">", currentTime));
+    const q = query(eventsRef, where("endTime", ">", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEventID[] = [];
-    querySnapshot.forEach((doc) => {
-        events.push({ id: doc.id, ...doc.data() });
-    });
+    const events: SHPEEventWithCommitteeData[] = [];
+
+    for (const doc of querySnapshot.docs) {
+        const eventData = doc.data();
+        let committeeData: Committee | undefined;
+
+        if (eventData.committee) {
+            committeeData = await getCommittee(eventData.committee) || undefined;
+        }
+
+
+        events.push({ id: doc.id, ...eventData, committeeData: committeeData });
+    }
 
     events.sort((a, b) => {
-        const dateA = a.startDate ? a.startDate.toDate() : undefined;
-        const dateB = b.startDate ? b.startDate.toDate() : undefined;
+        const dateA = a.startTime ? a.startTime.toDate() : undefined;
+        const dateB = b.startTime ? b.startTime.toDate() : undefined;
 
-        if (dateA && dateB) {
-            return dateA.getTime() - dateB.getTime();
-        }
-        return -1; // error
+        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
     });
 
     return events;
@@ -538,25 +535,30 @@ export const getUpcomingEvents = async () => {
 export const getPastEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endDate", "<", currentTime));
+    const q = query(eventsRef, where("endTime", "<", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEventID[] = [];
-    querySnapshot.forEach((doc) => {
-        events.push({ id: doc.id, ...doc.data() });
-    });
-    events.sort((a, b) => {
-        const dateA = a.startDate ? a.startDate.toDate() : undefined;
-        const dateB = b.startDate ? b.startDate.toDate() : undefined;
+    const events: SHPEEventWithCommitteeData[] = [];
 
-        if (dateA && dateB) {
-            return dateA.getTime() - dateB.getTime();
+    for (const doc of querySnapshot.docs) {
+        const eventData = doc.data();
+        let committeeData: Committee | undefined;
+
+        if (eventData.committee) {
+            committeeData = await getCommittee(eventData.committee) || undefined;
         }
-        return -1; // error
+
+        events.push({ id: doc.id, ...eventData, committeeData });
+    }
+
+    events.sort((a, b) => {
+        const dateA = a.startTime ? a.startTime.toDate() : undefined;
+        const dateB = b.startTime ? b.startTime.toDate() : undefined;
+
+        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
     });
 
     return events;
 };
-
 
 
 export const destroyEvent = async (eventID: string) => {
@@ -600,7 +602,7 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
                 if (currentTime > eventEndTime) {
                     return EventLogStatus.EVENT_OVER;
                 } else {
-                    return EventLogStatus.EVENT_ONGOING
+                    return EventLogStatus.EVENT_ONGOING;
                 }
             }
         }
@@ -627,42 +629,69 @@ export const getAttendanceNumber = async (eventId: string): Promise<number | nul
     }
 }
 
-
-export const addEventLog = async (eventId: string): Promise<EventLogStatus> => {
-    const status = await getEventStatus(eventId);
-    if (status != EventLogStatus.EVENT_ONGOING) {
-        return status;
-    }
-
-    try {
-        const logDoc = doc(db, `events/${eventId}/logs/${auth.currentUser?.uid!}`);
-        const logDocRef = await getDoc(logDoc);
-
-        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
-        const summaryDocRef = await getDoc(summaryDoc);
-
-
-        if (!logDocRef.exists()) {
-            await setDoc(logDoc, { signedInTime: serverTimestamp() }, { merge: true });
-
-            if (!summaryDocRef.exists()) {
-                await setDoc(summaryDoc, { attendance: 1 });
-                return EventLogStatus.SUCCESS;
-            } else {
-                const currentCount = summaryDocRef.data().attendance || 0;
-                await updateDoc(summaryDoc, { attendance: currentCount + 1 });
-                return EventLogStatus.SUCCESS;
+/**
+ * Signs a user into an event given an event id
+ * @param eventID ID of event to sign into. This is the name of the event document in firestore
+ * @returns Status representing the status of the cloud function
+ */
+export const signInToEvent = async (eventID: string): Promise<EventLogStatus> => {
+    return await httpsCallable(functions, "eventSignIn")
+        .call(null, { eventID })
+        .then((result) => {
+            if (typeof result.data == "object" && result.data && (result.data as any).success) {
+                return EventLogStatus.SUCCESS
             }
-        } else {
-            return EventLogStatus.ALREADY_LOGGED;
-        }
+            else {
+                return EventLogStatus.ERROR
+            }
+        })
+        .catch(err => {
+            switch (err.code) {
+                case 'functions/already-exists':
+                    return EventLogStatus.ALREADY_LOGGED;
+                case 'functions/failed-precondition':
+                    return EventLogStatus.EVENT_NOT_STARTED;
+                case 'functions/not-found':
+                    return EventLogStatus.EVENT_NOT_FOUND;
+                case 'functions/deadline-exceeded':
+                    return EventLogStatus.EVENT_OVER;
+                default:
+                    console.error(err);
+                    return EventLogStatus.ERROR;
+            }
+        });
+}
 
-    } catch (e) {
-        console.error("Error adding log: ", e);
-    }
-
-    return EventLogStatus.ERROR;
-};
+/**
+ * Signs a user into an event given an event id
+ * @param eventID ID of event to sign into. This is the name of the event document in firestore
+ * @returns Status representing the status of the cloud function
+ */
+export const signOutOfEvent = async (eventID: string): Promise<EventLogStatus> => {
+    return await httpsCallable(functions, "eventSignOut")
+        .call(null, { eventID })
+        .then((result) => {
+            if (typeof result.data == "object" && result.data && (result.data as any).success) {
+                return EventLogStatus.SUCCESS
+            }
+            else {
+                return EventLogStatus.ERROR
+            }
+        })
+        .catch(err => {
+            switch (err.code) {
+                case 'functions/failed-precondition':
+                    return EventLogStatus.EVENT_NOT_STARTED;
+                case 'functions/not-found':
+                    return EventLogStatus.EVENT_NOT_FOUND;
+                case 'functions/deadline-exceeded':
+                    return EventLogStatus.EVENT_OVER;
+                default:
+                    console.error(err);
+                    return EventLogStatus.ERROR;
+            }
+        });
+}
 
 export const isUserSignedIn = async (eventId: string, uid: string) => {
     const eventLogDocRef = doc(db, 'events', eventId, 'logs', uid);
@@ -1008,3 +1037,78 @@ export const removeFeedback = async (feedbackId: string) => {
     const feedbackDoc = doc(db, 'feedback', feedbackId);
     await deleteDoc(feedbackDoc);
 };
+
+export const getCommitteeEvents = async (committees: string[]) => {
+    try {
+        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
+        const currentTime = Timestamp.now();
+
+        const eventsRef = collection(db, 'events');
+
+        // Pre-fetching committee data to avoid duplicate calls in the loop
+        const committeesData = await Promise.all(committees.map(committee => getCommittee(committee)));
+
+        for (const committee of committees) {
+            try {
+                const committeeData = committeesData.find(data => data?.firebaseDocName === committee);
+                const eventsQuery = query(
+                    eventsRef,
+                    where("committee", "==", committee),
+                    where("endTime", ">=", currentTime)
+                );
+                const querySnapshot = await getDocs(eventsQuery);
+                querySnapshot.forEach((doc) => {
+                    const eventData = doc.data();
+                    const eventWithCommitteeData = { id: doc.id, ...eventData, committeeData: committeeData };
+
+                    // Using Map to avoid duplicates
+                    allEvents.set(doc.id, eventWithCommitteeData);
+                });
+            } catch (innerError) {
+                console.error(`Error fetching events for committee ${committee}:`, innerError);
+            }
+        }
+
+        // Convert Map values to an array
+        return Array.from(allEvents.values());
+    } catch (error) {
+        console.error("Error fetching events for user committees:", error);
+        return [];
+    }
+}
+
+export const getInterestsEvent = async (interests: string[]) => {
+    try {
+        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
+        const currentTime = Timestamp.now();
+
+        const eventsRef = collection(db, 'events');
+
+        for (const interest of interests) {
+            try {
+                const eventsQuery = query(
+                    eventsRef,
+                    where("eventType", "==", interest),
+                    where("endTime", ">=", currentTime)
+                );
+                const querySnapshot = await getDocs(eventsQuery);
+                querySnapshot.forEach((doc) => {
+                    const eventData = doc.data();
+                    const eventDataWithId = { id: doc.id, ...eventData };
+
+                    // Using Map to avoid duplicates
+                    allEvents.set(doc.id, eventDataWithId);
+                });
+            } catch (innerError) {
+                console.error(`Error fetching events for committee ${interests}:`, innerError);
+            }
+        }
+
+        // Convert Map values to an array
+        return Array.from(allEvents.values());
+    } catch (error) {
+        console.error("Error fetching events for user committees:", error);
+        return [];
+    }
+}
+

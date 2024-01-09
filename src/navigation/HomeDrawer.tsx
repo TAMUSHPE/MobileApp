@@ -1,6 +1,6 @@
 import { Image, TouchableOpacity, View, Text } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
-import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useNavigationState } from '@react-navigation/native';
@@ -136,8 +136,9 @@ const HomeDrawerHeader = ({ navigation }: { navigation: any }) => {
         }
         return '';
     });
-    // Do not render the header if the current route is PublicProfile
-    if (currentRouteName === 'PublicProfile') {
+
+    // These are screen in home stack that should not have a header
+    if (currentRouteName === 'PublicProfile' || currentRouteName === 'EventInfo') {
         return null;
     }
     return (

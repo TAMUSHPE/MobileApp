@@ -29,6 +29,7 @@
     "expo": "^49.0.11",
     "expo-application": "~5.4.0",
     "expo-auth-session": "~5.2.0",
+    "expo-barcode-scanner": "^12.7.0",
     "expo-build-properties": "~0.8.3",
     "expo-clipboard": "~4.3.1",
     "expo-constants": "~14.4.2",

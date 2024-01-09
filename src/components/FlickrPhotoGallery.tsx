@@ -106,6 +106,8 @@ const FlickrPhotoGallery = () => {
 
     const renderItem = ({ item }: { item: FlickrPhoto }) => <FlickrPhotoItem item={item} />;
 
+    if (!photos.length) return null;
+
     return (
         <Animated.FlatList
             data={photos}
