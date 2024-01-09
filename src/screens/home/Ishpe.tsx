@@ -5,6 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/core';
 import { UserContext } from '../../context/UserContext';
 import { getCommitteeEvents, getCommittees, getInterestsEvent, getUpcomingEvents, setPublicUserData } from '../../api/firebaseUtils';
+import { monthNames } from '../../helpers/timeUtils';
 import { EventType, SHPEEvent } from '../../types/Events';
 import { Committee } from '../../types/Committees';
 import { IShpeProps } from '../../types/Navigation';
@@ -89,6 +90,11 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
         setDisplayIshpeEvents(filterEvents(ishpeEvents));
         setDisplayGeneralEvents(filterEvents(generalEvents));
     }, [weekStartDate, ishpeEvents, generalEvents]);
+
+
+    const isCurrentSunday = () => {
+        return weekStartDate.setHours(0, 0, 0, 0) !== getCurrentSunday().getTime();
+    }
 
     const backwardButtonDisabled = (events: SHPEEvent[]) => {
         return !events.some((event: SHPEEvent) => {
@@ -194,24 +200,37 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
             </View>
 
             {/* Date Control */}
-            <View className="flex-row justify-between items-center p-3">
-                <TouchableOpacity
-                    onPress={() => setWeekStartDate(adjustWeekRange(weekStartDate, 'backwards'))}
-                    disabled={backwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents)}
-                    className={`px-2 ${backwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'opacity-30' : 'opacity-100'}`}
-                >
-                    <Octicons name="chevron-left" size={25} color={backwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'gray' : 'black'} />
-                </TouchableOpacity>
+            <View className='flex-row justify-between items-center p-3 mb-3'>
+                {isCurrentSunday() ? (
+                    <TouchableOpacity
+                        className='justify-center items-center border-2 px-2 py-1 border-gray-300 rounded-md'
+                        onPress={() => setWeekStartDate(getCurrentSunday())}
+                    >
+                        <Text className='text-lg'>Today</Text>
+                    </TouchableOpacity>
+                ) : (
+                    <View />
+                )}
 
-                <Text className="text-lg font-semibold"> {formatWeekRange(weekStartDate)} </Text>
+                <View className="flex-row items-center">
+                    <TouchableOpacity
+                        onPress={() => setWeekStartDate(adjustWeekRange(weekStartDate, 'backwards'))}
+                        disabled={backwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents)}
+                        className={`px-2 ${backwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'opacity-30' : 'opacity-100'}`}
+                    >
+                        <Octicons name="chevron-left" size={25} color={backwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'gray' : 'black'} />
+                    </TouchableOpacity>
 
-                <TouchableOpacity
-                    onPress={() => setWeekStartDate(adjustWeekRange(weekStartDate, 'forwards'))}
-                    disabled={forwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents)}
-                    className={`px-2 ${forwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'opacity-30' : 'opacity-100'}`}
-                >
-                    <Octicons name="chevron-right" size={25} color={forwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'gray' : 'black'} />
-                </TouchableOpacity>
+                    <Text className="text-lg font-semibold"> {formatWeekRange(weekStartDate)} </Text>
+
+                    <TouchableOpacity
+                        onPress={() => setWeekStartDate(adjustWeekRange(weekStartDate, 'forwards'))}
+                        disabled={forwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents)}
+                        className={`px-2 ${forwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'opacity-30' : 'opacity-100'}`}
+                    >
+                        <Octicons name="chevron-right" size={25} color={forwardButtonDisabled(currentTab === 'ISHPE' ? ishpeEvents : generalEvents) ? 'gray' : 'black'} />
+                    </TouchableOpacity>
+                </View>
             </View>
 
             {/* Event List */}
@@ -244,17 +263,19 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
                 visible={interestOptionsModal}
                 setVisible={setInterestOptionsModal}
             >
-                <View className='flex opacity-100 bg-white rounded-md p-6 w-full' style={{ minWidth: 355 }}>
+                <View className='flex opacity-100 bg-white rounded-md p-6 w-full' style={{ maxWidth: "90%" }}>
                     <View className='flex-row items-center justify-between'>
                         <View className='flex-row items-center'>
                             <SHPELogo width={40} height={40} />
                             <Text className='text-2xl font-semibold ml-3'>I.SHPE</Text>
                         </View>
                         <View>
-                            <TouchableOpacity onPress={() => {
-                                setInterestOptionsModal(false)
-                                setUserInterests(userInfo?.publicInfo?.interests || [])
-                            }}>
+                            <TouchableOpacity
+                                className='px-2'
+                                onPress={() => {
+                                    setInterestOptionsModal(false)
+                                    setUserInterests(userInfo?.publicInfo?.interests || [])
+                                }}>
                                 <Octicons name="x" size={24} color="black" />
                             </TouchableOpacity>
                         </View>
@@ -374,9 +395,15 @@ const adjustWeekRange = (currentStartDate: Date, direction: string) => {
 
 const formatWeekRange = (startDate: Date) => {
     let endDate = new Date(startDate.getTime() + 6 * 24 * 60 * 60 * 1000);
-    const format = (date: Date) => `${date.getMonth() + 1}/${date.getDate().toString().padStart(2, '0')}`;
-    return `${format(startDate)} - ${format(endDate)}`;
-}
+
+    const formatDay = (date: Date) => date.getDate().toString().padStart(2, '0');
+
+    if (startDate.getMonth() === endDate.getMonth()) {
+        return `${monthNames[startDate.getMonth()]} ${formatDay(startDate)} - ${formatDay(endDate)}`;
+    } else {
+        return `${monthNames[startDate.getMonth()]} ${formatDay(startDate)} - ${monthNames[endDate.getMonth()]} ${formatDay(endDate)}`;
+    }
+};
 
 type SHPEEventWithCommitteeData = SHPEEvent & { committeeData?: Committee };
 
