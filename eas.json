@@ -10,7 +10,8 @@
         "env": {
           "GOOGLE_SERVICES_FILE": "GOOGLE_SERVICES_JSON",
           "FLICKER_API_KEY": "FLICKER_API_KEY",
-          "FLICKER_USER_ID": "FLICKER_USER_ID"
+          "FLICKER_USER_ID": "FLICKER_USER_ID",
+          "GOOGLE_PLACES_API_KEY": "GOOGLE_PLACES_API_KEY"
         }
       },
       "ios": {
@@ -18,7 +19,8 @@
         "env": {
           "GOOGLE_SERVICE_INFO_PLIST": "GOOGLE_SERVICE_INFO_PLIST",
           "FLICKER_API_KEY": "FLICKER_API_KEY",
-          "FLICKER_USER_ID": "FLICKER_USER_ID"
+          "FLICKER_USER_ID": "FLICKER_USER_ID",
+          "GOOGLE_PLACES_API_KEY": "GOOGLE_PLACES_API_KEY"
         }
       },
       "channel": "development"
