@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView } from 'react-native'
 import React, { useContext, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
@@ -11,17 +11,19 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Images } from '../../../assets';
 import { Timestamp } from 'firebase/firestore';
 import { UserContext } from '../../context/UserContext';
+import { formatDate, formatTime } from '../../helpers/timeUtils';
 
 const UpdateEvent = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
     const { event } = route.params;
     const { userInfo } = useContext(UserContext)!;
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const [updatedEvent, setUpdatedEvent] = useState<SHPEEvent>(event);
     const [updated, setUpdated] = useState(false);
-    const [showStartDate, setShowStartDate] = useState(false);
-    const [showStartTime, setShowStartTime] = useState(false);
-    const [showEndDate, setShowEndDate] = useState(false);
-    const [showEndTime, setShowEndTime] = useState(false);
+    const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+    const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+    const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+    const [showEndTimePicker, setShowEndTimePicker] = useState(false);
 
     const startDate = updatedEvent.startTime?.toDate()
     const endDate = updatedEvent.endTime?.toDate()
@@ -74,7 +76,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
 
                 {/* Form */}
                 <View className='mt-9 p-6'>
-                    <View>
+                    <View className='w-full'>
                         <Text className='text-gray-500'>Event Title</Text>
                         <View className='flex-row border-b-2 border-slate-400'>
                             <TextInput
@@ -85,6 +87,91 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             />
                         </View>
                     </View>
+
+                    {/* Start Time Selection Buttons */}
+                    <View className='flex flex-row py-3'>
+                        <View className='flex flex-col w-[60%]'>
+                            <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Start Date <Text className='text-[#f00]'>*</Text></Text>
+                            {Platform.OS == 'android' &&
+                                <TouchableHighlight
+                                    underlayColor={darkMode ? "" : "#EEE"}
+                                    onPress={() => setShowStartDatePicker(true)}
+                                    className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                >
+                                    <>
+                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{event.startTime ? formatDate(event.startTime.toDate()) : "No date picked"}</Text>
+                                        <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
+                                    </>
+                                </TouchableHighlight>
+                            }
+                        </View>
+                        <View className='flex flex-col w-[40%]'>
+                            <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Start Time <Text className='text-[#f00]'>*</Text></Text>
+                            {Platform.OS == 'android' &&
+                                <TouchableHighlight
+                                    underlayColor={darkMode ? "" : "#EEE"}
+                                    onPress={() => setShowStartTimePicker(true)}
+                                    className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                >
+                                    <>
+                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{event.startTime ? formatTime(event.startTime.toDate()) : "No date picked"}</Text>
+                                        <Octicons name='chevron-down' size={24} />
+                                    </>
+                                </TouchableHighlight>
+                            }
+                        </View>
+                    </View>
+
+                    {/* End Time Selection Buttons */}
+                    <View className='flex flex-row pb-3'>
+                        <View className='flex flex-col w-[60%]'>
+                            <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>End Date <Text className='text-[#f00]'>*</Text></Text>
+                            {Platform.OS == 'android' &&
+                                <TouchableHighlight
+                                    underlayColor={darkMode ? "" : "#EEE"}
+                                    onPress={() => setShowEndDatePicker(true)}
+                                    className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                >
+                                    <>
+                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{event.endTime ? formatDate(event.endTime.toDate()) : "No date picked"}</Text>
+                                        <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
+                                    </>
+                                </TouchableHighlight>
+                            }
+                        </View>
+                        <View className='flex flex-col w-[40%]'>
+                            <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>End Time <Text className='text-[#f00]'>*</Text></Text>
+                            {Platform.OS == 'android' &&
+                                <TouchableHighlight
+                                    underlayColor={darkMode ? "" : "#EEE"}
+                                    onPress={() => setShowEndTimePicker(true)}
+                                    className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                >
+                                    <>
+                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{event.endTime ? formatTime(event.endTime.toDate()) : "No date picked"}</Text>
+                                        <Octicons name='chevron-down' size={24} />
+                                    </>
+                                </TouchableHighlight>
+                            }
+                        </View>
+                    </View>
+                    <KeyboardAvoidingView className='py-3'>
+                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Description</Text>
+                        <TextInput
+                            className={`text-lg p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                            value={event.description ?? ""}
+                            placeholder='What is this event about?'
+                            placeholderTextColor={darkMode ? "#DDD" : "#777"}
+                            onChangeText={(description) => setUpdatedEvent({ ...updatedEvent, description })}
+                            numberOfLines={2}
+                            keyboardType='ascii-capable'
+                            autoCapitalize='sentences'
+                            multiline
+                            style={{ textAlignVertical: 'top' }}
+                            enterKeyHint='enter'
+                        />
+                    </KeyboardAvoidingView>
+                    <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Cover Image</Text>
                 </View>
 
 
