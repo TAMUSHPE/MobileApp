@@ -1,10 +1,10 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal, ActivityIndicator } from 'react-native'
-import React, { useContext, useState } from 'react'
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal, ActivityIndicator, Alert } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { monthNames, SHPEEvent } from '../../types/Events';
-import { destroyEvent, updateEvent } from '../../api/firebaseUtils';
+import { CommitteeMeeting, EventType, GeneralMeeting, IntramuralEvent, CustomEvent, monthNames, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop, WorkshopType } from '../../types/Events';
+import { destroyEvent, updateEvent, uploadFileToFirebase } from '../../api/firebaseUtils';
 import { Octicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -14,7 +14,13 @@ import { UserContext } from '../../context/UserContext';
 import { MillisecondTimes, formatDate, formatTime } from '../../helpers/timeUtils';
 import { StatusBar } from 'expo-status-bar';
 import DismissibleModal from '../../components/DismissibleModal';
-import { UploadTask } from 'firebase/storage';
+import { UploadTask, getDownloadURL } from 'firebase/storage';
+import InteractButton from '../../components/InteractButton';
+import { getBlobFromURI, selectImage } from '../../api/fileSelection';
+import * as ImagePicker from "expo-image-picker";
+import { CommonMimeTypes, validateFileBlob } from '../../helpers';
+import ProgressBar from '../../components/ProgressBar';
+import { auth } from '../../config/firebaseConfig';
 
 const UpdateEvent = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
@@ -33,9 +39,97 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [showDeletionConfirmation, setShowDeletionConfirmation] = useState<boolean>(false);
     const [currentUploadTask, setCurrentUploadTask] = useState<UploadTask>();
     const [isUploading, setIsUploading] = useState<boolean>();
+    const [localImageURI, setLocalImageURI] = useState<string>();
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
+    const [bytesTransferred, setBytesTransferred] = useState<number>();
+    const [totalBytes, setTotalBytes] = useState<number>();
 
+    // Form Data Hooks
+    const [name, setName] = useState<string | undefined | null>(event.name);
+    const [description, setDescription] = useState<string | undefined | null>(event.description);
+    const [tags, setTags] = useState<string[] | undefined | null>(event.tags);
+    const [startTime, setStartTime] = useState<Timestamp | undefined | null>(event.startTime);
+    const [endTime, setEndTime] = useState<Timestamp | undefined | null>(event.endTime);
+    const [startTimeBuffer, setStartTimeBuffer] = useState<number | undefined | null>(event.startTimeBuffer);
+    const [endTimeBuffer, setEndTimeBuffer] = useState<number | undefined | null>(event.endTimeBuffer);
+    const [coverImageURI, setCoverImageURI] = useState<string | undefined | null>(event.coverImageURI);
+    const [signInPoints, setSignInPoints] = useState<number | undefined | null>(event.signInPoints);
+    const [signOutPoints, setSignOutPoints] = useState<number | undefined | null>(event.signOutPoints);
+    const [pointsPerHour, setPointsPerHour] = useState<number | undefined | null>(event.pointsPerHour);
+    const [locationName, setLocationName] = useState<string | undefined | null>(event.locationName);
+    const [geolocation, setGeolocation] = useState<Geolocation | undefined | null>(event.geolocation);
+    const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType);
+    const [committee, setCommittee] = useState<string | undefined | null>(event.committee);
+
+    useEffect(() => {
+        let copiedEvent: SHPEEvent;
+        switch (event.eventType) {
+            case EventType.GENERAL_MEETING:
+                copiedEvent = new GeneralMeeting();
+                break;
+            case EventType.COMMITTEE_MEETING:
+                copiedEvent = new CommitteeMeeting();
+                break;
+            case EventType.STUDY_HOURS:
+                copiedEvent = new StudyHours();
+                break;
+            case EventType.WORKSHOP:
+                copiedEvent = new Workshop();
+                break;
+            case EventType.VOLUNTEER_EVENT:
+                copiedEvent = new VolunteerEvent();
+                break;
+            case EventType.SOCIAL_EVENT:
+                copiedEvent = new SocialEvent();
+                break;
+            case EventType.INTRAMURAL_EVENT:
+                copiedEvent = new IntramuralEvent();
+                break;
+            case EventType.CUSTOM_EVENT:
+                copiedEvent = new CustomEvent();
+                break;
+            default:
+                Alert.alert("Select an event type", "Please select an event type to continue.");
+                copiedEvent = new CustomEvent();
+                break;
+        }
+
+        // copyFromObject should not be undefined
+        if (copiedEvent.copyFromObject) {
+            copiedEvent.copyFromObject(event);
+        }
+        else {
+            copiedEvent = { ...event };
+        }
+
+        setUpdatedEvent(copiedEvent);
+    }, [event])
+
+    useEffect(() => {
+        console.log(updatedEvent);
+    }, [updatedEvent])
 
     const handleUpdateEvent = async () => {
+        if (updatedEvent.copyFromObject) {
+            updatedEvent.copyFromObject({
+                name,
+                description,
+                tags,
+                startTime,
+                endTime,
+                startTimeBuffer,
+                endTimeBuffer,
+                coverImageURI,
+                signInPoints,
+                signOutPoints,
+                pointsPerHour,
+                locationName,
+                geolocation,
+                workshopType,
+                committee,
+            })
+        }
+
         const newEvent = await updateEvent(updatedEvent);
         if (newEvent) {
             setUpdated(true);
@@ -45,11 +139,76 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     }
 
     const handleDestroyEvent = async () => {
-        const isDeleted = await destroyEvent(updatedEvent.id!);
+        const isDeleted = await destroyEvent(event.id!);
         if (isDeleted) {
             navigation.navigate("EventsScreen")
         } else {
             console.log("Failed to delete the event.");
+        }
+    }
+
+    const selectCoverImage = async () => {
+        await selectImage({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        }).then(async (result) => {
+            if (result) {
+                const imageBlob = await getBlobFromURI(result.assets![0].uri);
+                if (imageBlob && validateFileBlob(imageBlob, CommonMimeTypes.IMAGE_FILES, true)) {
+                    setLocalImageURI(result.assets![0].uri);
+                    uploadCoverImage(imageBlob);
+                }
+            }
+        }).catch((err) => {
+            // TypeError means user did not select an image
+            if (err.name != "TypeError") {
+                console.error(err);
+            }
+            else {
+                setLocalImageURI(undefined);
+            }
+        });
+    }
+
+    const uploadCoverImage = (image: Blob | undefined) => {
+        if (image) {
+            setIsUploading(true);
+            // Creates image in firebase cloud storage with unique name
+            const uploadTask = uploadFileToFirebase(image, `events/cover-images/${auth.currentUser?.uid.toString()}${Date.now().toString()}`)
+            setCurrentUploadTask(uploadTask);
+            uploadTask.on("state_changed",
+                (snapshot) => {
+                    setUploadProgress(snapshot.bytesTransferred / snapshot.totalBytes);
+                    setBytesTransferred(snapshot.bytesTransferred);
+                    setTotalBytes(snapshot.totalBytes);
+                },
+                (error) => {
+                    switch (error.code) {
+                        case "storage/unauthorized":
+                            Alert.alert("Permissions error", "File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
+                            break;
+                        case "storage/canceled":
+                            Alert.alert("File upload canceled", "File upload has been canceled.");
+                            break;
+                        default:
+                            Alert.alert("Unknown error", "An unknown error has occured. Please notify a developer.")
+                            console.error(error);
+                            break;
+                    }
+                    setIsUploading(false);
+                },
+                async () => {
+                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
+                        console.log("File available at", URL);
+                        setCoverImageURI(URL);
+                    });
+                    setIsUploading(false);
+                }
+            );
+        }
+        else {
+            console.warn("No image was selected from image picker");
         }
     }
 
@@ -97,7 +256,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             {Platform.OS == 'android' && showStartDatePicker &&
                 <DateTimePicker
                     testID='Start Date Picker'
-                    value={updatedEvent.startTime?.toDate() ?? new Date()}
+                    value={startTime?.toDate() ?? new Date()}
                     minimumDate={new Date()}
                     maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
                     mode='date'
@@ -105,18 +264,12 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         if (!date) {
                             console.warn("Date picked is undefined.");
                         }
-                        else if (updatedEvent.endTime && date.valueOf() > updatedEvent.endTime.toMillis()) {
-                            setUpdatedEvent({
-                                ...updatedEvent,
-                                startTime: Timestamp.fromDate(date),
-                                endTime: Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR),
-                            });
+                        else if (endTime && date.valueOf() > endTime.toMillis()) {
+                            setStartTime(Timestamp.fromDate(date));
+                            setEndTime(Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR));
                         }
                         else {
-                            setUpdatedEvent({
-                                ...updatedEvent,
-                                startTime: Timestamp.fromDate(date)
-                            });
+                            setStartTime(Timestamp.fromDate(date));
                         }
                         setShowStartDatePicker(false);
                     }}
@@ -125,7 +278,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             {Platform.OS == 'android' && showStartTimePicker &&
                 <DateTimePicker
                     testID='Start Time Picker'
-                    value={updatedEvent.startTime?.toDate() ?? new Date()}
+                    value={startTime?.toDate() ?? new Date()}
                     minimumDate={new Date()}
                     maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
                     mode='time'
@@ -133,18 +286,12 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         if (!date) {
                             console.warn("Date picked is undefined.");
                         }
-                        else if (updatedEvent.endTime && date.valueOf() > updatedEvent.endTime.toMillis()) {
-                            setUpdatedEvent({
-                                ...updatedEvent,
-                                startTime: Timestamp.fromDate(date),
-                                endTime: Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR),
-                            });
+                        else if (endTime && date.valueOf() > endTime.toMillis()) {
+                            setStartTime(Timestamp.fromDate(date));
+                            setEndTime(Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR));
                         }
                         else {
-                            setUpdatedEvent({
-                                ...updatedEvent,
-                                startTime: Timestamp.fromDate(date)
-                            });
+                            setStartTime(Timestamp.fromDate(date));
                         }
                         setShowStartDatePicker(false);
                     }}
@@ -161,10 +308,10 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     {/* Header */}
                     <View className='flex-row items-center h-10'>
                         <View className='w-screen absolute'>
-                            <Text className="text-2xl font-bold justify-center text-center">{updatedEvent.name}</Text>
+                            <Text className="text-2xl font-bold justify-center text-center">{name}</Text>
                         </View>
                         <View className='pl-6'>
-                            <TouchableOpacity className="pr-4" onPress={() => navigation.navigate("EventInfo", { eventId: updatedEvent.id! })} >
+                            <TouchableOpacity className="pr-4" onPress={() => navigation.navigate("EventInfo", { eventId: event.id! })} >
                                 <Octicons name="chevron-left" size={30} color="black" />
                             </TouchableOpacity>
                         </View>
@@ -190,7 +337,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                 <TextInput
                                     className={`w-[90%] rounded-md text-xl py-1 ${updatedEvent?.name ? 'font-normal' : 'font-extrabold'}`}
                                     value={updatedEvent?.name ?? ""}
-                                    onChangeText={(text) => setUpdatedEvent({ ...event, name: text })}
+                                    onChangeText={(text) => setName(text)}
                                     placeholder="Event Name"
                                 />
                             </View>
@@ -270,7 +417,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                 value={event.description ?? ""}
                                 placeholder='What is this event about?'
                                 placeholderTextColor={darkMode ? "#DDD" : "#777"}
-                                onChangeText={(description) => setUpdatedEvent({ ...updatedEvent, description })}
+                                onChangeText={(text) => setDescription(text)}
                                 numberOfLines={2}
                                 keyboardType='ascii-capable'
                                 autoCapitalize='sentences'
@@ -280,6 +427,34 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             />
                         </KeyboardAvoidingView>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Cover Image</Text>
+                        {
+                            isUploading ?
+                                <>
+                                    <InteractButton
+                                        label='Cancel Upload'
+                                        buttonClassName='bg-red-500 rounded-md'
+                                        textClassName='text-center text-lg text-white'
+                                        onPress={() => {
+                                            currentUploadTask?.cancel()
+                                            setLocalImageURI(undefined);
+                                        }}
+                                    />
+                                    <View className='flex flex-col items-center pt-2'>
+                                        <ProgressBar
+                                            progress={uploadProgress}
+                                        />
+                                        <Text className={darkMode ? "text-white" : "text-black"}>
+                                            {`${((bytesTransferred ?? 0) / 1000000).toFixed(2)} / ${((totalBytes ?? 0) / 1000000).toFixed(2)} MB`}
+                                        </Text>
+                                    </View>
+                                </> :
+                                <InteractButton
+                                    label='Upload Cover Image'
+                                    buttonClassName='bg-blue-200 rounded-md'
+                                    textClassName='text-center text-lg'
+                                    onPress={() => selectCoverImage()}
+                                />
+                        }
                     </View>
 
 
@@ -290,7 +465,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             <Text>Update Event</Text>
                         </TouchableOpacity>
                         <TouchableOpacity className='w-20 h-10 bg-blue-300 justify-center items-center rounded-md'
-                            onPress={() => navigation.navigate("QRCode", { event: updatedEvent })}
+                            onPress={() => navigation.navigate("QRCode", { event: event })}
                         >
                             <Text>View QRCode</Text>
                         </TouchableOpacity>
