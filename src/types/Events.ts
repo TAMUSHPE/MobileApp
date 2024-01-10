@@ -7,7 +7,7 @@ import { MillisecondTimes, getNextHourMillis } from '../helpers';
 export type WorkshopType = "Professional" | "Academic" | "None";
 
 /**
- * Generic Event Interface. All events must implement this type
+ * Generic Event Interface. All SHPE related events must implement or extend this type
  */
 export abstract class SHPEEvent {
     /** Document name in firebase */
