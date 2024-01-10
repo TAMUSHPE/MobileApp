@@ -126,14 +126,14 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
             {/* Start Date Pickers */}
             {Platform.OS == 'android' && showStartDatePicker &&
                 <DateTimePicker
-                    testID='Start Time Picker'
+                    testID='Start Date Picker'
                     value={startTime?.toDate() ?? new Date()}
                     minimumDate={new Date(Date.now())}
                     maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
                     mode='date'
                     onChange={(_, date) => {
                         if (!date) {
-                            console.warn("Date picked is undefined.")
+                            console.warn("Date picked is undefined.");
                         }
                         else {
                             setStartTime(Timestamp.fromDate(date));
@@ -147,6 +147,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
             }
             {Platform.OS == 'android' && showStartTimePicker &&
                 <DateTimePicker
+                    testID='Start Time Picker'
                     value={startTime?.toDate() ?? new Date()}
                     mode='time'
                     onChange={(_, date) => {
