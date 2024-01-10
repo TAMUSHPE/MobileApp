@@ -22,7 +22,7 @@ import { Images } from '../../../assets';
 import ProfileBadge from '../../components/ProfileBadge';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../../components/SettingsComponents"
 import InteractButton from '../../components/InteractButton';
-import SimpleDropDown from '../../components/CustomDropDown';
+import CustomDropDown from '../../components/CustomDropDown';
 import TwitterSvg from '../../components/TwitterSvg';
 
 /**
@@ -453,7 +453,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     (
                         <View className="items-center justify-center">
                             <View className='absolute top-0 z-20 w-[80%]'>
-                                <SimpleDropDown
+                                <CustomDropDown
                                     data={MAJORS}
                                     onSelect={(item) => setMajor(item.iso)}
                                     searchKey="major"
@@ -466,7 +466,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                 />
                             </View>
                             <View className='absolute top-24 z-10 w-[80%]'>
-                                <SimpleDropDown
+                                <CustomDropDown
                                     data={classYears}
                                     onSelect={(item) => setClassYear(item.iso)}
                                     searchKey="year"

@@ -17,8 +17,6 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
     const dropDownRefMajor = useRef<CustomDropDownMethods>(null);
     const dropDownRefRole = useRef<CustomDropDownMethods>(null);
 
-
-
     const updateFilteredMembers = (appliedFilter: UserFilter) => {
         let filtered = users.filter(user => {
             const matchesSearch = search === "" ||
@@ -48,9 +46,6 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
         updateFilteredMembers({ major: "", classYear: "", role: "" });
         setSearch("");
     };
-
-
-    console.log(filter)
 
     const handleClearAllSelections = () => {
         dropDownRefYear.current?.clearSelection();

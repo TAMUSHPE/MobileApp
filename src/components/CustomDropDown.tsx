@@ -2,6 +2,34 @@ import { View, Text, TouchableOpacity, TextInput, FlatList, Animated, Touchable,
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 
+
+/**
+ * CustomDropDownMenu is a React component that renders a dropdown menu with search and selection capabilities.
+ * It supports dynamic rendering, search filtering, and clear selection functionality.
+ * 
+ * The component requires 'data' to be an array of objects with a structure like { iso: string, [searchKey]: string },
+ * where 'searchKey' is the key used for searching items. The 'onToggle' function and 'isOpen' boolean are used to control 
+ * the visibility of the dropdown, allowing the parent component to manage dropdown visibility and toggle off other dropdown menus.
+ * The 'ref' is used to access the 'clearSelection' method from the parent component, enabling external control over the dropdown's selection.
+ *
+ * @component
+ * @param {Object} props - The properties passed to the component.
+ * @param {Item[]} props.data - The array of items to display in the dropdown.
+ * @param {function} props.onSelect - The callback function to execute when an item is selected.
+ * @param {string} props.searchKey - The key to be used for searching items.
+ * @param {string} props.label - Default label to be shown when no item is selected.
+ * @param {function} props.onToggle - Function to toggle the dropdown open/closed.
+ * @param {boolean} props.isOpen - Boolean to control the visibility of the dropdown.
+ * @param {Object} ref - Ref object for parent component to access child methods.
+ * @param {SelectedItem} [props.selectedItemProp] - The currently selected item.
+ * @param {string} [props.title] - Optional title for the dropdown.
+ * @param {boolean} [props.disableSearch] - If true, disables the search functionality.
+ * @param {string} [props.displayType="both"] - Defines how to display items ('iso', 'value', or 'both').
+ * @param {string} [props.containerClassName=""] - Additional class name for the container.
+ * @param {string} [props.dropDownClassName=""] - Additional class name for the dropdown.
+ * @param {string} [props.textClassName=""] - Additional class name for the text elements.
+ * @returns {React.ReactElement} The CustomDropDownMenu component.
+ */
 const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onToggle, label, title, selectedItemProp, disableSearch, displayType = "both", containerClassName = "", dropDownClassName = "", textClassName = "" }: {
     data: Item[];
     onSelect: (item: Item) => void;
@@ -12,7 +40,6 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
     title?: string;
     selectedItemProp?: SelectedItem | null;
     disableSearch?: boolean;
-    className?: string;
     displayType?: string;
     containerClassName?: string;
     dropDownClassName?: string;
