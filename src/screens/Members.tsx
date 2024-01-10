@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { getOfficers, getUserForMemberList } from '../api/firebaseUtils';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import SimpleDropDown from '../components/CustomDropDown';
+import CustomDropDownMenu, { CustomDropDownMethods } from '../components/CustomDropDown';
 
 const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
     const [showFilterMenu, setShowFilterMenu] = useState(false);
@@ -20,9 +20,9 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
     const [lastUserSnapshot, setLastUserSnapshot] = useState<QueryDocumentSnapshot<DocumentData>>();
     const [hasMoreUser, setHasMoreUser] = useState(true);
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-    const dropDownRefYear = useRef<SimpleDropDownMethods>(null);
-    const dropDownRefMajor = useRef<SimpleDropDownMethods>(null);
-    const dropDownRefRole = useRef<SimpleDropDownMethods>(null);
+    const dropDownRefYear = useRef<CustomDropDownMethods>(null);
+    const dropDownRefMajor = useRef<CustomDropDownMethods>(null);
+    const dropDownRefRole = useRef<CustomDropDownMethods>(null);
 
     const loadUsers = async (appliedFilter: UserFilter, lastSnapshot?: QueryDocumentSnapshot<DocumentData> | null, numLimit: number | null = 15) => {
         setLoading(true);
@@ -82,8 +82,8 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
         setMembers([]);
         setHasMoreUser(true);
         handleClearAllSelections();
-        await loadUsers({ major: "", classYear: "", role: "" });
         setFilter({ major: "", classYear: "", role: "" });
+        await loadUsers({ major: "", classYear: "", role: "" });
         setDisplayedOfficers(officers);
     };
 
@@ -106,7 +106,7 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
         return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
     };
 
-
+    console.log(filter)
     return (
         <SafeAreaView className='flex-1' edges={["top"]}>
             <View className='px-4 mt-4'>
@@ -129,7 +129,7 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
                     <View className='flex-row mt-2 mb-8'>
                         <View className='flex-1 space-y-4'>
                             <View className='flex-row z-10' >
-                                <SimpleDropDown
+                                <CustomDropDownMenu
                                     data={classYears}
                                     onSelect={(item) => setFilter({ ...filter, classYear: item.iso || "" })}
                                     searchKey="year"
@@ -141,7 +141,7 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
                                     disableSearch
                                     containerClassName='mr-1'
                                 />
-                                <SimpleDropDown
+                                <CustomDropDownMenu
                                     data={MAJORS}
                                     onSelect={(item) => setFilter({ ...filter, major: item.iso || "" })}
                                     searchKey="major"
@@ -159,7 +159,7 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
                                 </TouchableOpacity>
                             </View>
                             <View className='justify-start flex-row'>
-                                <SimpleDropDown
+                                <CustomDropDownMenu
                                     data={ROLESDROPDOWN}
                                     onSelect={(item) => setFilter({ ...filter, role: item.iso || "" })}
                                     searchKey="role"
@@ -242,7 +242,4 @@ const ROLESDROPDOWN = [
     { role: 'Lead', iso: 'lead' },
 ];
 
-interface SimpleDropDownMethods {
-    clearSelection: () => void;
-}
 export default Members

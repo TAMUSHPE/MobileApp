@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, TextInput, FlatList, Animated, Touchable,
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 
-const SimpleDropDown = forwardRef(({ data, onSelect, isOpen, searchKey, onToggle, label, title, selectedItemProp, disableSearch, displayType = "both", containerClassName = "", dropDownClassName = "" }: {
+const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onToggle, label, title, selectedItemProp, disableSearch, displayType = "both", containerClassName = "", dropDownClassName = "" }: {
     data: Item[];
     onSelect: (item: Item) => void;
     searchKey: string;
@@ -209,4 +209,8 @@ interface SelectedItem {
     iso?: string;
 }
 
-export default SimpleDropDown;
+export interface CustomDropDownMethods {
+    clearSelection: () => void;
+}
+
+export default CustomDropDownMenu;

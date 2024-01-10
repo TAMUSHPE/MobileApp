@@ -1,24 +1,28 @@
 import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { fetchUsersWithPublicResumes } from '../../api/firebaseUtils'
-import { PublicUserInfo } from '../../types/User'
+import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../../types/User'
 import { ResourcesStackParams } from '../../types/Navigation'
 import TwitterSvg from '../../components/TwitterSvg'
 import DismissibleModal from '../../components/DismissibleModal';
 import ResumeSubmit from './ResumeSubmit'
 import ResumeCard from './ResumeCard'
+import CustomDropDown, { CustomDropDownMethods } from '../../components/CustomDropDown';
 
 
 const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
     const [resumes, setResumes] = useState<PublicUserInfo[]>([])
     const [loading, setLoading] = useState(true);
     const [showFilterMenu, setShowFilterMenu] = useState<boolean>(false);
-    const [filter, setFilter] = useState<{ major: string, classYear: string }>({ major: "", classYear: "" });
+    const [filter, setFilter] = useState<UserFilter>({ major: "", classYear: "" });
     const [infoVisible, setInfoVisible] = useState(false);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const dropDownRefYear = useRef<CustomDropDownMethods>(null);
+    const dropDownRefMajor = useRef<CustomDropDownMethods>(null);
 
     const fetchResumes = async () => {
         setLoading(true);
@@ -43,10 +47,25 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
     };
 
     const handleClearFilter = async () => {
+        handleClearAllSelections();
         setFilter({ major: "", classYear: "" });
         const filteredUsers = await fetchUsersWithPublicResumes({ major: "", classYear: "" });
         setResumes(filteredUsers);
     };
+
+    const handleClearAllSelections = () => {
+        dropDownRefYear.current?.clearSelection();
+        dropDownRefMajor.current?.clearSelection();
+    };
+
+    const toggleDropdown = (dropdownKey: string) => {
+        if (openDropdown === dropdownKey) {
+            setOpenDropdown(null);
+        } else {
+            setOpenDropdown(dropdownKey);
+        }
+    };
+
 
     return (
         <View className="flex-1 bg-pale-blue">
@@ -69,10 +88,8 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
             {/* User Public Resume Info */}
             <ResumeSubmit onResumesUpdate={fetchResumes} />
 
-            <ScrollView
-                scrollEventThrottle={400}
-                bounces={false}
-                className='bg-[#F9F9F9] mt-12 rounded-t-2xl'
+            <View
+                className='bg-[#F9F9F9] mt-12 rounded-t-2xl flex-1'
             >
                 <View className='flex-row justify-start'>
                     <TouchableOpacity
@@ -93,19 +110,30 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                 {showFilterMenu && (
                     <View className='flex-row p-4'>
                         <View className='flex-1 space-y-4'>
-                            <View className='justify-start flex-row'>
-                                <TextInput
-                                    value={filter?.major}
-                                    onChangeText={(text) => setFilter({ ...filter, major: text })}
-                                    placeholder="Major"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                            <View className='justify-start flex-row z-20'>
+                                <CustomDropDown
+                                    data={MAJORS}
+                                    onSelect={(item) => setFilter({ ...filter, major: item.iso || "" })}
+                                    searchKey="major"
+                                    label="Major"
+                                    isOpen={openDropdown === 'major'}
+                                    onToggle={() => toggleDropdown('major')}
+                                    displayType='iso'
+                                    ref={dropDownRefMajor}
+                                    containerClassName='mr-1'
                                 />
 
-                                <TextInput
-                                    value={filter?.classYear}
-                                    onChangeText={(text) => setFilter({ ...filter, classYear: text })}
-                                    placeholder="Year"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                <CustomDropDown
+                                    data={classYears}
+                                    onSelect={(item) => setFilter({ ...filter, classYear: item.iso || "" })}
+                                    searchKey="year"
+                                    label="Class Year"
+                                    isOpen={openDropdown === 'year'}
+                                    onToggle={() => toggleDropdown('year')}
+                                    displayType='iso'
+                                    ref={dropDownRefYear}
+                                    disableSearch
+                                    containerClassName='ml-1'
                                 />
 
                                 <TouchableOpacity
@@ -129,23 +157,30 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                     </View>
                 )}
 
-                {loading && (
-                    <View className='flex justify-center items-center mt-4'>
-                        <ActivityIndicator size="large" />
-                    </View>
-                )}
+                <ScrollView
+                    scrollEventThrottle={400}
+                    bounces={false}
+                    className='-z-10'
+                >
 
-                {resumes.map((item, index) => (
-                    <ResumeCard
-                        key={index}
-                        resumeData={item}
-                        navigation={navigation}
-                        onResumeRemoved={() => fetchResumes()}
-                    />
-                ))}
+                    {loading && (
+                        <View className='flex justify-center items-center mt-4'>
+                            <ActivityIndicator size="large" />
+                        </View>
+                    )}
+
+                    {resumes.map((item, index) => (
+                        <ResumeCard
+                            key={index}
+                            resumeData={item}
+                            navigation={navigation}
+                            onResumeRemoved={() => fetchResumes()}
+                        />
+                    ))}
+                </ScrollView>
 
                 <View className='pb-20'></View>
-            </ScrollView>
+            </View>
 
             <DismissibleModal
                 visible={infoVisible}
