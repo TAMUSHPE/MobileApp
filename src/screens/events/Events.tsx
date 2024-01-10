@@ -84,7 +84,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                         <Text>No Events</Text>
                     </View>
                 }
-                <View className='ml-2 mt-4'>
+                <View className='mx-2 mt-4'>
                     {upcomingEvents.length != 0 &&
                         <Text className='text-xl mb-4 text-bold'>Upcoming Events</Text>
                     }
