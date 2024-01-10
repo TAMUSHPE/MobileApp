@@ -27,7 +27,7 @@ import SocialsIcon from '../../../assets/socials.svg';
 import StudyHoursIcon from '../../../assets/study-hours.svg';
 import WorkshopIcon from '../../../assets/workshop.svg';
 import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
-import SimpleDropDown from '../../components/SimpleDropDown';
+import SimpleDropDown from '../../components/CustomDropDown';
 import InteractButton from '../../components/InteractButton';
 import { EventType } from '../../types/Events';
 
@@ -308,6 +308,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                 isOpen={openDropdown === 'major'}
                                 onToggle={() => toggleDropdown('major')}
                                 title={'Major'}
+                                dropDownClassName='top-20'
                             />
                         </View>
                         <View className='absolute top-24 z-10 w-full'>
@@ -319,7 +320,10 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                 isOpen={openDropdown === 'year'}
                                 onToggle={() => toggleDropdown('year')}
                                 title={"Class Year"}
+                                displayType='iso'
                                 disableSearch
+                                dropDownClassName='top-20'
+
                             />
                         </View>
                     </View>
