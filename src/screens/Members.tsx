@@ -61,8 +61,6 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
             const matchesClassYear = filter.classYear === "" || officer.classYear === filter.classYear;
             const matchesRole = filter.role === "" || officer.roles![filter.role as keyof typeof officer.roles];
 
-            console.log(officer.roles, "aplying")
-
             return matchesMajor && matchesClassYear && matchesRole;
         });
         setDisplayedOfficers(filtered);
@@ -106,7 +104,6 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
         return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
     };
 
-    console.log(filter)
     return (
         <SafeAreaView className='flex-1' edges={["top"]}>
             <View className='px-4 mt-4'>

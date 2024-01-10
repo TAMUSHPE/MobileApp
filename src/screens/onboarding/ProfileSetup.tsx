@@ -309,13 +309,13 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                 onToggle={() => toggleDropdown('major')}
                                 title={'Major'}
                                 dropDownClassName='top-20'
-                                textClassName='text-black'
+                                textClassName='text-black font-semibold'
                             />
                         </View>
                         <View className='absolute top-24 z-10 w-full'>
                             <CustomDropDown
                                 data={classYears}
-                                onSelect={(item) => setClassYear(item.year)}
+                                onSelect={(item) => setClassYear(item.iso!)}
                                 searchKey="year"
                                 label="Select class year"
                                 isOpen={openDropdown === 'year'}
@@ -324,7 +324,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                 displayType='iso'
                                 disableSearch
                                 dropDownClassName='top-20'
-                                textClassName='text-black'
+                                textClassName='text-black font-semibold'
                             />
                         </View>
                     </View>
