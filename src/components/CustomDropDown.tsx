@@ -132,16 +132,16 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
         <View className={'flex-1 ' + containerClassName}>
             <View>
                 {title && (
-                    <Animated.Text className="w-[90%] items-center self-center text-black font-semibold text-lg" style={{ transform: [{ translateY: yVal }] }}>
+                    <Animated.Text className="w-[90%] items-center self-center border-gray-400 font-semibold text-lg" style={{ transform: [{ translateY: yVal }] }}>
                         {title}
                     </Animated.Text>
                 )}
                 <TouchableOpacity
-                    className='flex-row justify-between items-center self-center bg-white rounded-md w-[100%] h-12 px-3 border-gray-500 border'
+                    className='flex-row justify-between items-center self-center bg-white rounded-md w-[100%] h-12 px-3 border-gray-400 border'
                     activeOpacity={1}
                     onPress={() => onToggle()}>
 
-                    <Text style={{ fontWeight: '600' }}>
+                    <Text className='font-bold text-gray-400 text-xl'>
                         {getDisplayText()}
                     </Text>
                 </TouchableOpacity>
@@ -156,7 +156,7 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                 )}
             </View>
             {isOpen ? (
-                <View className={"absolute top-14 self-center bg-white rounded-md h-72 w-[100%] border-gray-500 border px-1 " + dropDownClassName}>
+                <View className={"absolute top-14 self-center bg-white rounded-md h-72 w-[100%] border-gray-400 border px-1 " + dropDownClassName}>
                     {!disableSearch && (
                         <TextInput
                             placeholder="Search.."
@@ -176,17 +176,11 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                         renderItem={({ item, index }) => {
                             return (
                                 <TouchableOpacity
-                                    style={{
-                                        width: '85%',
-                                        alignSelf: 'center',
-                                        height: 50,
-                                        justifyContent: 'center',
-                                        borderBottomWidth: 0.5,
-                                        borderColor: '#8e8e8e',
-                                    }}
                                     onPress={() => handleSelect(item)}
+                                    className='w-[85%] self-center h-12 justify-center border-b border-b-gray-400'
+                                    key={index}
                                 >
-                                    <Text style={{ fontWeight: '600' }}>
+                                    <Text className='text-lg font-semibold'>
                                         {getItemDisplayText(item)}
                                     </Text>
                                 </TouchableOpacity>

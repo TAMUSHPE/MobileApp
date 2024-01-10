@@ -49,3 +49,25 @@ export const subjectIconMapping: SubjectIconMapping = {
     'wgst': WGSTIcon,
     'default': DefaultIcon
 };
+export const SUBJECTCODES = [
+    { subject: "Accounting", iso: "ACCT" },
+    { subject: "Aerospace Engineering", iso: "AERO" },
+    { subject: "Astronomy", iso: "ASTR" },
+    { subject: "Biomedical Engineering", iso: "BMEN" },
+    { subject: "Chemistry", iso: "CHEM" },
+    { subject: "Chemical Engineering", iso: "CHEN" },
+    { subject: "Computer Science and Engineering", iso: "CSCE" },
+    { subject: "Civil Engineering", iso: "CVEN" },
+    { subject: "Electrical and Computer Engineering", iso: "ECEN" },
+    { subject: "Engineering", iso: "ENGR" },
+    { subject: "History", iso: "HIST" },
+    { subject: "Industrial and Systems Engineering", iso: "ISEN" },
+    { subject: "Mathematics", iso: "MATH" },
+    { subject: "Mechanical Engineering", iso: "MEEN" },
+    { subject: "Philosophy", iso: "PHIL" },
+    { subject: "Physics", iso: "PHYS" },
+    { subject: "Statistics", iso: "STAT" },
+    { subject: "Materials Science and Engineering", iso: "MSEN" },
+    { subject: "Nuclear Engineering", iso: "NUEN" },
+    { subject: "Women's and Gender Studies", iso: "WGST" }
+];
