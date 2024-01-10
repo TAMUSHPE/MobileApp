@@ -3,24 +3,30 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { MemberListProps } from '../types/Navigation'
 import MemberCard from './MemberCard'
-import { PublicUserInfo } from '../types/User';
+import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../types/User';
+import CustomDropDownMenu, { CustomDropDownMethods } from './CustomDropDown';
 
 const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, navigation }) => {
     const [search, setSearch] = useState<string>("")
     const [showFilterMenu, setShowFilterMenu] = useState(false);
-    const [filter, setFilter] = useState<{ major: string, classYear: string, role: string }>({ major: "", classYear: "", role: "" });
+    const [filter, setFilter] = useState<UserFilter>({ major: "", classYear: "", role: "" });
     const [members, setMembers] = useState<PublicUserInfo[]>(users)
     const inputRef = useRef<TextInput>(null);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const dropDownRefYear = useRef<CustomDropDownMethods>(null);
+    const dropDownRefMajor = useRef<CustomDropDownMethods>(null);
+    const dropDownRefRole = useRef<CustomDropDownMethods>(null);
 
 
-    const updateFilteredMembers = () => {
+
+    const updateFilteredMembers = (appliedFilter: UserFilter) => {
         let filtered = users.filter(user => {
             const matchesSearch = search === "" ||
                 user.name?.toLowerCase().includes(search.toLowerCase()) ||
                 user.displayName?.toLowerCase().includes(search.toLowerCase());
-            const matchesMajor = filter.major === "" || user.major?.includes(filter.major);
-            const matchesClassYear = filter.classYear === "" || user.classYear === filter.classYear;
-            const matchesRole = filter.role === "" || (user.roles as any)?.[filter.role] === true;
+            const matchesMajor = appliedFilter.major === "" || user.major?.includes(appliedFilter.major);
+            const matchesClassYear = appliedFilter.classYear === "" || user.classYear === appliedFilter.classYear;
+            const matchesRole = appliedFilter.role === "" || (user.roles as any)?.[appliedFilter.role!] === true;
 
 
             return matchesSearch && matchesMajor && matchesClassYear && matchesRole;
@@ -29,17 +35,36 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
     };
 
     useEffect(() => {
-        updateFilteredMembers();
-    }, [search, filter, users]);
+        updateFilteredMembers(filter);
+    }, [search]);
 
     const handleApplyFilter = async () => {
-        updateFilteredMembers();
+        updateFilteredMembers(filter);
     };
 
     const handleClearFilter = async () => {
+        handleClearAllSelections();
         setFilter({ major: "", classYear: "", role: "" });
+        updateFilteredMembers({ major: "", classYear: "", role: "" });
+        setSearch("");
     };
 
+
+    console.log(filter)
+
+    const handleClearAllSelections = () => {
+        dropDownRefYear.current?.clearSelection();
+        dropDownRefMajor.current?.clearSelection();
+        dropDownRefRole.current?.clearSelection();
+    };
+
+    const toggleDropdown = (dropdownKey: string) => {
+        if (openDropdown === dropdownKey) {
+            setOpenDropdown(null);
+        } else {
+            setOpenDropdown(dropdownKey);
+        }
+    };
 
     return (
         <View className='flex-1'>
@@ -70,29 +95,36 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
                         className='pl-4 items-center justify-center'
                         style={{ minWidth: 45 }}
                     >
-                        {showFilterMenu ? (
-                            <Octicons name="x" size={27} color="black" />
-                        ) : (
-                            <Octicons name="filter" size={27} color="black" />
-                        )}
+                        <Octicons name="filter" size={27} color="black" />
                     </TouchableOpacity>
                 </View>
 
                 {showFilterMenu && (
-                    <View className='flex-row p-4'>
+                    <View className='flex-row py-4'>
                         <View className='flex-1 space-y-4'>
-                            <View className='justify-start flex-row'>
-                                <TextInput
-                                    value={filter?.classYear}
-                                    onChangeText={(text) => setFilter({ ...filter, classYear: text })}
-                                    placeholder="Class Year"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                            <View className='justify-start flex-row z-10'>
+                                <CustomDropDownMenu
+                                    data={classYears}
+                                    onSelect={(item) => setFilter({ ...filter, classYear: item.iso || "" })}
+                                    searchKey="year"
+                                    label="Class Year"
+                                    isOpen={openDropdown === 'year'}
+                                    onToggle={() => toggleDropdown('year')}
+                                    displayType='iso'
+                                    ref={dropDownRefYear}
+                                    disableSearch
+                                    containerClassName='mr-1'
                                 />
-                                <TextInput
-                                    value={filter?.major}
-                                    onChangeText={(text) => setFilter({ ...filter, major: text })}
-                                    placeholder="Major"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                <CustomDropDownMenu
+                                    data={MAJORS}
+                                    onSelect={(item) => setFilter({ ...filter, major: item.iso || "" })}
+                                    searchKey="major"
+                                    label="Major"
+                                    isOpen={openDropdown === 'major'}
+                                    onToggle={() => toggleDropdown('major')}
+                                    displayType='iso'
+                                    ref={dropDownRefMajor}
+                                    containerClassName='ml-1'
                                 />
                                 <TouchableOpacity
                                     onPress={() => handleApplyFilter()}
@@ -101,11 +133,18 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
                                 </TouchableOpacity>
                             </View>
                             <View className='justify-start flex-row'>
-                                <TextInput
-                                    value={filter?.role}
-                                    onChangeText={(text) => setFilter({ ...filter, role: text })}
-                                    placeholder="Role"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                <CustomDropDownMenu
+                                    data={ROLESDROPDOWN}
+                                    onSelect={(item) => setFilter({ ...filter, role: item.iso || "" })}
+                                    searchKey="role"
+                                    label="Role"
+                                    isOpen={openDropdown === 'role'}
+                                    onToggle={() => toggleDropdown('role')}
+                                    displayType='value'
+                                    ref={dropDownRefRole}
+                                    disableSearch
+                                    containerClassName='mr-2'
+                                    dropDownClassName='h-44'
                                 />
                                 <View className='w-28 mr-4'></View>
                                 <TouchableOpacity
@@ -119,7 +158,7 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
                 )}
             </View>
 
-            <ScrollView>
+            <ScrollView className='-z-20'>
                 <View className='px-4'>
                     {members?.map((userData, index) => {
                         if (!userData.name) {
@@ -139,5 +178,12 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
         </View>
     )
 }
+
+const ROLESDROPDOWN = [
+    { role: 'Officer', iso: 'officer' },
+    { role: 'Representative', iso: 'representative' },
+    { role: 'Lead', iso: 'lead' },
+];
+
 
 export default MembersList
