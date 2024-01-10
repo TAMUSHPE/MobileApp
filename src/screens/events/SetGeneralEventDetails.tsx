@@ -48,7 +48,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
         await selectImage({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            aspect: [16, 9],
             quality: 1,
         }).then(async (result) => {
             if (result) {
