@@ -50,7 +50,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
             <ScrollView
                 className={`flex flex-col px-4 pt-6 flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}
                 contentContainerStyle={{
-                    paddingBottom: 60
+                    paddingBottom: "50%"
                 }}
             >
                 {

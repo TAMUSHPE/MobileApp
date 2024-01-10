@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal, ActivityIndicator } from 'react-native'
 import React, { useContext, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
@@ -14,6 +14,7 @@ import { UserContext } from '../../context/UserContext';
 import { MillisecondTimes, formatDate, formatTime } from '../../helpers/timeUtils';
 import { StatusBar } from 'expo-status-bar';
 import DismissibleModal from '../../components/DismissibleModal';
+import { UploadTask } from 'firebase/storage';
 
 const UpdateEvent = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
@@ -23,12 +24,16 @@ const UpdateEvent = ({ navigation }: EventProps) => {
 
     // UI Hooks
     const [updatedEvent, setUpdatedEvent] = useState<SHPEEvent>(event);
-    const [updated, setUpdated] = useState(false);
-    const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-    const [showStartTimePicker, setShowStartTimePicker] = useState(false);
-    const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-    const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+    const [updated, setUpdated] = useState<boolean>(false);
+    const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
+    const [showStartTimePicker, setShowStartTimePicker] = useState<boolean>(false);
+    const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
+    const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
     const [showDeletionConfirmation, setShowDeletionConfirmation] = useState<boolean>(false);
+    const [currentUploadTask, setCurrentUploadTask] = useState<UploadTask>();
+    const [isUploading, setIsUploading] = useState<boolean>();
+
 
     const handleUpdateEvent = async () => {
         const newEvent = await updateEvent(updatedEvent);
@@ -51,6 +56,14 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     return (
         <>
             <StatusBar style={darkMode ? "light" : "dark"} />
+            <Modal
+                visible={loading}
+                transparent
+            >
+                <View className='h-full flex justify-center items-center'>
+                    <ActivityIndicator size={90} />
+                </View>
+            </Modal>
             <DismissibleModal
                 visible={showDeletionConfirmation}
                 setVisible={setShowDeletionConfirmation}
@@ -61,7 +74,11 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         <TouchableHighlight
                             className='rounded-md flex flex-col justify-center items-center flex-1 h-full bg-[#ff1c1c]'
                             underlayColor={'#b30000'}
-                            onPress={() => handleDestroyEvent()}
+                            onPress={() => {
+                                setShowDeletionConfirmation(false);
+                                setLoading(true);
+                                handleDestroyEvent().then(() => setLoading(false));
+                            }}
                         >
                             <Text className={`text-center text-white text-xl`}><Octicons name='repo-deleted' size={20} /> Delete</Text>
                         </TouchableHighlight>
@@ -75,6 +92,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     </View>
                 </View>
             </DismissibleModal>
+
             {/* Start Date Pickers */}
             {Platform.OS == 'android' && showStartDatePicker &&
                 <DateTimePicker
@@ -133,38 +151,13 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 />
             }
 
-            {/* End Time Pickers */}
-            {Platform.OS == 'android' && showStartDatePicker &&
-                <DateTimePicker
-                    testID='End Date Picker'
-                    value={updatedEvent.endTime?.toDate() ?? new Date()}
-                    minimumDate={new Date()}
-                    maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
-                    mode='date'
-                    onChange={(_, date) => {
-                        if (!date) {
-                            console.warn("Date picked is undefined.");
-                        }
-                        else if (updatedEvent.endTime && date.valueOf() > updatedEvent.endTime.toMillis()) {
-                            setUpdatedEvent({
-                                ...updatedEvent,
-                                startTime: Timestamp.fromDate(date),
-                                endTime: Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR),
-                            });
-                        }
-                        else {
-                            setUpdatedEvent({
-                                ...updatedEvent,
-                                startTime: Timestamp.fromDate(date)
-                            });
-                        }
-                        setShowStartTimePicker(false);
-                    }}
-                />
-            }
 
             <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
-                <ScrollView>
+                <ScrollView
+                    contentContainerStyle={{
+                        paddingBottom: "50%"
+                    }}
+                >
                     {/* Header */}
                     <View className='flex-row items-center h-10'>
                         <View className='w-screen absolute'>
@@ -270,7 +263,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                 }
                             </View>
                         </View>
-                        <KeyboardAvoidingView className='py-3'>
+                        <KeyboardAvoidingView behavior='position' className='py-3'>
                             <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Description</Text>
                             <TextInput
                                 className={`text-lg p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}

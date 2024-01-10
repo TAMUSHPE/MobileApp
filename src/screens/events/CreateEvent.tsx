@@ -33,7 +33,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
             <ScrollView
                 className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}
                 contentContainerStyle={{
-                    paddingBottom: 60
+                    paddingBottom: "50%"
                 }}
             >
                 {/* Image */}
