@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, TextInput, FlatList, Animated, Touchable,
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 
-const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onToggle, label, title, selectedItemProp, disableSearch, displayType = "both", containerClassName = "", dropDownClassName = "" }: {
+const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onToggle, label, title, selectedItemProp, disableSearch, displayType = "both", containerClassName = "", dropDownClassName = "", textClassName = "" }: {
     data: Item[];
     onSelect: (item: Item) => void;
     searchKey: string;
@@ -16,6 +16,7 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
     displayType?: string;
     containerClassName?: string;
     dropDownClassName?: string;
+    textClassName?: string;
 }, ref) => {
     const [search, setSearch] = useState('');
     const [filteredData, setFilteredData] = useState(data);
@@ -23,8 +24,8 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
     const searchRef = useRef<TextInput>(null);
     const moveTitle = useRef(new Animated.Value(0)).current;
 
-    const titleStartY = -5;
-    const titleEndY = 20;
+    const titleStartY = 20;
+    const titleEndY = -5;
 
     useEffect(() => {
         if (selectedItem && selectedItem.value != "") {
@@ -132,7 +133,7 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
         <View className={'flex-1 ' + containerClassName}>
             <View>
                 {title && (
-                    <Animated.Text className="w-[90%] items-center self-center border-gray-400 font-semibold text-lg" style={{ transform: [{ translateY: yVal }] }}>
+                    <Animated.Text className="w-[100%] ml-3 items-center self-center border-gray-400 font-semibold text-lg text-white" style={{ transform: [{ translateY: yVal }] }}>
                         {title}
                     </Animated.Text>
                 )}
@@ -141,7 +142,7 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                     activeOpacity={1}
                     onPress={() => onToggle()}>
 
-                    <Text className='font-bold text-gray-400 text-xl'>
+                    <Text className={'font-bold text-gray-400 text-xl ' + textClassName}>
                         {getDisplayText()}
                     </Text>
                 </TouchableOpacity>

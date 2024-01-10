@@ -27,7 +27,7 @@ import SocialsIcon from '../../../assets/socials.svg';
 import StudyHoursIcon from '../../../assets/study-hours.svg';
 import WorkshopIcon from '../../../assets/workshop.svg';
 import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
-import SimpleDropDown from '../../components/CustomDropDown';
+import CustomDropDown from '../../components/CustomDropDown';
 import InteractButton from '../../components/InteractButton';
 import { EventType } from '../../types/Events';
 
@@ -300,7 +300,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                 <View>
                     <View className='flex-col mt-10 justify-center h-52 z-20'>
                         <View className='absolute top-0 z-20 w-full'>
-                            <SimpleDropDown
+                            <CustomDropDown
                                 data={MAJORS}
                                 onSelect={(item) => setMajor(item.iso!)}
                                 searchKey="major"
@@ -309,10 +309,11 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                 onToggle={() => toggleDropdown('major')}
                                 title={'Major'}
                                 dropDownClassName='top-20'
+                                textClassName='text-black'
                             />
                         </View>
                         <View className='absolute top-24 z-10 w-full'>
-                            <SimpleDropDown
+                            <CustomDropDown
                                 data={classYears}
                                 onSelect={(item) => setClassYear(item.year)}
                                 searchKey="year"
@@ -323,7 +324,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                 displayType='iso'
                                 disableSearch
                                 dropDownClassName='top-20'
-
+                                textClassName='text-black'
                             />
                         </View>
                     </View>

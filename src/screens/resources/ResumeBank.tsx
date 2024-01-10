@@ -143,10 +143,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                                 </TouchableOpacity>
                             </View>
                             <View className='justify-start flex-row'>
-                                <View className='w-28 mr-4'></View>
-
-                                <View className='w-28 mr-4'></View>
-
+                                <View className='flex-1'></View>
                                 <TouchableOpacity
                                     onPress={() => handleClearFilter()}
                                     className='items-center justify-center py-2 w-20 rounded-lg ml-3'>
