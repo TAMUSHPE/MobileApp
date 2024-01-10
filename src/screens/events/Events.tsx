@@ -89,25 +89,13 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                         <Text className='text-xl mb-4 text-bold'>Upcoming Events</Text>
                     }
 
-                    {upcomingEvents.map((event) => {
-                        return (
-                            <View key={event.id}>
-                                <EventCard key={event.id} event={event} navigation={navigation} />
-                            </View>
-                        )
-                    })}
+                    {upcomingEvents.map((event) => <EventCard key={event.id} event={event} navigation={navigation} />)}
 
                     {pastEvents.length != 0 &&
                         <Text className='text-xl mb-4 text-bold '>Past Events</Text>
                     }
 
-                    {pastEvents.map((event) => {
-                        return (
-                            <View key={event.id}>
-                                <EventCard event={event} navigation={navigation} />
-                            </View>
-                        )
-                    })}
+                    {pastEvents.map((event) => <EventCard key={event.id} event={event} navigation={navigation} />)}
                 </View>
             </ScrollView>
         </SafeAreaView>
