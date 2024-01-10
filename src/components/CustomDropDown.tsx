@@ -1,25 +1,41 @@
-import { View, Text, TouchableOpacity, TextInput, FlatList, Animated, } from 'react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Animated, Touchable, } from 'react-native';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 
-const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, title, selectedItemProp, disableSearch }: SimpleDropDownProps) => {
+const SimpleDropDown = forwardRef(({ data, onSelect, isOpen, searchKey, onToggle, label, title, selectedItemProp, disableSearch, displayType = "both", containerClassName = "", dropDownClassName = "" }: {
+    data: Item[];
+    onSelect: (item: Item) => void;
+    searchKey: string;
+    isOpen: boolean;
+    onToggle: () => void;
+    label: string;
+    title?: string;
+    selectedItemProp?: SelectedItem | null;
+    disableSearch?: boolean;
+    className?: string;
+    displayType?: string;
+    containerClassName?: string;
+    dropDownClassName?: string;
+}, ref) => {
     const [search, setSearch] = useState('');
     const [filteredData, setFilteredData] = useState(data);
     const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null)
     const searchRef = useRef<TextInput>(null);
     const moveTitle = useRef(new Animated.Value(0)).current;
 
-    const titleStartY = 20;
-    const titleEndY = -5;
+    const titleStartY = -5;
+    const titleEndY = 20;
 
     useEffect(() => {
-        if (selectedItem?.value) {
+        if (selectedItem && selectedItem.value != "") {
             moveTitleTop();
+        } else {
+            moveTitleBottom();
         }
     }, [selectedItem]);
 
     useEffect(() => {
-        if (selectedItemProp)
+        if (selectedItemProp && selectedItemProp?.value != "")
             setSelectedItem(selectedItemProp);
     }, [selectedItemProp]);
 
@@ -31,9 +47,17 @@ const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, ti
         }).start();
     };
 
+    const moveTitleBottom = () => {
+        Animated.timing(moveTitle, {
+            toValue: 0,
+            duration: 100,
+            useNativeDriver: true,
+        }).start();
+    }
+
     const yVal = moveTitle.interpolate({
         inputRange: [0, 1],
-        outputRange: [titleStartY ?? 20, titleEndY ?? 0]
+        outputRange: [titleStartY, titleEndY]
     });
 
     useEffect(() => {
@@ -63,30 +87,76 @@ const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, ti
         setSearch('');
     };
 
+    const getDisplayText = () => {
+        if (selectedItem && selectedItem.value != "") {
+            switch (displayType) {
+                case 'iso':
+                    return selectedItem?.iso || label;
+                case 'value':
+                    return selectedItem?.value || label;
+                case 'both':
+                    return selectedItem ? `${selectedItem.iso ? `${selectedItem.iso} - ` : ''}${selectedItem.value}` : label;
+                default:
+                    return label;
+            }
+        } else {
+            return label;
+        }
+    };
+
+    const getItemDisplayText = (item: Item) => {
+        switch (displayType) {
+            case 'iso':
+                return item.iso ? `${item.iso}` : '';
+            case 'value':
+                return String(item[searchKey]);
+            case 'both':
+                return `${item.iso ? `${item.iso} - ` : ''}${String(item[searchKey])}`;
+            default:
+                return String(item[searchKey]);
+        }
+    };
+
+    const clearSelection = () => {
+        setSelectedItem(null); // Reset selectedItem to null
+        setSearch(''); // Reset search text if needed
+        onSearch(''); // Reset filteredData if needed
+        onSelect({}); // Reset selected item
+    };
+
+    useImperativeHandle(ref, () => ({
+        clearSelection,
+    }));
+
     return (
-        <View>
+        <View className={'flex-1 ' + containerClassName}>
             <View>
-                <Animated.Text className="w-[90%] items-center self-center pl-1" style={{ maxWidth: "80%", fontWeight: '600', color: "#fff", transform: [{ translateY: yVal }] }}>
-                    {title}
-                </Animated.Text>
+                {title && (
+                    <Animated.Text className="w-[90%] items-center self-center text-black font-semibold text-lg" style={{ transform: [{ translateY: yVal }] }}>
+                        {title}
+                    </Animated.Text>
+                )}
                 <TouchableOpacity
-                    className='flex-row justify-between items-center self-center px-3 bg-white rounded-md w-[80%] h-12'
+                    className='flex-row justify-between items-center self-center bg-white rounded-md w-[100%] h-12 px-3 border-gray-500 border'
                     activeOpacity={1}
                     onPress={() => onToggle()}>
 
                     <Text style={{ fontWeight: '600' }}>
-                        {selectedItem ? (selectedItem.iso ? `${selectedItem.iso} - ` : '') + selectedItem.value : label}
+                        {getDisplayText()}
                     </Text>
-
-                    {isOpen ? (
-                        <Octicons name="chevron-up" size={24} color="black" />
-                    ) : (
-                        <Octicons name="chevron-down" size={24} color="black" />
-                    )}
                 </TouchableOpacity>
+
+                {selectedItem && selectedItem.value != "" && ref && (
+                    <TouchableOpacity
+                        className='absolute top-0 right-0 h-12 w-12 flex items-center justify-center'
+                        onPress={() => clearSelection()}
+                    >
+                        <Octicons name="x" size={24} color="red" />
+                    </TouchableOpacity>
+                )}
             </View>
             {isOpen ? (
-                <View className="self-center bg-white w-[90%] rounded-md mt-4 h-72">
+                <View className={"absolute top-14 self-center bg-white rounded-md h-72 w-[100%] border-gray-500 border px-1 " + dropDownClassName}>
                     {!disableSearch && (
                         <TextInput
                             placeholder="Search.."
@@ -117,7 +187,7 @@ const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, ti
                                     onPress={() => handleSelect(item)}
                                 >
                                     <Text style={{ fontWeight: '600' }}>
-                                        {item.iso ? `${item.iso} - ` : ''}{String(item[searchKey])}
+                                        {getItemDisplayText(item)}
                                     </Text>
                                 </TouchableOpacity>
                             );
@@ -127,7 +197,7 @@ const SimpleDropDown = ({ data, onSelect, searchKey, isOpen, onToggle, label, ti
             ) : null}
         </View>
     );
-};
+});
 
 interface Item {
     [key: string]: any;
@@ -139,15 +209,4 @@ interface SelectedItem {
     iso?: string;
 }
 
-interface SimpleDropDownProps {
-    data: Item[];
-    onSelect: (item: Item) => void;
-    searchKey: string;
-    isOpen: boolean;
-    onToggle: () => void;
-    label: string;
-    title: string;
-    selectedItemProp?: SelectedItem | null;
-    disableSearch?: boolean;
-}
 export default SimpleDropDown;
