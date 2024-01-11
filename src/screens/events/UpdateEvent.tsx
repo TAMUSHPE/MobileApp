@@ -4,7 +4,7 @@ import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CommitteeMeeting, EventType, GeneralMeeting, IntramuralEvent, CustomEvent, monthNames, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop, WorkshopType } from '../../types/Events';
-import { destroyEvent, updateEvent, uploadFileToFirebase } from '../../api/firebaseUtils';
+import { destroyEvent, setEvent, uploadFileToFirebase } from '../../api/firebaseUtils';
 import { Octicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -29,8 +29,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     // UI Hooks
-    const [updatedEvent, setUpdatedEvent] = useState<SHPEEvent>(event);
     const [updated, setUpdated] = useState<boolean>(false);
+    const [changesMade, setChangesMade] = useState<boolean>(false);
     const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
     const [showStartTimePicker, setShowStartTimePicker] = useState<boolean>(false);
     const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
@@ -61,55 +61,46 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType);
     const [committee, setCommittee] = useState<string | undefined | null>(event.committee);
 
-    useEffect(() => {
-        let copiedEvent: SHPEEvent;
+    const handleUpdateEvent = async () => {
+        let updatedEvent: SHPEEvent = {};
         switch (event.eventType) {
             case EventType.GENERAL_MEETING:
-                copiedEvent = new GeneralMeeting();
+                updatedEvent = new GeneralMeeting();
                 break;
             case EventType.COMMITTEE_MEETING:
-                copiedEvent = new CommitteeMeeting();
+                updatedEvent = new CommitteeMeeting();
                 break;
             case EventType.STUDY_HOURS:
-                copiedEvent = new StudyHours();
+                updatedEvent = new StudyHours();
                 break;
             case EventType.WORKSHOP:
-                copiedEvent = new Workshop();
+                updatedEvent = new Workshop();
                 break;
             case EventType.VOLUNTEER_EVENT:
-                copiedEvent = new VolunteerEvent();
+                updatedEvent = new VolunteerEvent();
                 break;
             case EventType.SOCIAL_EVENT:
-                copiedEvent = new SocialEvent();
+                updatedEvent = new SocialEvent();
                 break;
             case EventType.INTRAMURAL_EVENT:
-                copiedEvent = new IntramuralEvent();
+                updatedEvent = new IntramuralEvent();
                 break;
             case EventType.CUSTOM_EVENT:
-                copiedEvent = new CustomEvent();
+                updatedEvent = new CustomEvent();
                 break;
             default:
-                Alert.alert("Select an event type", "Please select an event type to continue.");
-                copiedEvent = new CustomEvent();
+                console.warn(`Event type ${event.eventType} not handled. This may cause issues if given event object does not follow SHPEEvent schema.`)
                 break;
         }
 
-        // copyFromObject should not be undefined
-        if (copiedEvent.copyFromObject) {
-            copiedEvent.copyFromObject(event);
+        // Uses spread syntax as fallback in case class does not implement copyFromObject
+        if (updatedEvent.copyFromObject) {
+            updatedEvent.copyFromObject(event);
         }
         else {
-            copiedEvent = { ...event };
+            updatedEvent = { ...event };
         }
 
-        setUpdatedEvent(copiedEvent);
-    }, [event])
-
-    useEffect(() => {
-        console.log(updatedEvent);
-    }, [updatedEvent])
-
-    const handleUpdateEvent = async () => {
         if (updatedEvent.copyFromObject) {
             updatedEvent.copyFromObject({
                 name,
@@ -130,9 +121,10 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             })
         }
 
-        const newEvent = await updateEvent(updatedEvent);
-        if (newEvent) {
+        const eventID = await setEvent(event.id!, updatedEvent);
+        if (eventID) {
             setUpdated(true);
+            setChangesMade(false);
         } else {
             console.log('Event update failed');
         }
@@ -272,6 +264,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             setStartTime(Timestamp.fromDate(date));
                         }
                         setShowStartDatePicker(false);
+                        setChangesMade(true);
                     }}
                 />
             }
@@ -293,7 +286,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         else {
                             setStartTime(Timestamp.fromDate(date));
                         }
-                        setShowStartDatePicker(false);
+                        setShowStartTimePicker(false);
+                        setChangesMade(true);
                     }}
                 />
             }
@@ -308,7 +302,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     {/* Header */}
                     <View className='flex-row items-center h-10'>
                         <View className='w-screen absolute'>
-                            <Text className="text-2xl font-bold justify-center text-center">{name}</Text>
+                            <Text className="text-2xl font-bold justify-center text-center">{event.name}{changesMade && ' *'}</Text>
                         </View>
                         <View className='pl-6'>
                             <TouchableOpacity className="pr-4" onPress={() => navigation.navigate("EventInfo", { eventId: event.id! })} >
@@ -329,15 +323,37 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         />
                     </View>
 
+                    <View className='flex-row w-screen justify-center items-center pt-6 space-x-7'>
+                        <TouchableOpacity className='w-20 h-10 bg-blue-400 justify-center items-center rounded-md'
+                            onPress={() => handleUpdateEvent()}
+                        >
+                            <Text>Update Event</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity className='w-20 h-10 bg-blue-300 justify-center items-center rounded-md'
+                            onPress={() => navigation.navigate("QRCode", { event: event })}
+                        >
+                            <Text>View QRCode</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity className='w-20 h-10 bg-red-400 justify-center items-center rounded-md'
+                            onPress={() => setShowDeletionConfirmation(true)}
+                        >
+                            <Text>Destroy Event</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {updated && <Text className='text-green-500'>Information has been updated</Text>}
+
                     {/* Form */}
-                    <View className='mt-9 p-6'>
+                    <View className='mt-9 px-6'>
                         <View className='w-full'>
-                            <Text className='text-gray-500'>Event Title</Text>
+                            <Text className='text-gray-500'>Event Name</Text>
                             <View className='flex-row border-b-2 border-slate-400'>
                                 <TextInput
-                                    className={`w-[90%] rounded-md text-xl py-1 ${updatedEvent?.name ? 'font-normal' : 'font-extrabold'}`}
-                                    value={updatedEvent?.name ?? ""}
-                                    onChangeText={(text) => setName(text)}
+                                    className={`w-[90%] rounded-md text-xl py-1 ${name ? 'font-normal' : 'font-extrabold'}`}
+                                    value={name ?? ""}
+                                    onChangeText={(text) => {
+                                        setName(text);
+                                        setChangesMade(true);
+                                    }}
                                     placeholder="Event Name"
                                 />
                             </View>
@@ -354,7 +370,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{event.startTime ? formatDate(event.startTime.toDate()) : "No date picked"}</Text>
+                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
                                             <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
                                         </>
                                     </TouchableHighlight>
@@ -369,7 +385,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{event.startTime ? formatTime(event.startTime.toDate()) : "No date picked"}</Text>
+                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
                                             <Octicons name='chevron-down' size={24} />
                                         </>
                                     </TouchableHighlight>
@@ -388,7 +404,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{event.endTime ? formatDate(event.endTime.toDate()) : "No date picked"}</Text>
+                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
                                             <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
                                         </>
                                     </TouchableHighlight>
@@ -403,7 +419,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{event.endTime ? formatTime(event.endTime.toDate()) : "No date picked"}</Text>
+                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
                                             <Octicons name='chevron-down' size={24} />
                                         </>
                                     </TouchableHighlight>
@@ -456,28 +472,6 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                 />
                         }
                     </View>
-
-
-                    <View className='flex-row w-screen justify-center items-center pt-4 space-x-7'>
-                        <TouchableOpacity className='w-20 h-10 bg-blue-400 justify-center items-center rounded-md'
-                            onPress={() => handleUpdateEvent()}
-                        >
-                            <Text>Update Event</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity className='w-20 h-10 bg-blue-300 justify-center items-center rounded-md'
-                            onPress={() => navigation.navigate("QRCode", { event: event })}
-                        >
-                            <Text>View QRCode</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity className='w-20 h-10 bg-red-400 justify-center items-center rounded-md'
-                            onPress={() => setShowDeletionConfirmation(true)}
-                        >
-                            <Text>Destroy Event</Text>
-                        </TouchableOpacity>
-                    </View>
-                    {updated && <Text className='text-green-500'>Information has been updated</Text>}
-
-                    <View className='pb-32'></View>
                 </ScrollView >
             </SafeAreaView >
         </>

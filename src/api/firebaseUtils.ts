@@ -454,6 +454,11 @@ export const isUserInBlacklist = async (uid: string): Promise<boolean> => {
     }
 };
 
+/**
+ * Creates a new SHPE event document in firestore
+ * @param event Object with event details
+ * @returns Document name in firestore. Null if error occurred
+ */
 export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
     try {
         const docRef = await addDoc(collection(db, "events"), { ...event });
@@ -464,9 +469,15 @@ export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
     }
 };
 
-export const updateEvent = async (event: SHPEEvent) => {
+/**
+ * Updates a given event
+ * @param id Name of event document in firestore
+ * @param event Object to replace firestore document
+ * @returns Document name returned by firebase or null/undefined if an issue occurred
+ */
+export const setEvent = async (id: string, event: SHPEEvent): Promise<string | null | undefined> => {
     try {
-        const docRef = doc(db, "events", event.id!);
+        const docRef = doc(db, "events", id);
         await updateDoc(docRef, {
             ...event
         });
@@ -477,7 +488,12 @@ export const updateEvent = async (event: SHPEEvent) => {
     }
 }
 
-export const getEvent = async (eventID: string) => {
+/**
+ * Fetches a given event document from firestore
+ * @param eventID Document name of event in firestore
+ * @returns Document data from firestore. null if there is an issue obtaining document.
+ */
+export const getEvent = async (eventID: string): Promise<null | SHPEEvent> => {
     try {
         const eventRef = doc(db, "events", eventID);
         const eventDoc = await getDoc(eventRef);

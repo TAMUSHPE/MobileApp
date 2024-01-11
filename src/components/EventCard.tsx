@@ -1,8 +1,7 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
-import React, { useState } from 'react'
-import { EventProps, UpdateEventScreenRouteProp } from '../types/Navigation'
+import React from 'react'
+import { EventProps } from '../types/Navigation'
 import { monthNames } from '../types/Events'
-import { Images } from '../../assets'
 import { Octicons } from '@expo/vector-icons';
 
 const EventCard: React.FC<EventProps> = ({ event, navigation }) => {
