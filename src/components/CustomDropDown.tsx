@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, FlatList, Animated, Touchable, } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Animated, TouchableWithoutFeedback, Dimensions, LayoutChangeEvent, LayoutRectangle } from 'react-native';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 
@@ -50,6 +50,7 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
     const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null)
     const searchRef = useRef<TextInput>(null);
     const moveTitle = useRef(new Animated.Value(0)).current;
+    const [componentLayout, setComponentLayout] = useState<LayoutRectangle | null>(null);
 
     const titleStartY = 20;
     const titleEndY = -5;
@@ -156,9 +157,33 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
         clearSelection,
     }));
 
+    const onComponentLayout = (event: LayoutChangeEvent) => {
+        setComponentLayout(event.nativeEvent.layout);
+    };
+
+    let overlayStyle = {};
+    if (componentLayout) {
+        const screenHeight = Dimensions.get('window').height;
+        const screenWidth = Dimensions.get('window').width;
+
+        overlayStyle = {
+            position: 'absolute',
+            left: -componentLayout.x - 16, // adjustment in x position to fill screen
+            top: -componentLayout.y - 180, // adjustment in y position to fill screen
+            width: screenWidth,
+            height: screenHeight,
+            backgroundColor: 'rgba(0, 0, 255, 0.6)'
+        };
+    }
+
     return (
-        <View className={'flex-1 ' + containerClassName}>
+        <View className={'flex-1 ' + containerClassName} onLayout={onComponentLayout}>
             <View>
+                {isOpen && (
+                    <TouchableWithoutFeedback onPress={onToggle}>
+                        <View style={overlayStyle} />
+                    </TouchableWithoutFeedback>
+                )}
                 {title && (
                     <Animated.Text className="w-[100%] ml-3 items-center self-center border-gray-400 font-semibold text-lg text-white" style={{ transform: [{ translateY: yVal }] }}>
                         {title}
