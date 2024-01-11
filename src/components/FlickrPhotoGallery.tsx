@@ -4,8 +4,8 @@ import { Animated, Image, Dimensions, View, NativeScrollEvent, NativeSyntheticEv
 
 const windowWidth = Dimensions.get('window').width;
 
-const API_KEY = "***REMOVED***"; // Flicker API Key Generated using https://www.flickr.com/services/api/
-const USER_ID = "143848472@N03"; // Flicker User for SHPE 
+const flickerApiKey = process.env.FLICKER_API_KEY;
+const flickerUserId = process.env.FLICKER_USER_ID;
 
 
 const FlickrPhotoItem = memo(({ item }: { item: FlickrPhoto }) => {
@@ -42,7 +42,7 @@ const FlickrPhotoGallery = () => {
 
     const fetchPhotos = async () => {
         try {
-            const response = await fetch(`https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=${API_KEY}&user_id=${USER_ID}&format=json&nojsoncallback=1`);
+            const response = await fetch(`https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=${flickerApiKey}&user_id=${flickerUserId}&format=json&nojsoncallback=1`);
             const json = await response.json();
             const shuffledPhotos = shufflePhotos(json.photos.photo);
             setPhotos([shuffledPhotos[shuffledPhotos.length - 1], ...shuffledPhotos, shuffledPhotos[0]]);
@@ -105,6 +105,8 @@ const FlickrPhotoGallery = () => {
     });
 
     const renderItem = ({ item }: { item: FlickrPhoto }) => <FlickrPhotoItem item={item} />;
+
+    if (!photos.length) return null;
 
     return (
         <Animated.FlatList

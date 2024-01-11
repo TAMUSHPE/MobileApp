@@ -9,6 +9,7 @@ import { HomeStackParams } from "../../types/Navigation"
 import OfficeSignIn from './OfficeSignIn';
 import MOTMCard from '../../components/MOTMCard';
 import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
+import Ishpe from './Ishpe';
 
 
 /**
@@ -36,13 +37,15 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     return (
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
+            <FlickrPhotoGallery />
+            {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}
+            <Ishpe navigation={navigation} />
 
             {/* <FeaturedSlider route={route} /> */}
-            <FlickrPhotoGallery />
-
-            {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}
 
             <MOTMCard navigation={navigation} />
+
+
         </ScrollView>
     );
 }

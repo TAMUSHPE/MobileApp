@@ -2,13 +2,13 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from 'rea
 import React, { useCallback, useContext, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { EventsStackParams } from '../../types/Navigation';
-import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
-import { SHPEEvent } from '../../types/Events';
-import EventCard from '../../components/EventCard';
 import { useFocusEffect } from '@react-navigation/native';
-import { UserContext } from '../../context/UserContext';
 import { AntDesign } from '@expo/vector-icons';
+import { UserContext } from '../../context/UserContext';
+import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
+import { EventsStackParams } from '../../types/Navigation';
+import { SHPEEvent } from '../../types/Events';
+import EventsList from '../../components/EventsList';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
@@ -84,18 +84,35 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                         <Text>No Events</Text>
                     </View>
                 }
+<<<<<<< HEAD
                 <View className='mx-2 mt-4'>
+=======
+
+                <View className='ml-4 mt-4'>
+>>>>>>> dev
                     {upcomingEvents.length != 0 &&
-                        <Text className='text-xl mb-4 text-bold'>Upcoming Events</Text>
+                        <Text className='text-xl mb-4 font-bold'>Upcoming Events</Text>
                     }
 
+<<<<<<< HEAD
                     {upcomingEvents.map((event) => <EventCard key={event.id} event={event} navigation={navigation} />)}
+=======
+                    {upcomingEvents && (
+                        <EventsList events={upcomingEvents} navigation={navigation} />
+                    )}
+>>>>>>> dev
 
                     {pastEvents.length != 0 &&
-                        <Text className='text-xl mb-4 text-bold '>Past Events</Text>
+                        <Text className='text-xl mb-4 text-bold mt-8 font-bold '>Past Events</Text>
                     }
 
+<<<<<<< HEAD
                     {pastEvents.map((event) => <EventCard key={event.id} event={event} navigation={navigation} />)}
+=======
+                    {pastEvents && (
+                        <EventsList events={pastEvents} navigation={navigation} />
+                    )}
+>>>>>>> dev
                 </View>
             </ScrollView>
         </SafeAreaView>

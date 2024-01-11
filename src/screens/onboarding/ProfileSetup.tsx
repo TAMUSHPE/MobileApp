@@ -21,9 +21,15 @@ import { ProfileSetupStackParams } from '../../types/Navigation';
 import { Images } from '../../../assets';
 import UploadFileIcon from '../../../assets/file-arrow-up-solid.svg';
 import DownloadIcon from '../../../assets/arrow-down-solid.svg';
+import VolunteerIcon from '../../../assets/volunteering.svg';
+import IntramuralIcon from '../../../assets/futbol-solid.svg';
+import SocialsIcon from '../../../assets/socials.svg';
+import StudyHoursIcon from '../../../assets/study-hours.svg';
+import WorkshopIcon from '../../../assets/workshop.svg';
 import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
-import SimpleDropDown from '../../components/SimpleDropDown';
+import CustomDropDown from '../../components/CustomDropDown';
 import InteractButton from '../../components/InteractButton';
+import { EventType } from '../../types/Events';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
@@ -294,7 +300,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                 <View>
                     <View className='flex-col mt-10 justify-center h-52 z-20'>
                         <View className='absolute top-0 z-20 w-full'>
-                            <SimpleDropDown
+                            <CustomDropDown
                                 data={MAJORS}
                                 onSelect={(item) => setMajor(item.iso!)}
                                 searchKey="major"
@@ -302,18 +308,23 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                 isOpen={openDropdown === 'major'}
                                 onToggle={() => toggleDropdown('major')}
                                 title={'Major'}
+                                dropDownClassName='top-20'
+                                textClassName='text-black font-semibold'
                             />
                         </View>
                         <View className='absolute top-24 z-10 w-full'>
-                            <SimpleDropDown
+                            <CustomDropDown
                                 data={classYears}
-                                onSelect={(item) => setClassYear(item.year)}
+                                onSelect={(item) => setClassYear(item.iso!)}
                                 searchKey="year"
                                 label="Select class year"
                                 isOpen={openDropdown === 'year'}
                                 onToggle={() => toggleDropdown('year')}
                                 title={"Class Year"}
+                                displayType='iso'
                                 disableSearch
+                                dropDownClassName='top-20'
+                                textClassName='text-black font-semibold'
                             />
                         </View>
                     </View>
@@ -469,7 +480,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                             <ActivityIndicator className="mb-4" size={"large"} />
                         )}
                         <InteractButton
-                            onPress={() => navigation.navigate("SetupCommittees")}
+                            onPress={() => navigation.navigate("SetupInterests")}
                             label='Continue'
                             buttonClassName={`${!resumeURL ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
                             textClassName={`${!resumeURL ? "text-gray-700" : "text-white"} text-lg font-bold`}
@@ -478,7 +489,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                         />
                     </View>
                     <InteractButton
-                        onPress={() => navigation.navigate("SetupCommittees")}
+                        onPress={() => navigation.navigate("SetupInterests")}
                         label='Skip For Now'
                         buttonClassName='justify-center items-center  rounded-md w-10/12'
                         textClassName='text-pale-orange text-lg font-bold'
@@ -489,6 +500,135 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
         </SafeAreaView>
     )
 }
+
+/**
+ * This screen is where the user will choose which committees they're in, if any. The user can select committees, 
+ * choose to skip, or select "None For Now".
+ * Skipping and selecting "None For Now" will do the same thing and set their committees as ["None"]
+ */
+const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
+    const [canContinue, setCanContinue] = useState<boolean>(true);
+    const [userInterests, setUserInterests] = useState<EventType[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const { setUserInfo } = useContext(UserContext)!;
+
+
+    const handleInterestToggle = (interest: EventType) => {
+        setUserInterests(prevInterest => {
+            if (prevInterest.includes(interest)) {
+                return prevInterest.filter(name => name !== interest);
+            } else {
+                return [...prevInterest, interest];
+            }
+        });
+    };
+
+    useEffect(() => {
+        setCanContinue(userInterests.length > 0);
+    }, [userInterests]);
+
+
+    const InterestButtons = ({ interestEvent, label, color, Icon }: {
+        interestEvent: EventType;
+        label: string;
+        color: string;
+        Icon: React.FC<React.SVGProps<SVGSVGElement>>;
+    }) => {
+        const isSelected = userInterests.includes(interestEvent);
+        return (
+            <TouchableOpacity
+                onPress={() => handleInterestToggle(interestEvent)}
+                className='flex-col rounded-md w-[45%] mb-4'
+                style={{ minHeight: 90 }}
+            >
+                <View className='flex-1 rounded-md items-center bg-white' >
+                    <View className='flex-1 items-center flex-row justify-center py-2'>
+                        {isSelected ? (
+                            <View className="items-center justify-center h-10 w-10 rounded-full" style={{ backgroundColor: color }}>
+                                <Octicons name="check" size={30} color="white" />
+                            </View>
+                        ) : (
+                            <Icon width={35} height={35} />
+                        )}
+                    </View>
+                    <Text className="justify-end font-bold text-lg text-black">{label}</Text>
+                </View>
+            </TouchableOpacity>
+        );
+    }
+
+    return (
+        <SafeAreaView className={safeAreaViewStyle}>
+            <View className='flex-col'>
+                <TouchableOpacity
+                    className="mb-4"
+                    onPress={() => { navigation.goBack(); }}
+                >
+                    <Octicons name="chevron-left" size={30} color="white" />
+                </TouchableOpacity>
+                <View className='items-center'>
+                    <View className='flex-col items-center'>
+                        <Text className='text-white text-center text-3xl'>What are you interest in?</Text>
+                        <Text className='text-white text-center text-lg mt-4'>Choose activities that you are interested in at SHPE</Text>
+                    </View>
+                    <ScrollView
+                        className='w-11/12 h-1/2 flex-col bg-[#b5b5cc2c] my-5 rounded-md'
+                        persistentScrollbar
+                        scrollToOverflowEnabled
+                    >
+                        {/* If any additional interest are added in the future, then update manually in ISHPE component */}
+                        <View className='flex-wrap flex-row w-full h-full pb-28 pt-4 px-2 justify-between'>
+                            <InterestButtons interestEvent={EventType.VOLUNTEER_EVENT} label="Volunteering" color={"#E93535"} Icon={VolunteerIcon} />
+                            <InterestButtons interestEvent={EventType.INTRAMURAL_EVENT} label="Intramural" color={"#000000"} Icon={IntramuralIcon} />
+                            <InterestButtons interestEvent={EventType.SOCIAL_EVENT} label="Socials" color={"#A75EF8"} Icon={SocialsIcon} />
+                            <InterestButtons interestEvent={EventType.STUDY_HOURS} label="Study Hours" color={"#9DB89A"} Icon={StudyHoursIcon} />
+                            <InterestButtons interestEvent={EventType.WORKSHOP} label="Workshops" color={"#FF910A"} Icon={WorkshopIcon} />
+                        </View>
+                    </ScrollView>
+
+                    <View className='w-10/12 mb-2'>
+                        <InteractButton
+                            onPress={async () => {
+                                if (canContinue && auth.currentUser) {
+                                    await setPublicUserData({
+                                        interests: userInterests,
+                                    });
+
+                                    navigation.navigate("SetupCommittees");
+                                }
+                            }}
+
+                            label='Continue'
+                            buttonClassName={`${!canContinue ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
+                            textClassName={`${!canContinue ? "text-gray-700" : "text-white"} text-lg font-bold`}
+                            opacity={!canContinue ? 1 : 0.8}
+                            underlayColor={`${!canContinue ? "" : "#A22E2B"}`}
+                        />
+                    </View>
+                    <InteractButton
+                        onPress={async () => {
+                            if (auth.currentUser) {
+                                await setPublicUserData({
+                                    interests: [],
+                                });
+
+                                navigation.navigate("SetupCommittees");
+                            }
+                        }}
+                        label='Skip For Now'
+                        buttonClassName='justify-center items-center  rounded-md w-10/12'
+                        textClassName='text-pale-orange text-lg font-bold'
+                        underlayColor='transparent'
+                    />
+                    {loading && (
+                        <ActivityIndicator className="mb-4" size={"large"} />
+                    )}
+                </View>
+            </View>
+        </SafeAreaView>
+    );
+};
 
 
 /**
@@ -650,4 +790,4 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     );
 };
 
-export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupCommittees, SetupResume };
+export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupResume, SetupInterests, SetupCommittees };
