@@ -1,22 +1,28 @@
 import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, NativeScrollEvent } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { MembersStackParams } from '../types/Navigation'
 import MemberCard from '../components/MemberCard'
-import { PublicUserInfo, UserFilter } from '../types/User';
+import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../types/User';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getOfficers, getUserForMemberList } from '../api/firebaseUtils';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import CustomDropDownMenu, { CustomDropDownMethods } from '../components/CustomDropDown';
 
 const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [filter, setFilter] = useState<UserFilter>({ major: "", classYear: "", role: "" });
     const [officers, setOfficers] = useState<PublicUserInfo[]>([]);
+    const [displayedOfficers, setDisplayedOfficers] = useState<PublicUserInfo[]>();
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
     const [loading, setLoading] = useState(false);
     const [lastUserSnapshot, setLastUserSnapshot] = useState<QueryDocumentSnapshot<DocumentData>>();
     const [hasMoreUser, setHasMoreUser] = useState(true);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const dropDownRefYear = useRef<CustomDropDownMethods>(null);
+    const dropDownRefMajor = useRef<CustomDropDownMethods>(null);
+    const dropDownRefRole = useRef<CustomDropDownMethods>(null);
 
     const loadUsers = async (appliedFilter: UserFilter, lastSnapshot?: QueryDocumentSnapshot<DocumentData> | null, numLimit: number | null = 15) => {
         setLoading(true);
@@ -38,6 +44,28 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
         setLoading(false);
     };
 
+    useEffect(() => {
+        const fetchOfficers = async () => {
+            const officers = await getOfficers() as PublicUserInfo[];
+            setOfficers(officers);
+            setDisplayedOfficers(officers);
+        }
+
+        loadUsers(filter);
+        fetchOfficers();
+    }, []);
+
+    const applyOfficerFilter = () => {
+        const filtered = officers.filter(officer => {
+            const matchesMajor = filter.major === "" || officer.major === filter.major;
+            const matchesClassYear = filter.classYear === "" || officer.classYear === filter.classYear;
+            const matchesRole = filter.role === "" || officer.roles![filter.role as keyof typeof officer.roles];
+
+            return matchesMajor && matchesClassYear && matchesRole;
+        });
+        setDisplayedOfficers(filtered);
+    };
+
     const handleApplyFilter = async () => {
         if (filter.classYear === "" && filter.major === "" && filter.role === "") {
             return;
@@ -45,29 +73,37 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
         setMembers([]);
         setHasMoreUser(false);
         await loadUsers(filter, null, null);
+        applyOfficerFilter();
     };
 
-    const handleRestFilter = async () => {
+    const handleResetFilter = async () => {
         setMembers([]);
         setHasMoreUser(true);
+        handleClearAllSelections();
         setFilter({ major: "", classYear: "", role: "" });
         await loadUsers({ major: "", classYear: "", role: "" });
+        setDisplayedOfficers(officers);
     };
 
-    useEffect(() => {
-        const fetchOfficers = async () => {
-            const officers = await getOfficers() as PublicUserInfo[];
-            setOfficers(officers);
-        }
+    const handleClearAllSelections = () => {
+        dropDownRefYear.current?.clearSelection();
+        dropDownRefMajor.current?.clearSelection();
+        dropDownRefRole.current?.clearSelection();
+    };
 
-        loadUsers(filter); // Initial load
-        fetchOfficers();
-    }, []);
+    const toggleDropdown = (dropdownKey: string) => {
+        if (openDropdown === dropdownKey) {
+            setOpenDropdown(null);
+        } else {
+            setOpenDropdown(dropdownKey);
+        }
+    };
 
     const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
         const paddingToBottom = 20;
         return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
     };
+
     return (
         <SafeAreaView className='flex-1' edges={["top"]}>
             <View className='px-4 mt-4'>
@@ -89,18 +125,29 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
                 {showFilterMenu && (
                     <View className='flex-row mt-2 mb-8'>
                         <View className='flex-1 space-y-4'>
-                            <View className='justify-start flex-row'>
-                                <TextInput
-                                    value={filter?.classYear}
-                                    onChangeText={(text) => setFilter({ ...filter, classYear: text })}
-                                    placeholder="Class Year"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                            <View className='flex-row z-10' >
+                                <CustomDropDownMenu
+                                    data={classYears}
+                                    onSelect={(item) => setFilter({ ...filter, classYear: item.iso || "" })}
+                                    searchKey="year"
+                                    label="Class Year"
+                                    isOpen={openDropdown === 'year'}
+                                    onToggle={() => toggleDropdown('year')}
+                                    displayType='iso'
+                                    ref={dropDownRefYear}
+                                    disableSearch
+                                    containerClassName='mr-1'
                                 />
-                                <TextInput
-                                    value={filter?.major}
-                                    onChangeText={(text) => setFilter({ ...filter, major: text })}
-                                    placeholder="Major"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                <CustomDropDownMenu
+                                    data={MAJORS}
+                                    onSelect={(item) => setFilter({ ...filter, major: item.iso || "" })}
+                                    searchKey="major"
+                                    label="Major"
+                                    isOpen={openDropdown === 'major'}
+                                    onToggle={() => toggleDropdown('major')}
+                                    displayType='iso'
+                                    ref={dropDownRefMajor}
+                                    containerClassName='ml-1'
                                 />
                                 <TouchableOpacity
                                     onPress={() => handleApplyFilter()}
@@ -109,17 +156,24 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
                                 </TouchableOpacity>
                             </View>
                             <View className='justify-start flex-row'>
-                                <TextInput
-                                    value={filter?.role}
-                                    onChangeText={(text) => setFilter({ ...filter, role: text })}
-                                    placeholder="Role"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                <CustomDropDownMenu
+                                    data={ROLESDROPDOWN}
+                                    onSelect={(item) => setFilter({ ...filter, role: item.iso || "" })}
+                                    searchKey="role"
+                                    label="Role"
+                                    isOpen={openDropdown === 'role'}
+                                    onToggle={() => toggleDropdown('role')}
+                                    displayType='value'
+                                    ref={dropDownRefRole}
+                                    disableSearch
+                                    containerClassName='mr-2'
+                                    dropDownClassName='h-44'
                                 />
-                                <View className='w-28 mr-4'></View>
+                                <View className='w-20 mr-4'></View>
                                 <TouchableOpacity
-                                    onPress={() => handleRestFilter()}
+                                    onPress={() => handleResetFilter()}
                                     className='items-center justify-center py-2 w-20 rounded-lg ml-3'>
-                                    <Text className='font-bold text-xl text-pale-blue'>Rest</Text>
+                                    <Text className='font-bold text-xl text-pale-blue'>Reset</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
@@ -128,6 +182,7 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
             </View>
 
             <ScrollView
+                className='-z-10'
                 onScroll={({ nativeEvent }) => {
                     if (isCloseToBottom(nativeEvent) && !loading && hasMoreUser) {
                         if (lastUserSnapshot) {
@@ -140,7 +195,7 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
                 scrollEventThrottle={400}
             >
                 <View className='px-4'>
-                    {officers?.map((userData, index) => {
+                    {displayedOfficers?.map((userData, index) => {
                         if (!userData.name) {
                             return null; // this is a hacky fix for user that have not completed registration
                         }
@@ -177,5 +232,11 @@ const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => 
         </SafeAreaView>
     )
 }
+
+const ROLESDROPDOWN = [
+    { role: 'Officer', iso: 'officer' },
+    { role: 'Representative', iso: 'representative' },
+    { role: 'Lead', iso: 'lead' },
+];
 
 export default Members

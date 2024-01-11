@@ -8,6 +8,8 @@ import { ResourcesStackParams } from '../../types/Navigation';
 import { Test, GoogleSheetsResponse } from '../../types/GoogleSheetsTypes';
 import DismissibleModal from '../../components/DismissibleModal';
 import TestCard from './TestCard';
+import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
+import { SUBJECTCODES } from '../../types/testBank';
 
 /**
  * Test Bank component.
@@ -24,10 +26,12 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [endOfData, setEndOfData] = useState(false);
     const [infoVisible, setInfoVisible] = useState(false);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const dropDownRefSubject = useRef<CustomDropDownMethods>(null);
 
-    /** On mount, load attempt to load the first 50 tests */
+    /** On mount, load attempt to load the first 20 tests */
     useEffect(() => {
-        const initialQuery = createQuery(50, 0, filter);
+        const initialQuery = createQuery(20, 0, filter);
         setQuery(initialQuery)
     }, [])
 
@@ -130,27 +134,39 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
 
     const handleApplyFilter = async (): Promise<void> => {
         // Reset the test bank
-        setShowFilterMenu(false)
         setLoading(true);
         setTestCards([])
 
         // If no filter is applied, rest the query to fetch the first 50 tests
         // If filter is applied, fetch all tests that match the filter
-        const filterQuery = filter === null ? createQuery(50, 0, {}) : createQuery(null, 0, filter);
+        const filterQuery = filter === null ? createQuery(20, 0, {}) : createQuery(null, 0, filter);
         setEndOfData(true);
         setQuery(filterQuery);
     }
 
     const handleCLearFilter = async (): Promise<void> => {
         // Reset the test bank
-        setShowFilterMenu(false)
+        handleClearAllSelections();
         setLoading(true);
         setTestCards([])
         setFilter(null)
 
-        const initialQuery = createQuery(50, 0, null);
+        const initialQuery = createQuery(20, 0, null);
         setQuery(initialQuery)
     }
+
+    const handleClearAllSelections = () => {
+        dropDownRefSubject.current?.clearSelection();
+    };
+
+    const toggleDropdown = (dropdownKey: string) => {
+        if (openDropdown === dropdownKey) {
+            setOpenDropdown(null);
+        } else {
+            setOpenDropdown(dropdownKey);
+        }
+    };
+
 
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
         const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
@@ -190,12 +206,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                 </View>
             </SafeAreaView>
 
-            <ScrollView
-                onScroll={handleScroll}
-                scrollEventThrottle={400}
-                bounces={false}
-                className='bg-[#F9F9F9] mt-12 rounded-t-2xl'
-            >
+            <View className='bg-[#F9F9F9] mt-12 rounded-t-2xl flex-1'>
                 <View className='flex-row justify-start'>
                     <TouchableOpacity
                         onPress={() => setShowFilterMenu(!showFilterMenu)}
@@ -213,20 +224,25 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                 </View>
 
                 {showFilterMenu && (
-                    <View className='flex-row p-4'>
+                    <View className='flex-row px-4'>
                         <View className='flex-1 space-y-4'>
-                            <View className='justify-start flex-row'>
-                                <TextInput
-                                    value={filter?.subject}
-                                    onChangeText={(text) => setFilter({ ...filter, subject: text })}
-                                    placeholder="Subject"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                            <View className='justify-start flex-row z-10'>
+                                <CustomDropDownMenu
+                                    data={SUBJECTCODES}
+                                    onSelect={(item) => setFilter({ ...filter, subject: item.iso || "" })}
+                                    searchKey="subject"
+                                    label="Subject"
+                                    isOpen={openDropdown === 'subject'}
+                                    onToggle={() => toggleDropdown('subject')}
+                                    displayType='iso'
+                                    ref={dropDownRefSubject}
+                                    containerClassName='mr-1'
                                 />
                                 <TextInput
                                     value={filter?.course}
                                     onChangeText={(text) => setFilter({ ...filter, course: text })}
                                     placeholder="Course"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                    className='flex-1 bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-1 ml-1'
                                 />
                                 <TouchableOpacity
                                     onPress={() => handleApplyFilter()}
@@ -239,13 +255,13 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                                     value={filter?.professor}
                                     onChangeText={(text) => setFilter({ ...filter, professor: text })}
                                     placeholder="Professor"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                    className='flex-1 bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-1'
                                 />
                                 <TextInput
                                     value={filter?.student}
                                     onChangeText={(text) => setFilter({ ...filter, student: text })}
                                     placeholder="Student"
-                                    className='bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-4'
+                                    className='flex-1 bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 ml-1'
                                 />
                                 <TouchableOpacity
                                     onPress={() => handleCLearFilter()}
@@ -257,7 +273,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                     </View>
                 )}
 
-                <View className='mt-4'>
+                <ScrollView className='mt-4 -z-10'>
                     {testCards.slice(3).map((testData, index) => (
                         <View key={index}>
                             {(testData.course && testData.subject) && (
@@ -278,8 +294,8 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                             </View>
                         )}
                     </View>
-                </View>
-            </ScrollView>
+                </ScrollView>
+            </View>
 
             <DismissibleModal
                 visible={infoVisible}

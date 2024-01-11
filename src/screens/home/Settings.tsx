@@ -22,7 +22,7 @@ import { Images } from '../../../assets';
 import ProfileBadge from '../../components/ProfileBadge';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../../components/SettingsComponents"
 import InteractButton from '../../components/InteractButton';
-import SimpleDropDown from '../../components/SimpleDropDown';
+import CustomDropDown from '../../components/CustomDropDown';
 import TwitterSvg from '../../components/TwitterSvg';
 
 /**
@@ -146,7 +146,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
     const [major, setMajor] = useState<string | undefined>(userInfo?.publicInfo?.major);
     const [classYear, setClassYear] = useState<string | undefined>(userInfo?.publicInfo?.classYear);
-    const [openDropdown, setOpenDropdown] = useState<string | null>(null); // Dropdown for major and class year
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
     const [committeesData, setCommitteesData] = useState<Committee[]>([]);
     const [committees, setCommittees] = useState<string[]>(userInfo?.publicInfo?.committees || []);
     const [prevCommittees, setPrevCommittees] = useState<string[]>(userInfo?.publicInfo?.committees || []);
@@ -353,6 +353,11 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         });
     };
 
+    const findMajorByIso = (iso: string) => {
+        const majorObj = MAJORS.find(major => major.iso === iso);
+        return majorObj ? majorObj.major : null;
+    };
+
     return (
         <View className='items-center'>
             <StatusBar style={darkMode ? "light" : "dark"} />
@@ -446,29 +451,32 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 }}
                 content={
                     (
-                        <View>
-                            <View className='absolute top-0 z-20 w-full'>
-                                <SimpleDropDown
+                        <View className="items-center justify-center">
+                            <View className='absolute top-0 z-20 w-[80%]'>
+                                <CustomDropDown
                                     data={MAJORS}
-                                    onSelect={(item) => setMajor(item.iso!)}
+                                    onSelect={(item) => setMajor(item.iso)}
                                     searchKey="major"
                                     label="Select major"
                                     isOpen={openDropdown === 'major'}
                                     onToggle={() => toggleDropdown('major')}
                                     title={'Major'}
-                                    selectedItemProp={{ value: major }}
+                                    selectedItemProp={{ iso: major, value: findMajorByIso(major!)! }}
+                                    dropDownClassName='top-20'
                                 />
                             </View>
-                            <View className='absolute top-24 z-10 w-full'>
-                                <SimpleDropDown
+                            <View className='absolute top-24 z-10 w-[80%]'>
+                                <CustomDropDown
                                     data={classYears}
-                                    onSelect={(item) => setClassYear(item.year)}
+                                    onSelect={(item) => setClassYear(item.iso)}
                                     searchKey="year"
                                     label="Select class year"
                                     isOpen={openDropdown === 'year'}
                                     onToggle={() => toggleDropdown('year')}
                                     title={"Class Year"}
-                                    selectedItemProp={{ value: classYear }}
+                                    selectedItemProp={{ iso: classYear }}
+                                    displayType='iso'
+                                    dropDownClassName='top-20'
                                     disableSearch
                                 />
                             </View>
