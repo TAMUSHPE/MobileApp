@@ -55,9 +55,9 @@ export type ProfileSetupStackParams = {
     SetupProfilePicture: undefined;
     SetupAcademicInformation: undefined;
     SetupCommittees: undefined;
-    MainStack: undefined;
-    SetupNotification: undefined;
+    SetupInterests: undefined;
     SetupResume: undefined;
+    MainStack: undefined;
 }
 
 export type ResourcesStackParams = {
@@ -103,6 +103,7 @@ export type HomeStackParams = {
     PublicProfile: {
         uid: string;
     }
+    EventInfo: { eventId: string };
 }
 
 export type AdminDashboardParams = {
@@ -198,14 +199,15 @@ export type MemberCardProp = {
     navigation?: NativeStackNavigationProp<any>
 }
 
+export type IShpeProps = {
+    navigation?: NativeStackNavigationProp<HomeStackParams>
+}
+
 export type EventProps = {
     event?: SHPEEvent;
     navigation: NativeStackNavigationProp<EventsStackParams>
 }
 
-export type CommitteesListProps = {
-    navigation: NativeStackNavigationProp<InvolvementStackParams>
-}
 
 export type CommitteeTeamCardProps = {
     userData: PublicUserInfo;
@@ -242,3 +244,6 @@ export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "Event
 export type QRCodeScreenRouteProp = RouteProp<EventsStackParams, "QRCode">;
 export type CommitteeEditRouteProp = RouteProp<InvolvementStackParams, 'CommitteeEdit'>;
 export type CommitteeEditNavigationProp = NativeStackNavigationProp<InvolvementStackParams, 'CommitteeEdit'>;
+export type CommitteeScreenProps = NativeStackScreenProps<InvolvementStackParams, 'CommitteeScreen'>;
+export type CommitteesListProps = { navigation: NativeStackNavigationProp<InvolvementStackParams, 'InvolvementScreen'>; };
+export type InvolvementScreenProps = NativeStackScreenProps<InvolvementStackParams, 'InvolvementScreen'>;

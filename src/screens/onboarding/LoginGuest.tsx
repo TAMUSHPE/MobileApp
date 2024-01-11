@@ -7,8 +7,9 @@ import { useFocusEffect } from "@react-navigation/core";
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from "../../context/UserContext";
 import { auth } from "../../config/firebaseConfig";
-import { initializeCurrentUserData, isUserInBlacklist } from "../../api/firebaseUtils";
+import { initializeCurrentUserData } from "../../api/firebaseUtils";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { AuthStackParams } from "../../types/Navigation";
 import { Images } from "../../../assets";
 import TextInputWithFloatingTitle from "../../components/TextInputWithFloatingTitle";
@@ -42,13 +43,20 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
         setLoading(true);
         initializeCurrentUserData()
             .then(async userFromFirebase => {
-                const checkBlackList = await isUserInBlacklist(auth.currentUser?.uid!)
-                if (checkBlackList) {
-                    signOut(auth)
-                    setError("You have been banned from the app")
-                    return;
-                }
+                const functions = getFunctions();
+                const isUserInBlacklist = httpsCallable<{ uid: string }, { isInBlacklist: boolean }>(functions, 'isUserInBlacklist');
 
+                try {
+                    const checkBlackListResponse = await isUserInBlacklist({ uid: auth.currentUser?.uid! });
+
+                    if (checkBlackListResponse.data.isInBlacklist) {
+                        signOut(auth);
+                        setError("You have been banned from the app");
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error during user authentication:', error);
+                }
 
                 AsyncStorage.setItem("@user", JSON.stringify(userFromFirebase))
                     .then(() => {

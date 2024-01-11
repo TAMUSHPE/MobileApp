@@ -1,14 +1,14 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image } from 'react-native'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { EventProps, SHPEEventScreenRouteProp } from '../../types/Navigation'
+import React, { useCallback, useContext, useState } from 'react'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { SHPEEvent } from '../../types/Events';
-import { getEvent, getAttendanceNumber, isUserSignedIn } from '../../api/firebaseUtils';
 import { auth } from "../../config/firebaseConfig";
+import { getEvent, getAttendanceNumber, isUserSignedIn } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
-import { formatDateTime, monthNames } from '../../helpers/timeUtils';
+import { formatDateTime } from '../../helpers/timeUtils';
+import { EventProps, SHPEEventScreenRouteProp } from '../../types/Navigation'
+import { SHPEEvent } from '../../types/Events';
 import { Images } from '../../../assets';
 
 
@@ -71,7 +71,7 @@ const EventInfo = ({ navigation }: EventProps) => {
             <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                 {/* Header */}
                 <View className='flex-row items-center justify-center h-10'>
-                    <TouchableOpacity className='px-6 flex-1' onPress={() => navigation.navigate("EventsScreen")} >
+                    <TouchableOpacity className='px-6 flex-1' onPress={() => navigation.goBack()} >
                         <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
                     <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>{event.name}</Text>
