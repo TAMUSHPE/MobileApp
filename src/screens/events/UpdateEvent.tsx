@@ -222,7 +222,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     }
 
     return (
-        <>
+        <View>
             <StatusBar style={darkMode ? "light" : "dark"} />
             <Modal
                 visible={loading}
@@ -270,6 +270,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
                     mode='date'
                     onChange={(_, date) => {
+                        setShowStartDatePicker(false);
                         if (!date) {
                             console.warn("Date picked is undefined.");
                         }
@@ -280,7 +281,6 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         else {
                             setStartTime(Timestamp.fromDate(date));
                         }
-                        setShowStartDatePicker(false);
                         setChangesMade(true);
                     }}
                 />
@@ -293,6 +293,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
                     mode='time'
                     onChange={(_, date) => {
+                        setShowStartTimePicker(false);
                         if (!date) {
                             console.warn("Date picked is undefined.");
                         }
@@ -303,7 +304,52 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         else {
                             setStartTime(Timestamp.fromDate(date));
                         }
-                        setShowStartTimePicker(false);
+                        setChangesMade(true);
+                    }}
+                />
+            }
+
+            {/* End Date Pickers */}
+            {Platform.OS == 'android' && showEndDatePicker &&
+                <DateTimePicker
+                    testID='End Date Picker'
+                    value={endTime?.toDate() ?? new Date()}
+                    minimumDate={new Date()}
+                    maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
+                    mode='date'
+                    onChange={(_, date) => {
+                        setShowEndDatePicker(false);
+                        if (!date) {
+                            console.warn("Date picked is undefined.");
+                        }
+                        else if (startTime && startTime.toMillis() > date.valueOf()) {
+                            Alert.alert("Invalid End Date", "Event cannot end before start time")
+                        }
+                        else {
+                            setEndTime(Timestamp.fromDate(date));
+                        }
+                        setChangesMade(true);
+                    }}
+                />
+            }
+            {Platform.OS == 'android' && showEndTimePicker &&
+                <DateTimePicker
+                    testID='End Time Picker'
+                    value={endTime?.toDate() ?? new Date()}
+                    minimumDate={new Date()}
+                    maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
+                    mode='time'
+                    onChange={(_, date) => {
+                        setShowEndTimePicker(false);
+                        if (!date) {
+                            console.warn("Date picked is undefined.");
+                        }
+                        else if (startTime && startTime.toMillis() > date.valueOf()) {
+                            Alert.alert("Invalid End Date", "Event cannot end before start time")
+                        }
+                        else {
+                            setEndTime(Timestamp.fromDate(date));
+                        }
                         setChangesMade(true);
                     }}
                 />
@@ -343,7 +389,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         <TouchableOpacity className='w-20 h-10 bg-blue-400 justify-center items-center rounded-md'
                             onPress={() => handleUpdateEvent()}
                         >
-                            <Text>Update Event</Text>
+                            <Text className='text-white'>Update Event</Text>
                         </TouchableOpacity>
                         <TouchableOpacity className='w-20 h-10 bg-blue-300 justify-center items-center rounded-md'
                             onPress={() => navigation.navigate("QRCode", { event: event })}
@@ -386,8 +432,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text key={"startDateText"} className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
-                                            <Octicons key={"startDateIcon"} name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
+                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
+                                            <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
                                         </>
                                     </TouchableHighlight>
                                 }
@@ -401,8 +447,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text key={"startTimeText"} className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
-                                            <Octicons key={"startTimeIcon"} name='chevron-down' size={24} />
+                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
+                                            <Octicons name='chevron-down' size={24} />
                                         </>
                                     </TouchableHighlight>
                                 }
@@ -420,8 +466,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text key={"endDateText"} className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
-                                            <Octicons key={"endDateIcon"} name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
+                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
+                                            <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
                                         </>
                                     </TouchableHighlight>
                                 }
@@ -435,8 +481,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text key={"endTimeText"} className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
-                                            <Octicons key={"endTimeIcon"} name='chevron-down' size={24} />
+                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
+                                            <Octicons name='chevron-down' size={24} />
                                         </>
                                     </TouchableHighlight>
                                 }
@@ -620,13 +666,13 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         >
                             <Picker.Item label='None' value={undefined} />
                             {selectableCommittees.map((item, index) => (
-                                <Picker.Item label={item.name} value={item.firebaseDocName} />
+                                <Picker.Item key={`item.name ${index}`} label={item.name} value={item.firebaseDocName} />
                             ))}
                         </Picker>
                     </View>
                 </ScrollView>
             </SafeAreaView>
-        </>
+        </View>
     )
 }
 

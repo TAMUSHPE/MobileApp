@@ -171,7 +171,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                 >
                     <Picker.Item label='None' value={undefined} />
                     {selectableCommittees.map((item, index) => (
-                        <Picker.Item label={item.name} value={item.firebaseDocName} />
+                        <Picker.Item key={`item.name ${index}`} label={item.name} value={item.firebaseDocName} />
                     ))}
                 </Picker>
 
