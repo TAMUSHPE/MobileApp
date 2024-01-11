@@ -53,9 +53,8 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                     paddingBottom: "50%"
                 }}
             >
-                {
-                    event.signInPoints !== undefined &&
-                    <>
+                {event.signInPoints !== undefined &&
+                    <View>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Signing In <Text className='text-[#f00]'>*</Text></Text>
                         <KeyboardAvoidingView>
                             <Picker
@@ -77,11 +76,10 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 <Picker.Item label='5' value={5} />
                             </Picker>
                         </KeyboardAvoidingView>
-                    </>
+                    </View>
                 }
-                {
-                    event.signOutPoints !== undefined &&
-                    <>
+                {event.signOutPoints !== undefined &&
+                    <View>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Signing Out <Text className='text-[#f00]'>*</Text></Text>
                         <KeyboardAvoidingView>
                             <Picker
@@ -103,11 +101,10 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 <Picker.Item label='5' value={5} />
                             </Picker>
                         </KeyboardAvoidingView>
-                    </>
+                    </View>
                 }
-                {
-                    event.pointsPerHour !== undefined &&
-                    <>
+                {event.pointsPerHour !== undefined &&
+                    <View>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Each Hour Signed In <Text className='text-[#f00]'>*</Text></Text>
                         <KeyboardAvoidingView>
                             <Picker
@@ -129,11 +126,10 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 <Picker.Item label='5' value={5} />
                             </Picker>
                         </KeyboardAvoidingView>
-                    </>
+                    </View>
                 }
-                {
-                    event.workshopType !== undefined &&
-                    <>
+                {event.workshopType !== undefined &&
+                    <View>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Workshop Type <Text className='text-[#f00]'>*</Text></Text>
                         <Picker
                             selectedValue={workshopType}
@@ -157,30 +153,28 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                             <Picker.Item label='Professional Workshop' value={'Professional'} />
                             <Picker.Item label='Academic Workshop' value={'Academic'} />
                         </Picker>
-                    </>
+                    </View>
                 }
-                {
-                    <>
-                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Associated Committee</Text>
-                        <Picker
-                            selectedValue={committee}
-                            onValueChange={(selectedCommittee: string) => {
-                                setCommittee(selectedCommittee);
-                            }}
-                            style={{ color: darkMode ? "white" : "black" }}
-                            selectionColor={darkMode ? "#FFF4" : "0004"}
-                            itemStyle={{
-                                color: darkMode ? "white" : "black"
-                            }}
-                            dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
-                        >
-                            <Picker.Item label='None' value={undefined} />
-                            {selectableCommittees.map((item, index) => (
-                                <Picker.Item label={item.name} value={item.firebaseDocName} />
-                            ))}
-                        </Picker>
-                    </>
-                }
+
+                <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Associated Committee</Text>
+                <Picker
+                    selectedValue={committee}
+                    onValueChange={(selectedCommittee: string) => {
+                        setCommittee(selectedCommittee);
+                    }}
+                    style={{ color: darkMode ? "white" : "black" }}
+                    selectionColor={darkMode ? "#FFF4" : "0004"}
+                    itemStyle={{
+                        color: darkMode ? "white" : "black"
+                    }}
+                    dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
+                >
+                    <Picker.Item label='None' value={undefined} />
+                    {selectableCommittees.map((item, index) => (
+                        <Picker.Item label={item.name} value={item.firebaseDocName} />
+                    ))}
+                </Picker>
+
                 <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Location Name</Text>
                 <TextInput
                     className={`text-lg p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
@@ -192,8 +186,6 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                     autoFocus
                     enterKeyHint='enter'
                 />
-
-
                 <InteractButton
                     buttonClassName='bg-orange mt-10 mb-4 py-1 rounded-xl'
                     textClassName='text-center text-white text-lg'
