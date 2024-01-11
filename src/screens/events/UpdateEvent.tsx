@@ -396,10 +396,10 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         >
                             <Text>View QRCode</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity className='w-20 h-10 bg-red-400 justify-center items-center rounded-md'
+                        <TouchableOpacity className='w-20 h-10 bg-[#F00] justify-center items-center rounded-md'
                             onPress={() => setShowDeletionConfirmation(true)}
                         >
-                            <Text>Destroy Event</Text>
+                            <Text className='text-gray-100'>Destroy Event</Text>
                         </TouchableOpacity>
                     </View>
                     {updated && <Text className='pt-3 text-green-500 text-lg text-center'>Information has been updated</Text>}
