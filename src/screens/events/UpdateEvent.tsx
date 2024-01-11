@@ -4,7 +4,7 @@ import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CommitteeMeeting, EventType, GeneralMeeting, IntramuralEvent, CustomEvent, monthNames, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop, WorkshopType } from '../../types/Events';
-import { destroyEvent, setEvent, uploadFileToFirebase } from '../../api/firebaseUtils';
+import { destroyEvent, getCommittees, setEvent, uploadFileToFirebase } from '../../api/firebaseUtils';
 import { Octicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -21,12 +21,15 @@ import * as ImagePicker from "expo-image-picker";
 import { CommonMimeTypes, validateFileBlob } from '../../helpers';
 import ProgressBar from '../../components/ProgressBar';
 import { auth } from '../../config/firebaseConfig';
+import { Committee } from '../../types/Committees';
 
 const UpdateEvent = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
     const { event } = route.params;
     const { userInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const [selectableCommittees, setSelectableCommittees] = useState<Committee[]>([]);
+
 
     // UI Hooks
     const [updated, setUpdated] = useState<boolean>(false);
@@ -61,7 +64,15 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType);
     const [committee, setCommittee] = useState<string | undefined | null>(event.committee);
 
+    useEffect(() => {
+        getCommittees()
+            .then((result) => setSelectableCommittees(result))
+            .catch(err => console.error("Issue getting committees:", err));
+    }, []);
+
     const handleUpdateEvent = async () => {
+        setLoading(true);
+
         let updatedEvent: SHPEEvent = {};
         switch (event.eventType) {
             case EventType.GENERAL_MEETING:
@@ -121,11 +132,17 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             })
         }
 
-        const eventID = await setEvent(event.id!, updatedEvent);
+        const eventID = await setEvent(event.id!, updatedEvent)
+            .then((eventID) => {
+                setLoading(false);
+                return eventID;
+            });
+
         if (eventID) {
             setUpdated(true);
             setChangesMade(false);
-        } else {
+        }
+        else {
             console.log('Event update failed');
         }
     }
@@ -295,31 +312,30 @@ const UpdateEvent = ({ navigation }: EventProps) => {
 
             <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                 <ScrollView
+                    className={`flex flex-col flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
                     contentContainerStyle={{
-                        paddingBottom: "50%"
+                        paddingBottom: "80%"
                     }}
                 >
                     {/* Header */}
-                    <View className='flex-row items-center h-10'>
+                    <View className={`flex-row items-center h-10 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                         <View className='w-screen absolute'>
-                            <Text className="text-2xl font-bold justify-center text-center">{event.name}{changesMade && ' *'}</Text>
+                            <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>{event.name}{changesMade && ' *'}</Text>
                         </View>
-                        <View className='pl-6'>
-                            <TouchableOpacity className="pr-4" onPress={() => navigation.navigate("EventInfo", { eventId: event.id! })} >
-                                <Octicons name="chevron-left" size={30} color="black" />
-                            </TouchableOpacity>
-                        </View>
+                        <TouchableOpacity className='px-6' onPress={() => navigation.goBack()} >
+                            <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
+                        </TouchableOpacity>
                     </View>
 
                     <View className="mt-2 pl-6">
-                        <Text className='text-xl font-semibold'>Update Event</Text>
+                        <Text className={`text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Update Event</Text>
                     </View>
 
                     {/* Image */}
                     <View className='justify-center items-center'>
                         <Image
                             className="mt-2 h-60 w-[90%] bg-gray-700 rounded-xl"
-                            source={event.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
+                            source={localImageURI ? { uri: localImageURI } : event.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
                         />
                     </View>
 
@@ -340,12 +356,12 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             <Text>Destroy Event</Text>
                         </TouchableOpacity>
                     </View>
-                    {updated && <Text className='text-green-500'>Information has been updated</Text>}
+                    {updated && <Text className='pt-3 text-green-500 text-lg text-center'>Information has been updated</Text>}
 
                     {/* Form */}
-                    <View className='mt-9 px-6'>
+                    <View className='mt-9 px-6 space-y-1'>
                         <View className='w-full'>
-                            <Text className='text-gray-500'>Event Name</Text>
+                            <Text className={darkMode ? "text-gray-100" : "text-gray-500"}>Event Name</Text>
                             <View className='flex-row border-b-2 border-slate-400'>
                                 <TextInput
                                     className={`w-[90%] rounded-md text-xl py-1 ${name ? 'font-normal' : 'font-extrabold'}`}
@@ -370,8 +386,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
-                                            <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
+                                            <Text key={"startDateText"} className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
+                                            <Octicons key={"startDateIcon"} name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
                                         </>
                                     </TouchableHighlight>
                                 }
@@ -385,8 +401,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
-                                            <Octicons name='chevron-down' size={24} />
+                                            <Text key={"startTimeText"} className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
+                                            <Octicons key={"startTimeIcon"} name='chevron-down' size={24} />
                                         </>
                                     </TouchableHighlight>
                                 }
@@ -404,8 +420,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
-                                            <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
+                                            <Text key={"endDateText"} className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
+                                            <Octicons key={"endDateIcon"} name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
                                         </>
                                     </TouchableHighlight>
                                 }
@@ -419,8 +435,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                     >
                                         <>
-                                            <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
-                                            <Octicons name='chevron-down' size={24} />
+                                            <Text key={"endTimeText"} className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
+                                            <Octicons key={"endTimeIcon"} name='chevron-down' size={24} />
                                         </>
                                     </TouchableHighlight>
                                 }
@@ -430,7 +446,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Description</Text>
                             <TextInput
                                 className={`text-lg p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                                value={event.description ?? ""}
+                                value={description ?? ""}
                                 placeholder='What is this event about?'
                                 placeholderTextColor={darkMode ? "#DDD" : "#777"}
                                 onChangeText={(text) => setDescription(text)}
@@ -445,7 +461,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Cover Image</Text>
                         {
                             isUploading ?
-                                <>
+                                <View>
                                     <InteractButton
                                         label='Cancel Upload'
                                         buttonClassName='bg-red-500 rounded-md'
@@ -463,17 +479,153 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                             {`${((bytesTransferred ?? 0) / 1000000).toFixed(2)} / ${((totalBytes ?? 0) / 1000000).toFixed(2)} MB`}
                                         </Text>
                                     </View>
-                                </> :
+                                </View> :
                                 <InteractButton
                                     label='Upload Cover Image'
-                                    buttonClassName='bg-blue-200 rounded-md'
+                                    buttonClassName='bg-blue-200 rounded-md mb-3'
                                     textClassName='text-center text-lg'
-                                    onPress={() => selectCoverImage()}
+                                    onPress={() => {
+                                        selectCoverImage();
+                                        setChangesMade(true);
+                                    }}
                                 />
                         }
+                        {event.signInPoints !== undefined &&
+                            <View>
+                                <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Signing In <Text className='text-[#f00]'>*</Text></Text>
+                                <KeyboardAvoidingView>
+                                    <Picker
+                                        mode='dropdown'
+                                        selectedValue={signInPoints}
+                                        onValueChange={(points) => setSignInPoints(points)}
+                                        style={{ color: darkMode ? "white" : "black" }}
+                                        selectionColor={darkMode ? "#FFF4" : "0004"}
+                                        itemStyle={{
+                                            color: darkMode ? "white" : "black"
+                                        }}
+                                        dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
+                                    >
+                                        <Picker.Item label='0' value={0} />
+                                        <Picker.Item label='1' value={1} />
+                                        <Picker.Item label='2' value={2} />
+                                        <Picker.Item label='3' value={3} />
+                                        <Picker.Item label='4' value={4} />
+                                        <Picker.Item label='5' value={5} />
+                                    </Picker>
+                                </KeyboardAvoidingView>
+                            </View>
+                        }
+                        {
+                            event.signOutPoints !== undefined &&
+                            <View>
+                                <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Signing Out <Text className='text-[#f00]'>*</Text></Text>
+                                <KeyboardAvoidingView>
+                                    <Picker
+                                        mode='dropdown'
+                                        selectedValue={signOutPoints}
+                                        onValueChange={(points) => setSignOutPoints(points)}
+                                        style={{ color: darkMode ? "white" : "black" }}
+                                        selectionColor={darkMode ? "#FFF4" : "0004"}
+                                        itemStyle={{
+                                            color: darkMode ? "white" : "black"
+                                        }}
+                                        dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
+                                    >
+                                        <Picker.Item label='0' value={0} />
+                                        <Picker.Item label='1' value={1} />
+                                        <Picker.Item label='2' value={2} />
+                                        <Picker.Item label='3' value={3} />
+                                        <Picker.Item label='4' value={4} />
+                                        <Picker.Item label='5' value={5} />
+                                    </Picker>
+                                </KeyboardAvoidingView>
+                            </View>
+                        }
+                        {
+                            event.pointsPerHour !== undefined &&
+                            <View>
+                                <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Each Hour Signed In <Text className='text-[#f00]'>*</Text></Text>
+                                <KeyboardAvoidingView>
+                                    <Picker
+                                        mode='dropdown'
+                                        selectedValue={pointsPerHour}
+                                        onValueChange={(points) => setPointsPerHour(points)}
+                                        style={{ color: darkMode ? "white" : "black" }}
+                                        selectionColor={darkMode ? "#FFF4" : "0004"}
+                                        itemStyle={{
+                                            color: darkMode ? "white" : "black"
+                                        }}
+                                        dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
+                                    >
+                                        <Picker.Item label='0' value={0} />
+                                        <Picker.Item label='1' value={1} />
+                                        <Picker.Item label='2' value={2} />
+                                        <Picker.Item label='3' value={3} />
+                                        <Picker.Item label='4' value={4} />
+                                        <Picker.Item label='5' value={5} />
+                                    </Picker>
+                                </KeyboardAvoidingView>
+                            </View>
+                        }
+                        {event.workshopType !== undefined &&
+                            <View>
+                                <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Workshop Type <Text className='text-[#f00]'>*</Text></Text>
+                                <Picker
+                                    selectedValue={workshopType}
+                                    onValueChange={(selectedWorkshopType: WorkshopType) => {
+                                        setWorkshopType(selectedWorkshopType);
+                                        switch (selectedWorkshopType) {
+                                            case "Academic":
+                                                setSignInPoints(2);
+                                            case "Professional":
+                                                setSignInPoints(3);
+                                        }
+                                    }}
+                                    style={{ color: darkMode ? "white" : "black" }}
+                                    selectionColor={darkMode ? "#FFF4" : "0004"}
+                                    itemStyle={{
+                                        color: darkMode ? "white" : "black"
+                                    }}
+                                    dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
+                                >
+                                    <Picker.Item label='None' value={'None'} />
+                                    <Picker.Item label='Professional Workshop' value={'Professional'} />
+                                    <Picker.Item label='Academic Workshop' value={'Academic'} />
+                                </Picker>
+                            </View>
+                        }
+                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Location Name</Text>
+                        <TextInput
+                            className={`text-lg p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                            value={locationName ?? ""}
+                            placeholder='Where is this event?'
+                            placeholderTextColor={darkMode ? "#DDD" : "#777"}
+                            onChangeText={(text) => setLocationName(text)}
+                            keyboardType='ascii-capable'
+                            autoFocus
+                            enterKeyHint='enter'
+                        />
+                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Associated Committee</Text>
+                        <Picker
+                            selectedValue={committee ?? undefined}
+                            onValueChange={(selectedCommittee: string) => {
+                                setCommittee(selectedCommittee);
+                            }}
+                            style={{ color: darkMode ? "white" : "black" }}
+                            selectionColor={darkMode ? "#FFF4" : "0004"}
+                            itemStyle={{
+                                color: darkMode ? "white" : "black"
+                            }}
+                            dropdownIconColor={darkMode ? "#ffffff" : "#000000"}
+                        >
+                            <Picker.Item label='None' value={undefined} />
+                            {selectableCommittees.map((item, index) => (
+                                <Picker.Item label={item.name} value={item.firebaseDocName} />
+                            ))}
+                        </Picker>
                     </View>
-                </ScrollView >
-            </SafeAreaView >
+                </ScrollView>
+            </SafeAreaView>
         </>
     )
 }

@@ -473,15 +473,15 @@ export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
  * Updates a given event
  * @param id Name of event document in firestore
  * @param event Object to replace firestore document
- * @returns Document name returned by firebase or null/undefined if an issue occurred
+ * @returns Document name firebase or null if an issue occurred
  */
-export const setEvent = async (id: string, event: SHPEEvent): Promise<string | null | undefined> => {
+export const setEvent = async (id: string, event: SHPEEvent): Promise<string | null> => {
     try {
         const docRef = doc(db, "events", id);
         await updateDoc(docRef, {
             ...event
         });
-        return event.id;
+        return id;
     } catch (error) {
         console.error("Error updating document: ", error);
         return null;

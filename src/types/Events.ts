@@ -318,9 +318,9 @@ export class CustomEvent extends SHPEEvent {
         this.tags = [];
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.signInPoints = null;
-        this.signOutPoints = null;
-        this.pointsPerHour = null;
+        this.signInPoints = 0;
+        this.signOutPoints = 0;
+        this.pointsPerHour = 0;
         this.locationName = null;
         this.geolocation = null;
     }
