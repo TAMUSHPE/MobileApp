@@ -11,23 +11,22 @@ import { Octicons } from '@expo/vector-icons';
  * where 'searchKey' is the key used for searching items. The 'onToggle' function and 'isOpen' boolean are used to control 
  * the visibility of the dropdown, allowing the parent component to manage dropdown visibility and toggle off other dropdown menus.
  * The 'ref' is used to access the 'clearSelection' method from the parent component, enabling external control over the dropdown's selection.
+ * Entering a 'title' will display a floating-title above the dropdown menu after a selection has been made.
  *
- * @component
- * @param {Object} props - The properties passed to the component.
- * @param {Item[]} props.data - The array of items to display in the dropdown.
- * @param {function} props.onSelect - The callback function to execute when an item is selected.
- * @param {string} props.searchKey - The key to be used for searching items.
- * @param {string} props.label - Default label to be shown when no item is selected.
- * @param {function} props.onToggle - Function to toggle the dropdown open/closed.
- * @param {boolean} props.isOpen - Boolean to control the visibility of the dropdown.
+ * @param {Item[]} data - The array of items to display in the dropdown.
+ * @param {function} onSelect - The callback function to execute when an item is selected.
+ * @param {string} searchKey - The key to be used for searching items.
+ * @param {string} label - Default label to be shown when no item is selected.
+ * @param {function} onToggle - Function to toggle the dropdown open/closed.
+ * @param {boolean} isOpen - Boolean to control the visibility of the dropdown.
  * @param {Object} ref - Ref object for parent component to access child methods.
- * @param {SelectedItem} [props.selectedItemProp] - The currently selected item.
- * @param {string} [props.title] - Optional title for the dropdown.
- * @param {boolean} [props.disableSearch] - If true, disables the search functionality.
- * @param {string} [props.displayType="both"] - Defines how to display items ('iso', 'value', or 'both').
- * @param {string} [props.containerClassName=""] - Additional class name for the container.
- * @param {string} [props.dropDownClassName=""] - Additional class name for the dropdown.
- * @param {string} [props.textClassName=""] - Additional class name for the text elements.
+ * @param {SelectedItem} [selectedItemProp] - The currently selected item.
+ * @param {string} [title] - Optional title for the dropdown.
+ * @param {boolean} [disableSearch] - If true, disables the search functionality.
+ * @param {string} [displayType="both"] - Defines how to display items ('iso', 'value', or 'both').
+ * @param {string} [containerClassName=""] - Additional class name for the container.
+ * @param {string} [dropDownClassName=""] - Additional class name for the dropdown.
+ * @param {string} [textClassName=""] - Additional class name for the text elements.
  * @returns {React.ReactElement} The CustomDropDownMenu component.
  */
 const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onToggle, label, title, selectedItemProp, disableSearch, displayType = "both", containerClassName = "", dropDownClassName = "", textClassName = "" }: {
