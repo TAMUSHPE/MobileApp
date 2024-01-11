@@ -171,7 +171,7 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
             top: -componentLayout.y - 180, // adjustment in y position to fill screen
             width: screenWidth,
             height: screenHeight,
-            backgroundColor: 'rgba(0, 0, 255, 0.6)'
+            // backgroundColor: 'rgba(0, 0, 255, 0.6)' // show overlay for testing
         };
     }
 
