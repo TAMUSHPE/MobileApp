@@ -48,7 +48,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
         await selectImage({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            aspect: [16, 9],
             quality: 1,
         }).then(async (result) => {
             if (result) {
@@ -126,14 +125,14 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
             {/* Start Date Pickers */}
             {Platform.OS == 'android' && showStartDatePicker &&
                 <DateTimePicker
-                    testID='Start Time Picker'
+                    testID='Start Date Picker'
                     value={startTime?.toDate() ?? new Date()}
                     minimumDate={new Date(Date.now())}
                     maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
                     mode='date'
                     onChange={(_, date) => {
                         if (!date) {
-                            console.warn("Date picked is undefined.")
+                            console.warn("Date picked is undefined.");
                         }
                         else {
                             setStartTime(Timestamp.fromDate(date));
@@ -147,6 +146,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
             }
             {Platform.OS == 'android' && showStartTimePicker &&
                 <DateTimePicker
+                    testID='Start Time Picker'
                     value={startTime?.toDate() ?? new Date()}
                     mode='time'
                     onChange={(_, date) => {
@@ -166,10 +166,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     }}
                 />
             }
-            {
-                Platform.OS == 'ios'
-            }
-
 
             {/* End Date Pickers */}
             {Platform.OS == 'android' && showEndDatePicker &&
@@ -226,7 +222,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                 <ScrollView
                     className={`flex flex-col px-4 flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}
                     contentContainerStyle={{
-                        paddingBottom: 60
+                        paddingBottom: "50%"
                     }}
                 >
                     <KeyboardAvoidingView className='py-3'>

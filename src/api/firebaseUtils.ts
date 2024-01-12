@@ -461,6 +461,24 @@ export const removeFromBlacklist = async (userToRemove: PublicUserInfo) => {
     await setDoc(doc(db, "restrictions/blacklist"), { list: updatedBlacklist }, { merge: true });
 };
 
+export const isUserInBlacklist = async (uid: string): Promise<boolean> => {
+    const blacklistDocRef = doc(db, "restrictions/blacklist");
+    const docSnap = await getDoc(blacklistDocRef);
+
+    if (docSnap.exists()) {
+        const blacklist = docSnap.data().list;
+        return blacklist.some((user: PublicUserInfo) => user.uid === uid);
+    } else {
+        // Blacklist document does not exist or has no data
+        return false;
+    }
+};
+
+/**
+ * Creates a new SHPE event document in firestore
+ * @param event Object with event details
+ * @returns Document name in firestore. Null if error occurred
+ */
 export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
     try {
         const docRef = await addDoc(collection(db, "events"), { ...event });
@@ -471,20 +489,31 @@ export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
     }
 };
 
-export const updateEvent = async (event: SHPEEvent) => {
+/**
+ * Updates a given event
+ * @param id Name of event document in firestore
+ * @param event Object to replace firestore document
+ * @returns Document name firebase or null if an issue occurred
+ */
+export const setEvent = async (id: string, event: SHPEEvent): Promise<string | null> => {
     try {
-        const docRef = doc(db, "events", event.id!);
+        const docRef = doc(db, "events", id);
         await updateDoc(docRef, {
             ...event
         });
-        return event.id;
+        return id;
     } catch (error) {
         console.error("Error updating document: ", error);
         return null;
     }
 }
 
-export const getEvent = async (eventID: string) => {
+/**
+ * Fetches a given event document from firestore
+ * @param eventID Document name of event in firestore
+ * @returns Document data from firestore. null if there is an issue obtaining document.
+ */
+export const getEvent = async (eventID: string): Promise<null | SHPEEvent> => {
     try {
         const eventRef = doc(db, "events", eventID);
         const eventDoc = await getDoc(eventRef);
