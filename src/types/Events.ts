@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase/firestore';
+import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers';
 
 /**
@@ -39,7 +39,9 @@ export abstract class SHPEEvent {
     /** Text description of location */
     public locationName?: string | null;
     /** Real location of event */
-    public geolocation?: Geolocation | null;
+    public geolocation?: GeoPoint | null;
+    /** Allowed radius for being able to sign into an event */
+    public geofencingRadius?: number | null;
     /** Attribute used specifically for workshops */
     public workshopType?: WorkshopType;
     /** Specifies which committee this event is associated with */
@@ -57,6 +59,8 @@ export abstract class SHPEEvent {
         this.endTime = null;
         this.coverImageURI = null;
         this.committee = null;
+        this.geolocation = null;
+        this.geofencingRadius = null;
     }
 
     /**
@@ -88,16 +92,16 @@ export interface SHPEEventLog {
  * Template class for General Meeting event.
  */
 export class GeneralMeeting extends SHPEEvent {
-    public name:             string | null;
-    public description:      string | null;
-    public eventType:     EventType | null;
-    public tags:           string[] | null;
-    public startTime:     Timestamp | null;
-    public endTime:       Timestamp | null;
-    public signInPoints:     number | null;
-    public signOutPoints:    number | null;
-    public locationName:     string | null;
-    public geolocation: Geolocation | null;
+    public name: string | null;
+    public description: string | null;
+    public eventType: EventType | null;
+    public tags: string[] | null;
+    public startTime: Timestamp | null;
+    public endTime: Timestamp | null;
+    public signInPoints: number | null;
+    public signOutPoints: number | null;
+    public locationName: string | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -120,15 +124,15 @@ export class GeneralMeeting extends SHPEEvent {
  * Template class for Committee Meeting event 
  */
 export class CommitteeMeeting extends SHPEEvent {
-    public name:             string | null;
-    public tags:           string[] | null;
-    public description:      string | null;
-    public eventType:     EventType | null;
-    public startTime:     Timestamp | null;
-    public endTime:       Timestamp | null;
-    public signInPoints:     number | null;
-    public locationName:     string | null;
-    public geolocation: Geolocation | null;
+    public name: string | null;
+    public tags: string[] | null;
+    public description: string | null;
+    public eventType: EventType | null;
+    public startTime: Timestamp | null;
+    public endTime: Timestamp | null;
+    public signInPoints: number | null;
+    public locationName: string | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -150,17 +154,17 @@ export class CommitteeMeeting extends SHPEEvent {
  * Note: Study hours only give points if a user has signed both in and out
  */
 export class StudyHours extends SHPEEvent {
-    public name:             string | null;
-    public description:      string | null;
-    public eventType:     EventType | null;
-    public tags:           string[] | null;
-    public startTime:     Timestamp | null;
-    public endTime:       Timestamp | null;
-    public signInPoints:     number | null;
-    public signOutPoints:    number | null;
-    public pointsPerHour:    number | null;
-    public locationName:     string | null;
-    public geolocation: Geolocation | null;
+    public name: string | null;
+    public description: string | null;
+    public eventType: EventType | null;
+    public tags: string[] | null;
+    public startTime: Timestamp | null;
+    public endTime: Timestamp | null;
+    public signInPoints: number | null;
+    public signOutPoints: number | null;
+    public pointsPerHour: number | null;
+    public locationName: string | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -184,15 +188,15 @@ export class StudyHours extends SHPEEvent {
  * Workshops have a field unique to them which specify what type of workshop they are
  */
 export class Workshop extends SHPEEvent {
-    public name:             string | null;
-    public description:      string | null;
-    public tags:           string[] | null;
-    public eventType:     EventType | null;
-    public startTime:     Timestamp | null;
-    public endTime:       Timestamp | null;
-    public signInPoints:     number | null;
-    public locationName:     string | null;
-    public geolocation: Geolocation | null;
+    public name: string | null;
+    public description: string | null;
+    public tags: string[] | null;
+    public eventType: EventType | null;
+    public startTime: Timestamp | null;
+    public endTime: Timestamp | null;
+    public signInPoints: number | null;
+    public locationName: string | null;
+    public geolocation: GeoPoint | null;
     public workshopType: WorkshopType;
 
     public constructor() {
@@ -214,15 +218,15 @@ export class Workshop extends SHPEEvent {
  * Template class for Volunteer event
  */
 export class VolunteerEvent extends SHPEEvent {
-    public name:             string | null;
-    public tags:           string[] | null;
-    public description:      string | null;
-    public eventType:     EventType | null;
-    public startTime:     Timestamp | null;
-    public endTime:       Timestamp | null;
-    public pointsPerHour:    number | null;
-    public locationName:     string | null;
-    public geolocation: Geolocation | null;
+    public name: string | null;
+    public tags: string[] | null;
+    public description: string | null;
+    public eventType: EventType | null;
+    public startTime: Timestamp | null;
+    public endTime: Timestamp | null;
+    public pointsPerHour: number | null;
+    public locationName: string | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -242,15 +246,15 @@ export class VolunteerEvent extends SHPEEvent {
  * Template class for Social event
  */
 export class SocialEvent extends SHPEEvent {
-    public name:             string | null;
-    public tags:           string[] | null;
-    public description:      string | null;
-    public eventType:     EventType | null;
-    public startTime:     Timestamp | null;
-    public endTime:       Timestamp | null;
-    public signInPoints:     number | null;
-    public locationName:     string | null;
-    public geolocation: Geolocation | null;
+    public name: string | null;
+    public tags: string[] | null;
+    public description: string | null;
+    public eventType: EventType | null;
+    public startTime: Timestamp | null;
+    public endTime: Timestamp | null;
+    public signInPoints: number | null;
+    public locationName: string | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -270,15 +274,15 @@ export class SocialEvent extends SHPEEvent {
  * Template class for Intramural event
  */
 export class IntramuralEvent extends SHPEEvent {
-    public name:             string | null;
-    public tags:           string[] | null;
-    public description:      string | null;
-    public eventType:     EventType | null;
-    public startTime:     Timestamp | null;
-    public endTime:       Timestamp | null;
-    public signInPoints:     number | null;
-    public locationName:     string | null;
-    public geolocation: Geolocation | null;
+    public name: string | null;
+    public tags: string[] | null;
+    public description: string | null;
+    public eventType: EventType | null;
+    public startTime: Timestamp | null;
+    public endTime: Timestamp | null;
+    public signInPoints: number | null;
+    public locationName: string | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -298,17 +302,17 @@ export class IntramuralEvent extends SHPEEvent {
  * Template class for a custom event. These events are purposefully generic for the creation of events that don't fit into another template.
  */
 export class CustomEvent extends SHPEEvent {
-    public name:             string | null;
-    public description:      string | null;
-    public eventType:     EventType | null;
-    public tags:           string[] | null;
-    public startTime:     Timestamp | null;
-    public endTime:       Timestamp | null;
-    public signInPoints:     number | null;
-    public signOutPoints:    number | null;
-    public pointsPerHour:    number | null;
-    public locationName:     string | null;
-    public geolocation: Geolocation | null;
+    public name: string | null;
+    public description: string | null;
+    public eventType: EventType | null;
+    public tags: string[] | null;
+    public startTime: Timestamp | null;
+    public endTime: Timestamp | null;
+    public signInPoints: number | null;
+    public signOutPoints: number | null;
+    public pointsPerHour: number | null;
+    public locationName: string | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();

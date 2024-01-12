@@ -798,7 +798,7 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParam
         }
     };
 
-    const faqData = [
+    const faqData: { question: string, answer: string }[] = [
         {
             question: "What resources does SHPE provide?",
             answer: "SHPE offers networking opportunities, professional development workshops, mentorship programs, scholarship opportunities, and community outreach initiatives."

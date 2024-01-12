@@ -86,7 +86,6 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     </View>
                 }
                 <View className='mx-2 mt-4'>
-
                     {upcomingEvents.length != 0 &&
                         <>
                             <Text className='text-xl mb-4 font-bold'>Upcoming Events</Text>
@@ -106,8 +105,6 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                             />
                         </>
                     }
-
-
                 </View>
             </ScrollView>
         </SafeAreaView>

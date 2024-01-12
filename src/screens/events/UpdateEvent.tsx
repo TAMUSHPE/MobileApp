@@ -9,7 +9,7 @@ import { Octicons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Images } from '../../../assets';
-import { Timestamp } from 'firebase/firestore';
+import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { UserContext } from '../../context/UserContext';
 import { MillisecondTimes, formatDate, formatTime } from '../../helpers/timeUtils';
 import { StatusBar } from 'expo-status-bar';
@@ -60,7 +60,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [signOutPoints, setSignOutPoints] = useState<number | undefined | null>(event.signOutPoints);
     const [pointsPerHour, setPointsPerHour] = useState<number | undefined | null>(event.pointsPerHour);
     const [locationName, setLocationName] = useState<string | undefined | null>(event.locationName);
-    const [geolocation, setGeolocation] = useState<Geolocation | undefined | null>(event.geolocation);
+    const [geolocation, setGeolocation] = useState<GeoPoint | undefined | null>(event.geolocation);
     const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType);
     const [committee, setCommittee] = useState<string | undefined | null>(event.committee);
 
