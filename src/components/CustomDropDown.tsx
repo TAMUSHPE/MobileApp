@@ -29,7 +29,7 @@ import { Octicons } from '@expo/vector-icons';
  * @param {string} [textClassName=""] - Additional class name for the text elements.
  * @returns {React.ReactElement} The CustomDropDownMenu component.
  */
-const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onToggle, label, title, selectedItemProp, disableSearch, displayType = "both", containerClassName = "", dropDownClassName = "", textClassName = "" }: {
+const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onToggle, label, title, selectedItemProp, disableSearch, displayType = "both", containerClassName = "", dropDownClassName = "", textClassName = "", titleClassName = "" }: {
     data: Item[];
     onSelect: (item: Item) => void;
     searchKey: string;
@@ -43,6 +43,8 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
     containerClassName?: string;
     dropDownClassName?: string;
     textClassName?: string;
+    titleClassName?: string;
+    textboxClassName?: string;
 }, ref) => {
     const [search, setSearch] = useState('');
     const [filteredData, setFilteredData] = useState(data);
@@ -184,7 +186,7 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                     </TouchableWithoutFeedback>
                 )}
                 {title && (
-                    <Animated.Text className="w-[100%] ml-3 items-center self-center border-gray-400 font-semibold text-lg text-white" style={{ transform: [{ translateY: yVal }] }}>
+                    <Animated.Text className={"w-[100%] ml-3 items-center self-center border-gray-400 font-semibold text-lg text-white " + titleClassName} style={{ transform: [{ translateY: yVal }] }}>
                         {title}
                     </Animated.Text>
                 )}
