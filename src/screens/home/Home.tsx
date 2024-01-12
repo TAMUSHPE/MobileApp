@@ -38,7 +38,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
             <FlickrPhotoGallery />
-            {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}
             <Ishpe navigation={navigation} />
 
             {/* <FeaturedSlider route={route} /> */}

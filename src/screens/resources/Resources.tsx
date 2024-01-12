@@ -1,5 +1,5 @@
 import { View, Image, ScrollView, Text, TouchableOpacity, ImageSourcePropType } from 'react-native';
-import React from 'react';
+import React, { useContext } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { handleLinkPress } from '../../helpers/links';
@@ -9,8 +9,12 @@ import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
 import ResumeIcon from '../../../assets/resume-icon.svg';
 import ExamIcon from '../../../assets/exam-icon.svg';
 import OfficeHours from './OfficeHours';
+import { UserContext } from '../../context/UserContext';
+import OfficeSignIn from '../home/OfficeSignIn';
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
+    const { userInfo } = useContext(UserContext)!;
+
     const SocialMediaButton = ({ url, imageSource, bgColor = "" }: {
         url: string,
         imageSource: ImageSourcePropType,
@@ -85,6 +89,8 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                         bgColor='bg-dark-navy'
                     />
                 </View>
+
+                {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}
 
                 {/* Resources */}
                 <View className='flex-col mt-12 items-center'>
