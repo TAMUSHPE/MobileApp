@@ -9,7 +9,6 @@ import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
 import { EventsStackParams } from '../../types/Navigation';
 import { SHPEEvent } from '../../types/Events';
 import EventsList from '../../components/EventsList';
-import EventCard from '../../components/EventCard';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
@@ -107,7 +106,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     }
                 </View>
             </ScrollView>
-        </SafeAreaView>
+        </SafeAreaView >
     );
 };
 
