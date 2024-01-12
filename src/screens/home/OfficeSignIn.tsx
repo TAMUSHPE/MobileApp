@@ -1,12 +1,11 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Octicons } from '@expo/vector-icons';
-import { auth, db } from '../../config/firebaseConfig';
-import { addDoc, collection, doc, serverTimestamp, setDoc, getDoc, updateDoc, increment } from 'firebase/firestore';
+import { auth } from '../../config/firebaseConfig';
+import { serverTimestamp } from 'firebase/firestore';
 import { OfficerStatus } from '../../types/User';
 import DismissibleModal from '../../components/DismissibleModal';
 import { addOfficeHourLog, decrementOfficeCount, fetchOfficerStatus, incrementOfficeCount, updateOfficerStatus } from '../../api/firebaseUtils';
-
 
 /**
  * Provides an interface for officers to sign in and out of office hours.
@@ -28,7 +27,6 @@ const OfficeSignIn = () => {
                 console.error("Failed to fetch officer status:", err);
             }
         }
-
         getOfficerStatus();
     }, []);
 
@@ -56,9 +54,8 @@ const OfficeSignIn = () => {
         }
     }
 
-
     return (
-        <View className='my-10 mx-7 py-8 bg-white rounded-md items-center justify-center text-center shadow-md shadow-slate-300'>
+        <View className='mt-10 mx-7 py-8 bg-white rounded-md items-center justify-center text-center shadow-md shadow-slate-300'>
             <View>
                 <Text className='text-xl font-bold text-pale-blue'>Office Hours Sign In </Text>
             </View>
