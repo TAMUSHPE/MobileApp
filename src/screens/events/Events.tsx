@@ -9,6 +9,7 @@ import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
 import { EventsStackParams } from '../../types/Navigation';
 import { SHPEEvent } from '../../types/Events';
 import EventsList from '../../components/EventsList';
+import EventCard from '../../components/EventCard';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
@@ -84,35 +85,29 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                         <Text>No Events</Text>
                     </View>
                 }
-<<<<<<< HEAD
                 <View className='mx-2 mt-4'>
-=======
 
-                <View className='ml-4 mt-4'>
->>>>>>> dev
                     {upcomingEvents.length != 0 &&
-                        <Text className='text-xl mb-4 font-bold'>Upcoming Events</Text>
+                        <>
+                            <Text className='text-xl mb-4 font-bold'>Upcoming Events</Text>
+                            <EventsList
+                                events={upcomingEvents}
+                                navigation={navigation}
+                            />
+                        </>
                     }
-
-<<<<<<< HEAD
-                    {upcomingEvents.map((event) => <EventCard key={event.id} event={event} navigation={navigation} />)}
-=======
-                    {upcomingEvents && (
-                        <EventsList events={upcomingEvents} navigation={navigation} />
-                    )}
->>>>>>> dev
 
                     {pastEvents.length != 0 &&
-                        <Text className='text-xl mb-4 text-bold mt-8 font-bold '>Past Events</Text>
+                        <>
+                            <Text className='text-xl mb-4 text-bold mt-8 font-bold '>Past Events</Text>
+                            <EventsList
+                                events={pastEvents}
+                                navigation={navigation}
+                            />
+                        </>
                     }
 
-<<<<<<< HEAD
-                    {pastEvents.map((event) => <EventCard key={event.id} event={event} navigation={navigation} />)}
-=======
-                    {pastEvents && (
-                        <EventsList events={pastEvents} navigation={navigation} />
-                    )}
->>>>>>> dev
+
                 </View>
             </ScrollView>
         </SafeAreaView>
