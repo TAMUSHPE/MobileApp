@@ -24,7 +24,7 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
         setScanned(true);
         const dataRegex: RegExp = /^tamu-shpe:\/\/event\?id=[a-zA-z0-9]+&mode=(sign-in|sign-out)$/i;
         if (!dataRegex.test(data)) {
-            Alert.alert("Invalid QR Code", "Either this QR Code is invalid or was miscanned. Please try again.", [
+            Alert.alert("Invalid QR Code", "Either this QR Code is invalid or was misscanned. Please try again.", [
                 {
                     text: 'ok',
                     onPress: () => {
@@ -51,11 +51,11 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
     }
 
     return (
-        <SafeAreaView className='flex flex-col h-screen w-screen bg-black'>
+        <SafeAreaView className='flex flex-col h-full w-screen bg-black'>
             {/* Header */}
-            <View className={`flex-row items-center h-10`}>
+            <View className={`flex-row items-center h-10 my-4`}>
                 <View className='w-screen absolute'>
-                    <Text className={`text-2xl font-bold justify-center text-center text-white`}>Scan QR Code</Text>
+                    <Text className={`text-2xl font-bold justify-center text-center text-white`}>Scan Event QR Code</Text>
                 </View>
                 <TouchableOpacity className='px-6' onPress={() => navigation.goBack()} >
                     <Octicons name="x" size={30} color="white" />
@@ -66,6 +66,7 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
                 barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
                 onBarCodeScanned={scanned ? () => { } : handleBarCodeScanned}
             />
+            <Text className='text-white text-center text-xl py-6 px-1'>Scan a QR code to sign in/out of an event</Text>
         </SafeAreaView>
     );
 };

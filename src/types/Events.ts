@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase/firestore';
+import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers';
 
 /**
@@ -7,7 +7,7 @@ import { MillisecondTimes, getNextHourMillis } from '../helpers';
 export type WorkshopType = "Professional" | "Academic" | "None";
 
 /**
- * Generic Event Interface. All events must implement this type
+ * Generic Event Interface. All SHPE related events must implement or extend this type
  */
 export abstract class SHPEEvent {
     /** Document name in firebase */
@@ -39,7 +39,9 @@ export abstract class SHPEEvent {
     /** Text description of location */
     public locationName?: string | null;
     /** Real location of event */
-    public geolocation?: Geolocation | null;
+    public geolocation?: GeoPoint | null;
+    /** Allowed radius for being able to sign into an event */
+    public geofencingRadius?: number | null;
     /** Attribute used specifically for workshops */
     public workshopType?: WorkshopType;
     /** Specifies which committee this event is associated with */
@@ -57,6 +59,8 @@ export abstract class SHPEEvent {
         this.endTime = null;
         this.coverImageURI = null;
         this.committee = null;
+        this.geolocation = null;
+        this.geofencingRadius = null;
     }
 
     /**
@@ -97,7 +101,7 @@ export class GeneralMeeting extends SHPEEvent {
     public signInPoints: number | null;
     public signOutPoints: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -128,7 +132,7 @@ export class CommitteeMeeting extends SHPEEvent {
     public endTime: Timestamp | null;
     public signInPoints: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -160,7 +164,7 @@ export class StudyHours extends SHPEEvent {
     public signOutPoints: number | null;
     public pointsPerHour: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -192,7 +196,7 @@ export class Workshop extends SHPEEvent {
     public endTime: Timestamp | null;
     public signInPoints: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
     public workshopType: WorkshopType;
 
     public constructor() {
@@ -222,7 +226,7 @@ export class VolunteerEvent extends SHPEEvent {
     public endTime: Timestamp | null;
     public pointsPerHour: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -250,7 +254,7 @@ export class SocialEvent extends SHPEEvent {
     public endTime: Timestamp | null;
     public signInPoints: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -278,7 +282,7 @@ export class IntramuralEvent extends SHPEEvent {
     public endTime: Timestamp | null;
     public signInPoints: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -308,7 +312,7 @@ export class CustomEvent extends SHPEEvent {
     public signOutPoints: number | null;
     public pointsPerHour: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
 
     public constructor() {
         super();
@@ -318,9 +322,9 @@ export class CustomEvent extends SHPEEvent {
         this.tags = [];
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.signInPoints = null;
-        this.signOutPoints = null;
-        this.pointsPerHour = null;
+        this.signInPoints = 0;
+        this.signOutPoints = 0;
+        this.pointsPerHour = 0;
         this.locationName = null;
         this.geolocation = null;
     }
