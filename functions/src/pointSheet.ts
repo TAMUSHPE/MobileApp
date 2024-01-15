@@ -125,6 +125,28 @@ export const updateUserPoints = functions.https.onCall(async (data, context) => 
 });
 
 /** Callable https function which updates the point values of all users */
-export const updateAllUserPoints = functions.https.onCall(async (data, context) => {
-    // TODO: Currently Stubbed
+export const updateAllUserPoints = functions.https.onCall(async (_, context) => {
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
+    }
+
+    const token = context.auth.token;
+    if (token.admin !== true && token.officer !== true && token.developer !== true) {
+        throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
+    }
+
+    return db.collection('users').get()
+        .then((snapshot) => {
+            snapshot.forEach(async (document) => {
+                document.ref.set({
+                    points: await calculateUserPoints(document.id),
+                    pointsThisMonth: await calculateUserPointsThisMonth(document.id),
+                }, { merge: true });
+            });
+
+            return { success: true };
+        })
+        .catch((err) => {
+            throw new functions.https.HttpsError("aborted", `Issue occured while attempting to update user document: ${err}`);
+        });
 });
