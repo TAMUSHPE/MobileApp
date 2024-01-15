@@ -501,7 +501,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     }
 
                     <InteractButton
-                        buttonClassName='bg-pale-blue mt-10 mb-4 py-1 rounded-xl w-1/2 mx-auto'
+                        buttonClassName='bg-pale-blue mt-5 mb-4 py-1 rounded-xl w-1/2 mx-auto'
                         textClassName='text-center text-white text-lg font-bold'
                         label='Next Step'
                         onPress={() => {
@@ -530,7 +530,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             }
                         }}
                     />
-
                 </ScrollView>
             </SafeAreaView>
         </View>
