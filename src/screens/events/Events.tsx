@@ -3,11 +3,12 @@ import React, { useCallback, useContext, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons';
+import { FontAwesome } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
 import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
 import { EventsStackParams } from '../../types/Navigation';
 import { SHPEEvent } from '../../types/Events';
+import CalendarICON from '../../../assets/calandar_pale_blue.svg'
 import EventsList from '../../components/EventsList';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
@@ -18,7 +19,6 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const { userInfo } = userContext!;
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
-
 
     useFocusEffect(
         useCallback(() => {
@@ -46,32 +46,34 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
             fetchEvents();
         }, [])
     );
-    return (
-        <SafeAreaView
-            edges={["top", "left", "right"]}>
-            <ScrollView>
 
+    return (
+        <SafeAreaView edges={["top"]}>
+            <ScrollView>
                 <View className='flex-row mt-4'>
                     <View className='w-full justify-center items-center'>
                         <Text className="text-3xl h-10">Events</Text>
                     </View>
-                    {
-                        hasPrivileges &&
-                        < View className='absolute w-full items-end justify-center'>
-                            <TouchableOpacity className='bg-pale-blue w-16 h-10 items-center justify-center rounded-md mr-4'
-                                onPress={() => navigation.navigate("CreateEvent")}>
-                                <Text className='font-bold text-gray-100'>Create</Text>
-                            </TouchableOpacity>
-                        </View>
+                </View>
+
+                <View className='flex-1 flex-row'>
+                    <TouchableOpacity
+                        className='flex-1 flex-row items-center justify-center border border-pale-blue rounded-md py-2 mx-2'
+                        onPress={() => navigation.navigate("QRCodeScanningScreen")}
+                    >
+                        <FontAwesome name="camera" size={24} color="#72A9BE" />
+                        <Text className='font-bold text-pale-blue text-lg ml-2'>QRCode Scan</Text>
+                    </TouchableOpacity>
+
+                    {hasPrivileges &&
+                        <TouchableOpacity
+                            className='flex-1 flex-row items-center justify-center border border-pale-blue rounded-md py-2 mx-2'
+                            onPress={() => navigation.navigate("CreateEvent")}>
+                            <CalendarICON width={24} height={24} />
+                            <Text className='font-bold text-pale-blue text-lg ml-2'>Create Event</Text>
+                        </TouchableOpacity>
                     }
                 </View>
-                <TouchableOpacity
-                    className='flex flex-row items-center justify-center space-x-1 border-2 rounded-full py-1 my-2'
-                    onPress={() => navigation.navigate("QRCodeScanningScreen")}
-                >
-                    <AntDesign name="qrcode" size={30} color={"black"} />
-                    <Text className='text-lg'>Scan QR Code</Text>
-                </TouchableOpacity>
 
                 {isLoading && upcomingEvents.length == 0 && pastEvents.length == 0 &&
                     <View className='h-64 justify-center items-center'>
@@ -97,7 +99,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 
                     {pastEvents.length != 0 &&
                         <>
-                            <Text className='text-xl mb-4 text-bold mt-8 font-bold '>Past Events</Text>
+                            <Text className='text-xl mb-4 text-bold font-bold '>Past Events</Text>
                             <EventsList
                                 events={pastEvents}
                                 navigation={navigation}
