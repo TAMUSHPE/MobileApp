@@ -84,7 +84,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
 
             <View className={`flex flex-col px-4 pt-6 flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}>
                 <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Associated Committee</Text>
-                <View className='flex-row flex-wrap mb-6 z-20'>
+                <View className='flex-row flex-wrap mb-6 z-50'>
                     <CustomDropDownMenu
                         data={createCommitteeList(selectableCommittees)}
                         onSelect={(item) => setCommittee(item.iso)}
