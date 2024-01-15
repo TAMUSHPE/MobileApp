@@ -39,7 +39,7 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
     title?: string;
     selectedItemProp?: SelectedItem | null;
     disableSearch?: boolean;
-    displayType?: string;
+    displayType?: "iso" | "value" | "both";
     containerClassName?: string;
     dropDownClassName?: string;
     textClassName?: string;
