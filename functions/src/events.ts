@@ -50,10 +50,8 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     }
 
     // Sets log in both event and user collection and ensures both happen by the end of the function. 
-    const firstPromise = eventLogDocRef.set(eventLog, { merge: true });
-    const secondPromise = db.collection(`users/${context.auth.uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
-    await firstPromise;
-    await secondPromise;
+    await eventLogDocRef.set(eventLog, { merge: true });
+    await db.collection(`users/${context.auth.uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
 
     return { success: true };
 });
@@ -118,10 +116,8 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     }
 
     // Sets log in both event and user collection and ensures both happen by the end of the function. 
-    const firstPromise = eventLogDocRef.set(eventLog, { merge: true });
-    const secondPromise = db.collection(`users/${context.auth.uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
-    await firstPromise;
-    await secondPromise;
+    await eventLogDocRef.set(eventLog, { merge: true });
+    await db.collection(`users/${context.auth.uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
 
     return { success: true };
 });
