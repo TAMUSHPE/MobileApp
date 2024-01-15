@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, TouchableHighlight, KeyboardAvoidingView, Platform, Image } from 'react-native';
 import React, { useContext, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Octicons } from '@expo/vector-icons';
+import { Octicons, FontAwesome } from '@expo/vector-icons';
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation';
 import { useRoute } from '@react-navigation/core';
 import { Timestamp } from 'firebase/firestore';
@@ -120,7 +120,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     )
 
     return (
-        <>
+        <View>
             <StatusBar style={darkMode ? "light" : "dark"} />
             {/* Start Date Pickers */}
             {Platform.OS == 'android' && showStartDatePicker &&
@@ -218,6 +218,29 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                         <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
                 </View>
+
+                {/* Steps */}
+                <View className='flex-row mx-4 py-4 items-center justify-center flex-wrap'>
+                    <View className='flex-row items-center justify-center'>
+                        <View className='h-7 w-7 bg-pale-blue rounded-full' />
+                        <Text className='text-pale-blue text-lg ml-1'>General</Text>
+                    </View>
+
+                    <View className='ml-3 h-[2px] w-5 bg-pale-blue' />
+
+                    <View className='flex-row items-center justify-center ml-1'>
+                        <View className='h-7 w-7 border border-gray-500 rounded-full' />
+                        <Text className='text-gray-500 text-lg ml-1'>Specific</Text>
+                    </View>
+
+                    <View className='ml-3 h-[2px] w-5 bg-gray-500' />
+
+                    <View className='flex-row items-center justify-center ml-1'>
+                        <View className='h-7 w-7 border border-gray-500 rounded-full' />
+                        <Text className='text-gray-500 text-lg ml-1'>Location</Text>
+                    </View>
+                </View>
+
                 {/* Form */}
                 <ScrollView
                     className={`flex flex-col px-4 flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}
@@ -225,6 +248,9 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                         paddingBottom: "50%"
                     }}
                 >
+                    <View className='mt-4'>
+                        <Text className={`text-xl font-semibold${darkMode ? "text-white" : "text-black"}`}>Enter the basic details of your event</Text>
+                    </View>
                     <KeyboardAvoidingView className='py-3'>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Name <Text className='text-[#f00]'>*</Text></Text>
                         <TextInput
@@ -234,7 +260,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             placeholderTextColor={darkMode ? "#DDD" : "#777"}
                             onChangeText={(text) => setName(text)}
                             keyboardType='ascii-capable'
-                            autoFocus
                             enterKeyHint='enter'
                         />
                     </KeyboardAvoidingView>
@@ -405,7 +430,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     <KeyboardAvoidingView className='py-3'>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Description</Text>
                         <TextInput
-                            className={`text-lg p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                            className={`h-32 text-lg p-2 rounded-md ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                             value={description}
                             placeholder='What is this event about?'
                             placeholderTextColor={darkMode ? "#DDD" : "#777"}
@@ -420,55 +445,65 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     </KeyboardAvoidingView>
 
                     <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Cover Image</Text>
-                    {
-                        localImageURI === undefined ?
-                            <View className={`py-8 my-2 ${darkMode ? "text-white bg-gray-500" : "text-black bg-gray-100"}`}>
-                                <Text className={`text-center ${darkMode ? "text-white" : "text-black"}`}>No Image Selected</Text>
-                            </View> :
-                            <View className='py-2 flex flex-row justify-center'>
-                                <Image
-                                    source={{ uri: localImageURI as string }}
-                                    style={{
-                                        width: 256,
-                                        height: 144,
-                                    }}
-                                />
-                            </View>
-                    }
-                    {
-                        isUploading ?
-                            <>
-                                <InteractButton
-                                    label='Cancel Upload'
-                                    buttonClassName='bg-red-500 rounded-md'
-                                    textClassName='text-center text-lg text-white'
-                                    onPress={() => {
-                                        currentUploadTask?.cancel()
-                                        setLocalImageURI(undefined);
-                                        setCoverImageURI(undefined);
-                                    }}
-                                />
-                                <View className='flex flex-col items-center pt-2'>
-                                    <ProgressBar
-                                        progress={uploadProgress}
-                                    />
-                                    <Text className={darkMode ? "text-white" : "text-black"}>
-                                        {`${((bytesTransferred ?? 0) / 1000000).toFixed(2)} / ${((totalBytes ?? 0) / 1000000).toFixed(2)} MB`}
-                                    </Text>
+                    {localImageURI === undefined ?
+                        <TouchableOpacity
+                            className={`my-2 rounded-2xl h-32 ${darkMode ? "bg-gray-500" : "text-black bg-gray-100"}`}
+                            onPress={() => selectCoverImage()}
+                        >
+                            <View className='border-2 border-pale-blue rounded-2xl'
+                                style={{ borderStyle: 'dashed' }}
+                            >
+                                <View className='items-center justify-center h-full'>
+                                    <FontAwesome name="camera" size={40} color="#72A9BE" />
+                                    <Text className='text-center text-pale-blue text-lg'>UPLOAD</Text>
                                 </View>
-                            </> :
-                            <InteractButton
-                                label='Upload Cover Image'
-                                buttonClassName='bg-blue-200 rounded-md'
-                                textClassName='text-center text-lg'
-                                onPress={() => selectCoverImage()}
+                            </View>
+                        </TouchableOpacity>
+                        :
+                        <TouchableOpacity
+                            className='flex flex-row justify-center'
+                            onPress={() => selectCoverImage()}
+                        >
+                            <Image
+                                source={{ uri: localImageURI as string }}
+                                className='rounded-2xl'
+                                style={{
+                                    width: 256 * 1.3,
+                                    height: 144 * 1.3,
+                                }}
                             />
+
+                            <TouchableOpacity
+                                className="absolute right-0 rounded-full w-8 h-8 justify-center items-center bg-gray-300"
+                                onPress={() => {
+                                    setLocalImageURI(undefined);
+                                    setCoverImageURI(undefined);
+                                }}
+                            >
+                                <Octicons name="x" size={25} color="red" />
+                            </TouchableOpacity>
+
+
+                        </TouchableOpacity>
                     }
+
+
+                    {isUploading &&
+                        <View className='flex flex-col items-center pt-2'>
+                            <ProgressBar
+                                progress={uploadProgress}
+                            />
+                            <Text className={darkMode ? "text-white" : "text-black"}>
+                                {`${((bytesTransferred ?? 0) / 1000000).toFixed(2)} / ${((totalBytes ?? 0) / 1000000).toFixed(2)} MB`}
+                            </Text>
+                        </View>
+
+                    }
+
                     <InteractButton
-                        buttonClassName='bg-orange mt-6 mb-4 py-1 rounded-xl'
-                        textClassName='text-center text-white text-lg'
+                        buttonClassName='bg-pale-blue mt-10 mb-4 py-1 rounded-xl w-1/2 mx-auto'
+                        textClassName='text-center text-white text-lg font-bold'
                         label='Next Step'
-                        underlayColor='#f2aa96'
                         onPress={() => {
                             if (!name) {
                                 Alert.alert("Empty Name", "Event must have a name!")
@@ -495,10 +530,10 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             }
                         }}
                     />
-                    <Text className={`text-xl text-center pt-2 ${darkMode ? "text-white" : "text-black"}`}>Step 2 of 4</Text>
+
                 </ScrollView>
             </SafeAreaView>
-        </>
+        </View>
     );
 };
 
