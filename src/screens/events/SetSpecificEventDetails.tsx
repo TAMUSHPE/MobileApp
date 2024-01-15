@@ -187,7 +187,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 pointsPerHour,
                                 committee,
                             });
-                            navigation.navigate("FinalizeEvent", { event: event });
+                            navigation.navigate("setLocationEventDetails", { event: event });
                         }
 
                     }}
