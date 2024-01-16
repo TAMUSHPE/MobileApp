@@ -174,7 +174,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                 }
 
                 <TouchableOpacity
-                    className='flex-row mt-4 items-center'
+                    className='flex-row mt-4 items-center -z-20'
                     onPress={() => setNationalConventionEligible(!nationalConventionEligible)}
                 >
                     <View className='h-8 w-8 border-2 border-pale-blue rounded-md items-center justify-center'>
