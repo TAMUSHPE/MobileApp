@@ -48,9 +48,9 @@ export abstract class SHPEEvent {
     public workshopType?: WorkshopType;
     /** Specifies which committee this event is associated with */
     public committee?: string | null;
-
+    /** Specifies who created this event */
     public creator?: PublicUserInfo | null;
-
+    public nationalConventionEligible?: boolean | null;
 
     /**
      * Instantiates all fields that exist on all SHPE Events
@@ -67,6 +67,7 @@ export abstract class SHPEEvent {
         this.geolocation = null;
         this.geofencingRadius = null;
         this.creator = null;
+        this.nationalConventionEligible = null;
     }
 
     /**

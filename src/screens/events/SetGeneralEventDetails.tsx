@@ -475,11 +475,13 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                 Alert.alert("Event ends before start time", "Event cannot end before it starts.")
                             }
                             else if (event.copyFromObject) {
+                                let modifiedDescription = description.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim(); // Remove all newlines and extra spaces
+
                                 event.copyFromObject({
                                     name,
                                     startTime,
                                     endTime,
-                                    description,
+                                    description: modifiedDescription,
                                     coverImageURI,
                                     creator: userInfo?.publicInfo
                                 });
