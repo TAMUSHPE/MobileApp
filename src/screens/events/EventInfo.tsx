@@ -16,6 +16,7 @@ import ClockIcon from '../../../assets/clock-pale-blue.svg'
 import MapIcon from '../../../assets/map-pale-blue.svg'
 import { handleLinkPress } from '../../helpers/links';
 import MemberCard from '../../components/MemberCard';
+import { PublicUserInfo } from '../../types/User';
 
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<SHPEEventScreenRouteProp>();
@@ -25,7 +26,7 @@ const EventInfo = ({ navigation }: EventProps) => {
     const [attendance, setAttendance] = useState<number | null>(0);
     const { userInfo } = useContext(UserContext)!;
 
-    const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, workshopType, committee } = event || {};
+    const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, workshopType, committee, creator } = event || {};
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
@@ -196,10 +197,12 @@ const EventInfo = ({ navigation }: EventProps) => {
                 )}
 
                 {/* Replace with event host  */}
-                <View className='mt-4'>
-                    <Text className='text-xl mt-2 italic font-bold mb-2'>Event Host</Text>
-                    <MemberCard userData={userInfo?.publicInfo} />
-                </View>
+                {creator && (
+                    <View className='mt-4'>
+                        <Text className='text-xl mt-2 italic font-bold mb-2'>Event Host</Text>
+                        <MemberCard userData={creator as PublicUserInfo} />
+                    </View>
+                )}
             </View>
 
         </ScrollView>
