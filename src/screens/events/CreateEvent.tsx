@@ -31,7 +31,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
         return (
             <View className='w-1/2 mt-4'>
                 <TouchableOpacity
-                    className={`w-[97%] flex-row border border-gray-500 px-3 py-4 items-center rounded-lg `}
+                    className={`w-[97%] flex-row px-3 py-4 items-center rounded-lg ${eventType == selectedEventType ? "border-2 border-pale-blue" : "border border-gray-400"}`}
                     onPress={() => setSelectedEventType(eventType)}
                 >
                     <View className={`h-7 w-7 border-2 rounded-full items-center justify-center ${eventType == selectedEventType ? "border-pale-blue" : "border-gray-400"}`}>
