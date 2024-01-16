@@ -58,7 +58,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 
                 <View className='flex-1 flex-row'>
                     <TouchableOpacity
-                        className='flex-1 flex-row items-center justify-center border border-pale-blue rounded-md py-2 mx-2'
+                        className='flex-1 flex-row items-center justify-center border border-pale-blue rounded-sm py-2 mx-2'
                         onPress={() => navigation.navigate("QRCodeScanningScreen")}
                     >
                         <FontAwesome name="camera" size={24} color="#72A9BE" />
@@ -67,7 +67,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 
                     {hasPrivileges &&
                         <TouchableOpacity
-                            className='flex-1 flex-row items-center justify-center border border-pale-blue rounded-md py-2 mx-2'
+                            className='flex-1 flex-row items-center justify-center border border-pale-blue rounded-sm py-2 mx-2'
                             onPress={() => navigation.navigate("CreateEvent")}>
                             <CalendarICON width={24} height={24} />
                             <Text className='font-bold text-pale-blue text-lg ml-2'>Create Event</Text>
