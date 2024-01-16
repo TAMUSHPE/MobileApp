@@ -19,6 +19,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const [selectableCommittees, setSelectableCommittees] = useState<Committee[]>([]);
     const dropDownRefCommittee = useRef<CustomDropDownMethods>(null);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
     // Form Data Hooks
     const [committee, setCommittee] = useState<string>();
@@ -26,7 +27,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const [signInPoints, setSignInPoints] = useState<number | undefined>(event.signInPoints ?? undefined);
     const [signOutPoints, setSignOutPoints] = useState<number | undefined>(event.signOutPoints ?? undefined);
     const [pointsPerHour, setPointsPerHour] = useState<number | undefined>(event.pointsPerHour ?? undefined);
-    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const [nationalConventionEligible, setNationalConventionEligible] = useState<boolean | undefined>(event.nationalConventionEligible ?? undefined);
 
     useEffect(() => {
         getCommittees()
@@ -172,8 +173,20 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                     </View>
                 }
 
+                <TouchableOpacity
+                    className='flex-row mt-4 items-center'
+                    onPress={() => setNationalConventionEligible(!nationalConventionEligible)}
+                >
+                    <View className='h-8 w-8 border-2 border-pale-blue rounded-md items-center justify-center'>
+                        {nationalConventionEligible && (
+                            <Octicons name="check" size={26} color="#72A9BE" />
+                        )}
+                    </View>
+                    <Text className='ml-2 text-lg'>Eligible for National Convention</Text>
+                </TouchableOpacity>
+
                 <InteractButton
-                    buttonClassName='bg-pale-blue mt-5 mb-4 py-1 rounded-xl w-1/2 mx-auto -z-20'
+                    buttonClassName='bg-pale-blue mt-8 mb-4 py-1 rounded-xl w-1/2 mx-auto -z-20'
                     textClassName='text-center text-white text-lg font-bold'
                     label='Next Step'
                     onPress={() => {
@@ -186,6 +199,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 signOutPoints,
                                 pointsPerHour,
                                 committee,
+                                nationalConventionEligible
                             });
                             navigation.navigate("setLocationEventDetails", { event: event });
                         }

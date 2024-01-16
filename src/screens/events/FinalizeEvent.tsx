@@ -22,7 +22,7 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
     const { event } = route.params;
     const { userInfo } = useContext(UserContext)!;
 
-    const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, workshopType, committee, creator } = event || {};
+    const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, workshopType, committee, creator, nationalConventionEligible } = event || {};
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
@@ -83,7 +83,12 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                 </SafeAreaView>
             </View>
 
-            <View className='my-8 mx-6'>
+            {/* Body */}
+            <View className='my-4 mx-5'>
+                {nationalConventionEligible && (
+                    <Text className='italic font-semibold mb-2'>This event is eligible for national convention requirements*</Text>
+                )}
+
                 {(description && description != "") && (
                     <View>
                         <Text className='text-xl mt-2 italic font-bold'>Description</Text>
@@ -122,13 +127,11 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                     </View>
                 )}
 
-                {/* Replace with event host  */}
                 <View className='mt-4'>
                     <Text className='text-xl mt-2 italic font-bold mb-2'>Event Host</Text>
                     <MemberCard userData={creator as PublicUserInfo} />
                 </View>
             </View>
-
         </ScrollView>
     );
 };
