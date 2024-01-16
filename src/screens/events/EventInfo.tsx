@@ -110,7 +110,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                 <SafeAreaView edges={['top']}>
                     <View className='flex-row justify-between items-center mx-5 mt-1'>
                         <TouchableOpacity
-                            onPress={() => navigation.goBack()}
+                            onPress={() => navigation.navigate("EventsScreen")}
                             className="rounded-full w-10 h-10 justify-center items-center"
                             style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
                         >
@@ -144,7 +144,13 @@ const EventInfo = ({ navigation }: EventProps) => {
                 </SafeAreaView>
             </View>
 
-            <View className='my-8 mx-6'>
+            {/* Body */}
+            <View className='my-4 mx-6'>
+                {hasPrivileges && (
+                    <View className='w-full items-center justify-center'>
+                        <Text className='text-lg italic font-semibold mb-2'>Attendance: {attendance}</Text>
+                    </View>
+                )}
                 {(description && description != "") && (
                     <View>
                         <Text className='text-xl mt-2 italic font-bold'>Description</Text>
