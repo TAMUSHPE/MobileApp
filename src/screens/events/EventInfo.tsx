@@ -101,7 +101,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                 />
 
                 <View className='absolute w-full h-full bg-[#00000055]' />
-                <View className='absolute bottom-0 px-5 py-3    '>
+                <View className='absolute bottom-0 px-5 py-3'>
                     <View className=''>
                         <Text className="text-white text-4xl font-bold">{name ?? "Name"}</Text>
                         <Text className="text-white text-lg font-bold">{eventType}{workshopType && (" • " + workshopType)}{committee && (" • " + reverseFormattedFirebaseName(committee))} • {(signInPoints || 0) + (signOutPoints || 0) + (pointsPerHour || 0)} points</Text>
@@ -145,12 +145,18 @@ const EventInfo = ({ navigation }: EventProps) => {
             </View>
 
             {/* Body */}
-            <View className='my-4 mx-6'>
+            <View className='my-4 mx-5'>
                 {hasPrivileges && (
                     <View className='w-full items-center justify-center'>
                         <Text className='text-lg italic font-semibold mb-2'>Attendance: {attendance}</Text>
                     </View>
                 )}
+
+                {/* replace with national convention eligible flag */}
+                {true && (
+                    <Text className='italic font-semibold mb-2'>This event is eligible for national convention requirements*</Text>
+                )}
+
                 {(description && description != "") && (
                     <View>
                         <Text className='text-xl mt-2 italic font-bold'>Description</Text>
@@ -200,14 +206,11 @@ const EventInfo = ({ navigation }: EventProps) => {
     )
 }
 
-
 const reverseFormattedFirebaseName = (firebaseName: string) => {
     return firebaseName
         .split('-')
         .map(word => word.charAt(0).toUpperCase() + word.slice(1))
         .join(' ');
 };
-
-
 
 export default EventInfo
