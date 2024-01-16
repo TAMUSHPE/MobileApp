@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import { db } from "./firebaseConfig"
 import { RankChange } from "./types";
-import { AggregateField } from 'firebase-admin/firestore';
+import { AggregateField, Filter } from 'firebase-admin/firestore';
 
 /** Determines rank change based on current and new ranks. */
 const getRankChange = (userData: any, newRank: number): RankChange => {
@@ -94,8 +94,32 @@ const calculateUserPoints = async (uid: string): Promise<number> => {
  * @returns Total points user has earned from events over the past month
  */
 const calculateUserPointsThisMonth = async (uid: string): Promise<number> => {
-    // TODO: Currently Stubbed
-    return 0;
+    const currentDate = new Date();
+    const startTime = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1); // First minute of month
+    const endTime = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0); // First minute of next month
+
+    const collectionRef = db.collection(`users/${uid}/event-logs`)
+        .where(Filter.or(
+            Filter.where('signInTime', '>=', startTime.getTime().toString()),
+            Filter.where('signOutTime', '>=', startTime.getTime().toString()),
+        ))
+        .where(Filter.or(
+            Filter.where('signInTime', '<=', endTime.getTime().toString()),
+            Filter.where('signOutTime', '<=', endTime.getTime().toString()),
+        ));
+
+    const sumAggregateQuery = collectionRef.aggregate({
+        totalPoints: AggregateField.sum('points'),
+    });
+
+    return sumAggregateQuery.get()
+        .then((snapshot) => {
+            return snapshot.data().totalPoints;
+        })
+        .catch((err: any) => {
+            functions.logger.error(`Issue updating points for user with UID ${uid}:`, err);
+            return 0;
+        });
 }
 
 /** Callable https function which updates the point values of a given user users */
