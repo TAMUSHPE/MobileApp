@@ -10,11 +10,10 @@ import { UserContext } from '../../context/UserContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CommonMimeTypes, MillisecondTimes, validateFileBlob } from '../../helpers';
 import { formatDate, formatTime } from '../../helpers/timeUtils';
-import { getBlobFromURI, selectImage } from '../../api/fileSelection';
+import { getBlobFromURI, selectImage, uploadFile } from '../../api/fileSelection';
 import * as ImagePicker from "expo-image-picker";
-import { uploadFileToFirebase } from '../../api/firebaseUtils';
 import { auth } from '../../config/firebaseConfig';
-import { UploadTask, getDownloadURL } from 'firebase/storage';
+import { UploadTask } from 'firebase/storage';
 import ProgressBar from '../../components/ProgressBar';
 import { StatusBar } from 'expo-status-bar';
 
@@ -43,70 +42,34 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     const [description, setDescription] = useState<string>("");
     const [coverImageURI, setCoverImageURI] = useState<string>();
 
-
     const selectCoverImage = async () => {
-        await selectImage({
+        const result = await selectImage({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             quality: 1,
-        }).then(async (result) => {
-            if (result) {
-                const imageBlob = await getBlobFromURI(result.assets![0].uri);
-                if (imageBlob && validateFileBlob(imageBlob, CommonMimeTypes.IMAGE_FILES, true)) {
-                    setLocalImageURI(result.assets![0].uri);
-                    uploadCoverImage(imageBlob);
-                }
+        })
+
+        if (result) {
+            const imageBlob = await getBlobFromURI(result.assets![0].uri);
+            if (imageBlob && validateFileBlob(imageBlob, CommonMimeTypes.IMAGE_FILES, true)) {
+                setLocalImageURI(result.assets![0].uri);
+                if (!imageBlob) return;
+                setIsUploading(true);
+                uploadFile(
+                    imageBlob!,
+                    CommonMimeTypes.IMAGE_FILES,
+                    `events/cover-images/${auth.currentUser?.uid.toString()}${Date.now().toString()}`,
+                    onImageUploadSuccess,
+                    setUploadProgress
+                );
             }
-        }).catch((err) => {
-            // TypeError means user did not select an image
-            if (err.name != "TypeError") {
-                console.error(err);
-            }
-            else {
-                setLocalImageURI(undefined);
-            }
-        });
+        }
     }
 
-    const uploadCoverImage = (image: Blob | undefined) => {
-        if (image) {
-            setIsUploading(true);
-            // Creates image in firebase cloud storage with unique name
-            const uploadTask = uploadFileToFirebase(image, `events/cover-images/${auth.currentUser?.uid.toString()}${Date.now().toString()}`)
-            setCurrentUploadTask(uploadTask);
-            uploadTask.on("state_changed",
-                (snapshot) => {
-                    setUploadProgress(snapshot.bytesTransferred / snapshot.totalBytes);
-                    setBytesTransferred(snapshot.bytesTransferred);
-                    setTotalBytes(snapshot.totalBytes);
-                },
-                (error) => {
-                    switch (error.code) {
-                        case "storage/unauthorized":
-                            Alert.alert("Permissions error", "File could not be uploaded due to user permissions (User likely not authenticated or logged in)");
-                            break;
-                        case "storage/canceled":
-                            Alert.alert("File upload canceled", "File upload has been canceled.");
-                            break;
-                        default:
-                            Alert.alert("Unknown error", "An unknown error has occured. Please notify a developer.")
-                            console.error(error);
-                            break;
-                    }
-                    setIsUploading(false);
-                },
-                async () => {
-                    await getDownloadURL(uploadTask.snapshot.ref).then(async (URL) => {
-                        console.log("File available at", URL);
-                        setCoverImageURI(URL);
-                    });
-                    setIsUploading(false);
-                }
-            );
-        }
-        else {
-            console.warn("No image was selected from image picker");
-        }
+
+    const onImageUploadSuccess = async (URL: string) => {
+        setCoverImageURI(URL);
+        setIsUploading(false);
     }
 
     if (!event) return (
@@ -490,14 +453,11 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
 
                     {isUploading &&
                         <View className='flex flex-col items-center pt-2'>
-                            <ProgressBar
-                                progress={uploadProgress}
-                            />
+                            <ProgressBar progress={uploadProgress} />
                             <Text className={darkMode ? "text-white" : "text-black"}>
                                 {`${((bytesTransferred ?? 0) / 1000000).toFixed(2)} / ${((totalBytes ?? 0) / 1000000).toFixed(2)} MB`}
                             </Text>
                         </View>
-
                     }
 
                     <InteractButton
