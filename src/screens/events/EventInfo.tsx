@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Platform } from 'react-native'
 import React, { useCallback, useContext, useState } from 'react'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,11 +6,15 @@ import { Octicons } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
 import { getEvent, getAttendanceNumber, isUserSignedIn } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
-import { formatDateTime } from '../../helpers/timeUtils';
+import { formatDate, formatTime, monthNames } from '../../helpers/timeUtils';
 import { EventProps, SHPEEventScreenRouteProp } from '../../types/Navigation'
 import { SHPEEvent } from '../../types/Events';
 import { Images } from '../../../assets';
-
+import { StatusBar } from 'expo-status-bar';
+import CalendarIcon from '../../../assets/calandar_pale_blue.svg'
+import ClockIcon from '../../../assets/clock-pale-blue.svg'
+import MapIcon from '../../../assets/map-pale-blue.svg'
+import { handleLinkPress } from '../../helpers/links';
 
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<SHPEEventScreenRouteProp>();
@@ -19,6 +23,8 @@ const EventInfo = ({ navigation }: EventProps) => {
     const [userSignedIn, setUserSignedIn] = useState(false);
     const [attendance, setAttendance] = useState<number | null>(0);
     const { userInfo } = useContext(UserContext)!;
+
+    const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, workshopType, committee } = event || {};
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
@@ -66,46 +72,159 @@ const EventInfo = ({ navigation }: EventProps) => {
                 <ActivityIndicator size="large" />
             </View>
         )
-    } else {
-        return (
-            <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
-                {/* Header */}
-                <View className='flex-row items-center justify-center h-10'>
-                    <TouchableOpacity className='px-6 flex-1' onPress={() => navigation.goBack()} >
-                        <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
-                    </TouchableOpacity>
-                    <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>{event.name}</Text>
-                    {
-                        hasPrivileges ?
-                            <TouchableOpacity className='px-6 flex-1 flex flex-row-reverse' onPress={() => navigation.navigate("UpdateEvent", { event })} >
-                                <View className={`rounded pl-4 pr-1 py-1`}>
-                                    <Octicons name="pencil" size={24} color={darkMode ? "white" : "black"} />
-                                </View>
-                            </TouchableOpacity> :
-                            <View className='flex-1' />
-                    }
+    }
+
+    return (
+        <ScrollView
+            className={`flex flex-col flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`}
+            bounces={false}
+        >
+            <StatusBar style="light" />
+            {/* Header */}
+            <View
+                style={{
+                    width: "100%",
+                    height: "auto",
+                    aspectRatio: 16 / 9,
+                }}
+            >
+                <Image
+                    className="flex w-full h-full absolute"
+                    defaultSource={Images.DEFAULT_USER_PICTURE}
+                    source={coverImageURI ? { uri: coverImageURI } : Images.EVENT}
+                    style={{
+                        width: "100%",
+                        height: "auto",
+                        aspectRatio: 16 / 9,
+                    }}
+                />
+
+                <View className='absolute w-full h-full bg-[#00000055]' />
+                <View className='absolute bottom-0 px-5 py-3    '>
+                    <View className=''>
+                        <Text className="text-white text-4xl font-bold">{name ?? "Name"}</Text>
+                        <Text className="text-white text-lg font-bold">{eventType}{workshopType && (" • " + workshopType)}{committee && (" • " + reverseFormattedFirebaseName(committee))} • {(signInPoints || 0) + (signOutPoints || 0) + (pointsPerHour || 0)} points</Text>
+                    </View>
                 </View>
-                <ScrollView className={`flex flex-col flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`}>
-                    <View className='flex flex-col p-4'>
-                        <Image
-                            source={event.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
-                            resizeMode='contain'
-                            style={{
-                                width: "100%",
-                                height: undefined,
-                                aspectRatio: 16 / 9,
-                            }}
-                        />
-                        <View className='py-2'>
-                            <Text className={`text-xl ${darkMode ? "text-[#229fff]" : "text-[#5233ff]"}`}><Octicons name='calendar' size={24} /> {formatDateTime(event.startTime!.toDate())}</Text>
-                            <Text className={`text-4xl ${darkMode ? "text-white" : "text-black"}`}>{event.name}</Text>
-                            <Text className={`text-2xl ${darkMode ? "text-[#DDD]" : "text-[#333]"}`}>{event.description}</Text>
+                <SafeAreaView edges={['top']}>
+                    <View className='flex-row justify-between items-center mx-5 mt-1'>
+                        <TouchableOpacity
+                            onPress={() => navigation.goBack()}
+                            className="rounded-full w-10 h-10 justify-center items-center"
+                            style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                        >
+                            <Octicons name="chevron-left" size={30} color="white" />
+                        </TouchableOpacity>
+
+                        <View
+                            className="flex-row rounded-lg justify-center items-center px-4 py-2"
+                            style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                        >
+                            <Text className='text-white text-lg font-bold'>You are signed in</Text>
+                            <View className='h-6 w-6 bg-[#AEF359] rounded-full items-center justify-center ml-2'>
+                                <Octicons name="check" size={16} color="black" />
+                            </View>
+                        </View>
+                        <View className='flex-col relative items-center'>
+                            {hasPrivileges &&
+                                <TouchableOpacity
+                                    onPress={() => navigation.navigate("UpdateEvent", { event })}
+                                    className="rounded-lg px-3 py-3"
+                                    style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}
+                                >
+                                    <Octicons name="pencil" size={24} color="white" />
+                                </TouchableOpacity>
+                            }
                         </View>
                     </View>
-                </ScrollView>
-            </SafeAreaView>
-        )
-    }
+                </SafeAreaView>
+            </View>
+
+            <View className='my-8 mx-6'>
+                {(description && description != "") && (
+                    <View>
+                        <Text className='text-xl mt-2 italic font-bold'>Description</Text>
+                        <Text className='text-lg'>{description}</Text>
+                    </View>
+                )}
+                <Text className={`text-xl first-letter:italic font-bold ${(description && description != "") && "mt-7"}`}>Time and Location</Text>
+                <View className='flex-row mt-2'>
+                    <CalendarIcon width={20} height={20} />
+                    <Text className='text-lg ml-2'>{(startTime && endTime) ? formatEventDate(startTime.toDate(), endTime.toDate()) : ""}</Text>
+                </View>
+
+                <View className='flex-row mt-1'>
+                    <ClockIcon width={20} height={20} />
+                    <Text className='text-lg ml-2'>{startTime && formatTime(startTime.toDate())} - {endTime && formatTime(endTime.toDate())}</Text>
+                </View>
+
+                {(locationName || geolocation) && (
+                    <View className='flex-row mt-1'>
+                        <MapIcon width={20} height={20} />
+                        <Text className='text-lg ml-2'>{locationName}</Text>
+                        {geolocation && (
+                            <TouchableOpacity
+                                onPress={() => {
+                                    console.log(geolocation.latitude, geolocation.longitude)
+                                    if (Platform.OS === 'ios') {
+                                        handleLinkPress(`http://maps.apple.com/?ll=${geolocation.latitude},${geolocation.longitude}`);
+                                    } else if (Platform.OS === 'android') {
+                                        handleLinkPress(`https://www.google.com/maps?q=${geolocation.latitude},${geolocation.longitude}`);
+                                    }
+                                }}
+                            >
+                                <Text className={`text-lg text-pale-blue underline ${locationName && "ml-2"}`}>View Map</Text>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                )}
+            </View>
+
+        </ScrollView>
+    )
 }
+
+const formatEventDate = (startTime: Date, endTime: Date) => {
+    const isSameDay = startTime.getDate() === endTime.getDate() &&
+        startTime.getMonth() === endTime.getMonth() &&
+        startTime.getFullYear() === endTime.getFullYear();
+
+    const isSameMonth = startTime.getMonth() === endTime.getMonth() &&
+        startTime.getFullYear() === endTime.getFullYear();
+
+    const isSameYear = startTime.getFullYear() === endTime.getFullYear();
+    const formatMonthDayOnly = (date: Date): string => {
+        const day = date.getDate();
+        const month = monthNames[date.getMonth()];
+
+        return `${month} ${day}`;
+    }
+
+    const formatDayYearOnly = (date: Date): string => {
+        const day = date.getDate();
+        const year = date.getFullYear();
+
+        return `${day} ${year}`;
+    }
+
+    if (isSameDay) {
+        return `${formatDate(startTime)}`;
+    } else if (isSameMonth) {
+        return `${formatMonthDayOnly(startTime)}-${formatDayYearOnly(endTime)}`;
+    } else if (isSameYear) {
+        return `${formatMonthDayOnly(startTime)}-${formatDate(endTime)}`;
+    } else {
+        return `${formatDate(startTime)} - ${formatDate(endTime)}`;
+    }
+};
+
+const reverseFormattedFirebaseName = (firebaseName: string) => {
+    return firebaseName
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+};
+
+
 
 export default EventInfo
