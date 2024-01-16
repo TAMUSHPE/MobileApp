@@ -15,6 +15,7 @@ import CalendarIcon from '../../../assets/calandar_pale_blue.svg'
 import ClockIcon from '../../../assets/clock-pale-blue.svg'
 import MapIcon from '../../../assets/map-pale-blue.svg'
 import { handleLinkPress } from '../../helpers/links';
+import MemberCard from '../../components/MemberCard';
 
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<SHPEEventScreenRouteProp>();
@@ -178,6 +179,12 @@ const EventInfo = ({ navigation }: EventProps) => {
                         )}
                     </View>
                 )}
+
+                {/* Replace with event host  */}
+                <View className='mt-4'>
+                    <Text className='text-xl mt-2 italic font-bold mb-2'>Event Host</Text>
+                    <MemberCard userData={userInfo?.publicInfo} />
+                </View>
             </View>
 
         </ScrollView>
