@@ -6,7 +6,7 @@ import { Octicons } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
 import { getEvent, getAttendanceNumber, isUserSignedIn } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
-import { formatDate, formatTime, monthNames } from '../../helpers/timeUtils';
+import { formatEventDate, formatTime } from '../../helpers/timeUtils';
 import { EventProps, SHPEEventScreenRouteProp } from '../../types/Navigation'
 import { SHPEEvent } from '../../types/Events';
 import { Images } from '../../../assets';
@@ -117,15 +117,18 @@ const EventInfo = ({ navigation }: EventProps) => {
                             <Octicons name="chevron-left" size={30} color="white" />
                         </TouchableOpacity>
 
-                        <View
-                            className="flex-row rounded-lg justify-center items-center px-4 py-2"
-                            style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                        >
-                            <Text className='text-white text-lg font-bold'>You are signed in</Text>
-                            <View className='h-6 w-6 bg-[#AEF359] rounded-full items-center justify-center ml-2'>
-                                <Octicons name="check" size={16} color="black" />
+                        {userSignedIn && (
+                            <View
+                                className="flex-row rounded-lg justify-center items-center px-4 py-2"
+                                style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                            >
+                                <Text className='text-white text-lg font-bold'>You are signed in</Text>
+                                <View className='h-6 w-6 bg-[#AEF359] rounded-full items-center justify-center ml-2'>
+                                    <Octicons name="check" size={16} color="black" />
+                                </View>
                             </View>
-                        </View>
+                        )}
+
                         <View className='flex-col relative items-center'>
                             {hasPrivileges &&
                                 <TouchableOpacity
@@ -168,9 +171,9 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 onPress={() => {
                                     console.log(geolocation.latitude, geolocation.longitude)
                                     if (Platform.OS === 'ios') {
-                                        handleLinkPress(`http://maps.apple.com/?ll=${geolocation.latitude},${geolocation.longitude}`);
+                                        handleLinkPress(`http://maps.apple.com/?daddr=${geolocation.latitude},${geolocation.longitude}`);
                                     } else if (Platform.OS === 'android') {
-                                        handleLinkPress(`https://www.google.com/maps?q=${geolocation.latitude},${geolocation.longitude}`);
+                                        handleLinkPress(`https://www.google.com/maps/dir/?api=1&destination=${geolocation.latitude},${geolocation.longitude}`);
                                     }
                                 }}
                             >
@@ -191,39 +194,6 @@ const EventInfo = ({ navigation }: EventProps) => {
     )
 }
 
-const formatEventDate = (startTime: Date, endTime: Date) => {
-    const isSameDay = startTime.getDate() === endTime.getDate() &&
-        startTime.getMonth() === endTime.getMonth() &&
-        startTime.getFullYear() === endTime.getFullYear();
-
-    const isSameMonth = startTime.getMonth() === endTime.getMonth() &&
-        startTime.getFullYear() === endTime.getFullYear();
-
-    const isSameYear = startTime.getFullYear() === endTime.getFullYear();
-    const formatMonthDayOnly = (date: Date): string => {
-        const day = date.getDate();
-        const month = monthNames[date.getMonth()];
-
-        return `${month} ${day}`;
-    }
-
-    const formatDayYearOnly = (date: Date): string => {
-        const day = date.getDate();
-        const year = date.getFullYear();
-
-        return `${day} ${year}`;
-    }
-
-    if (isSameDay) {
-        return `${formatDate(startTime)}`;
-    } else if (isSameMonth) {
-        return `${formatMonthDayOnly(startTime)}-${formatDayYearOnly(endTime)}`;
-    } else if (isSameYear) {
-        return `${formatMonthDayOnly(startTime)}-${formatDate(endTime)}`;
-    } else {
-        return `${formatDate(startTime)} - ${formatDate(endTime)}`;
-    }
-};
 
 const reverseFormattedFirebaseName = (firebaseName: string) => {
     return firebaseName
