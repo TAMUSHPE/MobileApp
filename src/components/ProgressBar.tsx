@@ -1,54 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { View, Animated, Easing, StyleSheet } from 'react-native';
+import { View, Animated, Easing } from 'react-native';
 
-interface ProgressBarProps {progress: number;} //this is how you pass in percentage. To be used whenever needed
 
-const ProgressBar: React.FC<ProgressBarProps> = ({progress}) => 
-{
-    progress = progress <= 1 ? progress: 1;
+const ProgressBar = ({ progress }: { progress: number }) => {
+    progress = progress <= 1 ? progress : 1;
     progress = progress < 0 ? 0 : progress;
 
-    const [progressValue] = useState(new Animated.Value(0)); //creates the animation
+    const [progressValue] = useState(new Animated.Value(0));
 
-    useEffect(() => { //useEffect makes it so the animation doesn't reset every time
-        Animated.timing(progressValue, 
+    useEffect(() => {
+        Animated.timing(progressValue,
             {
                 toValue: progress,
-                duration: 1000, //Adjust the duration as needed. 
-                easing: Easing.linear, //easing means smooth animation
-                useNativeDriver: false, // If set to true, border radius for rounded corners does not work
+                duration: 1000,
+                easing: Easing.linear,
+                useNativeDriver: false,
             }).start();
     }, [progress]);
 
     const width = progressValue.interpolate({
-        inputRange: [0, 1], //what is taken in (we have accounted for negative values or values greater than 1)
-        outputRange: ['0%', '100%'], //what is displayed (on the bar itself)
+        inputRange: [0, 1],
+        outputRange: ['0%', '100%'],
     });
 
     return (
-        <View style={styles.progressBarContainer}>
-
-            <Animated.View style = {[styles.progressBar, {width}]}/> 
-
+        <View className='w-[80%] h-3 bg-[#cccccc] rounded-md'>
+            <Animated.View className="h-full bg-[#72A9BE] rounded-md" style={{ width }} />
         </View>
     );
-    //Animated.View allows for animations through React Native
 };
-
-const styles = StyleSheet.create
-({
-    progressBarContainer: {
-        width: '80%',
-        height: 10,
-        backgroundColor: '#cccccc', //feel free to change
-        borderRadius: 5,
-    },
-    progressBar: {
-        height: '100%',
-        backgroundColor: 'blue', //feel free to change
-        borderRadius: 5,
-    },
-});
 
 export default ProgressBar;
 
