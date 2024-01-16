@@ -26,7 +26,7 @@ const EventInfo = ({ navigation }: EventProps) => {
     const [attendance, setAttendance] = useState<number | null>(0);
     const { userInfo } = useContext(UserContext)!;
 
-    const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, workshopType, committee, creator } = event || {};
+    const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, workshopType, committee, creator, nationalConventionEligible } = event || {};
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
@@ -153,8 +153,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
                 )}
 
-                {/* replace with national convention eligible flag */}
-                {true && (
+                {nationalConventionEligible && (
                     <Text className='italic font-semibold mb-2'>This event is eligible for national convention requirements*</Text>
                 )}
 
@@ -196,7 +195,6 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
                 )}
 
-                {/* Replace with event host  */}
                 {creator && (
                     <View className='mt-4'>
                         <Text className='text-xl mt-2 italic font-bold mb-2'>Event Host</Text>
