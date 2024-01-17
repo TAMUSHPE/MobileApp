@@ -95,6 +95,7 @@ export type EventsStackParams = {
     CreateEvent: undefined;
     SetGeneralEventDetails: { event: SHPEEvent };
     SetSpecificEventDetails: { event: SHPEEvent };
+    setLocationEventDetails: { event: SHPEEvent };
     FinalizeEvent: { event: SHPEEvent };
 }
 

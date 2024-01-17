@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, FlatList, Animated, TouchableWithoutFeedback, Dimensions, LayoutChangeEvent, LayoutRectangle } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, FlatList, Animated, TouchableWithoutFeedback, Dimensions, LayoutChangeEvent, LayoutRectangle, ScrollView } from 'react-native';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 
@@ -12,6 +12,8 @@ import { Octicons } from '@expo/vector-icons';
  * the visibility of the dropdown, allowing the parent component to manage dropdown visibility and toggle off other dropdown menus.
  * The 'ref' is used to access the 'clearSelection' method from the parent component, enabling external control over the dropdown's selection.
  * Entering a 'title' will display a floating-title above the dropdown menu after a selection has been made.
+ * selectedItemProp is an optional prop that can be used to set the initial selected item must be an object with a structure like { value: string,
+ * iso: string }.
  *
  * @param {Item[]} data - The array of items to display in the dropdown.
  * @param {function} onSelect - The callback function to execute when an item is selected.
@@ -39,7 +41,7 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
     title?: string;
     selectedItemProp?: SelectedItem | null;
     disableSearch?: boolean;
-    displayType?: string;
+    displayType?: "iso" | "value" | "both";
     containerClassName?: string;
     dropDownClassName?: string;
     textClassName?: string;
@@ -67,7 +69,7 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
     useEffect(() => {
         if (selectedItemProp && selectedItemProp?.value != "")
             setSelectedItem(selectedItemProp);
-    }, [selectedItemProp]);
+    }, []);
 
     const moveTitleTop = () => {
         Animated.timing(moveTitle, {
@@ -224,23 +226,19 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                         />
                     )}
 
-                    <FlatList
-                        className='mt-4'
-                        data={filteredData}
-                        renderItem={({ item, index }) => {
-                            return (
-                                <TouchableOpacity
-                                    onPress={() => handleSelect(item)}
-                                    className='w-[85%] self-center h-12 justify-center border-b border-b-gray-400'
-                                    key={index}
-                                >
-                                    <Text className='text-lg font-semibold'>
-                                        {getItemDisplayText(item)}
-                                    </Text>
-                                </TouchableOpacity>
-                            );
-                        }}
-                    />
+                    <ScrollView className='mt-4'>
+                        {filteredData.map((item, index) => (
+                            <TouchableOpacity
+                                onPress={() => handleSelect(item)}
+                                className='w-[85%] self-center h-12 justify-center border-b border-b-gray-400'
+                                key={index}
+                            >
+                                <Text className='text-lg font-semibold'>
+                                    {getItemDisplayText(item)}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
                 </View>
             ) : null}
         </View>
