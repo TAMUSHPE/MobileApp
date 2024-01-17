@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import LottieView from "lottie-react-native";
+import { View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 
 const Splash = ({ setIsLoading }: SplashProps) => {
     // IOS bugged autoplay on lottie, so we need to use a ref to play the animation
@@ -15,13 +17,16 @@ const Splash = ({ setIsLoading }: SplashProps) => {
     }, []);
 
     return (
-        <LottieView
-            ref={animationRef}
-            source={require("../../assets/splash_minimal_tamu.json")}
-            loop={false}
-            resizeMode="cover"
-            onAnimationFinish={() => setIsLoading(false)}
-        />
+        <View className='flex-1'>
+            <StatusBar style="light" />
+            <LottieView
+                ref={animationRef}
+                source={require("../../assets/splash_minimal.json")}
+                loop={false}
+                resizeMode="cover"
+                onAnimationFinish={() => setIsLoading(false)}
+            />
+        </View>
     )
 }
 

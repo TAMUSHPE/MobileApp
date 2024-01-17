@@ -1,70 +1,52 @@
-import { ImageSourcePropType } from "react-native";
+import { PublicUserInfo } from "./User";
+import SHPEtinas from '../../assets/shpetinas.svg';
+import TechnicalAffairs from '../../assets/technical_affairs_logo.svg';
+import DefaultIcon from '../../assets/generic_course_icon.svg';
+
 
 /**
- * These are values that don't need to be stored in firebase
+ * This contains the logo options for committees. If you want to add a new logo, add it here.
+ * These logo must be SVGs. [width, height] is the size of the logo in pixels.
+ * The best width and height is 75x75 for squares and 105x90 for rectangles.
+ * But should be adjusted according to the dimension of added logo
  */
-export const CommitteeConstants = {
-    TECHNICALAFFAIRS: {
-        name: "Technical Affairs",
-        firebaseDocName: "technical-affairs",
-        color: "#777777",
+export const committeeLogos = {
+    shpetinas: {
+        LogoComponent: SHPEtinas,
+        width: 100,
+        height: 100
     },
-    PUBLICRELATIONS: {
-        name: "Public Relations",
-        firebaseDocName: "public-relations",
-        color: "#9337FF",
+    technicalAffairs: {
+        LogoComponent: TechnicalAffairs,
+        width: 75,
+        height: 80
     },
-    MENTORSHPE: {
-        name: "MentorSHPE",
-        firebaseDocName: "mentorshpe",
-        color: "#404e5a",
+    default: {
+        LogoComponent: DefaultIcon,
+        width: 60,
+        height: 60
     },
-    SCHOLASTIC: {
-        name: "Scholastic",
-        firebaseDocName: "scholastic",
-        color: "#ff9a0d",
-    },
-    SHPETINAS: {
-        name: "SHPEtinas",
-        firebaseDocName: "shpetinas",
-        color: "#ffcced",
-    },
-    SECRETARY: {
-        name: "Secretary",
-        firebaseDocName: "secretary",
-        color: "#ffe747",
-    }, 
-    INTERNALAFFAIRS: {
-        name: "Internal Affairs",
-        firebaseDocName: "internal-affairs",
-        color: "#051DDB",
-    },
-    TREASURER: {
-        name: "Treasurer",
-        firebaseDocName: "treasurer",
-        color: "#16ff12",
-    },
-} as const;
+};
 
-// Types for CommitteeConstant values
-export type CommitteeKey = keyof typeof CommitteeConstants;
-export type CommitteeVal = typeof CommitteeConstants[CommitteeKey];
+export const getLogoComponent = (logoName: keyof typeof committeeLogos = 'default') => {
+    return committeeLogos[logoName];
+};
 
-const epic = "TECHNICALAFFAIRS";
-
-CommitteeConstants[epic];
+export type CommitteeLogosName = keyof typeof committeeLogos;
 
 
 export type Committee = {
-    name?: string;
     firebaseDocName?: string;
+    name?: string;
     color?: string,
-    image?: ImageSourcePropType;
     description?: string;
-    headUID?: string;
-    leadUIDs?: string[];
-    memberCount?: number;
+    head?: PublicUserInfo;
+    representatives?: PublicUserInfo[];
+    leads?: PublicUserInfo[];
     memberApplicationLink?: string;
+    representativeApplicationLink?: string;
     leadApplicationLink?: string;
-    key?: CommitteeKey;
+    logo?: keyof typeof committeeLogos;
+    memberCount?: number;
 }
+

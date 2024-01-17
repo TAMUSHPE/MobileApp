@@ -10,7 +10,7 @@ import { Expo, ExpoPushMessage } from 'expo-server-sdk';
  */
 const getMemberTokens = async (uid: string) => {
     console.log("Getting tokens for", uid)
-    
+
     const privateInfoRef = db.doc(`users/${uid}/private/privateInfo`);
     const docSnap = await privateInfoRef.get();
 
@@ -80,7 +80,7 @@ export const sendNotificationOfficeHours = functions.https.onCall(async (data, c
     }
 
     const chunks = expo.chunkPushNotifications(messages);
-    
+
     for (const chunk of chunks) {
         try {
             const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
@@ -96,10 +96,10 @@ export const sendNotificationOfficeHours = functions.https.onCall(async (data, c
  * to resync the member's data in the app.
  */
 export const sendNotificationMemberSHPE = functions.https.onCall(async (data, context) => {
-    const notificationType = data.type; 
+    const notificationType = data.type;
     const uid = data.uid;
     const memberTokens = await getMemberTokens(uid);
-    
+
     const expo = new Expo();
     const messages: ExpoPushMessage[] = [];
     for (const expoToken of memberTokens) {
@@ -114,7 +114,7 @@ export const sendNotificationMemberSHPE = functions.https.onCall(async (data, co
     }
 
     const chunks = expo.chunkPushNotifications(messages);
-    
+
     for (const chunk of chunks) {
         try {
             const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
@@ -131,10 +131,10 @@ export const sendNotificationMemberSHPE = functions.https.onCall(async (data, co
  * to resync the member's data in the app.
  */
 export const sendNotificationResumeConfirm = functions.https.onCall(async (data, context) => {
-    const notificationType = data.type; 
+    const notificationType = data.type;
     const uid = data.uid;
     const memberTokens = await getMemberTokens(uid);
-    
+
     const expo = new Expo();
     const messages: ExpoPushMessage[] = [];
     for (const expoToken of memberTokens) {
@@ -142,14 +142,14 @@ export const sendNotificationResumeConfirm = functions.https.onCall(async (data,
         messages.push({
             to: parsedToken.data,
             sound: 'default',
-            title: "Membership Update",
+            title: "Resume Bank",
             body: `Your resume has been ${notificationType}`,
             data: { type: notificationType },
         });
     }
 
     const chunks = expo.chunkPushNotifications(messages);
-    
+
     for (const chunk of chunks) {
         try {
             const ticketChunk = await expo.sendPushNotificationsAsync(chunk);

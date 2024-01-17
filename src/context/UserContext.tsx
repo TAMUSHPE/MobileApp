@@ -11,6 +11,9 @@
 import React, { useEffect, useState, createContext, ReactNode } from 'react'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types/User"
+import { removeExpoPushToken } from '../helpers/pushNotification';
+import { signOut } from 'firebase/auth';
+import { auth } from '../config/firebaseConfig';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -26,6 +29,21 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [userLoading, setUserLoading] = useState<boolean>(true);
   const [userInfo, setUserInfo] = useState<User | undefined>(undefined)
+
+  const signOutUser = async (hasExpoPushToken: boolean) => {
+    try {
+      if (hasExpoPushToken) {
+        await removeExpoPushToken();
+      }
+      await signOut(auth);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      await AsyncStorage.removeItem('@user');
+      setUserInfo(undefined);
+    }
+  };
+
 
   useEffect(() => {
     const getLocalUser = async () => {
@@ -45,7 +63,7 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ userInfo, setUserInfo, userLoading, setUserLoading }}>
+    <UserContext.Provider value={{ userInfo, setUserInfo, userLoading, setUserLoading, signOutUser }}>
       {children}
     </UserContext.Provider>
   );
@@ -60,6 +78,7 @@ type UserContextType = {
   setUserInfo: React.Dispatch<React.SetStateAction<User | undefined>>
   userLoading: boolean;
   setUserLoading: React.Dispatch<React.SetStateAction<boolean>>
+  signOutUser: (hasExpoPushToken: boolean) => Promise<void>;
 };
 
 export { UserContext, UserProvider };

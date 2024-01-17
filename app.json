@@ -22,7 +22,7 @@
       [
         "expo-document-picker",
         {
-          "iCloudContainerEnvironment": "Access to files in iCloud"
+          "iCloudContainerEnvironment": "Access access to files in iCloud"
         }
       ],
       [
@@ -31,6 +31,12 @@
           "ios": {
             "useFrameworks": "static"
           }
+        }
+      ],
+      [
+        "expo-barcode-scanner",
+        {
+          "cameraPermission": "Allow tamu shpe app to access camera."
         }
       ]
     ],
@@ -42,7 +48,6 @@
     },
     "scheme": "tamu-shpe",
     "android": {
-      "googleServicesFile": "./google-services.json",
       "package": "com.tamu.shpe",
       "permissions": [
         "android.permission.RECORD_AUDIO"
@@ -50,7 +55,6 @@
       "versionCode": 1
     },
     "ios": {
-      "googleServicesFile": "./GoogleService-Info.plist",
       "bundleIdentifier": "com.tamu.shpe",
       "buildNumber": "1"
     },

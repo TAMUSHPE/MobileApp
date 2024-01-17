@@ -1,249 +1,184 @@
-import { Text, ScrollView, View, TextInput, NativeSyntheticEvent, NativeScrollEvent, ActivityIndicator } from 'react-native'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
-import { MembersProps } from '../types/Navigation'
-import { PublicUserInfo, UserFilter } from '../types/User'
+import { MemberListProps } from '../types/Navigation'
 import MemberCard from './MemberCard'
-import { TouchableOpacity } from 'react-native';
+import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../types/User';
+import CustomDropDownMenu, { CustomDropDownMethods } from './CustomDropDown';
 
-
-const MembersList: React.FC<MembersProps> = ({ navigation, handleCardPress, officersList, membersList, loadMoreUsers, hasMoreUser, filter, setFilter, setLastUserSnapshot, canSearch, numLimit, setNumLimit, loading, DEFAULT_NUM_LIMIT = 10 }) => {
+const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, navigation }) => {
     const [search, setSearch] = useState<string>("")
     const [showFilterMenu, setShowFilterMenu] = useState(false);
-    const [officers, setOfficers] = useState<PublicUserInfo[] | null>(null)
-    const [members, setMembers] = useState<PublicUserInfo[] | null>(null)
-    const [localFilter, setLocalFilter] = useState<UserFilter>(filter!);
-    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const [filter, setFilter] = useState<UserFilter>({ major: "", classYear: "", role: "" });
+    const [members, setMembers] = useState<PublicUserInfo[]>(users)
     const inputRef = useRef<TextInput>(null);
-    const [wait, setWait] = useState(false);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const dropDownRefYear = useRef<CustomDropDownMethods>(null);
+    const dropDownRefMajor = useRef<CustomDropDownMethods>(null);
+    const dropDownRefRole = useRef<CustomDropDownMethods>(null);
 
-    useEffect(() => {
-        if (!loading) {
-            searchFilterFunction(search);
-        }
-    }, [loading]);
+    const updateFilteredMembers = (appliedFilter: UserFilter) => {
+        let filtered = users.filter(user => {
+            const matchesSearch = search === "" ||
+                user.name?.toLowerCase().includes(search.toLowerCase()) ||
+                user.displayName?.toLowerCase().includes(search.toLowerCase());
+            const matchesMajor = appliedFilter.major === "" || user.major?.includes(appliedFilter.major);
+            const matchesClassYear = appliedFilter.classYear === "" || user.classYear === appliedFilter.classYear;
+            const matchesRole = appliedFilter.role === "" || (user.roles as any)?.[appliedFilter.role!] === true;
 
-    useEffect(() => {
-        if (officersList) {
-            setOfficers(officersList);
-        }
-        if (membersList) {
-            setMembers(membersList);
-        }
-    }, [membersList, officersList]);
 
-    useEffect(() => {
-        if (search == "") {
-            if (setLastUserSnapshot)
-                setLastUserSnapshot(null);
-            if (setFilter)
-                setFilter(localFilter)
-            setShowFilterMenu(false);
-            if (setNumLimit)
-                setNumLimit(DEFAULT_NUM_LIMIT);
-        }
-    }, [search])
-
-    const resetList = () => {
-        if (setLastUserSnapshot)
-            setLastUserSnapshot(null);
-        if (setFilter)
-            setFilter({ classYear: "", major: "", orderByField: "name" })
-        setLocalFilter({ classYear: "", major: "", orderByField: "name" });
-        setShowFilterMenu(false);
-        if (setNumLimit)
-            setNumLimit(DEFAULT_NUM_LIMIT);
-    }
-
-    const searchFilterFunction = (text: string) => {
-        const textData = text.toUpperCase();
-
-        const filterByFields = (item: PublicUserInfo) => {
-            const itemName = item.name ? item.name.toUpperCase() : '';
-            const itemDisplayName = item.displayName ? item.displayName.toUpperCase() : '';
-            return itemName.includes(textData) || itemDisplayName.includes(textData);
-        };
-
-        const newOfficerData = officersList?.filter(filterByFields) ?? [];
-        const newMemberData = membersList?.filter(filterByFields) ?? [];
-
-        setOfficers(newOfficerData);
-        setMembers(newMemberData);
+            return matchesSearch && matchesMajor && matchesClassYear && matchesRole;
+        });
+        setMembers(filtered);
     };
 
-
-    const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
-        if (loadMoreUsers == undefined) return;
-        if (!hasMoreUser) return;
-        if (search != "") return;
-
-        const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
-            const paddingToBottom = 20;
-            return layoutMeasurement.height + contentOffset.y >=
-                contentSize.height - paddingToBottom;
-        };
-
-        if (!isCloseToBottom(nativeEvent)) return;
-
-        setWait(true);
-    }, [search, loadMoreUsers]);
-
     useEffect(() => {
-        if (wait) {
-            const timer = setTimeout(() => {
-                if (loadMoreUsers)
-                    loadMoreUsers();
-                setWait(false);
-            }, 600);
+        updateFilteredMembers(filter);
+    }, [search]);
 
-            return () => clearTimeout(timer);
+    const handleApplyFilter = async () => {
+        updateFilteredMembers(filter);
+    };
+
+    const handleClearFilter = async () => {
+        handleClearAllSelections();
+        setFilter({ major: "", classYear: "", role: "" });
+        updateFilteredMembers({ major: "", classYear: "", role: "" });
+        setSearch("");
+    };
+
+    const handleClearAllSelections = () => {
+        dropDownRefYear.current?.clearSelection();
+        dropDownRefMajor.current?.clearSelection();
+        dropDownRefRole.current?.clearSelection();
+    };
+
+    const toggleDropdown = (dropdownKey: string) => {
+        if (openDropdown === dropdownKey) {
+            setOpenDropdown(null);
+        } else {
+            setOpenDropdown(dropdownKey);
         }
-    }, [wait, loadMoreUsers]);
+    };
 
-
-    const handleApplyFilter = () => {
-        if (setLastUserSnapshot)
-            setLastUserSnapshot(null);
-        if (setFilter)
-            setFilter(localFilter)
-        setShowFilterMenu(false);
-    }
     return (
-        <ScrollView
-            onScroll={handleScroll}
-            scrollEventThrottle={400}
-        >
-            <View className='mx-4'>
-                {canSearch && (
-                    <View>
-                        <View className='flex-row  mb-4'>
-                            <TouchableOpacity
-                                activeOpacity={1}
-                                className='bg-gray-300 rounded-xl px-4 py-2 flex-row flex-1'
-                                onPress={() => { inputRef.current?.focus() }}
-                            >
-                                <View className='mr-3'>
-                                    <Octicons name="search" size={24} color="grey" />
-                                </View>
-                                <TextInput
-                                    style={{ textAlignVertical: 'top' }}
-                                    ref={inputRef}
-                                    onChangeText={(text) => {
-                                        setSearch(text);
-                                        if (numLimit == null) {
-                                            // This is used after one character is typed in the search bar
-                                            // and does local searching
-                                            searchFilterFunction(text);
-                                        } else {
-                                            // By setting this to null we are telling a useEffect in Members.tsx to grab
-                                            // all user data again so that it can be used for searching
-                                            if (setNumLimit)
-                                                setNumLimit(null);
-                                        }
-
-                                    }}
-                                    value={search}
-                                    underlineColorAndroid="transparent"
-                                    placeholder="Search"
-                                    className='text-lg text-center justify-center'
-                                />
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                onPress={() => setShowFilterMenu(!showFilterMenu)}
-                                className='pl-4 items-center justify-center'
-                            >
-                                <Octicons name="filter" size={27} color="black" />
-                            </TouchableOpacity>
+        <View className='flex-1'>
+            <View className='px-4'>
+                <View className='flex-row mb-4'>
+                    <TouchableOpacity
+                        activeOpacity={1}
+                        className='bg-gray-300 rounded-xl px-4 py-2 flex-row flex-1'
+                        onPress={() => { inputRef.current?.focus() }}
+                    >
+                        <View className='mr-3'>
+                            <Octicons name="search" size={24} color="grey" />
                         </View>
-                        {showFilterMenu && (
-                            <View className='flex-row p-4'>
-                                <View>
-                                    <TextInput
-                                        value={localFilter?.classYear}
-                                        onChangeText={(text) => setLocalFilter({ ...localFilter, classYear: text })}
-                                        placeholder="classYear"
-                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4 mb-4'
-                                    />
-                                    <TextInput
-                                        value={localFilter?.major}
-                                        onChangeText={(text) => setLocalFilter({ ...localFilter, major: text })}
-                                        placeholder="Major"
-                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2 mr-4 mb-4'
-                                    />
+                        <TextInput
+                            style={{ textAlignVertical: 'top' }}
+                            onChangeText={(text) => {
+                                setSearch(text);
+                            }}
+                            ref={inputRef}
+                            value={search}
+                            underlineColorAndroid="transparent"
+                            placeholder="Search"
+                            className='flex-1 text-lg justify-center'
+                        />
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => setShowFilterMenu(!showFilterMenu)}
+                        className='pl-4 items-center justify-center'
+                        style={{ minWidth: 45 }}
+                    >
+                        <Octicons name="filter" size={27} color="black" />
+                    </TouchableOpacity>
+                </View>
 
-                                    <Text>OrderBy:(name/points)</Text>
-                                    <TextInput
-                                        value={localFilter?.orderByField}
-                                        onChangeText={(text) => setLocalFilter({ ...localFilter, orderByField: text })}
-                                        placeholder="OrderBy"
-                                        className='bg-white border-black border-2 rounded-md text-xl w-28 py-1 pl-2'
-                                    />
-                                </View>
-                                <View>
-                                    <TouchableOpacity
-                                        onPress={() => handleApplyFilter()}
-                                        className='items-center justify-center bg-pale-blue w-14 h-10 rounded-lg'>
-                                        <Text className='text-bold text-xl'>Apply</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            resetList()
-                                            setSearch("");
-                                        }}
-                                        className='items-center justify-center bg-red-600 w-14 h-10 rounded-lg'>
-                                        <Text className='text-bold text-xl'>Clear</Text>
-                                    </TouchableOpacity>
-                                </View>
+                {showFilterMenu && (
+                    <View className='flex-row py-4'>
+                        <View className='flex-1 space-y-4'>
+                            <View className='justify-start flex-row z-10'>
+                                <CustomDropDownMenu
+                                    data={classYears}
+                                    onSelect={(item) => setFilter({ ...filter, classYear: item.iso || "" })}
+                                    searchKey="year"
+                                    label="Class Year"
+                                    isOpen={openDropdown === 'year'}
+                                    onToggle={() => toggleDropdown('year')}
+                                    displayType='iso'
+                                    ref={dropDownRefYear}
+                                    disableSearch
+                                    containerClassName='mr-1'
+                                />
+                                <CustomDropDownMenu
+                                    data={MAJORS}
+                                    onSelect={(item) => setFilter({ ...filter, major: item.iso || "" })}
+                                    searchKey="major"
+                                    label="Major"
+                                    isOpen={openDropdown === 'major'}
+                                    onToggle={() => toggleDropdown('major')}
+                                    displayType='iso'
+                                    ref={dropDownRefMajor}
+                                    containerClassName='ml-1'
+                                />
+                                <TouchableOpacity
+                                    onPress={() => handleApplyFilter()}
+                                    className='items-center justify-center bg-pale-blue py-2 w-20 rounded-lg ml-3'>
+                                    <Text className='text-white font-bold text-xl'>Apply</Text>
+                                </TouchableOpacity>
                             </View>
-                        )}
+                            <View className='justify-start flex-row'>
+                                <CustomDropDownMenu
+                                    data={ROLESDROPDOWN}
+                                    onSelect={(item) => setFilter({ ...filter, role: item.iso || "" })}
+                                    searchKey="role"
+                                    label="Role"
+                                    isOpen={openDropdown === 'role'}
+                                    onToggle={() => toggleDropdown('role')}
+                                    displayType='value'
+                                    ref={dropDownRefRole}
+                                    disableSearch
+                                    containerClassName='mr-2'
+                                    dropDownClassName='h-44'
+                                />
+                                <View className='w-28 mr-4'></View>
+                                <TouchableOpacity
+                                    onPress={() => handleClearFilter()}
+                                    className='items-center justify-center py-2 w-20 rounded-lg ml-3'>
+                                    <Text className='font-bold text-xl text-pale-blue'>Rest</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
                     </View>
                 )}
-
-                {!loading && officers?.map((userData, index) => {
-                    return (
-                        <MemberCard
-                            key={index}
-                            userData={userData}
-                            navigation={navigation}
-                            handleCardPress={() => { handleCardPress(userData.uid!) }}
-                        />
-                    )
-                })}
-
-                {!loading && members?.map((userData, index) => {
-                    if (!userData.name) {
-                        return null; // this is a hacky fix for user that have not completed registration
-                    }
-                    return (
-                        <MemberCard
-                            key={index}
-                            userData={userData}
-                            navigation={navigation}
-                            handleCardPress={() => handleCardPress(userData.uid!)}
-                        />
-                    );
-                })
-                }
-
-                {loading && (
-                    <View className='pb-6 items-center justify-center'>
-                        <ActivityIndicator size="large" />
-                    </View>
-                )}
-
-                {(!hasMoreUser && !loading) && (
-                    <View className='pb-6 items-center justify-center'>
-                        <Text>
-                            End of Users
-                        </Text>
-                    </View>
-                )}
-
-
-                <Text className='pb-20'></Text>
             </View>
-        </ScrollView>
+
+            <ScrollView className='-z-20'>
+                <View className='px-4'>
+                    {members?.map((userData, index) => {
+                        if (!userData.name) {
+                            return null;
+                        }
+                        return (
+                            <MemberCard
+                                key={index}
+                                userData={userData}
+                                navigation={navigation}
+                                handleCardPress={() => handleCardPress(userData.uid!)}
+                            />
+                        );
+                    })}
+                </View>
+            </ScrollView>
+        </View>
     )
 }
+
+const ROLESDROPDOWN = [
+    { role: 'Officer', iso: 'officer' },
+    { role: 'Representative', iso: 'representative' },
+    { role: 'Lead', iso: 'lead' },
+];
+
 
 export default MembersList
