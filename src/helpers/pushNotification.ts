@@ -2,7 +2,9 @@ import { Platform} from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
+import { auth, db } from '../config/firebaseConfig';
 import { appendExpoPushToken } from '../api/firebaseUtils';
+import { arrayRemove, doc, setDoc } from 'firebase/firestore';
 
 // Sets a default notification handler. It specifies how to handle the notification
 // when it is received while the app is in the foreground.
@@ -65,5 +67,20 @@ const manageNotificationPermissions  = async () => {
     console.error('Notification permission error:', error);
   }
 };
+
+export const removeExpoPushToken = async () => {
+  try {
+      const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
+      if (expoPushToken) {
+          const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
+          await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true });
+      }
+  } catch (error) {
+      console.error("Error removing token from Firestore: ", error);
+  } finally {
+      await AsyncStorage.removeItem('@expoPushToken');
+  }
+}
+
 
 export default manageNotificationPermissions ;

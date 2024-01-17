@@ -1,6 +1,12 @@
-import * as admin from 'firebase-admin';
+import { initializeApp } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
+import { getStorage } from 'firebase-admin/storage';
 
-admin.initializeApp();
-export const db = admin.firestore();
-export const auth = admin.auth();
-export const bucket = admin.storage().bucket('gs://tamushpemobileapp.appspot.com');
+// Initialize Firebase Admin
+const adminApp = initializeApp();
+
+// Get instances of Firestore, Auth, and Storage from the Firebase Admin app
+export const db = getFirestore(adminApp);
+export const auth = getAuth(adminApp);
+export const bucket = getStorage(adminApp).bucket('gs://tamushpemobileapp.appspot.com');

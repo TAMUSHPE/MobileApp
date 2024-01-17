@@ -6,10 +6,22 @@
     "development": {
       "distribution": "internal",
       "android": {
-        "gradleCommand": ":app:assembleDebug"
+        "gradleCommand": ":app:assembleDebug",
+        "env": {
+          "GOOGLE_SERVICES_FILE": "GOOGLE_SERVICES_JSON",
+          "FLICKER_API_KEY": "FLICKER_API_KEY",
+          "FLICKER_USER_ID": "FLICKER_USER_ID",
+          "GOOGLE_PLACES_API_KEY": "GOOGLE_PLACES_API_KEY"
+        }
       },
       "ios": {
-        "buildConfiguration": "Debug"
+        "buildConfiguration": "Debug",
+        "env": {
+          "GOOGLE_SERVICE_INFO_PLIST": "GOOGLE_SERVICE_INFO_PLIST",
+          "FLICKER_API_KEY": "FLICKER_API_KEY",
+          "FLICKER_USER_ID": "FLICKER_USER_ID",
+          "GOOGLE_PLACES_API_KEY": "GOOGLE_PLACES_API_KEY"
+        }
       },
       "channel": "development"
     },
@@ -19,7 +31,14 @@
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "GOOGLE_SERVICES_FILE": "GOOGLE_SERVICES_JSON",
+        "GOOGLE_SERVICE_INFO_PLIST": "GOOGLE_SERVICE_INFO_PLIST",
+        "FLICKER_API_KEY": "FLICKER_API_KEY",
+        "FLICKER_USER_ID": "FLICKER_USER_ID",
+        "GOOGLE_PLACES_API_KEY": "GOOGLE_PLACES_API_KEY"
+      }
     },
     "development-sim": {
       "distribution": "internal",
