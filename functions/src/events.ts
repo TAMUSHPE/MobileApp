@@ -25,6 +25,8 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     const eventLog: SHPEEventLog = (await eventLogDocRef.get()).data() ?? {
         uid: context.auth.uid,
         eventId: eventDocRef.id,
+        creationTime: Timestamp.fromMillis(Date.now()),
+        verified: true,
     };
 
     if (eventLog !== undefined && eventLog.signInTime !== undefined) {
@@ -78,6 +80,8 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     const eventLog: SHPEEventLog = (await eventLogDocRef.get()).data() ?? {
         uid: context.auth.uid,
         eventId: eventDocRef.id,
+        creationTime: Timestamp.fromMillis(Date.now()),
+        verified: true,
     };
 
     if (eventLog !== undefined && eventLog.signOutTime !== undefined) {
