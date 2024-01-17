@@ -1,122 +1,242 @@
-import { View, Text } from 'react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { MembersStackParams } from '../types/Navigation';
-import MembersList from '../components/MembersList';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, NativeScrollEvent } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import { Octicons } from '@expo/vector-icons';
+import { MembersStackParams } from '../types/Navigation'
+import MemberCard from '../components/MemberCard'
+import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../types/User';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { getOfficers, getUserForMemberList } from '../api/firebaseUtils';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
-import { fetchUserForList } from '../api/firebaseUtils';
-import { PublicUserInfo, UserFilter } from '../types/User';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import CustomDropDownMenu, { CustomDropDownMethods } from '../components/CustomDropDown';
 
-const MembersScreen = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
-    const [officers, setOfficers] = useState<PublicUserInfo[]>([])
-    const [members, setMembers] = useState<PublicUserInfo[]>([])
-    const [lastUserSnapshot, setLastUserSnapshot] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-    const lastUserSnapshotRef = useRef<QueryDocumentSnapshot<DocumentData> | null>(null);
-    const [filter, setFilter] = useState<UserFilter>({ classYear: "", major: "", orderByField: "name" });
-    const [hasMoreUser, setHasMoreUser] = useState<boolean>(true);
-    const [loadingOfficer, setLoadingOfficer] = useState<boolean>(true);
-    const [loadingMember, setLoadingMember] = useState<boolean>(true);
-    const [loading, setLoading] = useState<boolean>(true);
+const Members = ({ navigation }: NativeStackScreenProps<MembersStackParams>) => {
+    const [showFilterMenu, setShowFilterMenu] = useState(false);
+    const [filter, setFilter] = useState<UserFilter>({ major: "", classYear: "", role: "" });
+    const [officers, setOfficers] = useState<PublicUserInfo[]>([]);
+    const [displayedOfficers, setDisplayedOfficers] = useState<PublicUserInfo[]>();
+    const [members, setMembers] = useState<PublicUserInfo[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [lastUserSnapshot, setLastUserSnapshot] = useState<QueryDocumentSnapshot<DocumentData>>();
+    const [hasMoreUser, setHasMoreUser] = useState(true);
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const dropDownRefYear = useRef<CustomDropDownMethods>(null);
+    const dropDownRefMajor = useRef<CustomDropDownMethods>(null);
+    const dropDownRefRole = useRef<CustomDropDownMethods>(null);
 
-    const [initialLoad, setInitialLoad] = useState(true);
-    const [numLimit, setNumLimit] = useState<number | null>(10);
+    const loadUsers = async (appliedFilter: UserFilter, lastSnapshot?: QueryDocumentSnapshot<DocumentData> | null, numLimit: number | null = 15) => {
+        setLoading(true);
 
-    const handleCardPress = (uid: string): string | void => {
-        navigation.navigate("PublicProfile", { uid });
+        const response = await getUserForMemberList({
+            lastUserSnapshot: lastSnapshot,
+            numLimit: numLimit,
+            filter: appliedFilter,
+        });
+
+
+        setHasMoreUser(response.hasMoreUser);
+
+        if (response.members.length > 0) {
+            setLastUserSnapshot(response.lastSnapshot!);
+            setMembers(prevMembers => [...prevMembers, ...response.members.map(doc => ({ ...doc.data(), uid: doc.id }))]);
+        }
+
+        setLoading(false);
     };
 
     useEffect(() => {
-        if (!loadingOfficer && !loadingMember) {
-            setLoading(false);
-        } else {
-            setLoading(true);
+        const fetchOfficers = async () => {
+            const officers = await getOfficers() as PublicUserInfo[];
+            setOfficers(officers);
+            setDisplayedOfficers(officers);
         }
-    }, [loadingOfficer, loadingMember])
 
-    useEffect(() => {
-        const initializeData = async () => {
-            await loadMoreUsers();
-            await loadOfficers();
-        };
-
-        initializeData().then(() => {
-            setInitialLoad(false);
-        });
+        loadUsers(filter);
+        fetchOfficers();
     }, []);
 
-    useEffect(() => {
-        lastUserSnapshotRef.current = lastUserSnapshot;
-    }, [lastUserSnapshot]);
+    const applyOfficerFilter = () => {
+        const filtered = officers.filter(officer => {
+            const matchesMajor = filter.major === "" || officer.major === filter.major;
+            const matchesClassYear = filter.classYear === "" || officer.classYear === filter.classYear;
+            const matchesRole = filter.role === "" || officer.roles![filter.role as keyof typeof officer.roles];
 
-    /**
-     * This is how data is being loaded. When numLimit changes data is loaded accordingly.
-     */
-    useEffect(() => {
-        const resetData = async () => {
-            setMembers([]);
-            setOfficers([]);
-            setLastUserSnapshot(null);
-        };
+            return matchesMajor && matchesClassYear && matchesRole;
+        });
+        setDisplayedOfficers(filtered);
+    };
 
-        if (!initialLoad) {
-            resetData().then(() => {
-                loadMoreUsers();
-                loadOfficers();
-            });
+    const handleApplyFilter = async () => {
+        if (filter.classYear === "" && filter.major === "" && filter.role === "") {
+            return;
         }
+        setMembers([]);
+        setHasMoreUser(false);
+        await loadUsers(filter, null, null);
+        applyOfficerFilter();
+    };
 
-    }, [filter, numLimit]);
+    const handleResetFilter = async () => {
+        setMembers([]);
+        setHasMoreUser(true);
+        handleClearAllSelections();
+        setFilter({ major: "", classYear: "", role: "" });
+        await loadUsers({ major: "", classYear: "", role: "" });
+        setDisplayedOfficers(officers);
+    };
 
-    const loadMoreUsers = async () => {
-        setLoadingMember(true);
-        const newMembers = await fetchUserForList({ lastUserSnapshot: lastUserSnapshotRef.current, numLimit: numLimit, filter: filter });
-        if (newMembers.members.length > 0) {
-            const lastMember = newMembers.members[newMembers.members.length - 1];
-            setLastUserSnapshot(lastMember);
-            setMembers(prevMembers => [
-                ...prevMembers,
-                ...newMembers.members.map(doc => ({ ...doc.data(), uid: doc.id }))
-            ]);
+    const handleClearAllSelections = () => {
+        dropDownRefYear.current?.clearSelection();
+        dropDownRefMajor.current?.clearSelection();
+        dropDownRefRole.current?.clearSelection();
+    };
+
+    const toggleDropdown = (dropdownKey: string) => {
+        if (openDropdown === dropdownKey) {
+            setOpenDropdown(null);
+        } else {
+            setOpenDropdown(dropdownKey);
         }
-        setHasMoreUser(newMembers.hasMoreUser!);
-        setLoadingMember(false);
-    }
+    };
 
-    const loadOfficers = async () => {
-        setLoadingOfficer(true);
-        const officers = await fetchUserForList({ isOfficer: true, filter: filter });
-        if (officers.members.length > 0) {
-            setOfficers(officers.members.map(doc => ({ ...doc.data(), uid: doc.id })));
-        }
-        setLoadingOfficer(false);
-    }
+    const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
+        const paddingToBottom = 20;
+        return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
+    };
 
     return (
-        <SafeAreaView>
-            <View className='w-full mt-4 justify-center items-center'>
-                <Text className='text-3xl h-10'>Users</Text>
+        <SafeAreaView className='flex-1' edges={["top"]}>
+            <View className='px-4 mt-4'>
+                <Text className='font-bold text-xl'>Members</Text>
+                <View className='flex-row mb-4 justify-end'>
+                    <TouchableOpacity
+                        onPress={() => setShowFilterMenu(!showFilterMenu)}
+                        className='px-4 items-center justify-center'
+                        style={{ minWidth: 45 }}
+                    >
+                        {showFilterMenu ? (
+                            <Octicons name="x" size={27} color="black" />
+                        ) : (
+                            <Octicons name="filter" size={27} color="black" />
+                        )}
+                    </TouchableOpacity>
+                </View>
+
+                {showFilterMenu && (
+                    <View className='flex-row mt-2 mb-8'>
+                        <View className='flex-1 space-y-4'>
+                            <View className='flex-row z-10' >
+                                <CustomDropDownMenu
+                                    data={classYears}
+                                    onSelect={(item) => setFilter({ ...filter, classYear: item.iso || "" })}
+                                    searchKey="year"
+                                    label="Class Year"
+                                    isOpen={openDropdown === 'year'}
+                                    onToggle={() => toggleDropdown('year')}
+                                    displayType='iso'
+                                    ref={dropDownRefYear}
+                                    disableSearch
+                                    containerClassName='mr-1'
+                                />
+                                <CustomDropDownMenu
+                                    data={MAJORS}
+                                    onSelect={(item) => setFilter({ ...filter, major: item.iso || "" })}
+                                    searchKey="major"
+                                    label="Major"
+                                    isOpen={openDropdown === 'major'}
+                                    onToggle={() => toggleDropdown('major')}
+                                    displayType='iso'
+                                    ref={dropDownRefMajor}
+                                    containerClassName='ml-1'
+                                />
+                                <TouchableOpacity
+                                    onPress={() => handleApplyFilter()}
+                                    className='items-center justify-center bg-pale-blue py-2 w-20 rounded-lg ml-3'>
+                                    <Text className='text-white font-bold text-xl'>Apply</Text>
+                                </TouchableOpacity>
+                            </View>
+                            <View className='justify-start flex-row'>
+                                <CustomDropDownMenu
+                                    data={ROLESDROPDOWN}
+                                    onSelect={(item) => setFilter({ ...filter, role: item.iso || "" })}
+                                    searchKey="role"
+                                    label="Role"
+                                    isOpen={openDropdown === 'role'}
+                                    onToggle={() => toggleDropdown('role')}
+                                    displayType='value'
+                                    ref={dropDownRefRole}
+                                    disableSearch
+                                    containerClassName='mr-2'
+                                    dropDownClassName='h-44'
+                                />
+                                <View className='w-20 mr-4'></View>
+                                <TouchableOpacity
+                                    onPress={() => handleResetFilter()}
+                                    className='items-center justify-center py-2 w-20 rounded-lg ml-3'>
+                                    <Text className='font-bold text-xl text-pale-blue'>Reset</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                )}
             </View>
-            <MembersList
-                navigation={navigation}
-                handleCardPress={handleCardPress}
-                officersList={officers}
-                membersList={members}
-                loadMoreUsers={loadMoreUsers}
-                hasMoreUser={hasMoreUser}
-                setFilter={setFilter}
-                filter={filter}
-                setLastUserSnapshot={setLastUserSnapshot}
-                canSearch={true}
-                setNumLimit={setNumLimit}
-                numLimit={numLimit}
-                loading={loading}
-                DEFAULT_NUM_LIMIT={10}
-            />
-        </SafeAreaView >
+
+            <ScrollView
+                className='-z-10'
+                onScroll={({ nativeEvent }) => {
+                    if (isCloseToBottom(nativeEvent) && !loading && hasMoreUser) {
+                        if (lastUserSnapshot) {
+                            loadUsers(filter, lastUserSnapshot);
+                        } else {
+                            loadUsers(filter, undefined);
+                        }
+                    }
+                }}
+                scrollEventThrottle={400}
+            >
+                <View className='px-4'>
+                    {displayedOfficers?.map((userData, index) => {
+                        if (!userData.name) {
+                            return null; // this is a hacky fix for user that have not completed registration
+                        }
+                        return (
+                            <MemberCard
+                                key={index}
+                                userData={userData}
+                                navigation={navigation}
+                                handleCardPress={() => { navigation.navigate("PublicProfile", { uid: userData.uid! }) }}
+                            />
+                        );
+                    })}
+                    {members?.map((userData, index) => {
+                        if (!userData.name) {
+                            return null; // this is a hacky fix for user that have not completed registration
+                        }
+                        return (
+                            <MemberCard
+                                key={index}
+                                userData={userData}
+                                navigation={navigation}
+                                handleCardPress={() => { navigation.navigate("PublicProfile", { uid: userData.uid! }) }}
+                            />
+                        );
+                    })}
+
+                    {(loading && hasMoreUser) && (
+                        <View className='flex justify-center my-4'>
+                            <ActivityIndicator size="large" />
+                        </View>
+                    )}
+                </View>
+            </ScrollView>
+        </SafeAreaView>
     )
 }
 
+const ROLESDROPDOWN = [
+    { role: 'Officer', iso: 'officer' },
+    { role: 'Representative', iso: 'representative' },
+    { role: 'Lead', iso: 'lead' },
+];
 
-
-export default MembersScreen;
+export default Members

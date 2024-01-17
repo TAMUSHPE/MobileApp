@@ -1,6 +1,4 @@
 import { Timestamp, FieldValue } from 'firebase/firestore';
-import { CommitteeKey } from './Committees';
-
 /**
  * This interface represents the roles a user has. These values will only determine what the app looks like and **not** firebase read/write/edit/delete permissions.
  */
@@ -12,6 +10,7 @@ export interface Roles {
     representative?: boolean;
     lead?: boolean;
     secretary?: boolean;
+    customTitle?: string;
 };
 
 export type RankChange = "decreased" | "same" | "increased";
@@ -35,14 +34,15 @@ export interface PublicUserInfo {
     bio?: string;
     major?: string;
     classYear?: string;
-    committees?: Array<CommitteeKey | string>;
+    committees?: string[];
     pointsRank?: number;
     rankChange?: RankChange;
     nationalExpiration?: string;
     chapterExpiration?: string;
     resumeVerified?: boolean;
-    // Google Sheets parameters
+    interests?: string[];
     points?: number;
+    pointsThisMonth?: number;
 };
 
 /**
@@ -61,6 +61,7 @@ export interface PrivateUserInfo {
     completedAccountSetup?: boolean;
     settings?: AppSettings;
     expoPushTokens?: string[];
+    expirationDate?: Date;
 };
 
 
@@ -68,7 +69,7 @@ export interface PrivateUserInfo {
  * Data which is used to moderate a user's functionality in the app.
  * This information should be viewable by the user and app admins. This data should NOT be able to be modified by the user. 
  */
-export interface UserModerationData{
+export interface UserModerationData {
     canUseKnockOnWall?: boolean;
 };
 
@@ -97,5 +98,45 @@ export interface OfficerStatus extends MemberStatus {
 export type UserFilter = {
     classYear: string,
     major: string,
-    orderByField: string
+    role?: string
 }
+
+const generateClassYears = (): { year: string }[] => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+
+    for (let i = currentYear - 5; i <= currentYear + 8; i++) {
+        years.push({ year: i.toString(), iso: i.toString() });
+    }
+
+    return years;
+};
+
+export const classYears = generateClassYears();
+
+export const MAJORS: Array<{ major: string, iso: string }> = [
+    { major: 'Aerospace Engineering', iso: 'AERO' },
+    { major: 'Architectural Engineering', iso: 'AREN' },
+    { major: 'Biomedical Engineering', iso: 'BMEN' },
+    { major: 'Chemical Engineering', iso: 'CHEN' },
+    { major: 'Civil Engineering', iso: 'CHEN' },
+    { major: 'Computer Engineering', iso: 'CPEN' },
+    { major: 'Computer Science', iso: 'CSCE' },
+    { major: 'Computing', iso: 'COMP' },
+    { major: 'Data Engineering', iso: 'EC' },
+    { major: 'Electrical Engineering', iso: 'ECEN' },
+    { major: 'Electronic Systems Engineering Technology', iso: 'ESET' },
+    { major: 'Environmental Engineering', iso: 'EVEN' },
+    { major: 'Industrial & Systems Engineering', iso: 'ISEN' },
+    { major: 'Industrial Distribution', iso: 'IDIS' },
+    { major: 'Information Technology Service Management', iso: 'ITSV' },
+    { major: 'Interdisciplinary Engineering', iso: 'ITDE' },
+    { major: 'Manufacturing & Mechanical Engineering Technology', iso: 'MMET' },
+    { major: 'Materials Science & Engineering', iso: 'MSEN' },
+    { major: 'Mechanical Engineering', iso: 'MEEN' },
+    { major: 'Multidisciplinary Engineering Technology', iso: 'MXET' },
+    { major: 'Nuclear Engineering', iso: 'NUEN' },
+    { major: 'Ocean Engineering', iso: 'OCEN' },
+    { major: 'Petroleum Engineering', iso: 'PETE' },
+    { major: 'Technology Management', iso: 'TCMG' },
+];
