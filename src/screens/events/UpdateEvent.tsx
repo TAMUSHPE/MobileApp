@@ -3,10 +3,9 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CommitteeMeeting, EventType, GeneralMeeting, IntramuralEvent, CustomEvent, monthNames, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop, WorkshopType } from '../../types/Events';
-import { destroyEvent, getCommittees, setEvent, uploadFileToFirebase } from '../../api/firebaseUtils';
+import { CommitteeMeeting, EventType, GeneralMeeting, IntramuralEvent, CustomEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop, WorkshopType } from '../../types/Events';
+import { destroyEvent, getCommittees, setEvent } from '../../api/firebaseUtils';
 import { Octicons } from '@expo/vector-icons';
-import { Picker } from '@react-native-picker/picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Images } from '../../../assets';
 import { GeoPoint, Timestamp } from 'firebase/firestore';
@@ -14,16 +13,10 @@ import { UserContext } from '../../context/UserContext';
 import { MillisecondTimes, formatDate, formatTime } from '../../helpers/timeUtils';
 import { StatusBar } from 'expo-status-bar';
 import DismissibleModal from '../../components/DismissibleModal';
-import { UploadTask, getDownloadURL } from 'firebase/storage';
-import InteractButton from '../../components/InteractButton';
-import { getBlobFromURI, selectImage } from '../../api/fileSelection';
-import * as ImagePicker from "expo-image-picker";
-import { CommonMimeTypes, validateFileBlob } from '../../helpers';
-import ProgressBar from '../../components/ProgressBar';
-import { auth } from '../../config/firebaseConfig';
 import { Committee } from '../../types/Committees';
 import { PublicUserInfo } from '../../types/User';
 import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
+import LocationPicker from '../../components/LocationPicker';
 
 const UpdateEvent = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
@@ -42,22 +35,17 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [showDeletionConfirmation, setShowDeletionConfirmation] = useState<boolean>(false);
-    const [currentUploadTask, setCurrentUploadTask] = useState<UploadTask>();
-    const [isUploading, setIsUploading] = useState<boolean>();
-    const [localImageURI, setLocalImageURI] = useState<string>();
-    const [uploadProgress, setUploadProgress] = useState<number>(0);
-    const [bytesTransferred, setBytesTransferred] = useState<number>();
-    const [totalBytes, setTotalBytes] = useState<number>();
     const dropDownRefCommittee = useRef<CustomDropDownMethods>(null);
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
     const [eventNameEditScreen, setEventNameEditScreen] = useState<string | undefined | null>(event.name);
+
 
 
     // Form Data Hooks
     const [name, setName] = useState<string | undefined | null>(event.name);
     const [description, setDescription] = useState<string | undefined | null>(event.description);
     const [tags, setTags] = useState<string[] | undefined | null>(event.tags);
-    const [eventType, setEventType] = useState<EventType | undefined | null>(event.eventType);
     const [startTime, setStartTime] = useState<Timestamp | undefined | null>(event.startTime);
     const [endTime, setEndTime] = useState<Timestamp | undefined | null>(event.endTime);
     const [startTimeBuffer, setStartTimeBuffer] = useState<number | undefined | null>(event.startTimeBuffer);
@@ -68,6 +56,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [pointsPerHour, setPointsPerHour] = useState<number | undefined | null>(event.pointsPerHour);
     const [locationName, setLocationName] = useState<string | undefined | null>(event.locationName);
     const [geolocation, setGeolocation] = useState<GeoPoint | undefined | null>(event.geolocation);
+    const [geofencingRadius, setGeofencingRadius] = useState<number | undefined | null>(event.geofencingRadius);
     const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType);
     const [committee, setCommittee] = useState<string | undefined | null>(event.committee);
     const [creator, setCreator] = useState<PublicUserInfo | undefined | null>(event.creator);
@@ -136,6 +125,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 pointsPerHour,
                 locationName,
                 geolocation,
+                geofencingRadius,
                 workshopType,
                 committee,
                 creator,
@@ -218,7 +208,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     <View className='absolute w-full h-full bg-[#00000055]' />
 
                     <View className='absolute bottom-0 px-5 py-3'>
-                        <Text className="text-4xl font-bold text-white">{eventNameEditScreen}{changesMade && ' *'}</Text>
+                        <Text className="text-3xl font-bold text-white">{eventNameEditScreen}{changesMade && ' *'}</Text>
                         <Text className='text-lg text-white font-bold'>Edit Event</Text>
                     </View>
 
@@ -258,6 +248,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 {/* Form */}
                 <View className='px-4 my-8'>
                     {/* Event Name */}
+                    <Text className='text-2xl font-bold'>General Details</Text>
                     <KeyboardAvoidingView behavior='position' className='py-3'>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Name <Text className='text-[#f00]'>*</Text></Text>
                         <TextInput
@@ -339,10 +330,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                         value={startTime?.toDate() ?? new Date()}
                                         mode='time'
                                         onChange={(_, date) => {
-                                            if (isUploading) {
-                                                Alert.alert("Image upload in progress.", "Please wait for image to finish uploading.")
-                                            }
-                                            else if (!date) {
+                                            if (!date) {
                                                 console.warn("Date picked is undefined.")
                                             }
                                             else if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
@@ -461,22 +449,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         />
                     </KeyboardAvoidingView>
 
-                    {/* Location Name */}
-                    <KeyboardAvoidingView behavior='position' >
-                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Location Name</Text>
-                        <TextInput
-                            className={`text-lg p-2 rounded mb-4 ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                            value={locationName || ""}
-                            placeholder='Ex. Zach 420'
-                            placeholderTextColor={darkMode ? "#DDD" : "#777"}
-                            onChangeText={(text) => {
-                                setLocationName(text)
-                                setChangesMade(true);
-                            }}
-                            keyboardType='ascii-capable'
-                            enterKeyHint='enter'
-                        />
-                    </KeyboardAvoidingView>
+                    <Text className='text-2xl font-bold mt-8 mb-4'>Specific Details</Text>
 
                     <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Associated Committee</Text>
                     <View className='flex-row flex-wrap mb-6 z-30'>
@@ -496,7 +469,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             selectedItemProp={event.committee ? { value: event.committee, iso: event.committee } : null}
                         />
                     </View>
-                    <View className='flex-row flex-wrap mb-16'>
+                    <View className='flex-row flex-wrap mb-4'>
                         {event.signInPoints !== undefined &&
                             <View className='w-[48%] mr-[2%] z-30'>
                                 <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Signing In <Text className='text-[#f00]'>*</Text></Text>
@@ -536,7 +509,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             </View>
                         }
                         {event.pointsPerHour !== undefined &&
-                            <View className={`w-[48%] mr-[2%] ${(event.signOutPoints != undefined && event.signInPoints != undefined) && "mt-16"}`}>
+                            <View className={`w-[48%] mr-[2%] ${(event.signOutPoints != undefined && event.signInPoints != undefined) && "mt-9"}`}>
                                 <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Hourly Points<Text className='text-[#f00]'>*</Text></Text>
                                 <CustomDropDownMenu
                                     data={POINTS}
@@ -557,7 +530,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     </View>
 
                     {event.workshopType !== undefined &&
-                        <View className='mb-16 -z-10'>
+                        <View className='-z-10'>
                             <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Workshop Type <Text className='text-[#f00]'>*</Text></Text>
                             <CustomDropDownMenu
                                 data={[
@@ -586,7 +559,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     }
 
                     <TouchableOpacity
-                        className='flex-row mt-1x items-center -z-20'
+                        className='flex-row mt-9 items-center -z-20'
                         onPress={() => {
                             setNationalConventionEligible(!nationalConventionEligible)
                             setChangesMade(true);
@@ -599,6 +572,36 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         </View>
                         <Text className='ml-2 text-lg'>Eligible for National Convention</Text>
                     </TouchableOpacity>
+
+                    <View className='-z-20'>
+                        <Text className='text-2xl font-bold mt-4 mb-4'>Location Details</Text>
+                    </View>
+
+                    {/* Location Name */}
+                    <View className='-z-20'>
+                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Location Name</Text>
+                        <TextInput
+                            className={`text-lg p-2 rounded mb-4 ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                            value={locationName || ""}
+                            placeholder='Ex. Zach 420'
+                            placeholderTextColor={darkMode ? "#DDD" : "#777"}
+                            onChangeText={(text) => {
+                                setLocationName(text)
+                                setChangesMade(true);
+                            }}
+                            keyboardType='ascii-capable'
+                            enterKeyHint='enter'
+                        />
+                    </View>
+
+                    <View className='-z-20'>
+                        <TouchableOpacity
+                            className='bg-pale-blue w-[60%] mt-1 mb-8 px-4 py-2 items-center justify-center rounded-lg '
+                            onPress={() => setShowLocationPicker(true)}
+                        >
+                            <Text className='text-white text-lg font-semibold'>Open Geolocation Editor</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </ScrollView>
 
@@ -639,6 +642,28 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     </View>
                 </View>
             </DismissibleModal>
+
+            <Modal visible={showLocationPicker}>
+                <SafeAreaView edges={['top']} className='flex-1 mt-12'>
+                    <TouchableOpacity
+                        className='absolute right-0 bottom-0 z-50 mr-3 mb-20 bg-pale-blue  px-4 py-2 rounded-lg'
+                        onPress={() => { setShowLocationPicker(false) }}
+                    >
+                        <Text className='text-white text-2xl font-semibold'>Done</Text>
+                    </TouchableOpacity>
+                    <Text className='text-2xl font-semibold ml-5 mb-5 text-center'>Update Event Location </Text>
+                    <LocationPicker
+                        onLocationChange={(location, radius) => {
+                            if (location?.geometry.location.lat && location?.geometry.location.lng) {
+                                setGeolocation(new GeoPoint(location?.geometry.location.lat, location?.geometry.location.lng));
+                            }
+                            setGeofencingRadius(radius);
+                            setChangesMade(true);
+                        }}
+                        initialCoordinate={geolocation ? { latitude: geolocation.latitude, longitude: geolocation.longitude } : undefined}
+                    />
+                </SafeAreaView>
+            </Modal>
 
             {/* Start Date Pickers */}
             {Platform.OS == 'android' && showStartDatePicker &&
@@ -732,14 +757,6 @@ const UpdateEvent = ({ navigation }: EventProps) => {
         </View>
     )
 }
-
-const reverseFormattedFirebaseName = (firebaseName: string) => {
-    return firebaseName
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-};
-
 
 const createCommitteeList = (committees: Committee[]) => {
     return committees.map(committee => ({

@@ -8,11 +8,12 @@ import Slider from '@react-native-community/slider';
 import { TouchableOpacity } from 'react-native';
 import { Octicons } from '@expo/vector-icons';
 
-const initialCoordinate = { latitude: 30.621160236499136, longitude: -96.3403560168198 } // Zachary Engineering Education Complex
+const zacharyCoords = { latitude: 30.621160236499136, longitude: -96.3403560168198 }
 const initialMapDelta = { latitudeDelta: 0.0922, longitudeDelta: 0.0421 } // Size of map view
 
-const LocationPicker = ({ onLocationChange }: {
+const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords }: {
     onLocationChange: (locationDetails: GooglePlaceDetail | undefined | null, radius: number | undefined) => void
+    initialCoordinate?: LatLng
 }) => {
     const [userLocation, setUserLocation] = useState<Location.LocationObject>();
     const [locationDetails, setLocationDetails] = useState<GooglePlaceDetail | null>();
