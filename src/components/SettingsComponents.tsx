@@ -1,5 +1,6 @@
-import { View, Text, TouchableHighlight, SafeAreaView, Switch, Modal } from 'react-native';
+import { View, Text, TouchableHighlight, Switch, Modal } from 'react-native';
 import React, { useState } from 'react';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 /**
@@ -127,6 +128,7 @@ const SettingsSaveButton = ({ onPress }: { onPress?: () => any }) => {
 };
 
 const SettingsModal = ({ visible, onCancel, onDone, title, content, darkMode }: { visible: boolean, onCancel: () => any, onDone: () => any, title?: string | null, content?: React.JSX.Element, darkMode?: boolean }) => {
+    const insets = useSafeAreaInsets();
     return (
         <Modal
             visible={visible}
@@ -134,7 +136,10 @@ const SettingsModal = ({ visible, onCancel, onDone, title, content, darkMode }: 
             animationType='slide'
             onRequestClose={() => onCancel()}
         >
-            <SafeAreaView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light border border-gray-400"}  rounded-t-xl h-full box-shadow-md`}>
+            <SafeAreaView
+                className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light border border-gray-400"}  rounded-t-xl h-full box-shadow-md`}
+                style={{ paddingTop: insets.top }}
+            >
                 {/* Header */}
                 <View className='flex-row items-center justify-between mx-1 my-4'>
                     <TouchableHighlight
