@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { NativeStackScreenProps } from '@react-navigation/native-stack'
@@ -175,8 +175,6 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                         />
                     ))}
                 </ScrollView>
-
-                <View className='pb-20'></View>
             </View>
 
             <DismissibleModal
