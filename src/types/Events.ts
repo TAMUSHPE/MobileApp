@@ -1,6 +1,7 @@
 import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers';
 import { auth } from '../config/firebaseConfig';
+import { PublicUserInfo } from './User';
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop
@@ -47,11 +48,9 @@ export abstract class SHPEEvent {
     public workshopType?: WorkshopType;
     /** Specifies which committee this event is associated with */
     public committee?: string | null;
-
-    public creatorUID?: string | null;
-    public creatorDisplayName?: string | null;
-    public creatorProfilePictureURI?: string | null;
-
+    /** Specifies who created this event */
+    public creator?: PublicUserInfo | null;
+    public nationalConventionEligible?: boolean | null;
 
     /**
      * Instantiates all fields that exist on all SHPE Events
@@ -67,9 +66,8 @@ export abstract class SHPEEvent {
         this.committee = null;
         this.geolocation = null;
         this.geofencingRadius = null;
-        this.creatorUID = auth.currentUser?.uid ?? null;
-        this.creatorDisplayName = auth.currentUser?.displayName ?? null;
-        this.creatorProfilePictureURI = auth.currentUser?.photoURL ?? null;
+        this.creator = null;
+        this.nationalConventionEligible = null;
     }
 
     /**

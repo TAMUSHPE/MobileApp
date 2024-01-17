@@ -1,21 +1,27 @@
-import { View, Text, Modal, TouchableHighlight, Platform, Button } from 'react-native';
+import { View, Text, Switch } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { GooglePlacesAutocomplete, GooglePlaceDetail } from 'react-native-google-places-autocomplete';
 import MapView, { Marker, Circle, LatLng, Region } from 'react-native-maps';
 import * as Location from 'expo-location'
 import { GooglePlacesApiKey, presetLocationList, reverseGeocode } from '../helpers/geolocationUtils';
 import Slider from '@react-native-community/slider';
-import { handleLinkPress } from '../helpers/links';
+import { TouchableOpacity } from 'react-native';
+import { Octicons } from '@expo/vector-icons';
 
-const initialCoordinate = { latitude: 30.621160236499136, longitude: -96.3403560168198 } // Zachary Engineering Education Complex
+const zacharyCoords = { latitude: 30.621160236499136, longitude: -96.3403560168198 }
 const initialMapDelta = { latitudeDelta: 0.0922, longitudeDelta: 0.0421 } // Size of map view
 
-const LocationPicker = ({ visible, setVisible, onLocationChange }: { visible: boolean, setVisible: (visible: boolean) => void, onLocationChange: (locationDetails: GooglePlaceDetail | undefined | null, radius: number) => void }) => {
+const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords }: {
+    onLocationChange: (locationDetails: GooglePlaceDetail | undefined | null, radius: number | undefined) => void
+    initialCoordinate?: LatLng
+}) => {
     const [userLocation, setUserLocation] = useState<Location.LocationObject>();
     const [locationDetails, setLocationDetails] = useState<GooglePlaceDetail | null>();
     const [draggableMarkerCoord, setDraggableMarkerCoord] = useState<LatLng>(initialCoordinate);
     const [mapRegion, setMapRegion] = useState<Region>({ ...initialCoordinate, ...initialMapDelta });
-    const [radius, setRadius] = useState<number>(100);
+    const [initialRadius, setInitialRadius] = useState<number>(100);
+    const [radius, setRadius] = useState<number>();
+    const [geofencingEnabled, setGeofencingEnabled] = useState<boolean>(false);
 
     useEffect(() => {
         Location.requestForegroundPermissionsAsync()
@@ -32,13 +38,42 @@ const LocationPicker = ({ visible, setVisible, onLocationChange }: { visible: bo
             });
     }, []);
 
+    useEffect(() => {
+        onLocationChange(locationDetails, radius);
+    }, [locationDetails, radius]);
+
     return (
-        <Modal
-            visible={visible}
-        >
-            <View className='flex flex-col w-screen h-full'>
-                {/* Search Box for to search using Google Places */}
-                <View className="absolute top-12 z-10 p-3 w-full">
+        <View className='flex-1'>
+            <MapView
+                className='flex-1'
+                region={mapRegion}
+            >
+                <Marker
+                    draggable
+                    pinColor='#500'
+                    coordinate={draggableMarkerCoord}
+                    onDragEnd={async (dragEvent) => {
+                        const newCoord = dragEvent.nativeEvent.coordinate;
+                        setDraggableMarkerCoord(newCoord);
+                        const response = await reverseGeocode(newCoord);
+                        setLocationDetails(response);
+                    }}
+                />
+
+                {radius && (
+                    <Circle
+                        center={draggableMarkerCoord}
+                        radius={radius}
+                        fillColor="rgba(128, 128, 128, 0.3)"
+                        strokeColor="rgba(128, 128, 128, 0.5)"
+                        strokeWidth={1}
+                    />
+                )}
+            </MapView>
+
+            {/* Search Box for to search using Google Places */}
+            <View className="absolute z-10 p-3 w-full top-11">
+                <View className='w-full'>
                     <GooglePlacesAutocomplete
                         placeholder="Search"
                         query={{
@@ -61,94 +96,79 @@ const LocationPicker = ({ visible, setVisible, onLocationChange }: { visible: bo
                                 longitude: details.geometry.location.lng,
                                 ...initialMapDelta
                             });
+                            setLocationDetails(details);
                         }}
                         fetchDetails={true}
                         predefinedPlaces={presetLocationList}
                         onFail={(error) => console.error(error)}
                     />
+
                 </View>
 
-                <MapView
-                    className='flex-1'
-                >
-                    <Marker
-                        draggable
-                        pinColor='#500'
-                        coordinate={draggableMarkerCoord}
-                        onDragEnd={async (dragEvent) => {
-                            const newCoord = dragEvent.nativeEvent.coordinate;
-                            setDraggableMarkerCoord(newCoord);
-                            const response = await reverseGeocode(newCoord);
-                            setLocationDetails(response);
-                        }}
-                    />
-                    <Circle
-                        center={draggableMarkerCoord}
-                        radius={radius}
-                        fillColor="rgba(128, 128, 128, 0.3)"
-                        strokeColor="rgba(128, 128, 128, 0.5)"
-                        strokeWidth={1}
-                    />
-                    {userLocation &&
-                        <Marker
-                            pinColor='#005'
-                            coordinate={{
-                                latitude: userLocation.coords.latitude,
-                                longitude: userLocation.coords.longitude
-                            }}
-                        />
-                    }
-                </MapView>
+                <View className='flex-row'>
+                    <TouchableOpacity
+                        className='h-12 w-12 items-center justify-center bg-pale-blue rounded-md'
+                        onPress={async () => {
+                            if (userLocation?.coords.latitude && userLocation?.coords.longitude) {
+                                setDraggableMarkerCoord({
+                                    latitude: userLocation.coords.latitude,
+                                    longitude: userLocation.coords.longitude,
+                                });
+                                setMapRegion({
+                                    latitude: userLocation.coords.latitude,
+                                    longitude: userLocation.coords.longitude,
+                                    ...initialMapDelta
+                                });
 
-                {/* Event Street Name, Radius Adjustment Slider */}
-                <View className="absolute bottom-0 w-full p-3 pb-10 items-center bg-white">
-                    {locationDetails?.address_components && (
-                        <View className='flex-row space-x-2'>
-                            <Text>{locationDetails.address_components[0].long_name}</Text>
-                            <Text>{locationDetails.address_components[1].long_name}</Text>
-                            <Text>{locationDetails.address_components[2].long_name}</Text>
-                        </View>
-                    )}
-                    <Text>Radius: {radius.toFixed(2)} m</Text>
-                    <Slider
-                        style={{ width: 200, height: 40 }}
-                        minimumValue={40}
-                        maximumValue={200}
-                        value={radius}
-                        onValueChange={(value) => setRadius(value)}
-                    />
-                    {locationDetails?.geometry.location && (
-                        <View className='flex flex-row mb-4'>
-                            {Platform.OS == "ios" && (
-                                <Button
-                                    title="Open in Apple Maps"
-                                    onPress={() => {
-                                        const { lat, lng } = locationDetails.geometry.location;
-                                        handleLinkPress(`http://maps.apple.com/?ll=${lat},${lng}`);
+                                const response = await reverseGeocode({
+                                    latitude: userLocation.coords.latitude,
+                                    longitude: userLocation.coords.longitude,
+                                });
+                                setLocationDetails(response);
+                            }
+                        }} >
+                        <Octicons name="location" size={26} color="white" />
+                    </TouchableOpacity>
+                    {geofencingEnabled && (
+                        <View className='flex-1 ml-2 bg-white rounded-md px-4 pt-1'>
+                            <View className='flex-1'>
+                                <Slider
+                                    minimumValue={40}
+                                    maximumValue={200}
+                                    value={radius}
+                                    onValueChange={(value) => {
+                                        setInitialRadius(value);
+                                        setRadius(value)
                                     }}
+                                    minimumTrackTintColor="#72A9BE"
                                 />
-                            )}
-
-                            <Button
-                                title="Open in Google Maps"
-                                onPress={() => {
-                                    const { lat, lng } = locationDetails.geometry.location;
-                                    handleLinkPress(`https://www.google.com/maps?q=${lat},${lng}`);
-                                }}
-                            />
+                            </View>
                         </View>
                     )}
-                    <Button
-                        title="Select This Location"
-                        color='#F53200'
-                        onPress={() => {
-                            setVisible(false);
-                            onLocationChange(locationDetails, radius);
+                </View>
+
+            </View>
+
+            {/* Radius Adjustment Slider */}
+            <View className="absolute top-0 w-full px-6 pb-2 bg-white">
+                <View className='flex-row items-center'>
+                    <Text className='text-gray-500 text-lg'>Area Restriction</Text>
+                    <Switch
+                        className='ml-2'
+                        trackColor={{ false: "#767577", true: "#72A9BE" }}
+                        value={geofencingEnabled}
+                        onValueChange={(value) => {
+                            setGeofencingEnabled(value)
+                            if (value) {
+                                setRadius(initialRadius);
+                            } else {
+                                setRadius(undefined);
+                            }
                         }}
                     />
                 </View>
             </View>
-        </Modal>
+        </View>
     );
 };
 
