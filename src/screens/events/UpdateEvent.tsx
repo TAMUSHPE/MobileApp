@@ -13,10 +13,14 @@ import { UserContext } from '../../context/UserContext';
 import { MillisecondTimes, formatDate, formatTime } from '../../helpers/timeUtils';
 import { StatusBar } from 'expo-status-bar';
 import DismissibleModal from '../../components/DismissibleModal';
+import * as ImagePicker from "expo-image-picker";
 import { Committee } from '../../types/Committees';
 import { PublicUserInfo } from '../../types/User';
 import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
 import LocationPicker from '../../components/LocationPicker';
+import { getBlobFromURI, selectImage, uploadFile } from '../../api/fileSelection';
+import { CommonMimeTypes, validateFileBlob } from '../../helpers';
+import { auth } from '../../config/firebaseConfig';
 
 const UpdateEvent = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
@@ -38,8 +42,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const dropDownRefCommittee = useRef<CustomDropDownMethods>(null);
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
     const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
-    const [eventNameEditScreen, setEventNameEditScreen] = useState<string | undefined | null>(event.name);
-
+    const [localEventName, setLocalEventName] = useState<string | undefined | null>(event.name);
+    const [localCoverImageURI, setLocalCoverImageURI] = useState<string>(event.coverImageURI ?? '');
 
 
     // Form Data Hooks
@@ -147,7 +151,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             console.log('Event update failed');
         }
 
-        setEventNameEditScreen(name);
+        setLocalEventName(name);
     }
 
     const handleDestroyEvent = async () => {
@@ -159,6 +163,35 @@ const UpdateEvent = ({ navigation }: EventProps) => {
         }
     }
 
+    const selectCoverImage = async () => {
+        const result = await selectImage({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        })
+
+        if (result) {
+            const imageBlob = await getBlobFromURI(result.assets![0].uri);
+            if (imageBlob && validateFileBlob(imageBlob, CommonMimeTypes.IMAGE_FILES, true)) {
+                setLocalCoverImageURI(result.assets![0].uri);
+                if (!imageBlob) return;
+                uploadFile(
+                    imageBlob!,
+                    CommonMimeTypes.IMAGE_FILES,
+                    `events/cover-images/${auth.currentUser?.uid.toString()}${Date.now().toString()}`,
+                    onImageUploadSuccess,
+                );
+            }
+        }
+    }
+
+
+    const onImageUploadSuccess = async (URL: string) => {
+        setCoverImageURI(URL);
+        setChangesMade(true);
+    }
+
+
     const toggleDropdown = (dropdownKey: string) => {
         if (openDropdown === dropdownKey) {
             setOpenDropdown(null);
@@ -166,6 +199,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             setOpenDropdown(dropdownKey);
         }
     };
+
 
     return (
         <View className='flex-1'>
@@ -197,7 +231,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     <Image
                         className="flex w-full h-full absolute"
                         defaultSource={Images.DEFAULT_USER_PICTURE}
-                        source={coverImageURI ? { uri: coverImageURI } : Images.EVENT}
+                        source={localCoverImageURI ? { uri: localCoverImageURI } : Images.EVENT}
                         style={{
                             width: "100%",
                             height: "auto",
@@ -208,7 +242,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     <View className='absolute w-full h-full bg-[#00000055]' />
 
                     <View className='absolute bottom-0 px-5 py-3'>
-                        <Text className="text-3xl font-bold text-white">{eventNameEditScreen}{changesMade && ' *'}</Text>
+                        <Text className="text-3xl font-bold text-white">{localEventName}{changesMade && ' *'}</Text>
                         <Text className='text-lg text-white font-bold'>Edit Event</Text>
                     </View>
 
@@ -249,6 +283,14 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 <View className='px-4 my-8'>
                     {/* Event Name */}
                     <Text className='text-2xl font-bold'>General Details</Text>
+                    <View className='-z-20'>
+                        <TouchableOpacity
+                            className='bg-pale-blue w-[60%] mt-4 mb-2   px-4 py-2 items-center justify-center rounded-lg '
+                            onPress={() => selectCoverImage()}
+                        >
+                            <Text className='text-white text-lg font-semibold'>Choose Cover Image</Text>
+                        </TouchableOpacity>
+                    </View>
                     <KeyboardAvoidingView behavior='position' className='py-3'>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Name <Text className='text-[#f00]'>*</Text></Text>
                         <TextInput
