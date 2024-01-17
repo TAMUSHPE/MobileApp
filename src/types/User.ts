@@ -41,8 +41,8 @@ export interface PublicUserInfo {
     chapterExpiration?: string;
     resumeVerified?: boolean;
     interests?: string[];
-    // Google Sheets parameters
     points?: number;
+    pointsThisMonth?: number;
 };
 
 /**
