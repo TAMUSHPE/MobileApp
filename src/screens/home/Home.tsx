@@ -2,11 +2,11 @@ import { ScrollView } from 'react-native';
 import React, { useEffect, useContext } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
 import manageNotificationPermissions from '../../helpers/pushNotification';
 import { HomeStackParams } from "../../types/Navigation"
-import OfficeSignIn from './OfficeSignIn';
 import MOTMCard from '../../components/MOTMCard';
 import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
 import Ishpe from './Ishpe';
@@ -23,12 +23,25 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const { userInfo, signOutUser } = useContext(UserContext)!;
 
     useEffect(() => {
-        try {
-            manageNotificationPermissions();
-        } catch (error) {
-            console.error("Error managing notification permissions:", error);
+        const handleBannedUser = async () => {
+            const functions = getFunctions();
+            const isUserInBlacklist = httpsCallable<{ uid: string }, { isInBlacklist: boolean }>(functions, 'isUserInBlacklist');
+            try {
+                const checkBlackListResponse = await isUserInBlacklist({ uid: auth.currentUser?.uid! });
+
+                if (checkBlackListResponse.data.isInBlacklist) {
+                    signOutUser(true);
+                    alert("You have been banned from the app");
+                    return;
+                }
+            } catch (error) {
+                console.error('Error during user authentication:', error);
+            }
+
         }
 
+        manageNotificationPermissions();
+        handleBannedUser();
         if (!auth.currentUser?.uid) {
             signOutUser(true);
         }

@@ -75,19 +75,19 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     }
                 </View>
 
-                {isLoading && upcomingEvents.length == 0 && pastEvents.length == 0 &&
+                {isLoading &&
                     <View className='h-64 justify-center items-center'>
                         <ActivityIndicator size="large" />
                     </View>
                 }
 
-                {upcomingEvents.length == 0 && pastEvents.length == 0 && !isLoading &&
+                {(upcomingEvents.length == 0 && pastEvents.length == 0 && !isLoading) &&
                     <View className='h-64 w-full justify-center items-center'>
                         <Text>No Events</Text>
                     </View>
                 }
                 <View className='mx-5 mt-4'>
-                    {upcomingEvents.length != 0 &&
+                    {(!isLoading && upcomingEvents.length != 0) &&
                         <>
                             <Text className='text-xl mb-4 mt-10 font-bold'>Upcoming Events</Text>
                             <EventsList
@@ -97,7 +97,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                         </>
                     }
 
-                    {pastEvents.length != 0 &&
+                    {(!isLoading && pastEvents.length != 0) &&
                         <>
                             <Text className='text-xl mb-4 mt-10 font-bold '>Past Events</Text>
                             <EventsList
