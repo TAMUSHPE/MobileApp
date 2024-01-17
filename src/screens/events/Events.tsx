@@ -56,7 +56,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     </View>
                 </View>
 
-                <View className='flex-1 flex-row'>
+                <View className='flex-1 flex-row mx-3'>
                     <TouchableOpacity
                         className='flex-1 flex-row items-center justify-center border border-pale-blue rounded-sm py-2 mx-2'
                         onPress={() => navigation.navigate("QRCodeScanningScreen")}
@@ -86,10 +86,10 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                         <Text>No Events</Text>
                     </View>
                 }
-                <View className='mx-2 mt-4'>
+                <View className='mx-5 mt-4'>
                     {upcomingEvents.length != 0 &&
                         <>
-                            <Text className='text-xl mb-4 font-bold'>Upcoming Events</Text>
+                            <Text className='text-xl mb-4 mt-10 font-bold'>Upcoming Events</Text>
                             <EventsList
                                 events={upcomingEvents}
                                 navigation={navigation}
@@ -99,7 +99,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 
                     {pastEvents.length != 0 &&
                         <>
-                            <Text className='text-xl mb-4 text-bold font-bold '>Past Events</Text>
+                            <Text className='text-xl mb-4 mt-10 font-bold '>Past Events</Text>
                             <EventsList
                                 events={pastEvents}
                                 navigation={navigation}
