@@ -1,33 +1,32 @@
-export const isMemberVerified = (nationalExpiration: string|undefined, chapterExpiration:string|undefined) => {
-    const nationalExpirationString = nationalExpiration;
-    const chapterExpirationString = chapterExpiration;
+import { Timestamp } from "firebase/firestore";
+
+export const isMemberVerified = (nationalExpiration: Timestamp | undefined, chapterExpiration: Timestamp | undefined) => {
+    const nationalExpirationDate = nationalExpiration?.toDate();
+    const chapterExpirationDate = chapterExpiration?.toDate();
 
     const currentDate = new Date();
     let isNationalValid = true;
     let isChapterValid = true;
 
-    if (nationalExpirationString) {
-        const nationalExpirationDate = new Date(nationalExpirationString);
+    if (nationalExpirationDate) {
         isNationalValid = currentDate <= nationalExpirationDate;
     }
 
-    if (chapterExpirationString) {
-        const chapterExpirationDate = new Date(chapterExpirationString);
+    if (chapterExpirationDate) {
         isChapterValid = currentDate <= chapterExpirationDate;
     }
 
     return isNationalValid && isChapterValid
 };
 
-export const getBadgeColor = (isOfficer:boolean, isVerified:boolean) => {
+export const getBadgeColor = (isOfficer: boolean, isVerified: boolean) => {
     if (isOfficer) return '#FCE300';
     if (isVerified) return '#500000';
     return '';
 };
 
-export const formatExpirationDate = (dateString: string | undefined): string => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
+export const formatExpirationDate = (date: Date | undefined): string => {
+    if (!date) return '';
     const options: Intl.DateTimeFormatOptions = {
         year: 'numeric',
         month: 'long',
