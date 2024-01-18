@@ -1,6 +1,6 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, limitToLast } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { memberPoints } from "./fetchGoogleSheets";
 import { validateTamuEmail } from "../helpers/validation";
@@ -562,10 +562,17 @@ export const getUpcomingEvents = async () => {
     return events;
 };
 
-export const getPastEvents = async () => {
+export const getPastEvents = async (numLimit?: number) => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endTime", "<", currentTime));
+    let q;
+
+    if (numLimit !== undefined) {
+        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"), limit(numLimit));
+    } else {
+        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"));
+    }
+
     const querySnapshot = await getDocs(q);
     const events: SHPEEventWithCommitteeData[] = [];
 
@@ -580,13 +587,7 @@ export const getPastEvents = async () => {
         events.push({ id: doc.id, ...eventData, committeeData });
     }
 
-    events.sort((a, b) => {
-        const dateA = a.startTime ? a.startTime.toDate() : undefined;
-        const dateB = b.startTime ? b.startTime.toDate() : undefined;
-
-        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
-    });
-
+    // Events are already ordered by endTime due to the query, no need to sort again
     return events;
 };
 
