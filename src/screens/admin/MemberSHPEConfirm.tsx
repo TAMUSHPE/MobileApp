@@ -1,8 +1,9 @@
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, ActivityIndicator, Platform, Alert, TouchableHighlight } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { db, functions } from '../../config/firebaseConfig'
 import { getMembersToVerify } from '../../api/firebaseUtils'
 import { Timestamp, deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
@@ -14,19 +15,25 @@ import { AdminDashboardParams } from '../../types/Navigation';
 import MemberCard from '../../components/MemberCard'
 import DismissibleModal from '../../components/DismissibleModal'
 import MembersList from '../../components/MembersList'
+import { UserContext } from '../../context/UserContext';
+import { formatDate } from '../../helpers/timeUtils';
 
 const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+    const { userInfo } = useContext(UserContext)!;
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
     const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
     const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();
     const [selectedMemberDocuments, setSelectedMemberDocuments] = useState<memberSHPEResponse | null>(null);
+    const [overrideNationalExpiration, setOverrideNationalExpiration] = useState<Timestamp>();
 
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [infoVisible, setInfoVisible] = useState(false);
     const [expirationModalVisible, setExpirationModalVisible] = useState(false);
     const [initialLoad, setInitialLoad] = useState(true);
     const [loading, setLoading] = useState(true);
-
+    const [showExpirationDatePicker, setShowExpirationDatePicker] = useState(false);
 
     const fetchMembers = async () => {
         setLoading(true);
@@ -73,6 +80,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
     useEffect(() => {
         if (!initialLoad && !expirationModalVisible) {
             setConfirmVisible(true);
+            setOverrideNationalExpiration(undefined);
         }
     }, [expirationModalVisible])
 
@@ -237,10 +245,10 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                 visible={expirationModalVisible}
                 setVisible={setExpirationModalVisible}
             >
-                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ minWidth: 325 }}>
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ minWidth: 325, minHeight: 250 }}>
                     <View className='flex-row items-center justify-between'>
                         <View className='flex-row items-center'>
-                            <Text className='text-2xl font-semibold ml-2'>Adjust Expiration Date</Text>
+                            <Text className='text-2xl font-semibold ml-2'>Adjust National Expiration Date</Text>
                         </View>
                         <View>
                             <TouchableOpacity onPress={() => {
@@ -250,7 +258,74 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <Text className='text-lg font-semibold '>To be implemented</Text>
+
+                    <View>
+                        <View className='flex-row items-center mt-4'>
+                            <Text className='text-lg mr-4'>Expiration Date</Text>
+                            {(Platform.OS == 'android' && selectedMemberDocuments?.nationalExpiration) &&
+                                <TouchableHighlight
+                                    underlayColor={darkMode ? "" : "#EEE"}
+                                    onPress={() => setShowExpirationDatePicker(true)}
+                                    className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                >
+                                    <>
+                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{overrideNationalExpiration ? formatDate(overrideNationalExpiration.toDate()) : formatDate(selectedMemberDocuments?.nationalExpiration.toDate()!)}</Text>
+                                    </>
+                                </TouchableHighlight>
+                            }
+                            {(Platform.OS == 'ios' && selectedMemberDocuments?.nationalExpiration) &&
+                                <View className='flex flex-row items-center'>
+                                    <DateTimePicker
+                                        themeVariant={darkMode ? 'dark' : 'light'}
+                                        testID='Start Time Picker'
+                                        value={overrideNationalExpiration?.toDate() ?? selectedMemberDocuments?.nationalExpiration.toDate() ?? new Date()}
+                                        mode='date'
+                                        onChange={(_, date) => {
+                                            if (!date) {
+                                                console.warn("Date picked is undefined.")
+                                            }
+                                            else {
+                                                setOverrideNationalExpiration(Timestamp.fromDate(date));
+                                            }
+                                        }}
+                                    />
+                                </View>
+                            }
+                        </View>
+
+                        {(overrideNationalExpiration || selectedMemberDocuments?.nationalExpiration) && (
+                            <View className='mt-4 '>
+                                <Text className='text-lg text-pale-blue text-center'>Adjusted National Expiration Date</Text>
+                                <Text className='text-lg text-pale-blue text-center'>{overrideNationalExpiration ? formatDate(overrideNationalExpiration.toDate()) : formatDate(selectedMemberDocuments?.nationalExpiration.toDate()!)}</Text>
+                                <View className='flex-row items-center justify-around mt-5'>
+                                    <TouchableOpacity
+                                        className='w-1/3 bg-pale-blue justify-center items-center py-2 rounded-md'
+                                        onPress={() => {
+                                            setExpirationModalVisible(false);
+                                            setSelectedMemberDocuments({
+                                                ...selectedMemberDocuments!,
+                                                nationalExpiration: overrideNationalExpiration ?? selectedMemberDocuments?.nationalExpiration!
+                                            })
+                                        }}
+                                    >
+                                        <Text className='text-white text-lg'>Save</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        className='w-1/3 bg-pale-blue justify-center items-center py-2 rounded-md'
+                                        style={{ backgroundColor: "red" }}
+                                        onPress={() => {
+                                            setExpirationModalVisible(false);
+                                            setOverrideNationalExpiration(undefined);
+                                        }}>
+                                        <Text className='text-white text-lg'>Cancel</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+
+
+                    </View>
                 </View>
             </DismissibleModal>
 
@@ -289,6 +364,25 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                     </View>
                 </View>
             </DismissibleModal>
+
+
+            {/* Expiration Date Pickers */}
+            {(Platform.OS == 'android' && showExpirationDatePicker && selectedMemberDocuments?.nationalExpiration) &&
+                <DateTimePicker
+                    testID='Start Time Picker'
+                    value={selectedMemberDocuments?.nationalExpiration?.toDate() ?? new Date()}
+                    mode='date'
+                    onChange={(_, date) => {
+                        if (!date) {
+                            console.warn("Date picked is undefined.")
+                        }
+                        else {
+                            setOverrideNationalExpiration(Timestamp.fromDate(date));
+                        }
+                        setShowExpirationDatePicker(false);
+                    }}
+                />
+            }
         </SafeAreaView>
     )
 }
