@@ -96,19 +96,6 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
         }
     }, [nationalExpiration, chapterExpiration])
 
-
-    // if no roles are selected, clear custom title
-    useEffect(() => {
-        if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead) {
-            if (modifiedRoles?.customTitle !== "") {
-                setModifiedRoles({
-                    ...modifiedRoles,
-                    customTitle: "",
-                });
-            }
-        }
-    }, [modifiedRoles]);
-
     const RoleItem = ({ roleName, isActive, onToggle, darkMode }: {
         roleName: string,
         isActive: boolean,
@@ -341,8 +328,17 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     <View className="flex-row justify-between items-center my-6 mx-5">
                         <TouchableOpacity
                             onPress={async () => {
+
+                                // checks if has role but no custom title
                                 if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
                                     Alert.alert("Missing Title", "You must enter a title ");
+                                    return;
+                                }
+
+
+                                // Checks if has custom title but no role
+                                if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead && modifiedRoles?.customTitle) {
+                                    Alert.alert("Missing Role", "If a custom title is entered, you must select a role.");
                                     return;
                                 }
 
