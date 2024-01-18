@@ -383,8 +383,9 @@ export const resetCommittee = async (firebaseDocName: string) => {
 
             const usersSnapshot = await getDocs(collection(db, 'users'));
             usersSnapshot.forEach((userDoc) => {
-                if (userDoc.data().committees.includes(firebaseDocName)) {
-                    const updatedCommittees = userDoc.data().committees.filter((committee: string) => committee !== firebaseDocName);
+                const userData = userDoc.data();
+                if (Array.isArray(userData.committees) && userData.committees.includes(firebaseDocName)) {
+                    const updatedCommittees = userData.committees.filter((committee: string) => committee !== firebaseDocName);
                     transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
                 }
             });
