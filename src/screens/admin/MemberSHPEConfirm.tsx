@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
 import { db, functions } from '../../config/firebaseConfig'
 import { getMembersToVerify } from '../../api/firebaseUtils'
-import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
+import { Timestamp, deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
 import { httpsCallable } from 'firebase/functions'
 import { handleLinkPress } from '../../helpers/links'
 import { formatExpirationDate } from '../../helpers/membership';
@@ -193,11 +193,11 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                     <View className='flex-row justify-between mt-4'>
                         <View className='flex-col'>
                             <Text className='text-lg font-semibold'>Expires</Text>
-                            <Text className='text-lg font-semibold'>{formatExpirationDate(selectedMemberDocuments?.chapterExpiration)}</Text>
+                            <Text className='text-lg font-semibold'>{formatExpirationDate(selectedMemberDocuments?.chapterExpiration?.toDate())}</Text>
                         </View>
                         <View className='flex-col'>
                             <Text className='text-lg font-semibold text-right'>Expires</Text>
-                            <Text className='text-lg font-semibold text-right'>{formatExpirationDate(selectedMemberDocuments?.nationalExpiration)}</Text>
+                            <Text className='text-lg font-semibold text-right'>{formatExpirationDate(selectedMemberDocuments?.nationalExpiration.toDate())}</Text>
                             <TouchableOpacity
                                 onPress={() => {
                                     setConfirmVisible(false);
@@ -297,8 +297,8 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
 interface memberSHPEResponse {
     chapterURL: string;
     nationalURL: string;
-    chapterExpiration: string;
-    nationalExpiration: string;
+    chapterExpiration: Timestamp;
+    nationalExpiration: Timestamp;
 }
 
 export default MemberSHPEConfirm
