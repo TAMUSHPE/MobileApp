@@ -37,8 +37,8 @@ export interface PublicUserInfo {
     committees?: string[];
     pointsRank?: number;
     rankChange?: RankChange;
-    nationalExpiration?: string;
-    chapterExpiration?: string;
+    nationalExpiration?: Timestamp;
+    chapterExpiration?: Timestamp;
     resumeVerified?: boolean;
     interests?: string[];
     points?: number;

@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '../../context/UserContext';
 import { auth, db } from '../../config/firebaseConfig';
 import { getBlobFromURI, selectFile, uploadFile } from '../../api/fileSelection';
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { Timestamp, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { CommonMimeTypes } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
 import { formatExpirationDate, isMemberVerified } from '../../helpers/membership';
@@ -69,10 +69,11 @@ const MemberSHPE = () => {
     }
 
     const onNationalUploadSuccess = async (URL: string) => {
-        const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year from now
+        const today = new Date();
+        const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
         await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
-            nationalUploadDate: new Date().toISOString(),
-            nationalExpiration: expirationDate,
+            nationalUploadDate: Timestamp.fromDate(today),
+            nationalExpiration: Timestamp.fromDate(expirationDate),
             nationalURL: URL
         }, { merge: true });
         setLoading(false);
@@ -86,14 +87,13 @@ const MemberSHPE = () => {
             expirationYear += 1;
         }
 
-        const expirationDate = new Date(expirationYear, 7, 20).toISOString(); // August 20th of the following year
+        const expirationDate = new Date(expirationYear, 7, 20); // August 20th of the following year
         await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
-            chapterUploadDate: new Date().toISOString(),
-            chapterExpiration: expirationDate,
+            chapterUploadDate: Timestamp.fromDate(today),
+            chapterExpiration: Timestamp.fromDate(expirationDate),
             chapterURL: URL
         }, { merge: true });
         setLoading(false);
-
     };
 
 
@@ -108,7 +108,7 @@ const MemberSHPE = () => {
                         <View className='flex-row mt-10 justify-between'>
                             <TouchableOpacity
                                 className={`px-3 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-500" : "bg-maroon"}`}
-                                onPress={() => uploadDocument('national')}
+                                onPress={() => uploadDocument('chapter')}
                                 disabled={uploadedChapter}
                             >
                                 <View className='flex-row'>
@@ -119,7 +119,7 @@ const MemberSHPE = () => {
 
                             <TouchableOpacity
                                 className={`px-3 py-2 rounded-lg items-center ${uploadedNational ? "bg-gray-500" : "bg-pale-orange"}`}
-                                onPress={() => uploadDocument('chapter')}
+                                onPress={() => uploadDocument('national')}
                                 disabled={uploadedNational}
                             >
                                 <View className='flex-row'>
@@ -146,11 +146,11 @@ const MemberSHPE = () => {
                     <View className='flex-row px-8 mt-5'>
                         <View className='w-[50%]'>
                             <Text className='font-bold text-maroon'>TAMU Chapter Membership Expiration</Text>
-                            <Text className='font-bold text-maroon mt-3'>{formatExpirationDate(userInfo?.publicInfo?.chapterExpiration!)}</Text>
+                            <Text className='font-bold text-maroon mt-3'>{formatExpirationDate(userInfo?.publicInfo?.chapterExpiration!.toDate())}</Text>
                         </View>
                         <View className='w-[50%]'>
                             <Text className='font-bold text-pale-orange text-right'>SHPE National Membership Expiration</Text>
-                            <Text className='font-bold text-pale-orange text-right mt-3'>{formatExpirationDate(userInfo?.publicInfo?.nationalExpiration!)}</Text>
+                            <Text className='font-bold text-pale-orange text-right mt-3'>{formatExpirationDate(userInfo?.publicInfo?.nationalExpiration!.toDate())}</Text>
                         </View>
                     </View>
                 )}
