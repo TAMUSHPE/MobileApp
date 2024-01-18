@@ -113,11 +113,10 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                         {geolocation && (
                             <TouchableOpacity
                                 onPress={() => {
-                                    console.log(geolocation.latitude, geolocation.longitude)
                                     if (Platform.OS === 'ios') {
-                                        handleLinkPress(`http://maps.apple.com/?ll=${geolocation.latitude},${geolocation.longitude}`);
+                                        handleLinkPress(`http://maps.apple.com/?daddr=${geolocation.latitude},${geolocation.longitude}`);
                                     } else if (Platform.OS === 'android') {
-                                        handleLinkPress(`https://www.google.com/maps?q=${geolocation.latitude},${geolocation.longitude}`);
+                                        handleLinkPress(`https://www.google.com/maps/dir/?api=1&destination=${geolocation.latitude},${geolocation.longitude}`);
                                     }
                                 }}
                             >
