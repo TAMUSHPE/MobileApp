@@ -20,6 +20,10 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [allPastEvents, setAllPastEvents] = useState<SHPEEvent[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [pastEventModalVisible, setPastEventModalVisible] = useState(false);
+    const [initialFetch, setInitialFetch] = useState(false);
+    const [initialPastFetch, setInitialPastFetch] = useState(false);
+
+
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
@@ -63,8 +67,14 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     setIsLoading(false);
                 }
             };
-            fetchEvents();
-        }, [])
+
+            // Only fetch events if initial fetch has not been done or if user has privileges
+            // A user with privileges will need to see the event they just created/edited
+            if (!initialFetch || hasPrivileges) {
+                fetchEvents();
+                setInitialFetch(true);
+            }
+        }, [hasPrivileges, initialFetch])
     );
 
 
@@ -145,11 +155,17 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                         className='flex-row items-center justify-center border border-pale-blue rounded-sm py-2 mx-2 my-4'
                         onPress={async () => {
                             setPastEventModalVisible(true)
+
+                            if (initialPastFetch) {
+                                return;
+                            }
+
                             setIsLoading(true);
                             const allPastEventsData = await getPastEvents();
                             if (allPastEventsData) {
                                 setAllPastEvents(allPastEventsData);
                                 setIsLoading(false);
+                                setInitialPastFetch(true);
                             }
                         }}>
                         <Text className='font-bold text-pale-blue text-lg ml-2'>View All Past Events</Text>
@@ -185,7 +201,6 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 
 
                     <ScrollView>
-
                         <View className='mx-5 mt-4'>
                             {isLoading &&
                                 <View className='h-64 justify-center items-center'>
@@ -203,6 +218,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                 <EventsList
                                     events={allPastEvents}
                                     navigation={navigation}
+                                    onEventClick={() => setPastEventModalVisible(false)}
                                 />
                             }
                         </View>
