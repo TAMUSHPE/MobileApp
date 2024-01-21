@@ -127,6 +127,7 @@ export const MAJORS: Array<{ major: string, iso: string }> = [
     { major: 'Electrical Engineering', iso: 'ECEN' },
     { major: 'Electronic Systems Engineering Technology', iso: 'ESET' },
     { major: 'Environmental Engineering', iso: 'EVEN' },
+    { major: 'General Engineering', iso: 'ENGR' },
     { major: 'Industrial & Systems Engineering', iso: 'ISEN' },
     { major: 'Industrial Distribution', iso: 'IDIS' },
     { major: 'Information Technology Service Management', iso: 'ITSV' },
@@ -139,4 +140,5 @@ export const MAJORS: Array<{ major: string, iso: string }> = [
     { major: 'Ocean Engineering', iso: 'OCEN' },
     { major: 'Petroleum Engineering', iso: 'PETE' },
     { major: 'Technology Management', iso: 'TCMG' },
+    { major: 'Other', iso: 'OTHER' }
 ];
