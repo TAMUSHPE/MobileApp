@@ -5,7 +5,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/core';
 import { UserContext } from '../../context/UserContext';
 import { getCommitteeEvents, getCommittees, getInterestsEvent, getUpcomingEvents, setPublicUserData } from '../../api/firebaseUtils';
-import { monthNames } from '../../helpers/timeUtils';
+import { monthNames, MillisecondTimes } from '../../helpers/timeUtils';
 import { EventType, SHPEEvent } from '../../types/Events';
 import { Committee } from '../../types/Committees';
 import { IShpeProps } from '../../types/Navigation';
@@ -388,7 +388,7 @@ const addDays = (date: Date, days: number) => {
 
 
 const adjustWeekRange = (currentStartDate: Date, direction: string) => {
-    const oneWeek = 7 * 24 * 60 * 60 * 1000; // milliseconds in one week
+    const oneWeek = MillisecondTimes.WEEK;
     let newStartDate = new Date(currentStartDate.getTime() + (direction === 'forwards' ? oneWeek : -oneWeek));
     return newStartDate;
 }
