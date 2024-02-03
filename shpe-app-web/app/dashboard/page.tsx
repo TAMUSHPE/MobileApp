@@ -1,7 +1,7 @@
 'use client'
 
 import { auth, db } from "@/api/firebaseConfig";
-import { signOut } from "firebase/auth";
+import {handleLogout} from "@/helpers/auth";
 import { collection, getDocs } from "firebase/firestore";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
@@ -18,30 +18,29 @@ async function fetchAllDocuments(): Promise<UserData[]> {
 }
 
 const Dashboard = () => {
-    const router = useRouter()
-
-    const logoutToSignIn = () => {
-        signOut(auth).then(() => {
-            router.push('/')
-        });
-    }
-
+    const router = useRouter();
     const [documents, setDocuments] = useState<UserData[]>([]);
 
-   useEffect(() => {
-       fetchAllDocuments().then(fetchedDocuments => {
-           setDocuments(fetchedDocuments);
-       });
-   }, []);
+    useEffect(() => {
+        const checkAuth = async () => {
+            if (!auth.currentUser) {
+                router.push('/');
+            } else {
+                const fetchedDocuments = await fetchAllDocuments();
+                setDocuments(fetchedDocuments);
+            }
+        };
+
+        checkAuth();
+    }, []);
 
     return (
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full h-screen items-center justify-center">
             <span>Signed In as {auth.currentUser?.email}</span>
-            <button onClick={logoutToSignIn}>Sign Out</button>
+            <button onClick={() => { handleLogout(router) }}>Sign Out</button>
             <p>All uids in firebase: {documents.map(doc => (
                 doc.id + ", "
             ))}</p>
-
         </div>
     );
 };
