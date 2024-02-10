@@ -1,7 +1,8 @@
 import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers';
-import { auth } from '../config/firebaseConfig';
 import { PublicUserInfo } from './User';
+
+/** Anything added to this document needs to be added to functions/src/types.ts */
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop
@@ -50,7 +51,11 @@ export abstract class SHPEEvent {
     public committee?: string | null;
     /** Specifies who created this event */
     public creator?: PublicUserInfo | null;
+    /** Is the member eligible for national convention*/
     public nationalConventionEligible?: boolean | null;
+    /** Specifies if event should display on "General" tab of ishpe */
+    public general?: boolean | null;
+
 
     /**
      * Instantiates all fields that exist on all SHPE Events
@@ -64,6 +69,7 @@ export abstract class SHPEEvent {
         this.endTime = null;
         this.coverImageURI = null;
         this.committee = null;
+        this.general = false
         this.geolocation = null;
         this.geofencingRadius = null;
         this.creator = null;
@@ -111,6 +117,8 @@ export class GeneralMeeting extends SHPEEvent {
     public signOutPoints: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
+    public general: boolean;
+
 
     public constructor() {
         super();
@@ -124,6 +132,7 @@ export class GeneralMeeting extends SHPEEvent {
         this.signOutPoints = 0;
         this.locationName = null;
         this.geolocation = null;
+        this.general = true;
     }
 
 
@@ -142,6 +151,7 @@ export class CommitteeMeeting extends SHPEEvent {
     public signInPoints: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -154,6 +164,7 @@ export class CommitteeMeeting extends SHPEEvent {
         this.signInPoints = 1;
         this.locationName = null;
         this.geolocation = null;
+        this.general = false
     }
 }
 
@@ -174,6 +185,7 @@ export class StudyHours extends SHPEEvent {
     public pointsPerHour: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -188,6 +200,7 @@ export class StudyHours extends SHPEEvent {
         this.pointsPerHour = 1;
         this.locationName = null;
         this.geolocation = null;
+        this.general = true;
     }
 }
 
@@ -207,6 +220,7 @@ export class Workshop extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public workshopType: WorkshopType;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -220,6 +234,7 @@ export class Workshop extends SHPEEvent {
         this.signInPoints = 3;
         this.locationName = null;
         this.geolocation = null;
+        this.general = false
     }
 }
 
@@ -236,6 +251,7 @@ export class VolunteerEvent extends SHPEEvent {
     public pointsPerHour: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -248,6 +264,7 @@ export class VolunteerEvent extends SHPEEvent {
         this.pointsPerHour = 2;
         this.locationName = null;
         this.geolocation = null;
+        this.general = false
     }
 }
 
@@ -264,6 +281,7 @@ export class SocialEvent extends SHPEEvent {
     public signInPoints: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -276,6 +294,7 @@ export class SocialEvent extends SHPEEvent {
         this.signInPoints = 1;
         this.locationName = null;
         this.geolocation = null;
+        this.general = false
     }
 }
 
@@ -292,6 +311,7 @@ export class IntramuralEvent extends SHPEEvent {
     public signInPoints: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -304,6 +324,7 @@ export class IntramuralEvent extends SHPEEvent {
         this.signInPoints = 1;
         this.locationName = null;
         this.geolocation = null;
+        this.general = false
     }
 }
 
@@ -322,6 +343,7 @@ export class CustomEvent extends SHPEEvent {
     public pointsPerHour: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -336,6 +358,7 @@ export class CustomEvent extends SHPEEvent {
         this.pointsPerHour = 0;
         this.locationName = null;
         this.geolocation = null;
+        this.general = false
     }
 }
 
@@ -365,8 +388,6 @@ export enum EventLogStatus {
     ALREADY_LOGGED,
     ERROR,
 }
-
-export const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 
 
