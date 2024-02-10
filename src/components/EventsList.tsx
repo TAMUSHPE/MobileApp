@@ -2,7 +2,8 @@ import { View, Text, ActivityIndicator, Image, TouchableOpacity } from 'react-na
 import React from 'react'
 import { Timestamp } from 'firebase/firestore';
 import { Committee, getLogoComponent } from '../types/Committees';
-import { SHPEEvent, monthNames } from '../types/Events';
+import { SHPEEvent } from '../types/Events';
+import { monthNames } from '../../functions/src/timeUtils'
 import { Images } from '../../assets';
 
 const EventsList = ({ events, navigation, isLoading, showImage = true }: {
