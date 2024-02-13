@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { UserContext } from '../../context/UserContext';
 import { auth, db } from '../../config/firebaseConfig';
 import { getBlobFromURI, selectFile, uploadFile } from '../../api/fileSelection';
@@ -8,6 +8,7 @@ import { CommonMimeTypes } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
 import { formatExpirationDate, isMemberVerified } from '../../helpers/membership';
 import UploadIcon from '../../../assets/upload-solid.svg';
+import ModalDropdown from 'react-native-modal-dropdown';
 
 const MemberSHPE = () => {
     const { userInfo } = useContext(UserContext)!;
@@ -96,6 +97,18 @@ const MemberSHPE = () => {
         setLoading(false);
     };
 
+    const tShirtDropdownOptions = ['XS', 'S', 'M', 'L', 'XL'];
+    const dropdownRef = useRef(null);
+
+    const showDropdown = () => {
+        if (dropdownRef.current) {
+            (dropdownRef.current as any).show();
+        }
+    };
+
+    //const uploadShirtSize
+        // Upload the user's choice to Firebase
+
 
     return (
         <ScrollView>
@@ -128,6 +141,33 @@ const MemberSHPE = () => {
                                 </View>
                             </TouchableOpacity>
                         </View>
+
+                        <TouchableOpacity
+                            className={`px-3 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-500" : "bg-blue-900"}`}
+                            onPress={showDropdown}
+                        >
+                            <View className='flex-row'>
+                                <Text className="text-white font-semibold text-lg ml-3">T-Shirt Size</Text>
+                            </View>
+
+                            <View style={{ justifyContent: 'center', alignItems: 'center', marginLeft:100}}>
+                                <ModalDropdown 
+                                    ref={dropdownRef} 
+                                    options={tShirtDropdownOptions}
+                                    dropdownStyle={{ width: 100, height: 0, marginTop: 7, marginLeft: 0, borderRadius: 10, backgroundColor: 'white' }}
+                                    dropdownTextStyle={{ fontSize: 16, color: 'black', textAlign: 'center' }}
+                                    renderRow={(option) => (
+                                        <View style={{ borderRadius: 20, overflow: 'hidden', justifyContent: 'center', alignItems: 'center', height: 35 }}> 
+                                            <Text style={{ fontSize: 16, color: 'black', textAlign: 'center' }}>{option}</Text>
+                                        </View>
+                                    )}
+                                >
+                                    <View></View>
+                                </ModalDropdown>
+                            </View>
+
+                        </TouchableOpacity>
+                            
                         {loading && (
                             <View className='items-center mt-2'>
                                 <ActivityIndicator size="small" />
