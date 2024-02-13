@@ -45,7 +45,7 @@ const GuestRecoveryAccount = ({ navigation }: NativeStackScreenProps<AuthStackPa
 
 
             <View className='flex-col px-7'>
-                <Text className='text-white text-center text-3xl'>Rest Password</Text>
+                <Text className='text-white text-center text-3xl'>Reset Password</Text>
                 <Text className="text-xl text-white mb-8">Please enter your email we will send you an email to reset your password</Text>
                 <TextInputWithFloatingTitle
                     setTextFunction={(text: string) => { setEmail(text); }}
@@ -64,7 +64,7 @@ const GuestRecoveryAccount = ({ navigation }: NativeStackScreenProps<AuthStackPa
                     onPress={async () => {
                         handlePasswordReset();
                     }}
-                    label='Rest Password'
+                    label='Reset Password'
                     buttonClassName="bg-continue-dark justify-center items-center rounded-md"
                     textClassName="text-white text-lg font-bold"
                     opacity={0.8}

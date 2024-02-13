@@ -55,8 +55,6 @@ const ResumeDownloader = ({ navigation }: NativeStackScreenProps<AdminDashboardP
             }
         });
 
-        console.log('generate', isGenerated)
-
         const unsubscribeData = onSnapshot(dataRef, (docSnapshot) => {
             if (docSnapshot.exists()) {
                 setResumeDownloadInfo({

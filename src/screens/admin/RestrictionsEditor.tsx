@@ -6,7 +6,7 @@ import { AdminDashboardParams } from '../../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MembersList from '../../components/MembersList';
 import { PublicUserInfo } from '../../types/User';
-import { addToBlacklist, addToWatchlist, getBlacklist, getMembersExcludeOfficers, getWatchlist, removeFromWatchlist } from '../../api/firebaseUtils';
+import { addToBlacklist, addToWatchlist, getBlacklist, getMembersExcludeOfficers, getWatchlist, removeFromBlacklist, removeFromWatchlist } from '../../api/firebaseUtils';
 import { Images } from '../../../assets';
 import DismissibleModal from '../../components/DismissibleModal';
 
@@ -130,8 +130,41 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
                 </View>
             </TouchableOpacity>
             <ScrollView className='flex-1 h-screen'>
-                <View className='mx-8 my-5'>
-
+                <View className='flex-col mt-4'>
+                    {blackList?.map((userData, index) => {
+                        const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration } = userData
+                        return (
+                            <View className='flex-row items-center' key={index}>
+                                <TouchableOpacity
+                                    className='ml-5 w-[60%]'
+                                    onPress={() => { navigation.navigate('PublicProfile', { uid: uid! }) }}
+                                >
+                                    <View className="flex-row">
+                                        <Image
+                                            className="flex w-12 h-12 rounded-full"
+                                            defaultSource={Images.DEFAULT_USER_PICTURE}
+                                            source={photoURL ? { uri: photoURL as string } : Images.DEFAULT_USER_PICTURE}
+                                        />
+                                        <View className='ml-2 my-1'>
+                                            <View>
+                                                <Text className='font-semibold text-lg'>{name}</Text>
+                                                <Text className='text-md text-grey'> {displayName}</Text>
+                                            </View>
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    className='px-4 flex-1 h-full justify-center'
+                                    onPress={() => {
+                                        setBlackList(prevBlackList => prevBlackList.filter(member => member.uid !== uid));
+                                        removeFromBlacklist(userData);
+                                    }}
+                                >
+                                    <Octicons name="x" size={26} color="red" />
+                                </TouchableOpacity>
+                            </View>
+                        );
+                    })}
                 </View>
             </ScrollView>
 
@@ -210,6 +243,9 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
                                 if (memberToAdd && !blackList.some(blackMember => blackMember.uid === uid)) {
                                     setBlackList(prevBlackList => [...prevBlackList, memberToAdd]);
                                     addToBlacklist(memberToAdd);
+
+                                    setWatchList(prevWatchList => prevWatchList.filter(member => member.uid !== uid));
+                                    removeFromWatchlist(memberToAdd);
                                 }
 
                                 setBlackListModal(false);

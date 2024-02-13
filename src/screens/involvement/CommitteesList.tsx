@@ -1,5 +1,5 @@
 import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React, { useCallback, useContext, useEffect } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useFocusEffect } from '@react-navigation/core'
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext'
@@ -9,8 +9,8 @@ import { Committee } from "../../types/Committees"
 import CommitteeCard from './CommitteeCard'
 
 const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
-    const [committees, setCommittees] = React.useState<Committee[]>([]);
-    const [loading, setLoading] = React.useState(true);
+    const [committees, setCommittees] = useState<Committee[]>([]);
+    const [loading, setLoading] = useState(true);
     const { userInfo } = useContext(UserContext)!;
 
     const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer

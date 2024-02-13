@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native'
+import { View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
@@ -19,6 +19,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
     const [isVerified, setIsVerified] = useState<boolean>(false);
 
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
     // Data related to currently authenticated user
     const { userInfo } = useContext(UserContext)!;
@@ -35,6 +36,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
     const badgeColor = getBadgeColor(isOfficer!, isVerified);
 
     const removeResume = async () => {
+        setLoading(true);
         const userDocRef = doc(db, 'users', uid!);
 
         await updateDoc(userDocRef, {
@@ -48,6 +50,8 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
             uid: uid,
             type: "removed",
         });
+        setLoading(false);
+        setConfirmVisible(false);
         onResumeRemoved();
     };
 
@@ -125,6 +129,10 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
                             <Text className='font-semibold text-lg'>Cancel</Text>
                         </TouchableOpacity>
                     </View>
+                    {loading && (
+
+                        <ActivityIndicator size="small" className='mt-5' />
+                    )}
                 </View>
             </DismissibleModal>
         </View>

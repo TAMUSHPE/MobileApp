@@ -324,6 +324,26 @@ export const getCommittees = async (): Promise<Committee[]> => {
         return [];
     }
 };
+
+export const getCommittee = async (firebaseDocName: string): Promise<Committee | null> => {
+    try {
+        const committeeDocRef = doc(db, 'committees', firebaseDocName);
+        const docSnap = await getDoc(committeeDocRef);
+        if (docSnap.exists()) {
+            return {
+                firebaseDocName: docSnap.id,
+                ...docSnap.data()
+            };
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
+
 export const setCommitteeData = async (committeeData: Committee) => {
     try {
         await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
@@ -369,7 +389,6 @@ export const resetCommittee = async (firebaseDocName: string) => {
                 }
             });
         });
-        console.log('Committee reset successfully');
     } catch (error) {
         console.error('Failed to reset committee:', error);
     }
@@ -390,7 +409,6 @@ export const deleteCommittee = async (firebaseDocName: string) => {
                 }
             });
         });
-        console.log('Committee deleted successfully');
     } catch (error) {
         console.error('Failed to delete committee:', error);
     }
@@ -414,7 +432,6 @@ export const addToWatchlist = async (userToAdd: PublicUserInfo) => {
 
     if (!currentWatchlist.some((user: PublicUserInfo) => user.uid === userToAdd.uid)) {
         const updatedWatchlist = [...currentWatchlist, userToAdd];
-        console.log(updatedWatchlist.length)
         await setDoc(doc(db, "restrictions/watchlist"), { list: updatedWatchlist }, { merge: true });
     }
 };
@@ -444,7 +461,24 @@ export const removeFromBlacklist = async (userToRemove: PublicUserInfo) => {
     await setDoc(doc(db, "restrictions/blacklist"), { list: updatedBlacklist }, { merge: true });
 };
 
+export const isUserInBlacklist = async (uid: string): Promise<boolean> => {
+    const blacklistDocRef = doc(db, "restrictions/blacklist");
+    const docSnap = await getDoc(blacklistDocRef);
 
+    if (docSnap.exists()) {
+        const blacklist = docSnap.data().list;
+        return blacklist.some((user: PublicUserInfo) => user.uid === uid);
+    } else {
+        // Blacklist document does not exist or has no data
+        return false;
+    }
+};
+
+/**
+ * Creates a new SHPE event document in firestore
+ * @param event Object with event details
+ * @returns Document name in firestore. Null if error occurred
+ */
 export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
     try {
         const docRef = await addDoc(collection(db, "events"), { ...event });
@@ -455,20 +489,31 @@ export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
     }
 };
 
-export const updateEvent = async (event: SHPEEvent) => {
+/**
+ * Updates a given event
+ * @param id Name of event document in firestore
+ * @param event Object to replace firestore document
+ * @returns Document name firebase or null if an issue occurred
+ */
+export const setEvent = async (id: string, event: SHPEEvent): Promise<string | null> => {
     try {
-        const docRef = doc(db, "events", event.id!);
+        const docRef = doc(db, "events", id);
         await updateDoc(docRef, {
             ...event
         });
-        return event.id;
+        return id;
     } catch (error) {
         console.error("Error updating document: ", error);
         return null;
     }
 }
 
-export const getEvent = async (eventID: string) => {
+/**
+ * Fetches a given event document from firestore
+ * @param eventID Document name of event in firestore
+ * @returns Document data from firestore. null if there is an issue obtaining document.
+ */
+export const getEvent = async (eventID: string): Promise<null | SHPEEvent> => {
     try {
         const eventRef = doc(db, "events", eventID);
         const eventDoc = await getDoc(eventRef);
@@ -484,24 +529,33 @@ export const getEvent = async (eventID: string) => {
     }
 }
 
+type SHPEEventWithCommitteeData = SHPEEvent & { committeeData?: Committee | undefined };
+
+
 export const getUpcomingEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
     const q = query(eventsRef, where("endTime", ">", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEvent[] = [];
-    querySnapshot.forEach((doc) => {
-        events.push({ id: doc.id, ...doc.data() });
-    });
+    const events: SHPEEventWithCommitteeData[] = [];
+
+    for (const doc of querySnapshot.docs) {
+        const eventData = doc.data();
+        let committeeData: Committee | undefined;
+
+        if (eventData.committee) {
+            committeeData = await getCommittee(eventData.committee) || undefined;
+        }
+
+
+        events.push({ id: doc.id, ...eventData, committeeData: committeeData });
+    }
 
     events.sort((a, b) => {
         const dateA = a.startTime ? a.startTime.toDate() : undefined;
         const dateB = b.startTime ? b.startTime.toDate() : undefined;
 
-        if (dateA && dateB) {
-            return dateA.getTime() - dateB.getTime();
-        }
-        return -1; // error
+        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
     });
 
     return events;
@@ -512,22 +566,29 @@ export const getPastEvents = async () => {
     const eventsRef = collection(db, "events");
     const q = query(eventsRef, where("endTime", "<", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEvent[] = [];
-    querySnapshot.forEach((doc) => {
-        events.push({ id: doc.id, ...doc.data() });
-    });
+    const events: SHPEEventWithCommitteeData[] = [];
+
+    for (const doc of querySnapshot.docs) {
+        const eventData = doc.data();
+        let committeeData: Committee | undefined;
+
+        if (eventData.committee) {
+            committeeData = await getCommittee(eventData.committee) || undefined;
+        }
+
+        events.push({ id: doc.id, ...eventData, committeeData });
+    }
+
     events.sort((a, b) => {
         const dateA = a.startTime ? a.startTime.toDate() : undefined;
         const dateB = b.startTime ? b.startTime.toDate() : undefined;
 
-        if (dateA && dateB) {
-            return dateA.getTime() - dateB.getTime();
-        }
-        return -1; // error
+        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
     });
 
     return events;
 };
+
 
 export const destroyEvent = async (eventID: string) => {
     try {
@@ -1005,3 +1066,78 @@ export const removeFeedback = async (feedbackId: string) => {
     const feedbackDoc = doc(db, 'feedback', feedbackId);
     await deleteDoc(feedbackDoc);
 };
+
+export const getCommitteeEvents = async (committees: string[]) => {
+    try {
+        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
+        const currentTime = Timestamp.now();
+
+        const eventsRef = collection(db, 'events');
+
+        // Pre-fetching committee data to avoid duplicate calls in the loop
+        const committeesData = await Promise.all(committees.map(committee => getCommittee(committee)));
+
+        for (const committee of committees) {
+            try {
+                const committeeData = committeesData.find(data => data?.firebaseDocName === committee);
+                const eventsQuery = query(
+                    eventsRef,
+                    where("committee", "==", committee),
+                    where("endTime", ">=", currentTime)
+                );
+                const querySnapshot = await getDocs(eventsQuery);
+                querySnapshot.forEach((doc) => {
+                    const eventData = doc.data();
+                    const eventWithCommitteeData = { id: doc.id, ...eventData, committeeData: committeeData };
+
+                    // Using Map to avoid duplicates
+                    allEvents.set(doc.id, eventWithCommitteeData);
+                });
+            } catch (innerError) {
+                console.error(`Error fetching events for committee ${committee}:`, innerError);
+            }
+        }
+
+        // Convert Map values to an array
+        return Array.from(allEvents.values());
+    } catch (error) {
+        console.error("Error fetching events for user committees:", error);
+        return [];
+    }
+}
+
+export const getInterestsEvent = async (interests: string[]) => {
+    try {
+        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
+        const currentTime = Timestamp.now();
+
+        const eventsRef = collection(db, 'events');
+
+        for (const interest of interests) {
+            try {
+                const eventsQuery = query(
+                    eventsRef,
+                    where("eventType", "==", interest),
+                    where("endTime", ">=", currentTime)
+                );
+                const querySnapshot = await getDocs(eventsQuery);
+                querySnapshot.forEach((doc) => {
+                    const eventData = doc.data();
+                    const eventDataWithId = { id: doc.id, ...eventData };
+
+                    // Using Map to avoid duplicates
+                    allEvents.set(doc.id, eventDataWithId);
+                });
+            } catch (innerError) {
+                console.error(`Error fetching events for committee ${interests}:`, innerError);
+            }
+        }
+
+        // Convert Map values to an array
+        return Array.from(allEvents.values());
+    } catch (error) {
+        console.error("Error fetching events for user committees:", error);
+        return [];
+    }
+}
+
