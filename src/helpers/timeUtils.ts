@@ -55,3 +55,36 @@ export const formatDateTime = (date: Date): string => {
     return `${formatDate(date)}, ${formatTime(date)} GMT${date.getTimezoneOffset() < 0 ? "+" : "-"}${(date.getTimezoneOffset() / 60).toString().padStart(2, '0')}`
 }
 
+export const formatEventDate = (startTime: Date, endTime: Date) => {
+    const isSameDay = startTime.getDate() === endTime.getDate() &&
+        startTime.getMonth() === endTime.getMonth() &&
+        startTime.getFullYear() === endTime.getFullYear();
+
+    const isSameMonth = startTime.getMonth() === endTime.getMonth() &&
+        startTime.getFullYear() === endTime.getFullYear();
+
+    const isSameYear = startTime.getFullYear() === endTime.getFullYear();
+    const formatMonthDayOnly = (date: Date): string => {
+        const day = date.getDate();
+        const month = monthNames[date.getMonth()];
+
+        return `${month} ${day}`;
+    }
+
+    const formatDayYearOnly = (date: Date): string => {
+        const day = date.getDate();
+        const year = date.getFullYear();
+
+        return `${day} ${year}`;
+    }
+
+    if (isSameDay) {
+        return `${formatDate(startTime)}`;
+    } else if (isSameMonth) {
+        return `${formatMonthDayOnly(startTime)}-${formatDayYearOnly(endTime)}`;
+    } else if (isSameYear) {
+        return `${formatMonthDayOnly(startTime)}-${formatDate(endTime)}`;
+    } else {
+        return `${formatDate(startTime)} - ${formatDate(endTime)}`;
+    }
+};

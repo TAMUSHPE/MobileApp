@@ -40,8 +40,9 @@ export interface PublicUserInfo {
     nationalExpiration?: string;
     chapterExpiration?: string;
     resumeVerified?: boolean;
-    // Google Sheets parameters
+    interests?: string[];
     points?: number;
+    pointsThisMonth?: number;
 };
 
 /**
@@ -97,7 +98,7 @@ export interface OfficerStatus extends MemberStatus {
 export type UserFilter = {
     classYear: string,
     major: string,
-    role: string
+    role?: string
 }
 
 const generateClassYears = (): { year: string }[] => {
@@ -105,7 +106,7 @@ const generateClassYears = (): { year: string }[] => {
     const years = [];
 
     for (let i = currentYear - 5; i <= currentYear + 8; i++) {
-        years.push({ year: i.toString() });
+        years.push({ year: i.toString(), iso: i.toString() });
     }
 
     return years;
@@ -113,7 +114,7 @@ const generateClassYears = (): { year: string }[] => {
 
 export const classYears = generateClassYears();
 
-export const MAJORS = [
+export const MAJORS: Array<{ major: string, iso: string }> = [
     { major: 'Aerospace Engineering', iso: 'AERO' },
     { major: 'Architectural Engineering', iso: 'AREN' },
     { major: 'Biomedical Engineering', iso: 'BMEN' },
@@ -137,5 +138,5 @@ export const MAJORS = [
     { major: 'Nuclear Engineering', iso: 'NUEN' },
     { major: 'Ocean Engineering', iso: 'OCEN' },
     { major: 'Petroleum Engineering', iso: 'PETE' },
-    { major: 'Technology Management', iso: 'TCMG' }
+    { major: 'Technology Management', iso: 'TCMG' },
 ];

@@ -106,8 +106,6 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
         }
     }, [logStatus]);
 
-
-
     return (
         <SafeAreaView className={`w-screen h-screen   bg-dark-navy ${(logStatus === EventLogStatus.SUCCESS) && "bg-green-500"}`}>
             {

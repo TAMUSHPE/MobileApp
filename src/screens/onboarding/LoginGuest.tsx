@@ -8,7 +8,8 @@ import { Octicons } from '@expo/vector-icons';
 import { UserContext } from "../../context/UserContext";
 import { auth } from "../../config/firebaseConfig";
 import { initializeCurrentUserData } from "../../api/firebaseUtils";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { AuthStackParams } from "../../types/Navigation";
 import { Images } from "../../../assets";
 import TextInputWithFloatingTitle from "../../components/TextInputWithFloatingTitle";
@@ -22,11 +23,6 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
     const [error, setError] = useState<string>("");
 
     const { userInfo, setUserInfo, signOutUser } = useContext(UserContext)!;
-    /**
- * Due to asynchronous problem, the value of completedAccountSetup may
- * initially be undefined. This function will check the value when userInfo
- * is changed until it's either true or false.
- */
 
     useFocusEffect(
         useCallback(() => {
@@ -46,7 +42,22 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
     const handleUserAuth = () => {
         setLoading(true);
         initializeCurrentUserData()
-            .then(userFromFirebase => {
+            .then(async userFromFirebase => {
+                const functions = getFunctions();
+                const isUserInBlacklist = httpsCallable<{ uid: string }, { isInBlacklist: boolean }>(functions, 'isUserInBlacklist');
+
+                try {
+                    const checkBlackListResponse = await isUserInBlacklist({ uid: auth.currentUser?.uid! });
+
+                    if (checkBlackListResponse.data.isInBlacklist) {
+                        signOut(auth);
+                        setError("You have been banned from the app");
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error during user authentication:', error);
+                }
+
                 AsyncStorage.setItem("@user", JSON.stringify(userFromFirebase))
                     .then(() => {
                         setUserInfo(userFromFirebase);

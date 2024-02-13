@@ -1,12 +1,29 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useState, useRef } from 'react';
-import { Animated, StyleSheet, Image, Dimensions, View, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import React, { useEffect, useState, useRef, memo } from 'react';
+import { Animated, Image, Dimensions, View, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 
 const windowWidth = Dimensions.get('window').width;
 
-const API_KEY = "***REMOVED***";
-const USER_ID = "143848472@N03";
+const flickerApiKey = process.env.FLICKER_API_KEY;
+const flickerUserId = process.env.FLICKER_USER_ID;
 
+
+const FlickrPhotoItem = memo(({ item }: { item: FlickrPhoto }) => {
+    if (!item) return null;
+
+    const photoUrl = `https://live.staticflickr.com/${item.server}/${item.id}_${item.secret}_w.jpg`;
+    return (
+        <View style={{ width: windowWidth }}>
+            <LinearGradient
+                className='absolute top-0 left-0 bottom-0 right-0'
+                colors={['#ffffff', '#72A9BE']}
+            />
+            <View className="mt-5 pb-4 ml-7">
+                <Image source={{ uri: photoUrl }} className="h-40 w-[92%] rounded-3xl" />
+            </View>
+        </View>
+    );
+});
 
 const FlickrPhotoGallery = () => {
     const [currentIndex, setCurrentIndex] = useState(1);
@@ -25,7 +42,7 @@ const FlickrPhotoGallery = () => {
 
     const fetchPhotos = async () => {
         try {
-            const response = await fetch(`https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=${API_KEY}&user_id=${USER_ID}&format=json&nojsoncallback=1`);
+            const response = await fetch(`https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=${flickerApiKey}&user_id=${flickerUserId}&format=json&nojsoncallback=1`);
             const json = await response.json();
             const shuffledPhotos = shufflePhotos(json.photos.photo);
             setPhotos([shuffledPhotos[shuffledPhotos.length - 1], ...shuffledPhotos, shuffledPhotos[0]]);
@@ -87,22 +104,9 @@ const FlickrPhotoGallery = () => {
         index,
     });
 
-    const renderItem = ({ item }: { item: FlickrPhoto }) => {
-        if (!item) return null;
+    const renderItem = ({ item }: { item: FlickrPhoto }) => <FlickrPhotoItem item={item} />;
 
-        const photoUrl = `https://live.staticflickr.com/${item.server}/${item.id}_${item.secret}_w.jpg`;
-        return (
-            <View style={{ width: windowWidth }}>
-                <LinearGradient
-                    className='absolute top-0 left-0 bottom-0 right-0'
-                    colors={['#ffffff', '#72A9BE']}
-                />
-                <View className="mt-5 pb-4 ml-7">
-                    <Image source={{ uri: photoUrl }} className="h-40 w-[92%] rounded-3xl" />
-                </View>
-            </View>
-        );
-    };
+    if (!photos.length) return null;
 
     return (
         <Animated.FlatList

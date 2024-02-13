@@ -1,6 +1,6 @@
 import { Image, TouchableOpacity, View, Text } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
-import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps, DrawerHeaderProps } from '@react-navigation/drawer';
+import { createDrawerNavigator, DrawerContentScrollView, DrawerItem, DrawerContentComponentProps } from '@react-navigation/drawer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useNavigationState } from '@react-navigation/native';
@@ -20,11 +20,11 @@ import { HomeStack } from './HomeStack'
  */
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const { userInfo, signOutUser } = useContext(UserContext)!;
-
     const [isVerified, setIsVerified] = useState<boolean>(false);
     const { nationalExpiration, chapterExpiration, roles } = userInfo?.publicInfo ?? {};
     const isOfficer = roles ? roles.officer : false;
     let badgeColor = getBadgeColor(isOfficer!, isVerified);
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
     useEffect(() => {
         if (nationalExpiration && chapterExpiration) {
@@ -47,7 +47,6 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
             <Text className="ml-3 font-semibold text-md" style={drawerItemLabelStyle}>{label}</Text>
         </TouchableOpacity>
     );
-
 
     return (
         <DrawerContentScrollView
@@ -91,7 +90,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                     }}
                 />
 
-                {userInfo?.publicInfo?.roles?.officer?.valueOf() &&
+                {hasPrivileges &&
                     <DrawerButton
                         iconName="superpowers"
                         label='Officer Dashboard'
@@ -137,8 +136,9 @@ const HomeDrawerHeader = ({ navigation }: { navigation: any }) => {
         }
         return '';
     });
-    // Do not render the header if the current route is PublicProfile
-    if (currentRouteName === 'PublicProfile') {
+
+    // These are screen in home stack that should not have a header
+    if (currentRouteName === 'PublicProfile' || currentRouteName === 'EventInfo') {
         return null;
     }
     return (

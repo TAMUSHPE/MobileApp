@@ -10,6 +10,7 @@ import { UserContext } from "../../context/UserContext";
 import { auth } from "../../config/firebaseConfig";
 import { validateTamuEmail } from "../../helpers/validation";
 import { signInWithCredential, GoogleAuthProvider, signOut } from "firebase/auth";
+import { getFunctions, httpsCallable } from "firebase/functions";
 import { initializeCurrentUserData } from "../../api/firebaseUtils";
 import { AuthStackParams } from "../../types/Navigation";
 import { Images } from "../../../assets";
@@ -49,7 +50,22 @@ const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) =
     const handleUserAuth = () => {
         setLoading(true);
         initializeCurrentUserData()
-            .then(userFromFirebase => {
+            .then(async (userFromFirebase) => {
+                const functions = getFunctions();
+                const isUserInBlacklist = httpsCallable<{ uid: string }, { isInBlacklist: boolean }>(functions, 'isUserInBlacklist');
+
+                try {
+                    const checkBlackListResponse = await isUserInBlacklist({ uid: auth.currentUser?.uid! });
+
+                    if (checkBlackListResponse.data.isInBlacklist) {
+                        signOut(auth);
+                        setError("You have been banned from the app");
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error during user authentication:', error);
+                }
+
                 AsyncStorage.setItem("@user", JSON.stringify(userFromFirebase))
                     .then(() => {
                         setUserInfo(userFromFirebase);
@@ -61,7 +77,7 @@ const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) =
             .catch(error => {
                 console.error("Error during user authentication:", error);
             })
-            .finally(() => {
+            .finally(async () => {
                 setLoading(false);
             });
     };

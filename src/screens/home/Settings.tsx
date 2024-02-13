@@ -1,5 +1,5 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, StyleSheet, Pressable } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated } from 'react-native';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
@@ -19,11 +19,13 @@ import { MainStackParams } from '../../types/Navigation';
 import { Committee } from '../../types/Committees';
 import { MAJORS, classYears } from '../../types/User';
 import { Images } from '../../../assets';
+import DownloadIcon from '../../../assets/arrow-down-solid.svg';
+import UploadFileIcon from '../../../assets/file-arrow-up-solid-black.svg';
 import ProfileBadge from '../../components/ProfileBadge';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../../components/SettingsComponents"
-import InteractButton from '../../components/InteractButton';
-import SimpleDropDown from '../../components/SimpleDropDown';
+import CustomDropDown from '../../components/CustomDropDown';
 import TwitterSvg from '../../components/TwitterSvg';
+import { Circle, Svg } from 'react-native-svg';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
@@ -56,7 +58,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
 
             <View className='flex-1 w-full px-4 mt-10 mb-4'>
                 <TouchableOpacity
-                    onPress={() => navigation.navigate("PublicProfile", { uid: auth.currentUser?.uid! })}
+                    onPress={() => navigation.navigate("ProfileSettingsScreen")}
                 >
                     <View className="flex-row">
                         <Image
@@ -71,7 +73,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
                                     {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
 
                                 </View>
-                                <Text className={`text-md text-grey font-semibold ${darkMode && "text-white"}`}>View Profile</Text>
+                                <Text className={`text-md text-grey font-semibold ${darkMode && "text-white"}`}>Edit Profile</Text>
                             </View>
                         </View>
                     </View>
@@ -146,7 +148,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
     const [major, setMajor] = useState<string | undefined>(userInfo?.publicInfo?.major);
     const [classYear, setClassYear] = useState<string | undefined>(userInfo?.publicInfo?.classYear);
-    const [openDropdown, setOpenDropdown] = useState<string | null>(null); // Dropdown for major and class year
+    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
     const [committeesData, setCommitteesData] = useState<Committee[]>([]);
     const [committees, setCommittees] = useState<string[]>(userInfo?.publicInfo?.committees || []);
     const [prevCommittees, setPrevCommittees] = useState<string[]>(userInfo?.publicInfo?.committees || []);
@@ -353,6 +355,34 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         });
     };
 
+    const findMajorByIso = (iso: string) => {
+        const majorObj = MAJORS.find(major => major.iso === iso);
+        return majorObj ? majorObj.major : null;
+    };
+
+    const progress = useRef(new Animated.Value(0)).current;
+    const setProgress = (newProgress: number) => {
+        if (newProgress <= 0) {
+            progress.setValue(0);
+        } else if (newProgress >= 100) {
+            progress.setValue(100);
+        } else {
+            Animated.timing(progress, {
+                toValue: newProgress,
+                duration: 500,
+                useNativeDriver: true,
+            }).start();
+        }
+    };
+
+    const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+    const circumference = 2 * Math.PI * 45; // 45 is the radius of the circle
+    const strokeDashoffset = progress.interpolate({
+        inputRange: [0, 100],
+        outputRange: [circumference, 0]
+    });
+
+
     return (
         <View className='items-center'>
             <StatusBar style={darkMode ? "light" : "dark"} />
@@ -446,30 +476,38 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 }}
                 content={
                     (
-                        <View>
-                            <View className='absolute top-0 z-20 w-full'>
-                                <SimpleDropDown
+                        <View className="items-center justify-center">
+                            <View className='absolute top-0 z-20 w-[80%]'>
+                                <CustomDropDown
                                     data={MAJORS}
-                                    onSelect={(item) => setMajor(item.iso!)}
+                                    onSelect={(item) => setMajor(item.iso)}
                                     searchKey="major"
                                     label="Select major"
                                     isOpen={openDropdown === 'major'}
                                     onToggle={() => toggleDropdown('major')}
                                     title={'Major'}
-                                    selectedItemProp={{ value: major }}
+                                    selectedItemProp={{ iso: major, value: findMajorByIso(major!)! }}
+                                    dropDownClassName='top-20'
+                                    textClassName='text-black'
+                                    titleClassName='text-black'
+
                                 />
                             </View>
-                            <View className='absolute top-24 z-10 w-full'>
-                                <SimpleDropDown
+                            <View className='absolute top-24 z-10 w-[80%]'>
+                                <CustomDropDown
                                     data={classYears}
-                                    onSelect={(item) => setClassYear(item.year)}
+                                    onSelect={(item) => setClassYear(item.iso)}
                                     searchKey="year"
                                     label="Select class year"
                                     isOpen={openDropdown === 'year'}
                                     onToggle={() => toggleDropdown('year')}
                                     title={"Class Year"}
-                                    selectedItemProp={{ value: classYear }}
+                                    selectedItemProp={{ iso: classYear }}
+                                    displayType='iso'
+                                    dropDownClassName='top-20'
                                     disableSearch
+                                    textClassName='text-black'
+                                    titleClassName='text-black'
                                 />
                             </View>
                         </View>
@@ -528,28 +566,57 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 onDone={() => setShowResumeModal(false)}
                 content={(
                     <View>
-                        <InteractButton
-                            label='Upload Resume'
-                            onPress={async () => {
-                                saveChanges();
-                                const selectedResume = await selectResume();
-                                if (selectedResume) {
-                                    uploadFile(
-                                        selectedResume,
-                                        CommonMimeTypes.RESUME_FILES,
-                                        `user-docs/${auth.currentUser?.uid}/user-resume`,
-                                        onResumeUploadSuccess
-                                    )
-                                }
-                            }}
-                        />
-                        <InteractButton
-                            label='View Resume'
-                            onPress={async () => {
-                                console.log(resumeURL);
-                                handleLinkPress(resumeURL!);
-                            }}
-                        />
+                        <View className='items-center'>
+                            <TouchableOpacity className="relative items-center justify-center rounded-full h-44 w-44 mb-5 mt-4"
+                                onPress={async () => {
+                                    const selectedResume = await selectResume();
+                                    if (selectedResume) {
+                                        uploadFile(
+                                            selectedResume,
+                                            CommonMimeTypes.RESUME_FILES,
+                                            `user-docs/${auth.currentUser?.uid}/user-resume`,
+                                            onResumeUploadSuccess,
+                                            setProgress
+                                        );
+                                    }
+                                }}>
+                                <Svg height="100%" width="100%" viewBox="0 0 100 100" className="absolute">
+                                    <Circle
+                                        cx="50"
+                                        cy="50"
+                                        r="45"
+                                        stroke="#ffffff"
+                                        strokeWidth="4"
+                                        fill="transparent"
+                                    />
+                                </Svg>
+                                <Svg height="100%" width="100%" viewBox="0 0 100 100" className="absolute">
+                                    <AnimatedCircle
+                                        cx="50"
+                                        cy="50"
+                                        r="45"
+                                        stroke="#AEF359"
+                                        strokeWidth="4"
+                                        fill="transparent"
+                                        strokeDasharray={circumference}
+                                        strokeDashoffset={strokeDashoffset}
+                                        transform="rotate(-90, 50, 50)"
+                                    />
+                                </Svg>
+                                <UploadFileIcon width={110} height={110} />
+                            </TouchableOpacity>
+
+                            {resumeURL && (
+                                <TouchableOpacity onPress={async () => { handleLinkPress(resumeURL!) }}>
+                                    <View className='relative flex-row items-center border-b border-black'>
+                                        <Text className="text-black font-semibold text-lg">View Resume</Text>
+                                        <View className='absolute left-full ml-1'>
+                                            <DownloadIcon width={15} height={15} color='black' />
+                                        </View>
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                        </View>
                     </View>
                 )}
             />
@@ -598,34 +665,36 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     onPress={() => setShowAcademicInfoModal(true)}
                 />
                 <SettingsSectionTitle text='SHPE Info' darkMode={darkMode} />
-                <View className={`border max-w-11/12 rounded-3xl shadow-sm shadow-black p-3 mx-3 my-3 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
-                    <Text className={`text-2xl mb-4 ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
+                <View className="max-w-11/12 shadow-sm shadow-slate-300 p-3 mx-3 my-3">
+                    <View className='flex-row items-center mb-6'>
+                        <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
+                        <TouchableHighlight
+                            onPress={() => {
+                                setPrevCommittees(committees)
+                                setShowCommitteesModal(true)
+                            }}
+                            className='px-5 py-1 rounded-md bg-pale-blue ml-3 justify-center items-center' underlayColor={"#72A9BE"}
+                        >
+                            <Text className='text-white text-center text-lg'>Edit</Text>
+                        </TouchableHighlight>
+                    </View>
                     <View className='flex-row flex-wrap'>
                         {committees?.map((committeeDocName, index) => {
                             const committeeData = committeesData.find(c => c.firebaseDocName === committeeDocName);
                             return (
                                 <ProfileBadge
-                                    badgeClassName='p-2 max-w-2/5 rounded-full mr-1 mb-2'
+                                    badgeClassName='p-2 max-w-2/5 rounded-md mr-4 mb-2'
+                                    textClassName='text-lg'
                                     text={committeeData?.name || "Unknown Committee"}
                                     badgeColor={committeeData?.color || ""}
                                     key={index}
                                 />
                             );
                         })}
-
-                        <TouchableHighlight
-                            onPress={() => {
-                                setPrevCommittees(committees)
-                                setShowCommitteesModal(true)
-                            }}
-                            className='p-2 w-1/4 rounded-full mb-2 bg-[#FD551A]' underlayColor={"#FCA788"}
-                        >
-                            <Text className='text-white text-center'>+</Text>
-                        </TouchableHighlight>
                     </View>
                 </View>
                 <SettingsButton
-                    mainText='Resume'
+                    mainText='Edit Resume'
                     darkMode={darkMode}
                     onPress={() => setShowResumeModal(true)}
                 />
@@ -745,6 +814,8 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStack
     const [feedback, setFeedback] = useState('');
     const { userInfo } = useContext(UserContext)!;
 
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
     const handleFeedbackSubmit = async () => {
         const response = await submitFeedback(feedback, userInfo!);
         if (response.success) {
@@ -756,11 +827,11 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStack
     };
 
     return (
-        <View className="flex-1 selection:pt-10 px-6 bg-primary-bg-light">
-            <Text className='text-xl font-bold mb-2'>Tell us what can be improved</Text>
+        <View className={`flex-1 selection:pt-10 px-6 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <Text className={`text-xl font-bold mb-2 ${darkMode ? "text-white" : "text-black"}`} >Tell us what can be improved</Text>
             <View className='items-center'>
                 <TextInput
-                    className="border bg-white border-gray-300 py-4 px-2 rounded-lg w-[100%] h-32"
+                    className={`py-4 px-2 rounded-lg w-[100%] h-32 ${darkMode ? "bg-secondary-bg-dark text-white" : "bg-secondary-bg-light border-gray-300 text-black"}`}
                     multiline
                     numberOfLines={4}
                     onChangeText={setFeedback}
@@ -781,6 +852,10 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStack
 
 const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const [activeQuestion, setActiveQuestion] = useState<number | null>(null);
+    const { userInfo } = useContext(UserContext)!;
+
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
 
     const toggleQuestion = (questionNumber: number) => {
         if (activeQuestion === questionNumber) {
@@ -790,7 +865,7 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParam
         }
     };
 
-    const faqData = [
+    const faqData: { question: string, answer: string }[] = [
         {
             question: "What resources does SHPE provide?",
             answer: "SHPE offers networking opportunities, professional development workshops, mentorship programs, scholarship opportunities, and community outreach initiatives."
@@ -826,25 +901,25 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParam
     ];
 
     return (
-        <ScrollView className='flex-1 px-4 bg-primary-bg-light py-10'>
+        <ScrollView className={`flex-1 px-4 py-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             {faqData.map((faq, index) => (
                 <TouchableOpacity
                     key={index}
-                    className={`mb-2 p-4 rounded-lg ${activeQuestion === index ? 'bg-blue-100' : 'bg-white'}`}
+                    className={`mb-2 p-4 rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${(activeQuestion === index && darkMode) && 'bg-secondary-bg-dark'}`}
                     onPress={() => toggleQuestion(index)}
                 >
                     <View className='flex-row justify-between items-center px-2'>
-                        <Text className='text-xl font-semibold w-[85%]'>{faq.question}</Text>
+                        <Text className={`text-xl font-semibold w-[85%] ${darkMode ? "text-white" : "text-black"}`}>{faq.question}</Text>
                         <View className='flex-1 items-center justify-center'>
                             <Octicons
                                 name={activeQuestion === index ? 'chevron-up' : 'chevron-down'}
                                 size={24}
-                                color='black'
+                                color={darkMode ? "white" : "black"}
                             />
                         </View>
                     </View>
                     {activeQuestion === index && (
-                        <Text className='text-gray-600 mt-2 text-lg'>
+                        <Text className={`mt-2 text-lg ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
                             {faq.answer}
                         </Text>
                     )}

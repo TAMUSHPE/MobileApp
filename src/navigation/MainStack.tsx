@@ -7,6 +7,7 @@ import AdminDashboardStack from "./AdminDashboardStack";
 import EventVerification from "../screens/events/EventVerification";
 import { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen, FAQSettingsScreen, FeedBackSettingsScreen } from "../screens/home/Settings";
 import PublicProfileScreen from "../screens/PublicProfile";
+import QRCodeScanningScreen from "../screens/events/QRCodeScanningScreen";
 
 const MainStack = () => {
     const Stack = createNativeStackNavigator<MainStackParams>();
@@ -47,6 +48,7 @@ const MainStack = () => {
 
             <Stack.Screen name="EventVerificationScreen" component={EventVerification} options={{ headerShown: false }} />
             <Stack.Screen name="PublicProfile" component={PublicProfileScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="QRCodeScanningScreen" component={QRCodeScanningScreen} options={{ headerShown: false }} />
 
         </Stack.Navigator>
     );

@@ -9,6 +9,7 @@ import QRCodeManager from "../screens/admin/QRCodeManager";
 import SetGeneralEventDetails from "../screens/events/SetGeneralEventDetails";
 import SetSpecificEventDetails from "../screens/events/SetSpecificEventDetails";
 import FinalizeEvent from "../screens/events/FinalizeEvent";
+import SetLocationEventDetails from "../screens/events/SetLocationEventDetails";
 
 const EventsStack = () => {
     const Stack = createNativeStackNavigator<EventsStackParams>();
@@ -24,6 +25,7 @@ const EventsStack = () => {
                 <Stack.Screen name="CreateEvent" component={CreateEvent} />
                 <Stack.Screen name="SetGeneralEventDetails" component={SetGeneralEventDetails} />
                 <Stack.Screen name="SetSpecificEventDetails" component={SetSpecificEventDetails} />
+                <Stack.Screen name="setLocationEventDetails" component={SetLocationEventDetails} />
                 <Stack.Screen name="FinalizeEvent" component={FinalizeEvent} />
             </Stack.Group>
         </Stack.Navigator>

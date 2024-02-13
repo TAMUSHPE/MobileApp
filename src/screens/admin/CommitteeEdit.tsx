@@ -213,7 +213,9 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                             className='w-[30%]'
                             onPress={() => setLogoSelectModal(true)}
                         >
-                            <View className='border-2 border-pale-blue h-full rounded-2xl border-dashed'>
+                            <View className='border-2 border-pale-blue h-full rounded-2xl'
+                                style={{ borderStyle: 'dashed' }}
+                            >
                                 <View className='items-center justify-center h-full'>
                                     <FontAwesome name="camera" size={40} color="#72A9BE" />
                                     <Text className='text-center text-pale-blue text-lg'>UPLOAD</Text>
