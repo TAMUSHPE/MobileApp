@@ -1,8 +1,35 @@
 import * as functions from 'firebase-functions';
 import { db } from './firebaseConfig';
 import { SHPEEvent, SHPEEventLog } from './types'
-import { Timestamp } from 'firebase-admin/firestore';
+import { GeoPoint, Timestamp } from 'firebase-admin/firestore';
 import { MillisecondTimes } from './timeUtils';
+
+/**
+ * Converts an angle in degrees to radians
+ * @param angle 
+ * @returns 
+ */
+const degreesToRadians = (angle: number): number => {
+    return angle * Math.PI / 180;
+}
+
+/**
+ * Calculates geographic distance of two geographic points in meters
+ * @param pos1 First position with latitude and longitude
+ * @param pos2 Second position with latitude and longitude
+ * @returns Distance in meters on earth between two geographical coordinates
+ * @reference https://en.wikipedia.org/wiki/Haversine_formula
+ * @reference https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
+ */
+const geographicDistance = (pos1: GeoPoint, pos2: GeoPoint): number => {
+    const EARTH_RADIUS = 6378142; // Approximate radius in meters
+    const deltaLatitude = degreesToRadians(pos2.latitude - pos1.latitude);
+    const deltaLongitude = degreesToRadians(pos2.longitude - pos1.longitude);
+
+    const a = 0.5 - Math.cos(deltaLatitude) / 2 + Math.cos(degreesToRadians(pos1.latitude)) * Math.cos(degreesToRadians(pos2.latitude)) * (1 - Math.cos(deltaLongitude)) / 2;
+
+    return 2 * EARTH_RADIUS * Math.asin(Math.sqrt(a));
+}
 
 /**
  * Handles a request from a user to sign into an event.
@@ -10,7 +37,7 @@ import { MillisecondTimes } from './timeUtils';
 export const eventSignIn = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
-    } else if (typeof data !== "object" || typeof data.eventID !== "string") {
+    } else if (typeof data !== "object" || typeof data.eventID !== "string" || typeof data.location !== "object") {
         throw new functions.https.HttpsError("invalid-argument", "Invalid data types passed into function");
     }
 
@@ -37,6 +64,9 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     }
     else if (event.startTime && (event.startTime.toMillis() - (event.endTimeBuffer ?? 0) > Date.now())) {
         throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
+    }
+    else if (event.geolocation && event.geofencingRadius && geographicDistance(event.geolocation, data.location) > event.geofencingRadius + 10) {
+        throw new functions.https.HttpsError("out-of-range", `This event has geofencing enabled and the given user is not in range (${event.geofencingRadius / 1609} miles).`);
     }
 
     eventLog.signInTime = Timestamp.fromMillis(Date.now());
@@ -65,7 +95,7 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
 export const eventSignOut = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
-    } else if (typeof data !== "object" || typeof data.eventID !== "string") {
+    } else if (typeof data !== "object" || typeof data.eventID !== "string" || typeof data.location !== "object") {
         throw new functions.https.HttpsError("invalid-argument", "Invalid data types passed into function");
     }
 
@@ -92,6 +122,9 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     }
     else if (event.startTime && (event.startTime.toMillis() - (event.endTimeBuffer ?? 0) > Date.now())) {
         throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
+    }
+    else if (event.geolocation && event.geofencingRadius && geographicDistance(event.geolocation, data.location) > event.geofencingRadius + 10) {
+        throw new functions.https.HttpsError("out-of-range", `This event has geofencing enabled and the given user is not in range (${event.geofencingRadius / 1609} miles).`);
     }
 
     eventLog.signOutTime = Timestamp.fromMillis(Date.now());
