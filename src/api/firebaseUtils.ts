@@ -805,6 +805,27 @@ export const setUserRoles = async (uid: string, roles: Roles): Promise<HttpsCall
         });
 };
 
+export const setUserShirtSize = async (shirtSize: string): Promise<HttpsCallableResult | undefined> => {
+    const claims = (await auth.currentUser?.getIdTokenResult())?.claims;
+
+    if (!claims) {
+        throw new Error("setUserShirtSize() requires authentication", { cause: "auth.currentUser?.getIdTokenResult() evaluates as undefined" });
+    }
+    else if (!(claims.admin || claims.developer || claims.officer)) {
+        throw new Error("setUserShirtSize() called with Invalid Permissions", { cause: "" })
+    }
+
+    return httpsCallable(functions, "updateUserRole").call({}, { shirtSize })
+        .then(async (res) => {
+            // Sets given user's privateUserInfo firestore document to reflect change in claims
+            const currentSize = (await getPrivateUserData())?.shirtSize ?? {};
+            await setPrivateUserData({
+                shirtSize: Object.assign(currentSize, shirtSize)
+            });
+            return res;
+        });
+};
+
 
 export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => {
     try {
