@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { UserContext } from '../../context/UserContext';
 import { auth, db } from '../../config/firebaseConfig';
@@ -8,7 +8,11 @@ import { CommonMimeTypes } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
 import { formatExpirationDate, isMemberVerified } from '../../helpers/membership';
 import UploadIcon from '../../../assets/upload-solid.svg';
-import ModalDropdown from 'react-native-modal-dropdown';
+import { FontAwesome } from '@expo/vector-icons';
+import { darkMode } from '../../../tailwind.config';
+import { setUserRoles } from '../../api/firebaseUtils';
+import DismissibleModal from '../../components/DismissibleModal';
+import { Pressable } from 'react-native';
 
 const MemberSHPE = () => {
     const { userInfo } = useContext(UserContext)!;
@@ -95,15 +99,23 @@ const MemberSHPE = () => {
             chapterURL: URL
         }, { merge: true });
         setLoading(false);
+        setShowRoleModal(true)
     };
 
-    const tShirtDropdownOptions = ['XS', 'S', 'M', 'L', 'XL'];
-    const dropdownRef = useRef(null);
+    const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
 
-    const showDropdown = () => {
-        if (dropdownRef.current) {
-            (dropdownRef.current as any).show();
-        }
+    const ShirtSize = ({ size, isActive, onToggle, darkMode }: {
+        size: string,
+        isActive: boolean,
+        onToggle: () => void,
+        darkMode: boolean
+    }) => {
+        return (
+            <Pressable onPress={onToggle} className='flex-row items-center py-1 mb-3'>
+                <View className={`w-7 h-7 mr-3 rounded-full border ${isActive && "bg-black"}`} />
+                <Text className={`${darkMode ? "text-white" : "text-black"} text-lg`}>{size}</Text>
+            </Pressable>
+        );
     };
 
     //const uploadShirtSize
@@ -141,32 +153,6 @@ const MemberSHPE = () => {
                                 </View>
                             </TouchableOpacity>
                         </View>
-
-                        <TouchableOpacity
-                            className={`px-3 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-500" : "bg-blue-900"}`}
-                            onPress={showDropdown}
-                        >
-                            <View className='flex-row'>
-                                <Text className="text-white font-semibold text-lg ml-3">T-Shirt Size</Text>
-                            </View>
-
-                            <View style={{ justifyContent: 'center', alignItems: 'center', marginLeft:100}}>
-                                <ModalDropdown 
-                                    ref={dropdownRef} 
-                                    options={tShirtDropdownOptions}
-                                    dropdownStyle={{ width: 100, height: 0, marginTop: 7, marginLeft: 0, borderRadius: 10, backgroundColor: 'white' }}
-                                    dropdownTextStyle={{ fontSize: 16, color: 'black', textAlign: 'center' }}
-                                    renderRow={(option) => (
-                                        <View style={{ borderRadius: 20, overflow: 'hidden', justifyContent: 'center', alignItems: 'center', height: 35 }}> 
-                                            <Text style={{ fontSize: 16, color: 'black', textAlign: 'center' }}>{option}</Text>
-                                        </View>
-                                    )}
-                                >
-                                    <View></View>
-                                </ModalDropdown>
-                            </View>
-
-                        </TouchableOpacity>
                             
                         {loading && (
                             <View className='items-center mt-2'>
@@ -247,7 +233,117 @@ const MemberSHPE = () => {
             </View>
 
             <View className='mb-20'></View>
+
+            <DismissibleModal
+                visible={showRoleModal}
+                setVisible={setShowRoleModal}
+            >
+                <View
+                    className='flex opacity-100 bg-white rounded-md px-6 pt-6'
+                    style={{ minWidth: 300 }}
+                >
+                    {/* Title */}
+                    <View className='flex-row items-center mb-4'>
+                        <FontAwesome name="user" color="black" size={30} />
+                        <Text className='text-2xl font-semibold ml-2'>User Permissions</Text>
+                    </View>
+
+                    {/* Position Custom Title */}
+                    <View>
+                        <Text className='text-lg font-semibold'>Enter a custom title</Text>
+                        <Text className='text-sm text-gray-500 mb-2'>This is only used on profile screen</Text>
+
+                        <Text className='text-lg font-semibold mb-2'>Select T-Shirt Size</Text>
+                    </View>
+
+                    {/* Position Selection */}
+                    <View>
+                        <ShirtSize
+                            size="XS"
+                            isActive={modifiedRoles?.admin || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, admin: !modifiedRoles?.admin })}
+                            darkMode={darkMode || false}
+                        />
+                        <ShirtSize
+                            size="S"
+                            isActive={modifiedRoles?.developer || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, developer: !modifiedRoles?.developer })}
+                            darkMode={darkMode || false}
+
+                        />
+                        <ShirtSize
+                            size="M"
+                            isActive={modifiedRoles?.officer || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, officer: !modifiedRoles?.officer })}
+                            darkMode={darkMode || false}
+                        />
+                        <ShirtSize
+                            size="L"
+                            isActive={modifiedRoles?.secretary || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, secretary: !modifiedRoles?.secretary })}
+                            darkMode={darkMode || false}
+                        />
+                        <ShirtSize
+                            size="XL"
+                            isActive={modifiedRoles?.representative || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, representative: !modifiedRoles?.representative })}
+                            darkMode={darkMode || false}
+                        />
+                    </View>
+
+                    {/* Action Buttons */}
+                    <View className="flex-row justify-between items-center my-6 mx-5">
+                        <TouchableOpacity
+                            onPress={async () => {
+
+                                // checks if has role but no custom title
+                                if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
+                                    Alert.alert("Missing Title", "You must enter a title ");
+                                    return;
+                                }
+
+
+                                // Checks if has custom title but no role
+                                if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead && modifiedRoles?.customTitle) {
+                                    Alert.alert("Missing Role", "If a custom title is entered, you must select a role.");
+                                    return;
+                                }
+
+                                setUpdatingRoles(true);
+                                if (modifiedRoles)
+                                    await setUserRoles(uid, modifiedRoles)
+                                        .then(() => {
+                                            Alert.alert("Permissions Updated", "This user's roles have been updated successfully!")
+                                        })
+                                        .catch((err) => {
+                                            console.error(err);
+                                            Alert.alert("An Issue Occured", "A server issue has occured. Please try again. If this keeps occurring, please contact a developer");
+                                        });
+
+                                setUpdatingRoles(false);
+                                setShowRoleModal(false);
+                            }}
+                            className="bg-pale-blue rounded-lg justify-center items-center px-4 py-1"
+                        >
+                            <Text className='text-xl font-bold text-white px-2'>Done</Text>
+                        </TouchableOpacity>
+
+
+                        <TouchableOpacity
+                            onPress={async () => {
+                                setModifiedRoles(roles)
+                                setShowRoleModal(false)
+                            }} >
+                            <Text className='text-xl font-bold px-4 py-1'>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {updatingRoles && <ActivityIndicator className='mb-4' size={30} />}
+                </View>
+            </DismissibleModal>
+
         </ScrollView>
+
+
 
     )
 }
