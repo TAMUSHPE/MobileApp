@@ -10,7 +10,7 @@ import { formatExpirationDate, isMemberVerified } from '../../helpers/membership
 import UploadIcon from '../../../assets/upload-solid.svg';
 import { FontAwesome } from '@expo/vector-icons';
 import { darkMode } from '../../../tailwind.config';
-import { setUserRoles } from '../../api/firebaseUtils';
+import { setUserRoles, setUserShirtSize } from '../../api/firebaseUtils';
 import DismissibleModal from '../../components/DismissibleModal';
 import { Pressable } from 'react-native';
 
@@ -24,6 +24,7 @@ const MemberSHPE = () => {
     const [uploadedChapter, setUploadedChapter] = useState(false)
     const [isVerified, setIsVerified] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [updatingSizes, setUpdatingSizes] = useState<boolean>(false);
 
     useEffect(() => {
         if (nationalExpiration && chapterExpiration) {
@@ -99,16 +100,16 @@ const MemberSHPE = () => {
             chapterURL: URL
         }, { merge: true });
         setLoading(false);
-        setShowRoleModal(true)
+        setShowShirtModal(true)
     };
 
-    const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
+    const [showShirtModal, setShowShirtModal] = useState<boolean>(false);
+    const [shirtSize, setShirtSize] = useState<string | undefined>(undefined);
 
-    const ShirtSize = ({ size, isActive, onToggle, darkMode }: {
+    const ShirtSize = ({ size, isActive, onToggle }: {
         size: string,
         isActive: boolean,
         onToggle: () => void,
-        darkMode: boolean
     }) => {
         return (
             <Pressable onPress={onToggle} className='flex-row items-center py-1 mb-3'>
@@ -235,8 +236,8 @@ const MemberSHPE = () => {
             <View className='mb-20'></View>
 
             <DismissibleModal
-                visible={showRoleModal}
-                setVisible={setShowRoleModal}
+                visible={showShirtModal}
+                setVisible={setShowShirtModal}
             >
                 <View
                     className='flex opacity-100 bg-white rounded-md px-6 pt-6'
@@ -260,34 +261,28 @@ const MemberSHPE = () => {
                     <View>
                         <ShirtSize
                             size="XS"
-                            isActive={modifiedRoles?.admin || false}
-                            onToggle={() => setModifiedRoles({ ...modifiedRoles, admin: !modifiedRoles?.admin })}
-                            darkMode={darkMode || false}
+                            isActive={shirtSize === "XS"}
+                            onToggle={() => setShirtSize(shirtSize === 'XS' ? undefined : 'XS')}
                         />
                         <ShirtSize
                             size="S"
-                            isActive={modifiedRoles?.developer || false}
-                            onToggle={() => setModifiedRoles({ ...modifiedRoles, developer: !modifiedRoles?.developer })}
-                            darkMode={darkMode || false}
-
+                            isActive={shirtSize === "S"}
+                            onToggle={() => setShirtSize(shirtSize === 'S' ? undefined : 'S')}
                         />
                         <ShirtSize
                             size="M"
-                            isActive={modifiedRoles?.officer || false}
-                            onToggle={() => setModifiedRoles({ ...modifiedRoles, officer: !modifiedRoles?.officer })}
-                            darkMode={darkMode || false}
+                            isActive={shirtSize === "M"}
+                            onToggle={() => setShirtSize(shirtSize === 'M' ? undefined : 'M')}
                         />
                         <ShirtSize
                             size="L"
-                            isActive={modifiedRoles?.secretary || false}
-                            onToggle={() => setModifiedRoles({ ...modifiedRoles, secretary: !modifiedRoles?.secretary })}
-                            darkMode={darkMode || false}
+                            isActive={shirtSize === "L"}
+                            onToggle={() => setShirtSize(shirtSize === 'L' ? undefined : 'L')}
                         />
                         <ShirtSize
                             size="XL"
-                            isActive={modifiedRoles?.representative || false}
-                            onToggle={() => setModifiedRoles({ ...modifiedRoles, representative: !modifiedRoles?.representative })}
-                            darkMode={darkMode || false}
+                            isActive={shirtSize === "XL"}
+                            onToggle={() => setShirtSize(shirtSize === 'XL' ? undefined : 'XL')}
                         />
                     </View>
 
@@ -297,21 +292,14 @@ const MemberSHPE = () => {
                             onPress={async () => {
 
                                 // checks if has role but no custom title
-                                if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
-                                    Alert.alert("Missing Title", "You must enter a title ");
+                                if ((shirtSize === "XS" || shirtSize === "S" || shirtSize === "M" || shirtSize === "L" || shirtSize === "XL")) {
+                                    Alert.alert("Missing Shrit Size", "You must enter a shirt size ");
                                     return;
                                 }
 
-
-                                // Checks if has custom title but no role
-                                if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead && modifiedRoles?.customTitle) {
-                                    Alert.alert("Missing Role", "If a custom title is entered, you must select a role.");
-                                    return;
-                                }
-
-                                setUpdatingRoles(true);
-                                if (modifiedRoles)
-                                    await setUserRoles(uid, modifiedRoles)
+                                setUpdatingSizes(true);
+                                if (shirtSize)
+                                    await setUserShirtSize(shirtSize)
                                         .then(() => {
                                             Alert.alert("Permissions Updated", "This user's roles have been updated successfully!")
                                         })
@@ -320,8 +308,8 @@ const MemberSHPE = () => {
                                             Alert.alert("An Issue Occured", "A server issue has occured. Please try again. If this keeps occurring, please contact a developer");
                                         });
 
-                                setUpdatingRoles(false);
-                                setShowRoleModal(false);
+                                setUpdatingSizes(false);
+                                setShowShirtModal(false);
                             }}
                             className="bg-pale-blue rounded-lg justify-center items-center px-4 py-1"
                         >
@@ -331,13 +319,13 @@ const MemberSHPE = () => {
 
                         <TouchableOpacity
                             onPress={async () => {
-                                setModifiedRoles(roles)
-                                setShowRoleModal(false)
+                                setShirtSize(shirtSize)
+                                setShowShirtModal(false)
                             }} >
                             <Text className='text-xl font-bold px-4 py-1'>Cancel</Text>
                         </TouchableOpacity>
                     </View>
-                    {updatingRoles && <ActivityIndicator className='mb-4' size={30} />}
+                    {updatingSizes && <ActivityIndicator className='mb-4' size={30} />}
                 </View>
             </DismissibleModal>
 
