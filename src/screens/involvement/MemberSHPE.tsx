@@ -10,7 +10,7 @@ import { formatExpirationDate, isMemberVerified } from '../../helpers/membership
 import UploadIcon from '../../../assets/upload-solid.svg';
 import { FontAwesome } from '@expo/vector-icons';
 import { darkMode } from '../../../tailwind.config';
-import { setUserRoles, setUserShirtSize } from '../../api/firebaseUtils';
+import { setUserShirtSize } from '../../api/firebaseUtils';
 import DismissibleModal from '../../components/DismissibleModal';
 import { Pressable } from 'react-native';
 
@@ -58,6 +58,12 @@ const MemberSHPE = () => {
     const uploadDocument = async (type: 'national' | 'chapter') => {
         const document = await selectDocument();
         if (document) {
+            if(type === 'chapter') {
+                setShowShirtModal(true);
+                //here i either need to wait for the user to close the modal or
+                //make a function that runs the code outside of the conditial statement
+                //after the user closes the modal
+            }
             setLoading(true);
             const path = `user-docs/${auth.currentUser?.uid}/${type}-verification`;
             const onSuccess = type === 'national' ? onNationalUploadSuccess : onChapterUploadSuccess;
@@ -100,7 +106,7 @@ const MemberSHPE = () => {
             chapterURL: URL
         }, { merge: true });
         setLoading(false);
-        setShowShirtModal(true)
+        //setShowShirtModal(true)
     };
 
     const [showShirtModal, setShowShirtModal] = useState<boolean>(false);
@@ -292,7 +298,7 @@ const MemberSHPE = () => {
                             onPress={async () => {
 
                                 // checks if has role but no custom title
-                                if ((shirtSize === "XS" || shirtSize === "S" || shirtSize === "M" || shirtSize === "L" || shirtSize === "XL")) {
+                                if (!(shirtSize === "XS" || shirtSize === "S" || shirtSize === "M" || shirtSize === "L" || shirtSize === "XL")) {
                                     Alert.alert("Missing Shrit Size", "You must enter a shirt size ");
                                     return;
                                 }
@@ -301,7 +307,7 @@ const MemberSHPE = () => {
                                 if (shirtSize)
                                     await setUserShirtSize(shirtSize)
                                         .then(() => {
-                                            Alert.alert("Permissions Updated", "This user's roles have been updated successfully!")
+                                            Alert.alert("Shirt Size Updated", "You have successfully submitted a document and submitted your shirt size!")
                                         })
                                         .catch((err) => {
                                             console.error(err);
