@@ -4,7 +4,6 @@ import { getFirestore } from "firebase/firestore";
 import { getFunctions } from 'firebase/functions';
 import { getStorage } from "firebase/storage";
 
-
 const firebaseConfig = {
     apiKey: "AIzaSyDPYvk1vnyyMd5I6_VJfTk9CwUmLrIFFOg",
     authDomain: "tamushpemobileapp.firebaseapp.com",
