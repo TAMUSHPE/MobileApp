@@ -1,12 +1,12 @@
 import { initializeApp, FirebaseApp, getApp, getApps } from 'firebase/app';
-import { getAuth, Auth, initializeAuth, signInWithPopup, signOut, GoogleAuthProvider, User} from "firebase/auth";
+import { getAuth, Auth, initializeAuth, signInWithPopup, signOut, GoogleAuthProvider, User } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getFunctions } from 'firebase/functions';
 import { getStorage } from "firebase/storage";
 
 
 const firebaseConfig = {
-    apiKey: "***REMOVED***",
+    apiKey: process.env.GOOGLE_API_KEY,
     authDomain: "tamushpemobileapp.firebaseapp.com",
     projectId: "tamushpemobileapp",
     storageBucket: "tamushpemobileapp.appspot.com",
@@ -31,4 +31,4 @@ const db = getFirestore(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
 
-export { db, auth, storage, functions};
+export { db, auth, storage, functions };
