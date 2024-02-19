@@ -21,16 +21,16 @@ import { HomeStack } from './HomeStack'
 const HomeDrawerContent = (props: DrawerContentComponentProps) => {
     const { userInfo, signOutUser } = useContext(UserContext)!;
     const [isVerified, setIsVerified] = useState<boolean>(false);
-    const { nationalExpiration, chapterExpiration, roles } = userInfo?.publicInfo ?? {};
+    const { nationalExpiration, chapterExpiration, roles } = userInfo?.publicInfo!;
     const isOfficer = roles ? roles.officer : false;
     let badgeColor = getBadgeColor(isOfficer!, isVerified);
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
     useEffect(() => {
-        if (nationalExpiration && chapterExpiration) {
+        if (nationalExpiration?.toDate && chapterExpiration?.toDate) {
             setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
         }
-    }, [nationalExpiration, chapterExpiration])
+    }, [nationalExpiration, chapterExpiration]);
 
     const drawerItemLabelStyle = {
         color: userInfo?.private?.privateInfo?.settings?.darkMode ? "#EEE" : "#000"

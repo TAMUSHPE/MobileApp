@@ -21,10 +21,10 @@ const MemberSHPE = () => {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        if (nationalExpiration && chapterExpiration) {
+        if (nationalExpiration?.toDate && chapterExpiration?.toDate) {
             setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
         }
-    }, [nationalExpiration, chapterExpiration])
+    }, [nationalExpiration, chapterExpiration]);
 
     useEffect(() => {
         const unsubscribe = () => {
