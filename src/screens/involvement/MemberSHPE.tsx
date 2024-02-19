@@ -102,10 +102,12 @@ const MemberSHPE = () => {
             {/* Not Verified Member */}
             <View className='border-b pb-4'>
                 {!isVerified && (
-                    <View className='px-8 mt-5'>
-                        <Text className='text-3xl font-semibold'>Become a Member!</Text>
-                        <Text className='text-gray-500 text-lg font-semibold'>Follow the instructions below and upload the necessary screenshot.</Text>
-                        <View className='flex-row mt-10 justify-between'>
+                    <View className='mt-5'>
+                        <View className='px-8'>
+                            <Text className='text-3xl font-semibold'>Become a Member!</Text>
+                            <Text className='text-gray-500 text-lg font-semibold'>Follow the instructions below and upload the necessary screenshot.</Text>
+                        </View>
+                        <View className='flex-row mt-10 justify-around px-2'>
                             <TouchableOpacity
                                 className={`px-3 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-500" : "bg-maroon"}`}
                                 onPress={() => uploadDocument('chapter')}
