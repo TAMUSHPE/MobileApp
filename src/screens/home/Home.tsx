@@ -41,18 +41,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             }
 
         }
-
-        const updateUserInfo = async () => {
-            try {
-                const firebaseUser = await getUser(auth.currentUser?.uid!)
-                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                await setUserInfo(firebaseUser);
-            } catch (error) {
-                console.error("Error updating user:", error);
-            }
-        }
-
-        updateUserInfo();
         manageNotificationPermissions();
         handleBannedUser();
         if (!auth.currentUser?.uid) {
