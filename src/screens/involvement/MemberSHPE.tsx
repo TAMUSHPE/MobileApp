@@ -56,18 +56,17 @@ const MemberSHPE = () => {
     }, [])
 
     const uploadDocument = async (type: 'national' | 'chapter') => {
+        if(type === 'chapter') {
+            setShowShirtModal(true);
+        }
+        else {
         const document = await selectDocument();
-        if (document) {
-            if(type === 'chapter') {
-                setShowShirtModal(true);
-                //here i either need to wait for the user to close the modal or
-                //make a function that runs the code outside of the conditial statement
-                //after the user closes the modal
+            if (document) {
+                setLoading(true);
+                const path = `user-docs/${auth.currentUser?.uid}/${type}-verification`;
+                const onSuccess = type === 'national' ? onNationalUploadSuccess : onChapterUploadSuccess;
+                uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
             }
-            setLoading(true);
-            const path = `user-docs/${auth.currentUser?.uid}/${type}-verification`;
-            const onSuccess = type === 'national' ? onNationalUploadSuccess : onChapterUploadSuccess;
-            uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
         }
     };
 
@@ -306,8 +305,14 @@ const MemberSHPE = () => {
                                 setUpdatingSizes(true);
                                 if (shirtSize)
                                     await setUserShirtSize(shirtSize)
-                                        .then(() => {
-                                            Alert.alert("Shirt Size Updated", "You have successfully submitted a document and submitted your shirt size!")
+                                        .then(async () => {
+                                            const document = await selectDocument();
+                                            if (document) {
+                                                setLoading(true);
+                                                const path = `user-docs/${auth.currentUser?.uid}/$-verification`;
+                                                const onSuccess = onChapterUploadSuccess;
+                                                uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
+                                            }
                                         })
                                         .catch((err) => {
                                             console.error(err);
