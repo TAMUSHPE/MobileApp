@@ -203,11 +203,11 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                     <View className='flex-row justify-between mt-4'>
                         <View className='flex-col'>
                             <Text className='text-lg font-semibold'>Expires</Text>
-                            <Text className='text-lg font-semibold'>{formatExpirationDate(selectedMemberDocuments?.chapterExpiration?.toDate())}</Text>
+                            <Text className='text-lg font-semibold'>{formatExpirationDate(selectedMemberDocuments?.chapterExpiration)}</Text>
                         </View>
                         <View className='flex-col'>
                             <Text className='text-lg font-semibold text-right'>Expires</Text>
-                            <Text className='text-lg font-semibold text-right'>{formatExpirationDate(selectedMemberDocuments?.nationalExpiration.toDate())}</Text>
+                            <Text className='text-lg font-semibold text-right'>{formatExpirationDate(selectedMemberDocuments?.nationalExpiration)}</Text>
                             <TouchableOpacity
                                 onPress={() => {
                                     setConfirmVisible(false);

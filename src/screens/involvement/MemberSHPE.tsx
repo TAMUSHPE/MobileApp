@@ -21,7 +21,7 @@ const MemberSHPE = () => {
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        if (nationalExpiration?.toDate && chapterExpiration?.toDate) {
+        if (nationalExpiration && chapterExpiration) {
             setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
         }
     }, [nationalExpiration, chapterExpiration]);
@@ -148,11 +148,15 @@ const MemberSHPE = () => {
                     <View className='flex-row px-8 mt-5'>
                         <View className='w-[50%]'>
                             <Text className='font-bold text-maroon'>TAMU Chapter Membership Expiration</Text>
-                            <Text className='font-bold text-maroon mt-3'>{formatExpirationDate(userInfo?.publicInfo?.chapterExpiration!.toDate())}</Text>
+                            <Text className='font-bold text-maroon mt-3'>
+                                {userInfo?.publicInfo?.chapterExpiration ? formatExpirationDate(userInfo.publicInfo.chapterExpiration) : ''}
+                            </Text>
                         </View>
                         <View className='w-[50%]'>
                             <Text className='font-bold text-pale-orange text-right'>SHPE National Membership Expiration</Text>
-                            <Text className='font-bold text-pale-orange text-right mt-3'>{formatExpirationDate(userInfo?.publicInfo?.nationalExpiration!.toDate())}</Text>
+                            <Text className='font-bold text-pale-orange text-right mt-3'>
+                                {userInfo?.publicInfo?.nationalExpiration ? formatExpirationDate(userInfo.publicInfo.nationalExpiration) : ''}
+                            </Text>
                         </View>
                     </View>
                 )}
