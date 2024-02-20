@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, TouchableHighlight, KeyboardAvoidingView, Platform, Image } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, TouchableHighlight, KeyboardAvoidingView, Platform, Image, Switch } from 'react-native';
 import React, { useContext, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
@@ -41,6 +41,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     const [endTime, setEndTime] = useState<Timestamp | undefined>(event.endTime ?? undefined);
     const [description, setDescription] = useState<string>("");
     const [coverImageURI, setCoverImageURI] = useState<string>();
+    const [isClubWide, setIsClubWide] = useState<boolean>(false);
 
     const selectCoverImage = async () => {
         const result = await selectImage({
@@ -389,6 +390,20 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             }
                         </View>
                     </View>
+
+                    <KeyboardAvoidingView className='py-3'>
+                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Scope</Text>
+                        <View className="flex flex-row items-center justify-between py-2">
+                            <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Club-Wide Event</Text>
+                            <Switch
+                                trackColor={{ false: "#999796", true: "#001F5B" }}
+                                thumbColor={isClubWide ? "#72A9BE" : "#f4f3f4"}
+                                ios_backgroundColor="#999796"
+                                onValueChange={() => setIsClubWide(previousState => !previousState)}
+                                value={isClubWide}
+                            />
+                        </View>
+                    </KeyboardAvoidingView>
 
                     <KeyboardAvoidingView className='py-3'>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Description</Text>
