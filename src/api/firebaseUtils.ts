@@ -805,11 +805,10 @@ export const setUserRoles = async (uid: string, roles: Roles): Promise<HttpsCall
         });
 };
 
-export const setUserShirtSize = async (shirtSize: string): Promise<HttpsCallableResult | undefined> => {
+export const setUserShirtSize = async (shirtSize: string): Promise<void> => {
     await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
         shirtSize: shirtSize
     }, { merge: true });
-    return undefined;
 };
 
 

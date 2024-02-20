@@ -82,7 +82,7 @@ const MemberSHPE = () => {
     const onNationalUploadSuccess = async (URL: string) => {
         const today = new Date();
         const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
-        await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
+        await setDoc(doc(db, `shirtOrder/${auth.currentUser?.uid}`), {
             nationalUploadDate: Timestamp.fromDate(today),
             nationalExpiration: Timestamp.fromDate(expirationDate),
             nationalURL: URL
