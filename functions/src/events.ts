@@ -7,7 +7,7 @@ import { MillisecondTimes } from './timeUtils';
 /**
  * Converts an angle in degrees to radians
  * @param angle 
- * @returns 
+ * @returns given degree angle in radians
  */
 const degreesToRadians = (angle: number): number => {
     return angle * Math.PI / 180;
