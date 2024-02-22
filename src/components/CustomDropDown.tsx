@@ -56,7 +56,7 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
     const moveTitle = useRef(new Animated.Value(0)).current;
     const [componentLayout, setComponentLayout] = useState<LayoutRectangle | null>(null);
 
-    const titleStartY = 20;
+    const titleStartY = 30;
     const titleEndY = -5;
 
     useEffect(() => {
