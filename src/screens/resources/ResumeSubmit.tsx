@@ -164,7 +164,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                                 activeOpacity={0.5}
                                 onPress={() => handleLinkPress(userInfo?.publicInfo?.resumePublicURL!)}
                             >
-                                <Text className='font-semibold text-lg'>{truncateStringWithEllipsis(resumeName!)}</Text>
+                                <Text className='font-semibold text-lg'>{resumeName ? truncateStringWithEllipsis(resumeName) : "Resume"}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
