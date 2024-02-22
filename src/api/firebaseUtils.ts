@@ -667,10 +667,10 @@ export const getAttendanceNumber = async (eventId: string): Promise<number | nul
  */
 export const signInToEvent = async (eventID: string): Promise<EventLogStatus> => {
     const { status } = await Location.requestForegroundPermissionsAsync();
-    let location: null | GeoPoint = null;
+    let location: null | { longitude: number, latitude: number } = null;
     if (status == 'granted') {
         const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
-        location = new GeoPoint(latitude, longitude);
+        location = (new GeoPoint(latitude, longitude)).toJSON();
     }
     return await httpsCallable(functions, "eventSignIn")
         .call(null, { eventID, location })
@@ -706,10 +706,10 @@ export const signInToEvent = async (eventID: string): Promise<EventLogStatus> =>
  */
 export const signOutOfEvent = async (eventID: string): Promise<EventLogStatus> => {
     const { status } = await Location.requestForegroundPermissionsAsync();
-    let location: null | GeoPoint = null;
+    let location: null | { longitude: number, latitude: number } = null;
     if (status == 'granted') {
         const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
-        location = new GeoPoint(latitude, longitude);
+        location = (new GeoPoint(latitude, longitude)).toJSON();
     }
     return await httpsCallable(functions, "eventSignOut")
         .call(null, { eventID, location })
