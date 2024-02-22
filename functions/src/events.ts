@@ -46,7 +46,7 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     if (typeof event !== "object") {
         throw new functions.https.HttpsError("not-found", `Event with id ${data.eventID} could not be found`);
     }
-
+    console.info(data.location);
     // Used to check if user has already signed into event
     const eventLogDocRef = db.collection(`events/${data.eventID}/logs`).doc(context.auth.uid);
     const eventLog: SHPEEventLog = (await eventLogDocRef.get()).data() ?? {
@@ -65,8 +65,13 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     else if (event.startTime && (event.startTime.toMillis() - (event.endTimeBuffer ?? 0) > Date.now())) {
         throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
     }
-    else if (event.geolocation && event.geofencingRadius && geographicDistance(event.geolocation, data.location) > event.geofencingRadius + 10) {
-        throw new functions.https.HttpsError("out-of-range", `This event has geofencing enabled and the given user is not in range (${event.geofencingRadius / 1609} miles).`);
+    else if (event.geolocation && event.geofencingRadius) {
+        if (!data.location.latitude || !data.location.longitude) {
+            throw new functions.https.HttpsError("invalid-argument", "Invalid geopoint object passed into function.");
+        }
+        else if (geographicDistance(event.geolocation, data.location) > event.geofencingRadius + 10) {
+            throw new functions.https.HttpsError("out-of-range", `This event has geofencing enabled and the given user is not in range (${event.geofencingRadius / 1609} meters).`);
+        }
     }
 
     eventLog.signInTime = Timestamp.fromMillis(Date.now());
@@ -123,8 +128,13 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     else if (event.startTime && (event.startTime.toMillis() - (event.endTimeBuffer ?? 0) > Date.now())) {
         throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
     }
-    else if (event.geolocation && event.geofencingRadius && geographicDistance(event.geolocation, data.location) > event.geofencingRadius + 10) {
-        throw new functions.https.HttpsError("out-of-range", `This event has geofencing enabled and the given user is not in range (${event.geofencingRadius / 1609} miles).`);
+    else if (event.geolocation && event.geofencingRadius) {
+        if (!data.location.latitude || !data.location.longitude) {
+            throw new functions.https.HttpsError("invalid-argument", "Invalid geopoint object passed into function.");
+        }
+        else if (geographicDistance(event.geolocation, data.location) > event.geofencingRadius + 10) {
+            throw new functions.https.HttpsError("out-of-range", `This event has geofencing enabled and the given user is not in range (${event.geofencingRadius / 1609} meters).`);
+        }
     }
 
     eventLog.signOutTime = Timestamp.fromMillis(Date.now());
