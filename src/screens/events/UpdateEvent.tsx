@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal, ActivityIndicator, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal, ActivityIndicator, Alert, Switch } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
@@ -65,6 +65,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [committee, setCommittee] = useState<string | undefined | null>(event.committee);
     const [creator, setCreator] = useState<PublicUserInfo | undefined | null>(event.creator);
     const [nationalConventionEligible, setNationalConventionEligible] = useState<boolean | undefined | null>(event.nationalConventionEligible);
+    const [isClubWide, setIsClubWide] = useState<boolean | undefined | null>(event.general);
 
     useEffect(() => {
         getCommittees()
@@ -469,6 +470,21 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             }
                         </View>
                     </View>
+                    
+                    {/* toggle to make events appear on general tab*/}
+                    <KeyboardAvoidingView className='py-3'>
+                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Scope</Text>
+                        <View className="flex flex-row items-center justify-between py-2">
+                            <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Club-Wide Event</Text>
+                            <Switch
+                                trackColor={{ false: "#999796", true: "#001F5B" }}
+                                thumbColor={isClubWide ? "#72A9BE" : "#f4f3f4"}
+                                ios_backgroundColor="#999796"
+                                onValueChange={() => setIsClubWide(previousState => !previousState)}
+                                value={isClubWide || false}
+                            />
+                        </View>
+                    </KeyboardAvoidingView>
 
                     {/* Description */}
                     <KeyboardAvoidingView behavior='position' className='py-3'>
