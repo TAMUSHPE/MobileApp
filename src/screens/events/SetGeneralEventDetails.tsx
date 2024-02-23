@@ -41,7 +41,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     const [endTime, setEndTime] = useState<Timestamp | undefined>(event.endTime ?? undefined);
     const [description, setDescription] = useState<string>("");
     const [coverImageURI, setCoverImageURI] = useState<string>();
-    const [isClubWide, setIsClubWide] = useState<boolean>(false);
+    const [isClubWide, setIsClubWide] = useState<boolean>(event.general ?? false);
 
     const selectCoverImage = async () => {
         const result = await selectImage({
@@ -391,6 +391,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                         </View>
                     </View>
 
+                    {/* toggle to make events appear on general tab*/}
                     <KeyboardAvoidingView className='py-3'>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Scope</Text>
                         <View className="flex flex-row items-center justify-between py-2">
