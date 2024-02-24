@@ -10,7 +10,7 @@ import { UserContext } from '../../context/UserContext';
 import { auth, functions } from '../../config/firebaseConfig';
 import { sendPasswordResetEmail, updateProfile } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
-import { setPublicUserData, setPrivateUserData, getUser, getCommittees, submitFeedback } from '../../api/firebaseUtils';
+import { setPublicUserData, setPrivateUserData, getUser, getCommittees, submitFeedback, isUsernameUnique } from '../../api/firebaseUtils';
 import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/fileSelection';
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
@@ -396,11 +396,18 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     setName(userInfo?.publicInfo?.name);
                     setShowNamesModal(false);
                 }}
-                onDone={() => {
+                onDone={async () => {
                     if (validateDisplayName(displayName, true) && validateName(name, true)) {
-                        saveChanges();
-                        setShowNamesModal(false);
+                        const isUnique = await isUsernameUnique(displayName!);
+                        if (isUnique) {
+                            saveChanges();
+                            setShowNamesModal(false);
+                        } else {
+                            setDisplayName(userInfo?.publicInfo?.displayName);
+                            alert("Display name is already taken. Please choose another one.");
+                        }
                     }
+
                 }}
                 content={(
                     <KeyboardAvoidingView>
