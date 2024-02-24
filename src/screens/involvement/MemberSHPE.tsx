@@ -101,10 +101,11 @@ const MemberSHPE = () => {
         await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
             chapterUploadDate: Timestamp.fromDate(today),
             chapterExpiration: Timestamp.fromDate(expirationDate),
-            chapterURL: URL
+            chapterURL: URL,
+            shirtSize: shirtSize
         }, { merge: true });
 
-        await setDoc(doc(db, `shirtSize/${auth.currentUser?.uid}`), {
+        await setDoc(doc(db, `shirt-sizes/${auth.currentUser?.uid}`), {
             shirtUploadDate: Timestamp.fromDate(today),
             shirtExpiration: Timestamp.fromDate(expirationDate),
             shirtSize: shirtSize
