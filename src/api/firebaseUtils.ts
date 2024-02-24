@@ -936,19 +936,23 @@ export const getLeads = async (): Promise<PublicUserInfo[]> => {
 
 export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
     const memberSHPERef = collection(db, 'memberSHPE');
-    const memberSHPEQuery = query(memberSHPERef);
+    const memberSHPEQuery = query(memberSHPERef, where('nationalURL', '!=', ''));
     const memberSHPESnapshot = await getDocs(memberSHPEQuery);
-    const memberSHPEUserIds = memberSHPESnapshot.docs.map(doc => doc.id);
 
+    
     const members: PublicUserInfo[] = [];
-    for (const userId of memberSHPEUserIds) {
-        const userDocRef = doc(db, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists()) {
-            members.push({ uid: userId, ...userDocSnap.data() });
+    for (const document of memberSHPESnapshot.docs) {
+        const memberSHPEData = document.data();
+        if(memberSHPEData.chapterURL && memberSHPEData.nationalURL) {
+            const userId = document.id;
+            const userDocRef = doc(db, 'users', userId);
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+                members.push({ uid: userId, ...userDocSnap.data() });
+            }
+            
         }
     }
-
     return members;
 };
 
