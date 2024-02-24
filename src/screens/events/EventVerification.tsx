@@ -16,10 +16,16 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
     useEffect(() => {
         switch (mode) {
             case "sign-in":
-                signInToEvent(id).then((status) => setLogStatus(status));
+                signInToEvent(id).then((status) => {
+                    setLogStatus(status)
+                    setLoading(false);
+                });
                 break;
             case "sign-out":
-                signOutOfEvent(id).then((status) => setLogStatus(status));
+                signOutOfEvent(id).then((status) => {
+                    setLogStatus(status)
+                    setLoading(false);
+                });
                 break;
             default:
                 setLogStatus(EventLogStatus.EVENT_NOT_FOUND);
@@ -125,7 +131,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             onAnimationFinish={() => redirectToPage()}
                         />
                     </View>
-                    <Text>You've successfully signed in</Text>
+                    <Text className='text-lg font-semibold'>You've successfully signed in</Text>
                 </View>
             }
         </SafeAreaView>

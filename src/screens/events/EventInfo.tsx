@@ -181,7 +181,6 @@ const EventInfo = ({ navigation }: EventProps) => {
                         {geolocation && (
                             <TouchableOpacity
                                 onPress={() => {
-                                    console.log(geolocation.latitude, geolocation.longitude)
                                     if (Platform.OS === 'ios') {
                                         handleLinkPress(`http://maps.apple.com/?daddr=${geolocation.latitude},${geolocation.longitude}`);
                                     } else if (Platform.OS === 'android') {

@@ -480,7 +480,11 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                             <ActivityIndicator className="mb-4" size={"large"} />
                         )}
                         <InteractButton
-                            onPress={() => navigation.navigate("SetupInterests")}
+                            onPress={() => {
+                                if (resumeURL) {
+                                    navigation.navigate("SetupInterests")
+                                }
+                            }}
                             label='Continue'
                             buttonClassName={`${!resumeURL ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
                             textClassName={`${!resumeURL ? "text-gray-700" : "text-white"} text-lg font-bold`}

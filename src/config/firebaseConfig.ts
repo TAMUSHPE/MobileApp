@@ -7,7 +7,7 @@ import { getStorage } from "firebase/storage";
 
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDPYvk1vnyyMd5I6_VJfTk9CwUmLrIFFOg",
+    apiKey: process.env.GOOGLE_API_KEY,
     authDomain: "tamushpemobileapp.firebaseapp.com",
     projectId: "tamushpemobileapp",
     storageBucket: "tamushpemobileapp.appspot.com",
