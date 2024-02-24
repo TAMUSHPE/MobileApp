@@ -31,7 +31,7 @@ export const formatDate = (date: Date): string => {
     const month = monthNames[date.getMonth()];
     const year = date.getFullYear();
 
-    return `${month} ${day} ${year}`;
+    return `${month} ${day}, ${year}`;
 }
 
 /**

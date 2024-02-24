@@ -44,6 +44,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
     const [localEventName, setLocalEventName] = useState<string | undefined | null>(event.name);
     const [localCoverImageURI, setLocalCoverImageURI] = useState<string>(event.coverImageURI ?? '');
+    const [isFocused, setIsFocused] = useState<boolean>(true);
 
 
     // Form Data Hooks
@@ -71,6 +72,14 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             .then((result) => setSelectableCommittees(result))
             .catch(err => console.error("Issue getting committees:", err));
     }, []);
+
+    useEffect(() => {
+        if (openDropdown === null) {
+            setIsFocused(true);
+        } else {
+            setIsFocused(false);
+        }
+    }, [openDropdown])
 
     const handleUpdateEvent = async () => {
         setLoading(true);
@@ -215,6 +224,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 </View>
             )}
             <ScrollView
+                scrollEnabled={isFocused}
                 className={`flex flex-col flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`}
                 contentContainerStyle={{
                     paddingBottom: "50%"
