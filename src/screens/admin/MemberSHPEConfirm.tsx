@@ -96,6 +96,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
 
         setMembers(members.filter(member => member.uid !== uid));
 
+        // TODO: Fix Notification
         // const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
         // await sendNotificationToMember({
         //     uid: uid,
@@ -116,7 +117,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
         const memberDocRef = doc(db, 'memberSHPE', uid);
         await deleteDoc(memberDocRef);
 
-
+        // TODO: Fix Notification
         // const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
         // await sendNotificationToMember({
         //     uid: uid,
