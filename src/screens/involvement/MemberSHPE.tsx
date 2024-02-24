@@ -10,7 +10,6 @@ import { formatExpirationDate, isMemberVerified } from '../../helpers/membership
 import UploadIcon from '../../../assets/upload-solid.svg';
 import { FontAwesome } from '@expo/vector-icons';
 import { darkMode } from '../../../tailwind.config';
-import { setUserShirtSize } from '../../api/firebaseUtils';
 import DismissibleModal from '../../components/DismissibleModal';
 import { Pressable } from 'react-native';
 
@@ -105,13 +104,14 @@ const MemberSHPE = () => {
             chapterURL: URL
         }, { merge: true });
 
-        //await setDoc(doc(db, `shirtOrder/${auth.currentUser?.uid}`), {
-            //shirtUploadDate: Timestamp.fromDate(today),
-            //shirtSize: //shirt size here
-        //}, { merge: true });
+        await setDoc(doc(db, `shirtSize/${auth.currentUser?.uid}`), {
+            shirtUploadDate: Timestamp.fromDate(today),
+            shirtExpiration: Timestamp.fromDate(expirationDate),
+            shirtSize: shirtSize
+        }, { merge: true });
+
 
         setLoading(false);
-        //setShowShirtModal(true)
     };
 
     const [showShirtModal, setShowShirtModal] = useState<boolean>(false);
@@ -129,9 +129,6 @@ const MemberSHPE = () => {
             </Pressable>
         );
     };
-
-    //const uploadShirtSize
-        // Upload the user's choice to Firebase
 
 
     return (
@@ -315,21 +312,15 @@ const MemberSHPE = () => {
                                 }
 
                                 setUpdatingSizes(true);
-                                if (shirtSize)
-                                    await setUserShirtSize(shirtSize)
-                                        .then(async () => {
-                                            const document = await selectDocument();
-                                            if (document) {
-                                                setLoading(true);
-                                                const path = `user-docs/${auth.currentUser?.uid}/$-verification`;
-                                                const onSuccess = onChapterUploadSuccess;
-                                                uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
-                                            }
-                                        })
-                                        .catch((err) => {
-                                            console.error(err);
-                                            Alert.alert("An Issue Occured", "A server issue has occured. Please try again. If this keeps occurring, please contact a developer");
-                                        });
+                                if (shirtSize) {
+                                    const document = await selectDocument();
+                                    if (document) {
+                                        setLoading(true);
+                                        const path = `user-docs/${auth.currentUser?.uid}/$-verification`;
+                                        const onSuccess = onChapterUploadSuccess;
+                                        uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
+                                    }
+                                }
 
                                 setUpdatingSizes(false);
                                 setShowShirtModal(false);
