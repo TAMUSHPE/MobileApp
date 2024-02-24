@@ -29,3 +29,39 @@ npm-debug.*
 .env*
 google-services.json
 GoogleService-Info.plist
+
+# web
+# dependencies
+/shpe-app-web/node_modules
+/shpe-app-web/.pnp
+/shpe-app-web.pnp.js
+/shpe-app-web.yarn/install-state.gz
+
+# testing
+/shpe-app-web/coverage
+
+# next.js
+/shpe-app-web/.next/
+/shpe-app-web/out/
+
+# production
+/shpe-app-web/build
+
+# misc
+/shpe-app-web/.DS_Store
+/shpe-app-web/*.pem
+
+# debug
+/shpe-app-web/npm-debug.log*
+/shpe-app-web/yarn-debug.log*
+/shpe-app-web/yarn-error.log*
+
+# local env files
+/shpe-app-web/.env*.local
+
+# vercel
+/shpe-app-web/.vercel
+
+# typescript
+/shpe-app-web/*.tsbuildinfo
+/shpe-app-web/next-env.d.ts
