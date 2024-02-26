@@ -75,7 +75,10 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
     };
 
     const emailSignIn = async () => {
-        signInWithEmailAndPassword(auth, email, password)
+        const trimmedEmail = email.trim();
+
+
+        signInWithEmailAndPassword(auth, trimmedEmail, password)
             .then(handleUserAuth)
             .catch((error: Error) => {
                 const errorCode = error.message.split('(')[1].split(')')[0]
