@@ -2,9 +2,11 @@ import { ScrollView } from 'react-native';
 import React, { useEffect, useContext } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
+import { getUser } from '../../api/firebaseUtils';
 import manageNotificationPermissions from '../../helpers/pushNotification';
 import { HomeStackParams } from "../../types/Navigation"
 import MOTMCard from '../../components/MOTMCard';
@@ -20,7 +22,7 @@ import Ishpe from './Ishpe';
  * @returns The rendered home screen.
  */
 const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, signOutUser } = useContext(UserContext)!;
+    const { userInfo, signOutUser, setUserInfo } = useContext(UserContext)!;
 
     useEffect(() => {
         const handleBannedUser = async () => {
@@ -39,7 +41,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             }
 
         }
-
         manageNotificationPermissions();
         handleBannedUser();
         if (!auth.currentUser?.uid) {

@@ -68,8 +68,6 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
             const memberData = members.find(member => member.uid === selectedMemberUID);
             if (memberData) {
                 setSelectedMember(memberData);
-            } else {
-                console.log('No data found for member with UID:', selectedMemberUID);
             }
             fetchMemberDocuments(selectedMemberUID)
         }
@@ -84,43 +82,47 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
         }
     }, [expirationModalVisible])
 
-    const handleApprove = async () => {
-        const userDocRef = doc(db, 'users', selectedMemberUID!);
+    const handleApprove = async (uid: string) => {
+        const userDocRef = doc(db, 'users', uid);
+
         await updateDoc(userDocRef, {
             chapterExpiration: selectedMemberDocuments?.chapterExpiration,
             nationalExpiration: selectedMemberDocuments?.nationalExpiration,
         });
 
-        const memberDocRef = doc(db, 'memberSHPE', selectedMemberUID!);
-        await deleteDoc(memberDocRef);
-        await fetchMembers();
 
-        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
-        await sendNotificationToMember({
-            uid: selectedMemberUID,
-            type: "approved",
-        });
+        const memberDocRef = doc(db, 'memberSHPE', uid);
+        await deleteDoc(memberDocRef);
+
+        setMembers(members.filter(member => member.uid !== uid));
+
+        // TODO: Fix Notification
+        // const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        // await sendNotificationToMember({
+        //     uid: uid,
+        //     type: "approved",
+        // });
     };
 
-
-    const handleDeny = async () => {
-        const userDocRef = doc(db, 'users', selectedMemberUID!);
+    const handleDeny = async (uid: string) => {
+        console.log('New members array:', members.filter(member => member.uid !== uid));
+        setMembers(members.filter(member => member.uid !== uid));
+        const userDocRef = doc(db, 'users', uid);
 
         await updateDoc(userDocRef, {
             chapterExpiration: deleteField(),
             nationalExpiration: deleteField()
         });
 
-        const memberDocRef = doc(db, 'memberSHPE', selectedMemberUID!);
+        const memberDocRef = doc(db, 'memberSHPE', uid);
         await deleteDoc(memberDocRef);
 
-        await fetchMembers();
-
-        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
-        await sendNotificationToMember({
-            uid: selectedMemberUID,
-            type: "denied",
-        });
+        // TODO: Fix Notification
+        // const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        // await sendNotificationToMember({
+        //     uid: uid,
+        //     type: "denied",
+        // });
     };
 
     return (
@@ -156,6 +158,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                 <View className='mt-9 flex-1'>
                     <Text className='ml-6 text-xl font-semibold mb-5'>Select a user</Text>
                     <MembersList
+                        key={members.length}
                         handleCardPress={(uid) => {
                             setSelectedMemberUID(uid)
                             setConfirmVisible(true)
@@ -201,11 +204,11 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                     <View className='flex-row justify-between mt-4'>
                         <View className='flex-col'>
                             <Text className='text-lg font-semibold'>Expires</Text>
-                            <Text className='text-lg font-semibold'>{formatExpirationDate(selectedMemberDocuments?.chapterExpiration?.toDate())}</Text>
+                            <Text className='text-lg font-semibold'>{formatExpirationDate(selectedMemberDocuments?.chapterExpiration)}</Text>
                         </View>
                         <View className='flex-col'>
                             <Text className='text-lg font-semibold text-right'>Expires</Text>
-                            <Text className='text-lg font-semibold text-right'>{formatExpirationDate(selectedMemberDocuments?.nationalExpiration.toDate())}</Text>
+                            <Text className='text-lg font-semibold text-right'>{formatExpirationDate(selectedMemberDocuments?.nationalExpiration)}</Text>
                             <TouchableOpacity
                                 onPress={() => {
                                     setConfirmVisible(false);
@@ -220,8 +223,9 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                     <View className='flex-col mt-12'>
                         <TouchableOpacity
                             onPress={() => {
-                                handleApprove()
+                                handleApprove(selectedMemberUID!)
                                 setConfirmVisible(false);
+                                setSelectedMemberUID(undefined);
                             }}
                             className='bg-[#AEF359] w-1/3 items-center py-2 rounded-lg'
                         >
@@ -230,8 +234,9 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
 
                         <TouchableOpacity
                             onPress={() => {
-                                handleDeny()
+                                handleDeny(selectedMemberUID!)
                                 setConfirmVisible(false);
+                                setSelectedMemberUID(undefined);
                             }}
                             className='w-1/3 items-center py-2 rounded-lg mt-1'
                         >

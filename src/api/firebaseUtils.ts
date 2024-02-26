@@ -1,13 +1,13 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, limitToLast } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { memberPoints } from "./fetchGoogleSheets";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
 import { SHPEEvent, EventLogStatus } from "../types/Events";
-
+import * as Location from 'expo-location';
 
 /**
  * Obtains the public information of a user given their UID.
@@ -666,8 +666,14 @@ export const getAttendanceNumber = async (eventId: string): Promise<number | nul
  * @returns Status representing the status of the cloud function
  */
 export const signInToEvent = async (eventID: string): Promise<EventLogStatus> => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    let location: null | { longitude: number, latitude: number } = null;
+    if (status == 'granted') {
+        const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
+        location = (new GeoPoint(latitude, longitude)).toJSON();
+    }
     return await httpsCallable(functions, "eventSignIn")
-        .call(null, { eventID })
+        .call(null, { eventID, location })
         .then((result) => {
             if (typeof result.data == "object" && result.data && (result.data as any).success) {
                 return EventLogStatus.SUCCESS
@@ -699,8 +705,14 @@ export const signInToEvent = async (eventID: string): Promise<EventLogStatus> =>
  * @returns Status representing the status of the cloud function
  */
 export const signOutOfEvent = async (eventID: string): Promise<EventLogStatus> => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    let location: null | { longitude: number, latitude: number } = null;
+    if (status == 'granted') {
+        const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
+        location = (new GeoPoint(latitude, longitude)).toJSON();
+    }
     return await httpsCallable(functions, "eventSignOut")
-        .call(null, { eventID })
+        .call(null, { eventID, location })
         .then((result) => {
             if (typeof result.data == "object" && result.data && (result.data as any).success) {
                 return EventLogStatus.SUCCESS
