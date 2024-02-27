@@ -1,6 +1,5 @@
 export type RankChange = "decreased" | "same" | "increased";
-import { Timestamp } from 'firebase-admin/firestore';
-import { MillisecondTimes, getNextHourMillis } from './timeUtils';
+import { GeoPoint, Timestamp } from 'firebase-admin/firestore';
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop
@@ -40,9 +39,15 @@ export abstract class SHPEEvent {
     /** Text description of location */
     public locationName?: string | null;
     /** Real location of event */
-    public geolocation?: Geolocation | null;
+    public geolocation?: GeoPoint | null;
+    /** Allowed radius in meters for being able to sign into an event */
+    public geofencingRadius?: number | null;
     /** Attribute used specifically for workshops */
     public workshopType?: WorkshopType;
+    /** Specifies which committee this event is associated with */
+    public committee?: string | null;
+    /** Specifies who created this event */
+    public nationalConventionEligible?: boolean | null;
 
     /**
      * Instantiates all fields that are required for all SHPE Events
@@ -82,248 +87,6 @@ export interface SHPEEventLog {
     signOutTime?: Timestamp;
     creationTime?: Timestamp
     verified?: boolean;
-}
-
-/**
- * Template class for General Meeting event.
- */
-export class GeneralMeeting extends SHPEEvent {
-    public name: string | null;
-    public description: string | null;
-    public eventType: EventType | null;
-    public tags: string[] | null;
-    public startTime: Timestamp | null;
-    public endTime: Timestamp | null;
-    public signInPoints: number | null;
-    public signOutPoints: number | null;
-    public locationName: string | null;
-    public geolocation: Geolocation | null;
-
-    public constructor() {
-        super();
-        this.name = null;
-        this.description = null;
-        this.eventType = EventType.GENERAL_MEETING;
-        this.tags = [];
-        this.startTime = Timestamp.fromMillis(getNextHourMillis());
-        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.signInPoints = 0;
-        this.signOutPoints = 0;
-        this.locationName = null;
-        this.geolocation = null;
-    }
-
-
-}
-
-/**
- * Template class for Committee Meeting event 
- */
-export class CommitteeMeeting extends SHPEEvent {
-    public name: string | null;
-    public tags: string[] | null;
-    public description: string | null;
-    public eventType: EventType | null;
-    public startTime: Timestamp | null;
-    public endTime: Timestamp | null;
-    public signInPoints: number | null;
-    public locationName: string | null;
-    public geolocation: Geolocation | null;
-
-    public constructor() {
-        super();
-        this.name = "Committee Meeting";
-        this.tags = [];
-        this.description = null;
-        this.eventType = EventType.COMMITTEE_MEETING;
-        this.startTime = Timestamp.fromMillis(getNextHourMillis());
-        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.signInPoints = 1;
-        this.locationName = null;
-        this.geolocation = null;
-    }
-}
-
-/**
- * Template class for Study Hours event
- * 
- * Note: Study hours only give points if a user has signed both in and out
- */
-export class StudyHours extends SHPEEvent {
-    public name: string | null;
-    public description: string | null;
-    public eventType: EventType | null;
-    public tags: string[] | null;
-    public startTime: Timestamp | null;
-    public endTime: Timestamp | null;
-    public signInPoints: number | null;
-    public signOutPoints: number | null;
-    public pointsPerHour: number | null;
-    public locationName: string | null;
-    public geolocation: Geolocation | null;
-
-    public constructor() {
-        super();
-        this.name = "Study Hours";
-        this.description = null;
-        this.eventType = EventType.STUDY_HOURS;
-        this.tags = [];
-        this.startTime = Timestamp.fromMillis(getNextHourMillis());
-        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR * 4);
-        this.signInPoints = 0;
-        this.signOutPoints = 0;
-        this.pointsPerHour = 1;
-        this.locationName = null;
-        this.geolocation = null;
-    }
-}
-
-/**
- * Template class for Workshop event
- * 
- * Workshops have a field unique to them which specify what type of workshop they are
- */
-export class Workshop extends SHPEEvent {
-    public name: string | null;
-    public description: string | null;
-    public tags: string[] | null;
-    public eventType: EventType | null;
-    public startTime: Timestamp | null;
-    public endTime: Timestamp | null;
-    public signInPoints: number | null;
-    public locationName: string | null;
-    public geolocation: Geolocation | null;
-    public workshopType: WorkshopType;
-
-    public constructor() {
-        super();
-        this.name = "Workshop";
-        this.description = null;
-        this.tags = [];
-        this.eventType = EventType.WORKSHOP;
-        this.workshopType = "None";
-        this.startTime = Timestamp.fromMillis(getNextHourMillis());
-        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.signInPoints = 3;
-        this.locationName = null;
-        this.geolocation = null;
-    }
-}
-
-/**
- * Template class for Volunteer event
- */
-export class VolunteerEvent extends SHPEEvent {
-    public name: string | null;
-    public tags: string[] | null;
-    public description: string | null;
-    public eventType: EventType | null;
-    public startTime: Timestamp | null;
-    public endTime: Timestamp | null;
-    public pointsPerHour: number | null;
-    public locationName: string | null;
-    public geolocation: Geolocation | null;
-
-    public constructor() {
-        super();
-        this.name = "Volunteer Event";
-        this.tags = [];
-        this.description = null;
-        this.eventType = EventType.VOLUNTEER_EVENT;
-        this.startTime = Timestamp.fromMillis(getNextHourMillis());
-        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.pointsPerHour = 2;
-        this.locationName = null;
-        this.geolocation = null;
-    }
-}
-
-/**
- * Template class for Social event
- */
-export class SocialEvent extends SHPEEvent {
-    public name: string | null;
-    public tags: string[] | null;
-    public description: string | null;
-    public eventType: EventType | null;
-    public startTime: Timestamp | null;
-    public endTime: Timestamp | null;
-    public signInPoints: number | null;
-    public locationName: string | null;
-    public geolocation: Geolocation | null;
-
-    public constructor() {
-        super();
-        this.name = "Social Event";
-        this.tags = [];
-        this.description = null;
-        this.eventType = EventType.SOCIAL_EVENT;
-        this.startTime = Timestamp.fromMillis(getNextHourMillis());
-        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.signInPoints = 1;
-        this.locationName = null;
-        this.geolocation = null;
-    }
-}
-
-/**
- * Template class for Intramural event
- */
-export class IntramuralEvent extends SHPEEvent {
-    public name: string | null;
-    public tags: string[] | null;
-    public description: string | null;
-    public eventType: EventType | null;
-    public startTime: Timestamp | null;
-    public endTime: Timestamp | null;
-    public signInPoints: number | null;
-    public locationName: string | null;
-    public geolocation: Geolocation | null;
-
-    public constructor() {
-        super();
-        this.name = "Intramural Event";
-        this.tags = [];
-        this.description = null;
-        this.eventType = EventType.INTRAMURAL_EVENT;
-        this.startTime = Timestamp.fromMillis(getNextHourMillis());
-        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.signInPoints = 1;
-        this.locationName = null;
-        this.geolocation = null;
-    }
-}
-
-/**
- * Template class for a custom event. These events are purposefully generic for the creation of events that don't fit into another template.
- */
-export class CustomEvent extends SHPEEvent {
-    public name: string | null;
-    public description: string | null;
-    public eventType: EventType | null;
-    public tags: string[] | null;
-    public startTime: Timestamp | null;
-    public endTime: Timestamp | null;
-    public signInPoints: number | null;
-    public signOutPoints: number | null;
-    public pointsPerHour: number | null;
-    public locationName: string | null;
-    public geolocation: Geolocation | null;
-
-    public constructor() {
-        super();
-        this.name = "Custom Event";
-        this.description = null;
-        this.eventType = EventType.CUSTOM_EVENT;
-        this.tags = [];
-        this.startTime = Timestamp.fromMillis(getNextHourMillis());
-        this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.signInPoints = null;
-        this.signOutPoints = null;
-        this.pointsPerHour = null;
-        this.locationName = null;
-        this.geolocation = null;
-    }
 }
 
 /**

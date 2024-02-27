@@ -1,8 +1,41 @@
 import * as functions from 'firebase-functions';
 import { db } from './firebaseConfig';
 import { SHPEEvent, SHPEEventLog } from './types'
-import { Timestamp } from 'firebase-admin/firestore';
+import { GeoPoint, Timestamp } from 'firebase-admin/firestore';
 import { MillisecondTimes } from './timeUtils';
+
+/**
+ * Converts an angle in degrees to radians
+ * @param angle 
+ * @returns given degree angle in radians
+ */
+const degreesToRadians = (angle: number): number => {
+    return angle * Math.PI / 180;
+}
+
+/**
+ * Calculates an approximation of geographic distance of two geographic points in meters
+ * @param pos1 First position with latitude and longitude
+ * @param pos2 Second position with latitude and longitude
+ * @returns Distance in meters on earth between two geographical coordinates
+ * @reference https://community.esri.com/t5/coordinate-reference-systems-blog/distance-on-a-sphere-the-haversine-formula/ba-p/902128
+ * @reference https://en.wikipedia.org/wiki/Haversine_formula
+ * @reference https://stackoverflow.com/questions/27928/calculate-distance-between-two-latitude-longitude-points-haversine-formula
+ */
+const geographicDistance = (pos1: GeoPoint, pos2: GeoPoint): number => {
+    const EARTH_RADIUS = 6378142; // Approximate radius in meters
+
+    const phi1 = degreesToRadians(pos1.latitude);
+    const phi2 = degreesToRadians(pos2.latitude);
+
+    const deltaPhi = degreesToRadians(pos2.latitude - pos1.latitude);
+    const deltaLambda = degreesToRadians(pos2.longitude - pos1.longitude);
+
+    const a = (Math.sin(deltaPhi / 2.0) ** 2) + Math.cos(phi1) * Math.cos(phi2) * (Math.sin(deltaLambda / 2.0) ** 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    
+    return EARTH_RADIUS * c;
+}
 
 /**
  * Handles a request from a user to sign into an event.
@@ -10,7 +43,7 @@ import { MillisecondTimes } from './timeUtils';
 export const eventSignIn = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
-    } else if (typeof data !== "object" || typeof data.eventID !== "string") {
+    } else if (typeof data !== "object" || typeof data.eventID !== "string" || typeof data.location !== "object") {
         throw new functions.https.HttpsError("invalid-argument", "Invalid data types passed into function");
     }
 
@@ -19,7 +52,7 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     if (typeof event !== "object") {
         throw new functions.https.HttpsError("not-found", `Event with id ${data.eventID} could not be found`);
     }
-
+    console.info(data.location);
     // Used to check if user has already signed into event
     const eventLogDocRef = db.collection(`events/${data.eventID}/logs`).doc(context.auth.uid);
     const eventLog: SHPEEventLog = (await eventLogDocRef.get()).data() ?? {
@@ -37,6 +70,16 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     }
     else if (event.startTime && (event.startTime.toMillis() - (event.endTimeBuffer ?? 0) > Date.now())) {
         throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
+    }
+    else if (event.geolocation && event.geofencingRadius) {
+        if (typeof data.location.latitude != "number" || typeof data.location.longitude != "number" || !isFinite(data.location.latitude) || !isFinite(data.location.longitude)) {
+            throw new functions.https.HttpsError("invalid-argument", "Invalid geopoint object passed into function.");
+        }
+
+        const distance = geographicDistance(event.geolocation, data.location);
+        if (distance > event.geofencingRadius + 10) {
+            throw new functions.https.HttpsError("out-of-range", `This event has geofencing enabled and the given user is ${distance} meters away when required radius is ${event.geofencingRadius} meters.`);
+        }
     }
 
     eventLog.signInTime = Timestamp.fromMillis(Date.now());
@@ -65,7 +108,7 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
 export const eventSignOut = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
-    } else if (typeof data !== "object" || typeof data.eventID !== "string") {
+    } else if (typeof data !== "object" || typeof data.eventID !== "string" || typeof data.location !== "object") {
         throw new functions.https.HttpsError("invalid-argument", "Invalid data types passed into function");
     }
 
@@ -92,6 +135,16 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     }
     else if (event.startTime && (event.startTime.toMillis() - (event.endTimeBuffer ?? 0) > Date.now())) {
         throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
+    }
+    else if (event.geolocation && event.geofencingRadius) {
+        if (typeof data.location.latitude != "number" || typeof data.location.longitude != "number" || !isFinite(data.location.latitude) || !isFinite(data.location.longitude)) {
+            throw new functions.https.HttpsError("invalid-argument", "Invalid geopoint object passed into function.");
+        }
+
+        const distance = geographicDistance(event.geolocation, data.location);
+        if (distance > event.geofencingRadius + 10) {
+            throw new functions.https.HttpsError("out-of-range", `This event has geofencing enabled and the given user is ${distance} meters away when required radius is ${event.geofencingRadius} meters.`);
+        }
     }
 
     eventLog.signOutTime = Timestamp.fromMillis(Date.now());
