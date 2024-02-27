@@ -261,14 +261,11 @@ const MemberSHPE = () => {
                     {/* Title */}
                     <View className='flex-row items-center mb-4'>
                         <FontAwesome name="user" color="black" size={30} />
-                        <Text className='text-2xl font-semibold ml-2'>User Permissions</Text>
+                        <Text className='text-2xl font-semibold ml-2'>Shirt Selection</Text>
                     </View>
 
                     {/* Position Custom Title */}
                     <View>
-                        <Text className='text-lg font-semibold'>Enter a custom title</Text>
-                        <Text className='text-sm text-gray-500 mb-2'>This is only used on profile screen</Text>
-
                         <Text className='text-lg font-semibold mb-2'>Select T-Shirt Size</Text>
                     </View>
 
