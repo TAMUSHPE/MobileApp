@@ -62,7 +62,6 @@ export interface PrivateUserInfo {
     settings?: AppSettings;
     expoPushTokens?: string[];
     expirationDate?: Date;
-    shirtSize?: string;
 };
 
 
