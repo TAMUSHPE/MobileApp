@@ -119,8 +119,6 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
     };
 
     const handleDeny = async (uid: string) => {
-        console.log('New members array:', members.filter(member => member.uid !== uid));
-        setMembers(members.filter(member => member.uid !== uid));
         const userDocRef = doc(db, 'users', uid);
 
         await updateDoc(userDocRef, {
@@ -130,6 +128,8 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
 
         const memberDocRef = doc(db, 'memberSHPE', uid);
         await deleteDoc(memberDocRef);
+
+        setMembers(members.filter(member => member.uid !== uid));
 
         // TODO: Fix Notification
         // const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
