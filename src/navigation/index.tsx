@@ -7,8 +7,7 @@ import { MainStack } from './MainStack';
 import Splash from '../screens/Splash';
 import { Images } from '../../assets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getUser, setPrivateUserData } from '../api/firebaseUtils';
-import { auth } from '../config/firebaseConfig';
+import { setPrivateUserData } from '../api/firebaseUtils';
 /**
  * Renders the root navigator for the application.
  * It determines whether to show the splash screen, authentication stack, or main stack
