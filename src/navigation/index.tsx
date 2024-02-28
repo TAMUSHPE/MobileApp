@@ -64,22 +64,22 @@ const RootNavigator = () => {
     }, [userInfo]);
 
 
-    useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                console.log("fetching user", auth.currentUser?.uid!);
-                if (auth.currentUser) {
-                    const firebaseUser = await getUser(auth.currentUser?.uid!)
-                    console.log(firebaseUser?.publicInfo?.bio);
-                    await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                    setUserInfo(firebaseUser);
-                }
-            } catch (error) {
-                console.error("Error updating user1:", error);
-            }
-        }
-        fetchUser();
-    }, [auth.currentUser?.uid]);
+    // useEffect(() => {
+    //     const fetchUser = async () => {
+    //         try {
+    //             console.log("fetching user", auth.currentUser?.uid!);
+    //             if (auth.currentUser) {
+    //                 const firebaseUser = await getUser(auth.currentUser?.uid!)
+    //                 console.log(firebaseUser?.publicInfo?.bio);
+    //                 await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+    //                 setUserInfo(firebaseUser);
+    //             }
+    //         } catch (error) {
+    //             console.error("Error updating user1:", error);
+    //         }
+    //     }
+    //     fetchUser();
+    // }, [auth.currentUser?.uid]);
 
 
     if (splashLoading) {
