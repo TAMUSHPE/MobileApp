@@ -7,8 +7,8 @@ import { MainStack } from './MainStack';
 import Splash from '../screens/Splash';
 import { Images } from '../../assets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { eventEmitter } from '../context/eventEmitter';
-import { setPrivateUserData } from '../api/firebaseUtils';
+import { getUser, setPrivateUserData } from '../api/firebaseUtils';
+import { auth } from '../config/firebaseConfig';
 /**
  * Renders the root navigator for the application.
  * It determines whether to show the splash screen, authentication stack, or main stack
@@ -63,21 +63,24 @@ const RootNavigator = () => {
         }
     }, [userInfo]);
 
-    // auto update user data on load
-    // works with app.tsx file to update user data
-    useEffect(() => {
-        const handleUserUpdate = async () => {
-            const userData = await AsyncStorage.getItem('@user');
-            if (userData) {
-                setUserInfo(JSON.parse(userData));
-            }
-        };
 
-        eventEmitter.on('userUpdated', handleUserUpdate);
-        return () => {
-            eventEmitter.off('userUpdated', handleUserUpdate);
-        };
-    }, []);
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                console.log("fetching user", auth.currentUser?.uid!);
+                if (auth.currentUser) {
+                    const firebaseUser = await getUser(auth.currentUser?.uid!)
+                    console.log(firebaseUser?.publicInfo?.bio);
+                    await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                    setUserInfo(firebaseUser);
+                }
+            } catch (error) {
+                console.error("Error updating user1:", error);
+            }
+        }
+        fetchUser();
+    }, [auth.currentUser?.uid]);
+
 
     if (splashLoading) {
         return <Splash setIsLoading={setSplashLoading} />;
