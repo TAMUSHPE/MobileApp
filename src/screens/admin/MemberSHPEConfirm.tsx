@@ -26,6 +26,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
     const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
     const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();
     const [selectedMemberDocuments, setSelectedMemberDocuments] = useState<memberSHPEResponse | null>(null);
+    const [selectedMemberShirtSize, setSelectedMemberShirtSize] = useState<memberSHPEResponse | null>(null);
     const [overrideNationalExpiration, setOverrideNationalExpiration] = useState<Timestamp>();
 
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
@@ -63,6 +64,18 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
         }
     };
 
+    const fetchMemberShirtSize = async (userId: string) => {
+        const shirtDocRef = doc(db, 'shirtSize', userId);
+        const shirtDocSnap = await getDoc(shirtDocRef);
+
+        if (shirtDocSnap.exists()) {
+            const memberData = shirtDocSnap.data() as memberSHPEResponse;
+            setSelectedMemberShirtSize(memberData);
+        } else {
+            console.log('No Shirt Size!');
+        }
+    };
+
     useEffect(() => {
         if (selectedMemberUID && members) {
             const memberData = members.find(member => member.uid === selectedMemberUID);
@@ -70,6 +83,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                 setSelectedMember(memberData);
             }
             fetchMemberDocuments(selectedMemberUID)
+            fetchMemberShirtSize(selectedMemberUID)
         }
     }, [selectedMemberUID, members]);
 
@@ -205,6 +219,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                         <View className='flex-col'>
                             <Text className='text-lg font-semibold'>Expires</Text>
                             <Text className='text-lg font-semibold'>{formatExpirationDate(selectedMemberDocuments?.chapterExpiration)}</Text>
+                            <Text className='text-lg font-semibold'>Shirt Size: {selectedMemberDocuments?.shirtSize}</Text>
                         </View>
                         <View className='flex-col'>
                             <Text className='text-lg font-semibold text-right'>Expires</Text>
@@ -398,6 +413,7 @@ interface memberSHPEResponse {
     nationalURL: string;
     chapterExpiration: Timestamp;
     nationalExpiration: Timestamp;
+    shirtSize: string;
 }
 
 export default MemberSHPEConfirm

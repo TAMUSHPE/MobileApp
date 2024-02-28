@@ -10,7 +10,6 @@ import { formatExpirationDate, isMemberVerified } from '../../helpers/membership
 import UploadIcon from '../../../assets/upload-solid.svg';
 import { FontAwesome } from '@expo/vector-icons';
 import { darkMode } from '../../../tailwind.config';
-import { setUserShirtSize } from '../../api/firebaseUtils';
 import DismissibleModal from '../../components/DismissibleModal';
 import { Pressable } from 'react-native';
 
@@ -82,7 +81,7 @@ const MemberSHPE = () => {
     const onNationalUploadSuccess = async (URL: string) => {
         const today = new Date();
         const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
-        await setDoc(doc(db, `shirtOrder/${auth.currentUser?.uid}`), {
+        await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
             nationalUploadDate: Timestamp.fromDate(today),
             nationalExpiration: Timestamp.fromDate(expirationDate),
             nationalURL: URL
@@ -102,10 +101,18 @@ const MemberSHPE = () => {
         await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
             chapterUploadDate: Timestamp.fromDate(today),
             chapterExpiration: Timestamp.fromDate(expirationDate),
-            chapterURL: URL
+            chapterURL: URL,
+            shirtSize: shirtSize
         }, { merge: true });
+
+        await setDoc(doc(db, `shirt-sizes/${auth.currentUser?.uid}`), {
+            shirtUploadDate: Timestamp.fromDate(today),
+            shirtExpiration: Timestamp.fromDate(expirationDate),
+            shirtSize: shirtSize
+        }, { merge: true });
+
+
         setLoading(false);
-        //setShowShirtModal(true)
     };
 
     const [showShirtModal, setShowShirtModal] = useState<boolean>(false);
@@ -123,9 +130,6 @@ const MemberSHPE = () => {
             </Pressable>
         );
     };
-
-    //const uploadShirtSize
-        // Upload the user's choice to Firebase
 
 
     return (
@@ -257,14 +261,11 @@ const MemberSHPE = () => {
                     {/* Title */}
                     <View className='flex-row items-center mb-4'>
                         <FontAwesome name="user" color="black" size={30} />
-                        <Text className='text-2xl font-semibold ml-2'>User Permissions</Text>
+                        <Text className='text-2xl font-semibold ml-2'>Shirt Selection</Text>
                     </View>
 
                     {/* Position Custom Title */}
                     <View>
-                        <Text className='text-lg font-semibold'>Enter a custom title</Text>
-                        <Text className='text-sm text-gray-500 mb-2'>This is only used on profile screen</Text>
-
                         <Text className='text-lg font-semibold mb-2'>Select T-Shirt Size</Text>
                     </View>
 
@@ -309,21 +310,15 @@ const MemberSHPE = () => {
                                 }
 
                                 setUpdatingSizes(true);
-                                if (shirtSize)
-                                    await setUserShirtSize(shirtSize)
-                                        .then(async () => {
-                                            const document = await selectDocument();
-                                            if (document) {
-                                                setLoading(true);
-                                                const path = `user-docs/${auth.currentUser?.uid}/$-verification`;
-                                                const onSuccess = onChapterUploadSuccess;
-                                                uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
-                                            }
-                                        })
-                                        .catch((err) => {
-                                            console.error(err);
-                                            Alert.alert("An Issue Occured", "A server issue has occured. Please try again. If this keeps occurring, please contact a developer");
-                                        });
+                                if (shirtSize) {
+                                    const document = await selectDocument();
+                                    if (document) {
+                                        setLoading(true);
+                                        const path = `user-docs/${auth.currentUser?.uid}/$-verification`;
+                                        const onSuccess = onChapterUploadSuccess;
+                                        uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
+                                    }
+                                }
 
                                 setUpdatingSizes(false);
                                 setShowShirtModal(false);
