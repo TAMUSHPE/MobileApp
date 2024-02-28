@@ -1,6 +1,7 @@
 import { ScrollView } from 'react-native';
 import React, { useEffect, useContext } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from 'expo-status-bar';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { UserContext } from '../../context/UserContext';
@@ -10,6 +11,7 @@ import { HomeStackParams } from "../../types/Navigation"
 import MOTMCard from '../../components/MOTMCard';
 import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
 import Ishpe from './Ishpe';
+import { getUser } from '../../api/firebaseUtils';
 
 
 /**
@@ -23,6 +25,20 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const { userInfo, signOutUser, setUserInfo } = useContext(UserContext)!;
 
     useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                console.log("fetching user", auth.currentUser?.uid!);
+                if (auth.currentUser) {
+                    const firebaseUser = await getUser(auth.currentUser?.uid!)
+                    console.log(firebaseUser?.publicInfo?.bio);
+                    await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                    setUserInfo(firebaseUser);
+                }
+            } catch (error) {
+                console.error("Error updating user1:", error);
+            }
+        }
+
         const handleBannedUser = async () => {
             const functions = getFunctions();
             const isUserInBlacklist = httpsCallable<{ uid: string }, { isInBlacklist: boolean }>(functions, 'isUserInBlacklist');
@@ -39,8 +55,12 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             }
 
         }
-        manageNotificationPermissions();
+
+
+        fetchUser();
         handleBannedUser();
+        manageNotificationPermissions();
+
         if (!auth.currentUser?.uid) {
             signOutUser(true);
         }
