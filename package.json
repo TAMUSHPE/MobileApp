@@ -13,7 +13,7 @@
     "go": "npx expo start --go",
     "go-tunnel": "npx expo start --tunnel --go",
     "go-localhost": "npx expo start --localhost --go",
-    "dev-client-sim": "eas build --profile development-sim --platform ios"
+    "dev-client-sim": "eas build --profile development-sim"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.18.2",
