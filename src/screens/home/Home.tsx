@@ -27,10 +27,8 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                console.log("fetching user", auth.currentUser?.uid!);
                 if (auth.currentUser) {
                     const firebaseUser = await getUser(auth.currentUser?.uid!)
-                    console.log(firebaseUser?.publicInfo?.bio);
                     await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
                     setUserInfo(firebaseUser);
                 }
