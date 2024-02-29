@@ -5,6 +5,8 @@ import InvolvementScreen from "../screens/involvement/Involvement";
 import CommitteeScreen from "../screens/involvement/Committee";
 import PublicProfileScreen from "../screens/PublicProfile";
 import CommitteeEdit from "../screens/admin/CommitteeEdit";
+import { EventsStack } from "./EventsStack";
+import EventInfo from "../screens/events/EventInfo";
 
 const InvolvementStack = () => {
     const Stack = createNativeStackNavigator<InvolvementStackParams>();
@@ -14,6 +16,7 @@ const InvolvementStack = () => {
             <Stack.Screen name="CommitteeScreen" component={CommitteeScreen} />
             <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
             <Stack.Screen name="CommitteeEdit" component={CommitteeEdit} />
+            <Stack.Screen name="EventInfo" component={EventInfo} />
         </Stack.Navigator>
     );
 }
