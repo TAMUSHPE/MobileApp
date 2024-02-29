@@ -110,12 +110,11 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
 
         setMembers(members.filter(member => member.uid !== uid));
 
-        // TODO: Fix Notification
-        // const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
-        // await sendNotificationToMember({
-        //     uid: uid,
-        //     type: "approved",
-        // });
+        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        await sendNotificationToMember({
+            uid: uid,
+            type: "approved",
+        });
     };
 
     const handleDeny = async (uid: string) => {
@@ -131,12 +130,11 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
 
         setMembers(members.filter(member => member.uid !== uid));
 
-        // TODO: Fix Notification
-        // const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
-        // await sendNotificationToMember({
-        //     uid: uid,
-        //     type: "denied",
-        // });
+        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        await sendNotificationToMember({
+            uid: uid,
+            type: "denied",
+        });
     };
 
     return (
