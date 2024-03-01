@@ -41,7 +41,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     const [endTime, setEndTime] = useState<Timestamp | undefined>(event.endTime ?? undefined);
     const [description, setDescription] = useState<string>("");
     const [coverImageURI, setCoverImageURI] = useState<string>();
-    const [isClubWide, setIsClubWide] = useState<boolean>(event.general ?? false);
+    const [general, setIsGeneral] = useState<boolean>(event.general ?? false);
 
     const selectCoverImage = async () => {
         const result = await selectImage({
@@ -398,10 +398,10 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Club-Wide Event</Text>
                             <Switch
                                 trackColor={{ false: "#999796", true: "#001F5B" }}
-                                thumbColor={isClubWide ? "#72A9BE" : "#f4f3f4"}
+                                thumbColor={general ? "#72A9BE" : "#f4f3f4"}
                                 ios_backgroundColor="#999796"
-                                onValueChange={() => setIsClubWide(previousState => !previousState)}
-                                value={isClubWide}
+                                onValueChange={() => setIsGeneral(previousState => !previousState)}
+                                value={general}
                             />
                         </View>
                     </KeyboardAvoidingView>
