@@ -96,19 +96,6 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
         }
     }, [nationalExpiration, chapterExpiration])
 
-
-    // if no roles are selected, clear custom title
-    useEffect(() => {
-        if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead) {
-            if (modifiedRoles?.customTitle !== "") {
-                setModifiedRoles({
-                    ...modifiedRoles,
-                    customTitle: "",
-                });
-            }
-        }
-    }, [modifiedRoles]);
-
     const RoleItem = ({ roleName, isActive, onToggle, darkMode }: {
         roleName: string,
         isActive: boolean,
@@ -194,6 +181,17 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                         <View className='items-center justify-center'>
                             <Text className="text-white text-lg font-semibold" >{`${major} ${"'" + classYear?.substring(2)}`} • {`${points?.toFixed(2)} pts`} {pointsRank && `• rank ${pointsRank}`} </Text>
                         </View>
+                        {isSuperUser &&
+                            <View className='items-center justify-center'>
+                                <TouchableOpacity
+                                    onPress={() => setShowRoleModal(true)}
+                                    className="rounded-md px-3 py-2"
+                                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                                >
+                                    <Text className='text-white text-xl'>Edit Role</Text>
+                                </TouchableOpacity>
+                            </View>
+                        }
                     </View>
                 </SafeAreaView>
             </View>
@@ -207,17 +205,6 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                                 (tamuEmail != "" ? "Student" : "Guest"))
                         }
                     </Text>
-
-                    {isSuperUser &&
-                        <View className='items-center justify-center'>
-                            <TouchableOpacity
-                                onPress={() => setShowRoleModal(true)}
-                                className='rounded-md px-2 py-1 ml-4 bg-pale-blue'
-                            >
-                                <Text className='text-white text-xl'>Edit Role</Text>
-                            </TouchableOpacity>
-                        </View>
-                    }
                 </View>
                 <Text className='text-lg mt-2'>{bio}</Text>
                 <View className='flex-row mt-4 items-center'>
@@ -341,8 +328,17 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     <View className="flex-row justify-between items-center my-6 mx-5">
                         <TouchableOpacity
                             onPress={async () => {
+
+                                // checks if has role but no custom title
                                 if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
                                     Alert.alert("Missing Title", "You must enter a title ");
+                                    return;
+                                }
+
+
+                                // Checks if has custom title but no role
+                                if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead && modifiedRoles?.customTitle) {
+                                    Alert.alert("Missing Role", "If a custom title is entered, you must select a role.");
                                     return;
                                 }
 

@@ -43,7 +43,7 @@ export abstract class SHPEEvent {
     public locationName?: string | null;
     /** Real location of event */
     public geolocation?: GeoPoint | null;
-    /** Allowed radius for being able to sign into an event */
+    /** Allowed radius in meters for being able to sign into an event */
     public geofencingRadius?: number | null;
     /** Attribute used specifically for workshops */
     public workshopType?: WorkshopType;
