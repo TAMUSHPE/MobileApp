@@ -1,11 +1,12 @@
-import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, ActivityIndicator, Platform, Alert, TouchableHighlight } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { db, functions } from '../../config/firebaseConfig'
 import { getMembersToVerify } from '../../api/firebaseUtils'
-import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
+import { Timestamp, deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
 import { httpsCallable } from 'firebase/functions'
 import { handleLinkPress } from '../../helpers/links'
 import { formatExpirationDate } from '../../helpers/membership';
@@ -14,19 +15,26 @@ import { AdminDashboardParams } from '../../types/Navigation';
 import MemberCard from '../../components/MemberCard'
 import DismissibleModal from '../../components/DismissibleModal'
 import MembersList from '../../components/MembersList'
+import { UserContext } from '../../context/UserContext';
+import { formatDate } from '../../helpers/timeUtils';
 
 const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+    const { userInfo } = useContext(UserContext)!;
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
     const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
     const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();
     const [selectedMemberDocuments, setSelectedMemberDocuments] = useState<memberSHPEResponse | null>(null);
+    const [selectedMemberShirtSize, setSelectedMemberShirtSize] = useState<memberSHPEResponse | null>(null);
+    const [overrideNationalExpiration, setOverrideNationalExpiration] = useState<Timestamp>();
 
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [infoVisible, setInfoVisible] = useState(false);
     const [expirationModalVisible, setExpirationModalVisible] = useState(false);
     const [initialLoad, setInitialLoad] = useState(true);
     const [loading, setLoading] = useState(true);
-
+    const [showExpirationDatePicker, setShowExpirationDatePicker] = useState(false);
 
     const fetchMembers = async () => {
         setLoading(true);
@@ -56,15 +64,26 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
         }
     };
 
+    const fetchMemberShirtSize = async (userId: string) => {
+        const shirtDocRef = doc(db, 'shirtSize', userId);
+        const shirtDocSnap = await getDoc(shirtDocRef);
+
+        if (shirtDocSnap.exists()) {
+            const memberData = shirtDocSnap.data() as memberSHPEResponse;
+            setSelectedMemberShirtSize(memberData);
+        } else {
+            console.log('No Shirt Size!');
+        }
+    };
+
     useEffect(() => {
         if (selectedMemberUID && members) {
             const memberData = members.find(member => member.uid === selectedMemberUID);
             if (memberData) {
                 setSelectedMember(memberData);
-            } else {
-                console.log('No data found for member with UID:', selectedMemberUID);
             }
             fetchMemberDocuments(selectedMemberUID)
+            fetchMemberShirtSize(selectedMemberUID)
         }
     }, [selectedMemberUID, members]);
 
@@ -73,46 +92,51 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
     useEffect(() => {
         if (!initialLoad && !expirationModalVisible) {
             setConfirmVisible(true);
+            setOverrideNationalExpiration(undefined);
         }
     }, [expirationModalVisible])
 
-    const handleApprove = async () => {
-        const userDocRef = doc(db, 'users', selectedMemberUID!);
+    const handleApprove = async (uid: string) => {
+        const userDocRef = doc(db, 'users', uid);
+
         await updateDoc(userDocRef, {
             chapterExpiration: selectedMemberDocuments?.chapterExpiration,
             nationalExpiration: selectedMemberDocuments?.nationalExpiration,
         });
 
-        const memberDocRef = doc(db, 'memberSHPE', selectedMemberUID!);
-        await deleteDoc(memberDocRef);
-        await fetchMembers();
 
-        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
-        await sendNotificationToMember({
-            uid: selectedMemberUID,
-            type: "approved",
-        });
+        const memberDocRef = doc(db, 'memberSHPE', uid);
+        await deleteDoc(memberDocRef);
+
+        setMembers(members.filter(member => member.uid !== uid));
+
+        // TODO: Fix Notification
+        // const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        // await sendNotificationToMember({
+        //     uid: uid,
+        //     type: "approved",
+        // });
     };
 
-
-    const handleDeny = async () => {
-        const userDocRef = doc(db, 'users', selectedMemberUID!);
+    const handleDeny = async (uid: string) => {
+        console.log('New members array:', members.filter(member => member.uid !== uid));
+        setMembers(members.filter(member => member.uid !== uid));
+        const userDocRef = doc(db, 'users', uid);
 
         await updateDoc(userDocRef, {
             chapterExpiration: deleteField(),
             nationalExpiration: deleteField()
         });
 
-        const memberDocRef = doc(db, 'memberSHPE', selectedMemberUID!);
+        const memberDocRef = doc(db, 'memberSHPE', uid);
         await deleteDoc(memberDocRef);
 
-        await fetchMembers();
-
-        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
-        await sendNotificationToMember({
-            uid: selectedMemberUID,
-            type: "denied",
-        });
+        // TODO: Fix Notification
+        // const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
+        // await sendNotificationToMember({
+        //     uid: uid,
+        //     type: "denied",
+        // });
     };
 
     return (
@@ -148,6 +172,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                 <View className='mt-9 flex-1'>
                     <Text className='ml-6 text-xl font-semibold mb-5'>Select a user</Text>
                     <MembersList
+                        key={members.length}
                         handleCardPress={(uid) => {
                             setSelectedMemberUID(uid)
                             setConfirmVisible(true)
@@ -194,6 +219,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                         <View className='flex-col'>
                             <Text className='text-lg font-semibold'>Expires</Text>
                             <Text className='text-lg font-semibold'>{formatExpirationDate(selectedMemberDocuments?.chapterExpiration)}</Text>
+                            <Text className='text-lg font-semibold'>Shirt Size: {selectedMemberDocuments?.shirtSize}</Text>
                         </View>
                         <View className='flex-col'>
                             <Text className='text-lg font-semibold text-right'>Expires</Text>
@@ -212,8 +238,9 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                     <View className='flex-col mt-12'>
                         <TouchableOpacity
                             onPress={() => {
-                                handleApprove()
+                                handleApprove(selectedMemberUID!)
                                 setConfirmVisible(false);
+                                setSelectedMemberUID(undefined);
                             }}
                             className='bg-[#AEF359] w-1/3 items-center py-2 rounded-lg'
                         >
@@ -222,8 +249,9 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
 
                         <TouchableOpacity
                             onPress={() => {
-                                handleDeny()
+                                handleDeny(selectedMemberUID!)
                                 setConfirmVisible(false);
+                                setSelectedMemberUID(undefined);
                             }}
                             className='w-1/3 items-center py-2 rounded-lg mt-1'
                         >
@@ -237,10 +265,10 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                 visible={expirationModalVisible}
                 setVisible={setExpirationModalVisible}
             >
-                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ minWidth: 325 }}>
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ minWidth: 325, minHeight: 250 }}>
                     <View className='flex-row items-center justify-between'>
                         <View className='flex-row items-center'>
-                            <Text className='text-2xl font-semibold ml-2'>Adjust Expiration Date</Text>
+                            <Text className='text-2xl font-semibold ml-2'>Adjust National Expiration Date</Text>
                         </View>
                         <View>
                             <TouchableOpacity onPress={() => {
@@ -250,7 +278,74 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <Text className='text-lg font-semibold '>To be implemented</Text>
+
+                    <View>
+                        <View className='flex-row items-center mt-4'>
+                            <Text className='text-lg mr-4'>Expiration Date</Text>
+                            {(Platform.OS == 'android' && selectedMemberDocuments?.nationalExpiration) &&
+                                <TouchableHighlight
+                                    underlayColor={darkMode ? "" : "#EEE"}
+                                    onPress={() => setShowExpirationDatePicker(true)}
+                                    className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                >
+                                    <>
+                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{overrideNationalExpiration ? formatDate(overrideNationalExpiration.toDate()) : formatDate(selectedMemberDocuments?.nationalExpiration.toDate()!)}</Text>
+                                    </>
+                                </TouchableHighlight>
+                            }
+                            {(Platform.OS == 'ios' && selectedMemberDocuments?.nationalExpiration) &&
+                                <View className='flex flex-row items-center'>
+                                    <DateTimePicker
+                                        themeVariant={darkMode ? 'dark' : 'light'}
+                                        testID='Start Time Picker'
+                                        value={overrideNationalExpiration?.toDate() ?? selectedMemberDocuments?.nationalExpiration.toDate() ?? new Date()}
+                                        mode='date'
+                                        onChange={(_, date) => {
+                                            if (!date) {
+                                                console.warn("Date picked is undefined.")
+                                            }
+                                            else {
+                                                setOverrideNationalExpiration(Timestamp.fromDate(date));
+                                            }
+                                        }}
+                                    />
+                                </View>
+                            }
+                        </View>
+
+                        {(overrideNationalExpiration || selectedMemberDocuments?.nationalExpiration) && (
+                            <View className='mt-4 '>
+                                <Text className='text-lg text-pale-blue text-center'>Adjusted National Expiration Date</Text>
+                                <Text className='text-lg text-pale-blue text-center'>{overrideNationalExpiration ? formatDate(overrideNationalExpiration.toDate()) : formatDate(selectedMemberDocuments?.nationalExpiration.toDate()!)}</Text>
+                                <View className='flex-row items-center justify-around mt-5'>
+                                    <TouchableOpacity
+                                        className='w-1/3 bg-pale-blue justify-center items-center py-2 rounded-md'
+                                        onPress={() => {
+                                            setExpirationModalVisible(false);
+                                            setSelectedMemberDocuments({
+                                                ...selectedMemberDocuments!,
+                                                nationalExpiration: overrideNationalExpiration ?? selectedMemberDocuments?.nationalExpiration!
+                                            })
+                                        }}
+                                    >
+                                        <Text className='text-white text-lg'>Save</Text>
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        className='w-1/3 bg-pale-blue justify-center items-center py-2 rounded-md'
+                                        style={{ backgroundColor: "red" }}
+                                        onPress={() => {
+                                            setExpirationModalVisible(false);
+                                            setOverrideNationalExpiration(undefined);
+                                        }}>
+                                        <Text className='text-white text-lg'>Cancel</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        )}
+
+
+                    </View>
                 </View>
             </DismissibleModal>
 
@@ -289,6 +384,25 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
                     </View>
                 </View>
             </DismissibleModal>
+
+
+            {/* Expiration Date Pickers */}
+            {(Platform.OS == 'android' && showExpirationDatePicker && selectedMemberDocuments?.nationalExpiration) &&
+                <DateTimePicker
+                    testID='Start Time Picker'
+                    value={selectedMemberDocuments?.nationalExpiration?.toDate() ?? new Date()}
+                    mode='date'
+                    onChange={(_, date) => {
+                        if (!date) {
+                            console.warn("Date picked is undefined.")
+                        }
+                        else {
+                            setOverrideNationalExpiration(Timestamp.fromDate(date));
+                        }
+                        setShowExpirationDatePicker(false);
+                    }}
+                />
+            }
         </SafeAreaView>
     )
 }
@@ -297,8 +411,9 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboard
 interface memberSHPEResponse {
     chapterURL: string;
     nationalURL: string;
-    chapterExpiration: string;
-    nationalExpiration: string;
+    chapterExpiration: Timestamp;
+    nationalExpiration: Timestamp;
+    shirtSize: string;
 }
 
 export default MemberSHPEConfirm
