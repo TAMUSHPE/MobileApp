@@ -49,9 +49,7 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
 
             // Fetch generalEvents and filter out ishpeEvents and interestEvents
             const generalResponse = await getUpcomingEvents();
-            console.log("general response", generalResponse, "\n\n\n");
-            const filteredGeneralEvents = generalResponse.filter(generalEvent => !generalEvent.general);
-            console.log("filtered events", filteredGeneralEvents);
+            const filteredGeneralEvents = generalResponse.filter(generalEvent => generalEvent.general === true);
             setGeneralEvents(filteredGeneralEvents);
 
         } catch (error) {
