@@ -2,21 +2,24 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname} from 'next/navigation';
+import { usePathname, useRouter} from 'next/navigation';
+import {handleLogout} from "@/helpers/auth";
+
 const Navbar = () => {
     //The router is used to get the path name
     //Highlight the current page in the navbar
     //Adds the arrow to the current page
     const path = usePathname();
+    const router = useRouter();
 
     return (
         
-        <div className=" bg-[#500000] h-screen w-fit">
+        <div className="flex flex-col bg-[#500000] h-screen w-fit justify-between">
             <nav className='flex flex-col w-fit text-[18px] font-bold'>
                 <Image src='logo.svg' alt="SHPE Logo" width={200} height={200}  className="mb-10"/>
 
-                <Link href={'/dashboard'} className="pr-5 pl-5  hover:shadow-inner-strong w-full h-[45px] pt-2 " 
-                style={{backgroundColor:path == '/dashboard' ? '#794141' : '#50000'}}> 
+                <Link href={'/dashboard'} className="pr-5 pl-5 hover:shadow-inner-strong  w-full  h-[45px] pt-2" 
+                style={{backgroundColor:path == '/dashboard' ? '#794141' : '#50000' , position:'relative'}}> 
                     <div className="flex flex-row ">
                         <Image src ="house-solid.svg" alt="Dashboard" width={20} height={20} />
                         <div className=" pl-3 "> Dashboard </div>
@@ -142,9 +145,13 @@ const Navbar = () => {
                     }
 
                 </Link>
-
             </nav>
-
+            <button onClick={() => { handleLogout(router) }} className="pr-5 pl-5 hover:shadow-inner-strong w-full  h-[45px] pt-2 justify-self-end">
+                <div className="flex flex-row ">
+                    <Image src ="sign-out-icon.svg" alt="Dashboard" width={20} height={20} />
+                    <div className=" pl-3 font-normal"> Sign Out </div>
+                </div>
+            </button>
         </div>
     );
 }
