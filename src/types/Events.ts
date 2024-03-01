@@ -69,7 +69,7 @@ export abstract class SHPEEvent {
         this.endTime = null;
         this.coverImageURI = null;
         this.committee = null;
-        this.general = false
+        this.general = false;
         this.geolocation = null;
         this.geofencingRadius = null;
         this.creator = null;
