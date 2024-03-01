@@ -66,7 +66,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [committee, setCommittee] = useState<string | undefined | null>(event.committee);
     const [creator, setCreator] = useState<PublicUserInfo | undefined | null>(event.creator);
     const [nationalConventionEligible, setNationalConventionEligible] = useState<boolean | undefined | null>(event.nationalConventionEligible);
-    const [isClubWide, setIsClubWide] = useState<boolean | undefined | null>(event.general);
+    const [general, setIsGeneral] = useState<boolean | undefined | null>(event.general);
 
     useEffect(() => {
         getCommittees()
@@ -140,6 +140,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 locationName,
                 geolocation,
                 geofencingRadius,
+                general,
                 workshopType,
                 committee,
                 creator,
@@ -488,10 +489,13 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Club-Wide Event</Text>
                             <Switch
                                 trackColor={{ false: "#999796", true: "#001F5B" }}
-                                thumbColor={isClubWide ? "#72A9BE" : "#f4f3f4"}
+                                thumbColor={general ? "#72A9BE" : "#f4f3f4"}
                                 ios_backgroundColor="#999796"
-                                onValueChange={() => setIsClubWide(previousState => !previousState)}
-                                value={isClubWide || false}
+                                onValueChange={() => {
+                                    setIsGeneral(previousState => !previousState)
+                                    setChangesMade(true);
+                                }}
+                                value={general || false}
                             />
                         </View>
                     </KeyboardAvoidingView>

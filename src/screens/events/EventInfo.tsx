@@ -130,8 +130,9 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 </View>
                             </View>
                         )}
-
-                        <View className='flex-col relative items-center'>
+                        
+                        {/* TODO: bug here navagating back from home */}
+                        <View className='flex-col relative items-center'> 
                             {hasPrivileges &&
                                 <TouchableOpacity
                                     onPress={() => navigation.navigate("UpdateEvent", { event })}
