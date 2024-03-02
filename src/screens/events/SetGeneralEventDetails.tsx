@@ -483,7 +483,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                     endTime,
                                     description: modifiedDescription,
                                     coverImageURI,
-                                    creator: userInfo?.publicInfo
+                                    creator: auth.currentUser?.uid,
                                 });
                                 navigation.navigate("SetSpecificEventDetails", { event })
                             }
