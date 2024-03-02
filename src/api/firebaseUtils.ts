@@ -404,8 +404,9 @@ export const deleteCommittee = async (firebaseDocName: string) => {
 
             const usersSnapshot = await getDocs(collection(db, 'users'));
             usersSnapshot.forEach((userDoc) => {
-                if (userDoc.data().committees.includes(firebaseDocName)) {
-                    const updatedCommittees = userDoc.data().committees.filter((committee: string) => committee !== firebaseDocName);
+                const userCommittees = userDoc.data().committees;
+                if (Array.isArray(userCommittees) && userCommittees.includes(firebaseDocName)) {
+                    const updatedCommittees = userCommittees.filter((committee) => committee !== firebaseDocName);
                     transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
                 }
             });
@@ -944,18 +945,18 @@ export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
     const memberSHPEQuery = query(memberSHPERef, where('nationalURL', '!=', ''));
     const memberSHPESnapshot = await getDocs(memberSHPEQuery);
 
-    
+
     const members: PublicUserInfo[] = [];
     for (const document of memberSHPESnapshot.docs) {
         const memberSHPEData = document.data();
-        if(memberSHPEData.chapterURL && memberSHPEData.nationalURL) {
+        if (memberSHPEData.chapterURL && memberSHPEData.nationalURL) {
             const userId = document.id;
             const userDocRef = doc(db, 'users', userId);
             const userDocSnap = await getDoc(userDocRef);
             if (userDocSnap.exists()) {
                 members.push({ uid: userId, ...userDocSnap.data() });
             }
-            
+
         }
     }
     return members;

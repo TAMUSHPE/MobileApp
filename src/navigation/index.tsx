@@ -7,7 +7,6 @@ import { MainStack } from './MainStack';
 import Splash from '../screens/Splash';
 import { Images } from '../../assets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { eventEmitter } from '../context/eventEmitter';
 import { setPrivateUserData } from '../api/firebaseUtils';
 /**
  * Renders the root navigator for the application.
@@ -63,21 +62,6 @@ const RootNavigator = () => {
         }
     }, [userInfo]);
 
-    // auto update user data on load
-    // works with app.tsx file to update user data
-    useEffect(() => {
-        const handleUserUpdate = async () => {
-            const userData = await AsyncStorage.getItem('@user');
-            if (userData) {
-                setUserInfo(JSON.parse(userData));
-            }
-        };
-
-        eventEmitter.on('userUpdated', handleUserUpdate);
-        return () => {
-            eventEmitter.off('userUpdated', handleUserUpdate);
-        };
-    }, []);
 
     if (splashLoading) {
         return <Splash setIsLoading={setSplashLoading} />;
