@@ -40,9 +40,9 @@ export type Committee = {
     name?: string;
     color?: string,
     description?: string;
-    head?: PublicUserInfo;
-    representatives?: PublicUserInfo[];
-    leads?: PublicUserInfo[];
+    head?: string;
+    representatives?: string[];
+    leads?: string[];
     memberApplicationLink?: string;
     representativeApplicationLink?: string;
     leadApplicationLink?: string;
