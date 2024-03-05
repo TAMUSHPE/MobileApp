@@ -12,7 +12,7 @@ const TAB_ICON_CONFIG: Record<TabName, OcticonIconName> = {
     Home: 'home',
     ResourcesStack: 'rows',
     Events: "calendar",
-    Involvement: 'stack',
+    Involve: 'stack',
     Members: 'person',
 };
 
@@ -31,7 +31,7 @@ const generateTabIcon = (routeName: TabName, focused: boolean): JSX.Element => {
     return (
         <View className='flex-col items-center justify-center pt-2'>
             <Octicons name={iconName} size={iconSize} color={iconColor} />
-            <Text className='text-maroon' style={{ fontSize: 13.2 }}>{focused ? tabName : ""}</Text>
+            <Text className='text-maroon' >{focused ? tabName : ""}</Text>
         </View>
     )
 };
@@ -54,13 +54,13 @@ const HomeBottomTabs = () => {
                 <BottomTabs.Screen name="Home" component={HomeDrawer} />
                 <BottomTabs.Screen name="ResourcesStack" component={ResourcesStack} />
                 <BottomTabs.Screen name="Events" component={EventsStack} />
-                <BottomTabs.Screen name="Involvement" component={InvolvementStack} />
+                <BottomTabs.Screen name="Involve" component={InvolvementStack} />
                 <BottomTabs.Screen name="Members" component={MembersStack} />
             </BottomTabs.Navigator >
         </View>
     );
 };
 type OcticonIconName = React.ComponentProps<typeof Octicons>['name'];
-type TabName = 'Home' | 'ResourcesStack' | 'Involvement' | 'Members' | 'Events';
+type TabName = 'Home' | 'ResourcesStack' | 'Involve' | 'Members' | 'Events';
 
 export default HomeBottomTabs;
