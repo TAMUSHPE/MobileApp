@@ -31,8 +31,7 @@ const generateTabIcon = (routeName: TabName, focused: boolean): JSX.Element => {
     return (
         <View className='flex-col items-center justify-center pt-2'>
             <Octicons name={iconName} size={iconSize} color={iconColor} />
-            <Text className='text-maroon'>{focused ? tabName : ""}</Text>
-
+            <Text className='text-maroon' style={{ fontSize: 13.2 }}>{focused ? tabName : ""}</Text>
         </View>
     )
 };
