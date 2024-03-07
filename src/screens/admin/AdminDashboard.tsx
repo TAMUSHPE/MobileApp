@@ -45,6 +45,12 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         >
                             <Text className='text-white text-xl'>Resume Bank</Text>
                         </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('ShirtConfirm')}
+                            className='bg-red-orange rounded-md py-4 px-2 items-center justify-center mt-3'
+                        >
+                            <Text className='text-white text-xl'>Shirt Pick-Up</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
 

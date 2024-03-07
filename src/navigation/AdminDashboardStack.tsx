@@ -12,6 +12,7 @@ import MemberSHPEConfirm from "../screens/admin/MemberSHPEConfirm";
 import ResumeConfirm from "../screens/admin/ResumeConfirm";
 import PublicProfileScreen from "../screens/PublicProfile";
 import Feedback from "../screens/admin/Feedback";
+import ShirtConfirm from "../screens/admin/ShirtConfirm";
 
 const AdminDashboardStack = () => {
     const Stack = createNativeStackNavigator<AdminDashboardParams>();
@@ -27,6 +28,7 @@ const AdminDashboardStack = () => {
                 <Stack.Screen name="RestrictionsEditor" component={RestrictionsEditor} />
                 <Stack.Screen name="MemberSHPEConfirm" component={MemberSHPEConfirm} />
                 <Stack.Screen name="ResumeConfirm" component={ResumeConfirm} />
+                <Stack.Screen name="ShirtConfirm" component={ShirtConfirm} />
                 <Stack.Screen name="Home" component={HomeStack} />
                 <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
                 <Stack.Screen name="Feedback" component={Feedback} />

@@ -117,6 +117,7 @@ export type AdminDashboardParams = {
     Feedback: undefined;
     MemberSHPEConfirm: undefined;
     ResumeConfirm: undefined;
+    ShirtConfirm: undefined;
     Home: undefined;
     PublicProfile: {
         uid: string;
