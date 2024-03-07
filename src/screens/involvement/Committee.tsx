@@ -5,7 +5,7 @@ import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
 import { db, functions } from '../../config/firebaseConfig';
-import { getCommitteeEvents, setPublicUserData } from '../../api/firebaseUtils';
+import { getCommitteeEvents, getPublicUserData, setPublicUserData } from '../../api/firebaseUtils';
 import { httpsCallable } from 'firebase/functions';
 import { doc, getDoc } from 'firebase/firestore';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
@@ -16,6 +16,7 @@ import { SHPEEvent } from '../../types/Events';
 import CommitteeTeamCard from './CommitteeTeamCard';
 import DismissibleModal from '../../components/DismissibleModal';
 import EventsList from '../../components/EventsList';
+import { PublicUserInfo } from '../../types/User';
 
 const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
@@ -33,6 +34,13 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const [loading, setLoading] = useState<boolean>(true);
     const [loadingCountChange, setLoadingCountChange] = useState<boolean>(false);
 
+    const [localTeamMembers, setLocalTeamMembers] = useState<TeamMembersState>({
+        leads: [],
+        representatives: [],
+        head: null,
+    });
+
+
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -41,6 +49,30 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
             setEvents(response);
             setLoading(false);
         }
+
+        const fetchUserData = async () => {
+            if (initialCommittee) {
+                const { head, representatives, leads } = initialCommittee;
+                const newTeamMembers: TeamMembersState = { leads: [], representatives: [], head: null };
+
+                if (head) {
+                    newTeamMembers.head = await getPublicUserData(head);
+                }
+
+                if (representatives && representatives.length > 0) {
+                    newTeamMembers.representatives = await Promise.all(
+                        representatives.map(async (uid) => await getPublicUserData(uid))
+                    );
+                }
+
+                if (leads && leads.length > 0) {
+                    newTeamMembers.leads = await Promise.all(
+                        leads.map(async (uid) => await getPublicUserData(uid))
+                    );
+                }
+                setLocalTeamMembers(newTeamMembers);
+            }
+        };
         fetchEvents();
     }, [])
 
@@ -138,24 +170,24 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                     <View className='px-3 pt-5 bg-white rounded-lg shadow-sm shadow-slate-300'>
                         <View className='mb-6'>
                             <Text className='font-bold text-lg mb-2' style={{ color: color }}>Head</Text>
-                            <CommitteeTeamCard userData={head!} navigation={navigation} />
+                            <CommitteeTeamCard userData={localTeamMembers.head || {}} navigation={navigation} />
                         </View>
-                        {representatives && representatives.length > 0 && (
+                        {localTeamMembers.representatives && localTeamMembers.representatives.length > 0 && (
                             <>
                                 <Text className='font-bold text-lg mb-2' style={{ color: color }}>Representatives</Text>
-                                {representatives.map((representative, index) => (
+                                {localTeamMembers.representatives.map((representative, index) => (
                                     <View className='mb-6' key={index}>
-                                        <CommitteeTeamCard userData={representative} navigation={navigation} />
+                                        <CommitteeTeamCard userData={representative || {}} navigation={navigation} />
                                     </View>
                                 ))}
                             </>
                         )}
-                        {leads && leads.length > 0 && (
+                        {localTeamMembers.leads && localTeamMembers.leads.length > 0 && (
                             <>
                                 <Text className='font-bold text-lg mb-2' style={{ color: color }}>Leads</Text>
-                                {leads.map((representative, index) => (
+                                {localTeamMembers.leads.map((representative, index) => (
                                     <View className='mb-6' key={index}>
-                                        <CommitteeTeamCard userData={representative} navigation={navigation} />
+                                        <CommitteeTeamCard userData={representative || {}} navigation={navigation} />
                                     </View>
                                 ))}
                             </>
@@ -236,5 +268,12 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
         </View >
     )
 }
+
+interface TeamMembersState {
+    leads: (PublicUserInfo | undefined)[];
+    representatives: (PublicUserInfo | undefined)[];
+    head: PublicUserInfo | null | undefined;
+}
+
 
 export default Committee

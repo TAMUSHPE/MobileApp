@@ -1,4 +1,4 @@
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,15 +9,10 @@ import { AdminDashboardParams } from '../../types/Navigation';
 const functions = getFunctions();
 
 const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
-    const updateRanks = async () => {
-        const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
-        updateRanksOnCall()
-    }
+    const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
+    const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
+    const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
 
-    const getCommitteesCount = async () => {
-        const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
-        committeeCountCheckOnCall()
-    }
 
     return (
         <View className='flex-1'>
@@ -62,12 +57,6 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         >
                             <Text className='text-white text-xl'>MOTM</Text>
                         </TouchableOpacity>
-                        {/* <TouchableOpacity
-                            onPress={() => navigation.navigate('FeaturedSlideEditor')}
-                            className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center'
-                        >
-                            <Text className='text-white text-xl'>Featured Images</Text>
-                        </TouchableOpacity> */}
                         <TouchableOpacity
                             onPress={() => navigation.navigate('ResumeDownloader')}
                             className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center'
@@ -100,20 +89,26 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                     <Text className='text-2xl font-semibold mb-3'>Developer Testing</Text>
                     <View className='flex-row flex-wrap '>
                         <TouchableOpacity
+                            onPress={() => {
+                                updateAllUserPoints()
+                                Alert.alert('Update All User Points', 'Update All User Points has been called')
+                            }}
+                            className='bg-black rounded-md py-4 px-2 items-center justify-center'
+                        >
+                            <Text className='text-white text-xl'>Update All User Points</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
                             onPress={() => navigation.navigate('ResetOfficeHours')}
                             className='bg-black rounded-md py-4 px-2 items-center justify-center'
                         >
                             <Text className='text-white text-xl'>Rest Office</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => updateRanks()}
-                            className='bg-black rounded-md py-4 px-2 items-center justify-center mt-3'
-                        >
-                            <Text className='text-white text-xl'>Update Points and Rank for all Users</Text>
-                        </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => getCommitteesCount()}
+                            onPress={() => {
+                                committeeCountCheckOnCall()
+                                Alert.alert('Committee Count Check', 'Committee Count Check has been called')
+                            }}
                             className='bg-black rounded-md py-4 px-2 items-center justify-center mt-3'
                         >
                             <Text className='text-white text-xl'>Load Committee Membership Count</Text>

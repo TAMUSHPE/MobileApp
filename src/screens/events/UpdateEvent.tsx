@@ -15,7 +15,6 @@ import { StatusBar } from 'expo-status-bar';
 import DismissibleModal from '../../components/DismissibleModal';
 import * as ImagePicker from "expo-image-picker";
 import { Committee } from '../../types/Committees';
-import { PublicUserInfo } from '../../types/User';
 import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
 import LocationPicker from '../../components/LocationPicker';
 import { getBlobFromURI, selectImage, uploadFile } from '../../api/fileSelection';
@@ -44,6 +43,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
     const [localEventName, setLocalEventName] = useState<string | undefined | null>(event.name);
     const [localCoverImageURI, setLocalCoverImageURI] = useState<string>(event.coverImageURI ?? '');
+    const [isFocused, setIsFocused] = useState<boolean>(true);
 
 
     // Form Data Hooks
@@ -63,7 +63,6 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [geofencingRadius, setGeofencingRadius] = useState<number | undefined | null>(event.geofencingRadius);
     const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType);
     const [committee, setCommittee] = useState<string | undefined | null>(event.committee);
-    const [creator, setCreator] = useState<PublicUserInfo | undefined | null>(event.creator);
     const [nationalConventionEligible, setNationalConventionEligible] = useState<boolean | undefined | null>(event.nationalConventionEligible);
 
     useEffect(() => {
@@ -71,6 +70,14 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             .then((result) => setSelectableCommittees(result))
             .catch(err => console.error("Issue getting committees:", err));
     }, []);
+
+    useEffect(() => {
+        if (openDropdown === null) {
+            setIsFocused(true);
+        } else {
+            setIsFocused(false);
+        }
+    }, [openDropdown])
 
     const handleUpdateEvent = async () => {
         setLoading(true);
@@ -132,7 +139,6 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 geofencingRadius,
                 workshopType,
                 committee,
-                creator,
                 nationalConventionEligible,
             })
         }
@@ -215,6 +221,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 </View>
             )}
             <ScrollView
+                scrollEnabled={isFocused}
                 className={`flex flex-col flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`}
                 contentContainerStyle={{
                     paddingBottom: "50%"

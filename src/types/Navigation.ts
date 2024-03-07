@@ -82,6 +82,7 @@ export type InvolvementStackParams = {
     CommitteeEdit: {
         committee?: Committee;
     };
+    EventInfo: undefined;
 }
 
 export type EventsStackParams = {

@@ -1,10 +1,10 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Platform } from 'react-native'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
-import { getEvent, getAttendanceNumber, isUserSignedIn } from '../../api/firebaseUtils';
+import { getEvent, getAttendanceNumber, isUserSignedIn, getPublicUserData } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { formatEventDate, formatTime } from '../../helpers/timeUtils';
 import { EventProps, SHPEEventScreenRouteProp } from '../../types/Navigation'
@@ -22,6 +22,7 @@ const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<SHPEEventScreenRouteProp>();
     const { eventId } = route.params;
     const [event, setEvent] = useState<SHPEEvent>();
+    const [creatorData, setCreatorData] = useState<PublicUserInfo | null>(null)
     const [userSignedIn, setUserSignedIn] = useState(false);
     const [attendance, setAttendance] = useState<number | null>(0);
     const { userInfo } = useContext(UserContext)!;
@@ -68,6 +69,18 @@ const EventInfo = ({ navigation }: EventProps) => {
     );
 
 
+    useEffect(() => {
+        const fetchCreatorInfo = async () => {
+            if (creator) {
+                const fetchedCreator = await getPublicUserData(creator);
+                setCreatorData(fetchedCreator || null);
+            }
+        }
+
+        fetchCreatorInfo();
+    }, [creator])
+
+
     if (!event) {
         return (
             <View className='h-screen w-screen justify-center items-center'>
@@ -111,7 +124,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                 <SafeAreaView edges={['top']}>
                     <View className='flex-row justify-between items-center mx-5 mt-1'>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate("EventsScreen")}
+                            onPress={() => { navigation.goBack(); }}
                             className="rounded-full w-10 h-10 justify-center items-center"
                             style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
                         >
@@ -181,7 +194,6 @@ const EventInfo = ({ navigation }: EventProps) => {
                         {geolocation && (
                             <TouchableOpacity
                                 onPress={() => {
-                                    console.log(geolocation.latitude, geolocation.longitude)
                                     if (Platform.OS === 'ios') {
                                         handleLinkPress(`http://maps.apple.com/?daddr=${geolocation.latitude},${geolocation.longitude}`);
                                     } else if (Platform.OS === 'android') {
@@ -195,10 +207,10 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
                 )}
 
-                {creator && (
+                {creatorData && (
                     <View className='mt-4'>
                         <Text className='text-xl mt-2 italic font-bold mb-2'>Event Host</Text>
-                        <MemberCard userData={creator as PublicUserInfo} />
+                        <MemberCard userData={creatorData} />
                     </View>
                 )}
             </View>
