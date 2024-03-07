@@ -4,6 +4,7 @@
 export abstract class MillisecondTimes {
     static readonly YEAR = 31556952000;
     static readonly MONTH = 2629746000;
+    static readonly WEEK = 604800000;
     static readonly DAY = 86400000;
     static readonly HOUR = 3600000;
     static readonly MINUTE = 60000;
@@ -31,7 +32,7 @@ export const formatDate = (date: Date): string => {
     const month = monthNames[date.getMonth()];
     const year = date.getFullYear();
 
-    return `${month} ${day} ${year}`;
+    return `${month} ${day}, ${year}`;
 }
 
 /**

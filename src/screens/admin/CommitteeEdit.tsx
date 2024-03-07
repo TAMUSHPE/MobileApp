@@ -1,8 +1,8 @@
-import { View, Text, TextInput, Image, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
-import { deleteCommittee, getLeads, getRepresentatives, getTeamMembers, resetCommittee, setCommitteeData } from '../../api/firebaseUtils';
+import { deleteCommittee, getLeads, getPublicUserData, getRepresentatives, getTeamMembers, resetCommittee, setCommitteeData } from '../../api/firebaseUtils';
 import { Committee, committeeLogos, getLogoComponent } from '../../types/Committees';
 import { CommitteeEditProps } from '../../types/Navigation';
 import { PublicUserInfo } from '../../types/User';
@@ -21,6 +21,13 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
         representativeApplicationLink: '',
         leadApplicationLink: ''
     });
+
+    const [localTeamMembers, setLocalTeamMembers] = useState<TeamMembersState>({
+        leads: [],
+        representatives: [],
+        head: null,
+    });
+
     const [logoSelectModal, setLogoSelectModal] = useState(false);
     const [selectedLogoData, setSelectedLogoData] = useState<{
         LogoComponent: React.ElementType;
@@ -40,6 +47,34 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
     const [isLeadLinkActive, setIsLeadLinkActive] = useState<boolean>(!!committeeData?.leadApplicationLink);
 
     const insets = useSafeAreaInsets();
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            if (committeeData) {
+                const { head, representatives, leads } = committeeData;
+                const newTeamMembers: TeamMembersState = { leads: [], representatives: [], head: null };
+
+                if (head) {
+                    newTeamMembers.head = await getPublicUserData(head);
+                }
+
+                if (representatives && representatives.length > 0) {
+                    newTeamMembers.representatives = await Promise.all(
+                        representatives.map(async (uid) => await getPublicUserData(uid))
+                    );
+                }
+
+                if (leads && leads.length > 0) {
+                    newTeamMembers.leads = await Promise.all(
+                        leads.map(async (uid) => await getPublicUserData(uid))
+                    );
+                }
+                setLocalTeamMembers(newTeamMembers);
+            }
+        };
+
+        fetchUserData();
+    }, [committeeData]);
 
     useEffect(() => {
         const fetchTeamUsers = async () => {
@@ -63,36 +98,54 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
     const setHeadUserData = (uid: string,) => {
         const headInfo = teamMembers.find(member => member.uid === uid);
         if (headInfo) {
-            setLocalCommitteeData({
-                ...localCommitteeData,
+            setLocalTeamMembers({
+                ...localTeamMembers,
                 head: headInfo
             });
         }
+
+        setLocalCommitteeData({
+            ...localCommitteeData,
+            head: uid
+        });
+
     };
 
     const setLeadUserData = (uid: string) => {
         const leadInfo = leads.find(lead => lead.uid === uid);
         if (leadInfo) {
-            setLocalCommitteeData(prevCommitteeData => ({
-                ...prevCommitteeData,
-                leads: [...(prevCommitteeData?.leads || []), leadInfo]
+            setLocalTeamMembers(prevTeamMembers => ({
+                ...prevTeamMembers,
+                leads: [...(prevTeamMembers?.leads || []), leadInfo]
             }));
         }
+
+        setLocalCommitteeData(prevCommitteeData => ({
+            ...prevCommitteeData,
+            leads: [...(prevCommitteeData?.leads || []), uid]
+        }));
+
+
     };
 
     const setRepresentativeUserData = (uid: string) => {
         const repInfo = representatives.find(rep => rep.uid === uid);
         if (repInfo) {
-            setLocalCommitteeData(prevCommitteeData => ({
-                ...prevCommitteeData,
-                representatives: [...(prevCommitteeData?.representatives || []), repInfo]
+            setLocalTeamMembers(prevTeamMembers => ({
+                ...prevTeamMembers,
+                representatives: [...(prevTeamMembers?.representatives || []), repInfo]
             }));
         }
+
+        setLocalCommitteeData(prevCommitteeData => ({
+            ...prevCommitteeData,
+            representatives: [...(prevCommitteeData?.representatives || []), uid]
+        }));
     };
 
     const addLead = (uid: string) => {
         const currentUIDList = localCommitteeData?.leads || [];
-        if (currentUIDList.some(lead => lead.uid === uid)) {
+        if (currentUIDList.includes(uid)) {
             return;
         }
 
@@ -101,24 +154,49 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
 
     const addRepresentative = (uid: string) => {
         const currentUIDList = localCommitteeData?.representatives || [];
-        if (currentUIDList.some(rep => rep.uid === uid)) {
+        if (currentUIDList.includes(uid)) { // Check if the UID already exists in the list
             return;
         }
 
         setRepresentativeUserData(uid);
     };
 
+    const removeHead = () => {
+        setLocalCommitteeData(prevCommitteeData => ({
+            ...prevCommitteeData,
+            head: undefined
+        }));
+
+        setLocalTeamMembers(prevTeamMembers => ({
+            ...prevTeamMembers,
+            head: null
+        }));
+
+    }
+
+
+
     const removeLead = (uid: string) => {
         setLocalCommitteeData(prevCommitteeData => ({
             ...prevCommitteeData,
-            leads: prevCommitteeData?.leads?.filter(lead => lead.uid !== uid) || []
+            leads: prevCommitteeData?.leads?.filter(existingUID => existingUID !== uid) || []
+        }));
+
+        setLocalTeamMembers(prevTeamMembers => ({
+            ...prevTeamMembers,
+            leads: prevTeamMembers?.leads?.filter(lead => lead?.uid !== uid) || []
         }));
     };
 
     const removeRepresentative = (uid: string) => {
         setLocalCommitteeData(prevCommitteeData => ({
             ...prevCommitteeData,
-            representatives: prevCommitteeData?.representatives?.filter(rep => rep.uid !== uid) || []
+            representatives: prevCommitteeData?.representatives?.filter(existingUID => existingUID !== uid) || []
+        }));
+
+        setLocalTeamMembers(prevTeamMembers => ({
+            ...prevTeamMembers,
+            representatives: prevTeamMembers?.representatives?.filter(representative => representative?.uid !== uid) || []
         }));
     };
 
@@ -268,17 +346,15 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                                 </TouchableOpacity>
                             )}
                         </View>
-                        {localCommitteeData.head && (
+                        {localTeamMembers.head && (
                             <View className='flex-row items-center mt-3 mb-6'>
                                 <CommitteeTeamCard
-                                    userData={localCommitteeData.head}
+                                    userData={localTeamMembers.head}
                                 />
 
                                 <TouchableOpacity
                                     className='px-4'
-                                    onPress={() => {
-                                        setLocalCommitteeData({ ...localCommitteeData, head: undefined })
-                                    }}
+                                    onPress={() => { removeHead() }}
                                 >
                                     <Octicons name="x" size={26} color="red" />
                                 </TouchableOpacity>
@@ -296,10 +372,10 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                                 <Octicons name="plus" size={16} color="white" />
                             </TouchableOpacity>
                         </View>
-                        {localCommitteeData.representatives?.map((representative, index) => (
+                        {localTeamMembers.representatives?.map((representative, index) => (
                             <View className='flex-row items-center mt-3 mb-6' key={index}>
                                 <CommitteeTeamCard
-                                    userData={representative}
+                                    userData={representative!}
                                 />
 
                                 <TouchableOpacity
@@ -322,10 +398,11 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                                 <Octicons name="plus" size={16} color="white" />
                             </TouchableOpacity>
                         </View>
-                        {localCommitteeData.leads?.map((lead, index) => (
+                        {localTeamMembers.leads?.map((lead, index) => (
+
                             <View className='flex-row items-center mt-3 mb-6' key={index}>
                                 <CommitteeTeamCard
-                                    userData={lead}
+                                    userData={lead!}
                                 />
                                 <TouchableOpacity
                                     className='px-4'
@@ -662,6 +739,12 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
             </DismissibleModal>
         </SafeAreaView >
     )
+}
+
+interface TeamMembersState {
+    leads: (PublicUserInfo | undefined)[];
+    representatives: (PublicUserInfo | undefined)[];
+    head: PublicUserInfo | null | undefined;
 }
 
 export default CommitteeEdit

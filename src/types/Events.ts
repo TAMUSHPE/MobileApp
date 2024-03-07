@@ -1,7 +1,5 @@
 import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers';
-import { auth } from '../config/firebaseConfig';
-import { PublicUserInfo } from './User';
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop
@@ -42,14 +40,15 @@ export abstract class SHPEEvent {
     public locationName?: string | null;
     /** Real location of event */
     public geolocation?: GeoPoint | null;
-    /** Allowed radius for being able to sign into an event */
+    /** Allowed radius in meters for being able to sign into an event */
     public geofencingRadius?: number | null;
     /** Attribute used specifically for workshops */
     public workshopType?: WorkshopType;
     /** Specifies which committee this event is associated with */
     public committee?: string | null;
     /** Specifies who created this event */
-    public creator?: PublicUserInfo | null;
+    public creator?: string | null;
+    /** Specifies if event is club wide event */
     public nationalConventionEligible?: boolean | null;
 
     /**

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { ActivityIndicator, View, Image, Text } from "react-native";
+import { ActivityIndicator, View, Image } from "react-native";
 import { NavigationContainer } from '@react-navigation/native';
 import { UserContext } from '../context/UserContext';
 import { AuthStack } from './AuthStack';
@@ -7,7 +7,6 @@ import { MainStack } from './MainStack';
 import Splash from '../screens/Splash';
 import { Images } from '../../assets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { eventEmitter } from '../context/eventEmitter';
 import { setPrivateUserData } from '../api/firebaseUtils';
 /**
  * Renders the root navigator for the application.
@@ -20,6 +19,10 @@ const RootNavigator = () => {
     const { userInfo, setUserInfo, userLoading } = useContext(UserContext)!;
     const [splashLoading, setSplashLoading] = useState<boolean>(true);
 
+    /**
+     * OLD IMPLEMENTATION - checkDataExpiration that is originally created to update a user data if it is expired
+     * however user data is auto updated in home.tsx file. However this can still be used to check inactive users.
+     */
     useEffect(() => {
         const checkDataExpiration = async () => {
             const now = new Date();
@@ -59,21 +62,6 @@ const RootNavigator = () => {
         }
     }, [userInfo]);
 
-    // fetch user data from async storage from notification
-    // works with app.tsx file to update user data
-    useEffect(() => {
-        const handleUserUpdate = async () => {
-            const userData = await AsyncStorage.getItem('@user');
-            if (userData) {
-                setUserInfo(JSON.parse(userData));
-            }
-        };
-
-        eventEmitter.on('userUpdated', handleUserUpdate);
-        return () => {
-            eventEmitter.off('userUpdated', handleUserUpdate);
-        };
-    }, []);
 
     if (splashLoading) {
         return <Splash setIsLoading={setSplashLoading} />;
