@@ -1,4 +1,4 @@
-import { View, Text, Alert, Platform, ActivityIndicator } from 'react-native'
+import { View, Text, Alert, Platform, ActivityIndicator, Modal } from 'react-native'
 import React, { useEffect, useState, useRef } from 'react'
 import { QRCodeProps, QRCodeScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
@@ -10,6 +10,7 @@ import * as FileSystem from 'expo-file-system';
 import { Button, ToastAndroid } from 'react-native';
 import * as Sharing from 'expo-sharing';
 import { ScrollView } from 'react-native';
+import DismissibleModal from '../../components/DismissibleModal';
 
 
 const QRCodeManager = ({ navigation }: QRCodeProps) => {
@@ -19,6 +20,9 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
 
     const signInQRCodeRef = useRef<any>(null);
     const signOutQRCodeRef = useRef<any>(null);
+
+    const [showSignInModal, setSignInModal] = useState<boolean>(false);
+    const [showSignOutModal, setSignOutModal] = useState<boolean>(false);
 
     const saveSignInQRCode = async () => {
         if (signInQRCodeRef.current) {
@@ -84,14 +88,15 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
         }
     }
 
+    const displaySignInQRCode = async () => {
+        
+    }
+
     return (
         <GestureHandlerRootView>
             <SafeAreaView>
                 <ScrollView>
-                    <View className='flex-row items-center h-10'>
-                        <View className='w-screen absolute'>
-                            <Text className="text-2xl font-bold justify-center text-center">{event.name} QRCode</Text>
-                        </View>
+                    <View className='flex-row items-center h-10'>                        
                         <View className='pl-6'>
                             <TouchableOpacity className="pr-4" onPress={() => {
                                 navigation.goBack();
@@ -101,42 +106,95 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                         </View>
                     </View>
 
+                    <View className='flex-row items-center'>
+                        <View className='w-screen p-4'>
+                            <Text className="text-2xl font-bold text-center">{event.name}</Text>
+                        </View>
+                    </View>
+
                     <View className='w-screen'>
                         <View className='justify-center items-center'>
                             {
                                 typeof event.signInPoints == "number" &&
-                                <View className='my-4'>
-                                    <Text className='text-2xl text-center'>Sign In QR Code</Text>
-                                    <QRCode
-                                        getRef={(c: any) => (signInQRCodeRef.current = c)}
-                                        size={300}
-                                        value={`tamu-shpe://event?id=${event.id}&mode=sign-in`}
-                                    />
-                                    <View className='my-2'>
-                                        <Button title="Save QR Code" onPress={saveSignInQRCode} />
-                                    </View>
+                                <View className='my-4 border-pale-blue'style={{borderWidth: 1, padding: 5, width: 300, height: 80}}>
+                                   <TouchableOpacity onPress={() => setSignInModal(true)} style={{ flexDirection: 'row', alignItems: 'center'}}>
+                                        <View className='my-4 flex-row items-center' style={{marginRight: 5}}>
+                                            <Text className='text-2xl text-center font-bold text-pale-blue'>Sign In QR Code</Text>
+                                        </View>
+                                        <View style={{flex: 1, alignItems: 'flex-end', marginRight: 5}}>
+                                            <QRCode
+                                                getRef={(c: any) => (signInQRCodeRef.current = c)}
+                                                size={60}
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
                                 </View>
                             }
                             {
                                 typeof event.signOutPoints == "number" &&
-                                <View className='border border-t-2 border-x-0 border-b-0 border-gray-400 py-4'>
-                                    <Text className='text-2xl text-center'>Sign Out QR Code</Text>
-                                    <QRCode
-                                        getRef={(c: any) => (signOutQRCodeRef.current = c)}
-                                        size={300}
-                                        value={`tamu-shpe://event?id=${event.id}&mode=sign-out`}
-                                    />
-                                    <View className='my-2'>
-                                        <Button title="Save QR Code" onPress={saveSignOutQRCode} />
-                                    </View>
+                                <View className='my-4 border-pale-blue' style={{borderWidth: 1, padding: 5, width: 300, height: 80}}>
+                                   <TouchableOpacity onPress={() => setSignOutModal(true)} style={{ flexDirection: 'row', alignItems: 'center'}}>
+                                        <View className='my-4 flex-row items-center' style={{marginRight: 5}}>
+                                            <Text className='text-2xl text-center font-bold text-pale-blue'>Sign Out QR Code</Text>
+                                        </View>
+                                        <View style={{flex: 1, alignItems: 'flex-end', marginRight: 5}}>
+                                            <QRCode
+                                                getRef={(c: any) => (signOutQRCodeRef.current = c)}
+                                                size={60}
+                                            />
+                                        </View>
+                                    </TouchableOpacity>
                                 </View>
                             }
                             {loading && <ActivityIndicator size="large" color="#0000ff" />}
                         </View>
                     </View>
                 </ScrollView>
+                <DismissibleModal
+                    visible={showSignInModal}
+                    setVisible={setSignInModal}
+                >
+                    <View
+                        className='flex opacity-100 bg-white rounded-md px-6 pt-2 pb-6'
+                        style={{ minWidth: 350 }}
+                    >
+                        <Text className='text-2xl text-center pb-2'>Sign In QR Code</Text>
+                        <QRCode
+                            getRef={(c: any) => (signInQRCodeRef.current = c)}
+                            size={350}
+                            value={`tamu-shpe://event?id=${event.id}&mode=sign-in`}
+                        />
+                        <View className='pt-2'>
+                            <Button title="Save QR Code" onPress={saveSignInQRCode} />
+                        </View>                
+                    </View>
+
+                </DismissibleModal>
+                <DismissibleModal
+                    visible={showSignOutModal}
+                    setVisible={setSignOutModal}
+                >
+                    <View
+                        className='flex opacity-100 bg-white rounded-md px-6 pt-2 pb-6'
+                        style={{ minWidth: 350 }}
+                    >
+                        <Text className='text-2xl text-center pb-2'>Sign Out QR Code</Text>
+                        <QRCode
+                            // getRef={(c: any) => (signOutQRCodeRef.current = c)}
+                            size={350}
+                            value={`tamu-shpe://event?id=${event.id}&mode=sign-out`}
+                        />
+                        <View className='pt-2'>
+                            <Button title="Save QR Code" onPress={saveSignOutQRCode} />
+                        </View>                 
+                    </View>
+
+                </DismissibleModal>
+
             </SafeAreaView>
         </GestureHandlerRootView>
+        
+        
     )
 }
 
