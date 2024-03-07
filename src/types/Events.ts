@@ -1,6 +1,5 @@
 import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers';
-import { PublicUserInfo } from './User';
 
 /** Anything added to this document needs to be added to functions/src/types.ts **/
 
@@ -50,10 +49,10 @@ export abstract class SHPEEvent {
     /** Specifies which committee this event is associated with */
     public committee?: string | null;
     /** Specifies who created this event */
-    public creator?: PublicUserInfo | null;
+    public creator?: string | null;
     /** Is the member eligible for national convention*/
     public nationalConventionEligible?: boolean | null;
-    /** Specifies if event should display on "General" tab of ishpe */
+    /** Specifies if event should display on "General" tab of ishpe, if it is club-wide */
     public general?: boolean | null;
 
 
