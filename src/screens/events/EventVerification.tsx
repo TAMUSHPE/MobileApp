@@ -7,11 +7,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import LottieView from "lottie-react-native";
 import { EventLogStatus } from '../../types/Events';
 import { ActivityIndicator } from "react-native";
+import { Vibration } from "react-native";
 
 const EventVerification = ({ navigation }: EventVerificationProps) => {
     const route = useRoute<EventVerificationScreenRouteProp>();
     const { id, mode } = route.params;
     const [logStatus, setLogStatus] = useState<EventLogStatus>();
+    console.log(logStatus);
     const [loading, setLoading] = useState<boolean>(true);
     useEffect(() => {
         switch (mode) {
@@ -55,7 +57,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
         }, 1000);
     };
 
-    useEffect(() => {
+    /*useEffect(() => {
         if (logStatus !== EventLogStatus.SUCCESS && logStatus !== undefined) {
             let alertTitle = '';
             let alertDescription = '';
@@ -84,10 +86,32 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                 default:
                     alertTitle = 'Unknown Status';
                     alertDescription = 'An unknown status was returned. This should never happen.';
+                    Alert.alert(alertTitle, alertDescription, [
+                        {
+                            text: 'OK',
+                            onPress: () => {
+                                navigation?.reset({
+                                    index: 0,
+                                    routes: [
+                                        {
+                                            name: 'HomeBottomTabs',
+                                            params: {
+                                                screen: 'Events',
+                                                params: {
+                                                    screen: 'EventsScreen',
+                                                },
+                                            },
+                                        },
+                                    ],
+                                });
+                            },
+                        },
+                    ],
+                    );
                     break;
             }
 
-            Alert.alert(alertTitle, alertDescription, [
+            /*Alert.alert(alertTitle, alertDescription, [
                 {
                     text: 'OK',
                     onPress: () => {
@@ -110,7 +134,18 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
             ],
             );
         }
-    }, [logStatus]);
+    }, [logStatus]);*/
+
+
+    // const ONE_SECOND_IN_MS = 1000;
+
+    // const PATTERN = [
+    // 1 * ONE_SECOND_IN_MS, // wait 1 sec
+    // 2 * ONE_SECOND_IN_MS, // vibrate 2 seconds
+    // 3 * ONE_SECOND_IN_MS, // wait 3 sec
+    // ];
+
+    // const runVibration = () => {Vibration.vibrate(15000)};
 
     return (
         <SafeAreaView className={`w-screen h-screen   bg-dark-navy ${(logStatus === EventLogStatus.SUCCESS) && "bg-green-500"}`}>
@@ -128,10 +163,80 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/check_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => redirectToPage()}
+                            onAnimationFinish={() => {redirectToPage();}}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>You've successfully signed in</Text>
+                </View> 
+            }
+            {
+                (logStatus === EventLogStatus.ALREADY_LOGGED) &&
+                <View className='w-screen h-[70%] items-center justify-center'>
+                    <View className=' w-screen h-40 '>
+                        <LottieView
+                            source={require("../../../assets/check_animation.json")}
+                            autoPlay
+                            loop={false}
+                            onAnimationFinish={() => {redirectToPage();}}
+                        />
+                    </View>
+                    <Text className='text-lg font-semibold'>You have already logged into this event.</Text>
+                </View>
+            }
+            {
+                (logStatus === EventLogStatus.ERROR) &&
+                <View className='w-screen h-[70%] items-center justify-center'>
+                    <View className=' w-screen h-40 '>
+                        <LottieView
+                            source={require("../../../assets/red_x_animation.json")}
+                            autoPlay
+                            loop={false}
+                            onAnimationFinish={() => redirectToPage()}
+                        />
+                    </View>
+                    <Text className='text-lg font-semibold'>An internal error occurred while attempting. Please try again.</Text>
+                </View>
+            }
+            {
+                (logStatus === EventLogStatus.EVENT_NOT_STARTED) &&
+                <View className='w-screen h-[70%] items-center justify-center'>
+                    <View className=' w-screen h-40 '>
+                        <LottieView
+                            source={require("../../../assets/red_x_animation.json")}
+                            autoPlay
+                            loop={false}
+                            onAnimationFinish={() => redirectToPage()}
+                        />
+                    </View>
+                    <Text className='text-lg font-semibold'>This event has not started yet.</Text>
+                </View>
+            }
+            {
+                (logStatus === EventLogStatus.EVENT_OVER) &&
+                <View className='w-screen h-[70%] items-center justify-center'>
+                    <View className=' w-screen h-40 '>
+                        <LottieView
+                            source={require("../../../assets/red_x_animation.json")}
+                            autoPlay
+                            loop={false}
+                            onAnimationFinish={() => redirectToPage()}
+                        />
+                    </View>
+                    <Text className='text-lg font-semibold'>This event has already ended.</Text>
+                </View>
+            }
+            {
+                (logStatus === EventLogStatus.EVENT_NOT_FOUND) &&
+                <View className='w-screen h-[70%] items-center justify-center'>
+                    <View className=' w-screen h-40 '>
+                        <LottieView
+                            source={require("../../../assets/red_x_animation.json")}
+                            autoPlay
+                            loop={false}
+                            onAnimationFinish={() => redirectToPage()}
+                        />
+                    </View>
+                    <Text className='text-lg font-semibold'>This event could not be found. Please try either </Text>
                 </View>
             }
         </SafeAreaView>
