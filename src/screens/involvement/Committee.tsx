@@ -4,10 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
-import { db, functions } from '../../config/firebaseConfig';
-import { getCommitteeEvents, getPublicUserData, setPublicUserData } from '../../api/firebaseUtils';
-import { httpsCallable } from 'firebase/functions';
-import { doc, getDoc } from 'firebase/firestore';
+import { getCommitteeEvents, getPublicUserData } from '../../api/firebaseUtils';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
 import { handleLinkPress } from '../../helpers/links';
 import { CommitteeScreenProps } from '../../types/Navigation';
@@ -32,7 +29,6 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
-    const [loadingCountChange, setLoadingCountChange] = useState<boolean>(false);
 
     const [localTeamMembers, setLocalTeamMembers] = useState<TeamMembersState>({
         leads: [],
@@ -115,7 +111,8 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                             className={`px-4 py-[2px] rounded-lg items-center mt-2 mx-2 ${isInCommittee ? "bg-[#FF4545]" : "bg-[#AEF359]"}`}
                             onPress={() => setConfirmVisible(!confirmVisible)}
                         >
-                            {loadingCountChange ? (
+                            {/* TODO: ADD LOGIC HERE AND add "Request" Label */}
+                            {true ? (
                                 <ActivityIndicator color="#000000" />
                             ) : (
                                 <Text className='text-lg font-semibold'>{isInCommittee ? "Leave" : "Join"}</Text>
@@ -210,49 +207,9 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                             <TouchableOpacity
                                 className="bg-pale-blue rounded-xl justify-center items-center"
                                 onPress={async () => {
+                                    // TODO ADD REQUEST JOIN/LEAVE COMMITTEE FUNCTIONALITY HERE
+                                    // KEEP IN MIND CAN AUTO JOIN IF COMMITTEE IS OPEN
                                     setConfirmVisible(false);
-                                    setLoadingCountChange(true);
-                                    const fetchCommitteeData = async () => {
-                                        try {
-                                            const docRef = doc(db, `committees/${initialCommittee.firebaseDocName}`);
-                                            const docSnapshot = await getDoc(docRef);
-                                            if (docSnapshot.exists()) {
-                                                setMemberCount(docSnapshot.data().memberCount);
-                                            }
-                                        } catch (error) {
-                                            console.error('Error fetching updated committee data:', error);
-                                        }
-                                    };
-
-                                    const committeeChanges = [{
-                                        committeeName: firebaseDocName,
-                                        change: isInCommittee ? -1 : 1
-                                    }];
-                                    const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
-                                    let updatedCommittees = [...userInfo?.publicInfo?.committees || []];
-                                    if (isInCommittee) {
-                                        updatedCommittees = updatedCommittees.filter(c => c !== firebaseDocName);
-                                    } else {
-                                        updatedCommittees.push(firebaseDocName!);
-                                    }
-
-                                    try {
-                                        await setPublicUserData({ committees: updatedCommittees });
-                                        await updateCommitteeMembersCount({ committeeChanges });
-                                        await fetchCommitteeData();
-
-                                        setUserInfo({
-                                            ...userInfo,
-                                            publicInfo: {
-                                                ...userInfo?.publicInfo,
-                                                committees: updatedCommittees
-                                            }
-                                        });
-                                    } catch (err) {
-                                        console.error(err);
-                                    } finally {
-                                        setLoadingCountChange(false);
-                                    }
                                 }}
                             >
                                 <Text className='text-xl font-bold text-white px-8'>{isInCommittee ? "Leave" : "Join"}</Text>
