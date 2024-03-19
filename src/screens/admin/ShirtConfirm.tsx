@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Octicons } from '@expo/vector-icons';
 import { db, functions } from '../../config/firebaseConfig'
-import { getMembersToResumeVerify } from '../../api/firebaseUtils'
+import { getMembersToShirtVerify } from '../../api/firebaseUtils'
 import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
 import { httpsCallable } from 'firebase/functions'
 import { handleLinkPress } from '../../helpers/links'
@@ -27,7 +27,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
     const fetchMembers = async () => {
         setLoading(true);
         try {
-            const fetchedMembers = await getMembersToResumeVerify();
+            const fetchedMembers = await getMembersToShirtVerify();
             setMembers(fetchedMembers);
         } catch (error) {
             console.error('Error fetching members:', error);
@@ -41,7 +41,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
     }, []);
 
     const fetchMemberDocuments = async (userId: string) => {
-        const memberDocRef = doc(db, 'resumeVerification', userId);
+        const memberDocRef = doc(db, 'shirt-sizes', userId);
         const memberDocSnap = await getDoc(memberDocRef);
 
         if (memberDocSnap.exists()) {
@@ -126,7 +126,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
             {(members && members.length === 0 && !loading) && (
                 <View className='items-center justify-center'>
                     <View className='flex justify-center mt-4'>
-                        <Text className='text-xl font-semibold'>No Resume to verify</Text>
+                        <Text className='text-xl font-semibold'>No Users to Check Off</Text>
                     </View>
                 </View>
             )}
@@ -159,14 +159,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
 
                     <MemberCard userData={selectedMember} />
 
-                    <View className='flex-row justify-between'>
-                        <TouchableOpacity
-                            className='flex-row justify-center px-6 items-center rounded-lg bg-pale-blue space-x-2 w-[47%] h-10'
-                            onPress={async () => { handleLinkPress(selectedMemberDocuments?.resumePublicURL!) }}
-                        >
-                            <Octicons name="link" size={24} color="white" />
-                            <Text className="text-white text-lg">View Resume</Text>
-                        </TouchableOpacity>
+                    <View className='flex-row justify-center'>
 
                         <View className='flex-col w-[47%]'>
                             <TouchableOpacity
@@ -176,7 +169,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                                 }}
                                 className='bg-[#AEF359] items-center py-2 rounded-lg'
                             >
-                                <Text className='text-lg font-semibold'>Approve</Text>
+                                <Text className='text-lg font-semibold'>Check Off</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -184,9 +177,9 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                                     handleDeny()
                                     setConfirmVisible(false);
                                 }}
-                                className='items-center py-2 rounded-lg mt-1'
+                                className='bg-[#ff0000] items-center py-2 rounded-lg mt-1'
                             >
-                                <Text className='text-lg font-semibold'>Deny</Text>
+                                <Text className='text-lg font-semibold'>Uncheck</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -211,24 +204,24 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                         </View>
                     </View>
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>Members that upload resume will appear here.</Text>
+                        <Text className='text-md font-semibold'>Members that have bought shirts will appear here.</Text>
                     </View>
 
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>To begin verification, click on a member and view their Resume.</Text>
+                        <Text className='text-md font-semibold'>To begin verification, click on a member and view the shirt size they have chosen.</Text>
                     </View>
 
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>Keep in mind that this resume bank should only include “high quality” resume.</Text>
+                        <Text className='text-md font-semibold'>Click the Check Off button to check off a member who has picked up their shirt.</Text>
                     </View>
 
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>For the safety of our members, we advice denying resume that contain private information such as address.</Text>
+                        <Text className='text-md font-semibold'>Members who have already picked up a shirt will still be available to view at the bottom of the screen</Text>
                     </View>
 
 
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>Click Approve or Deny, the resume will appear on the resume bank, and the member will be notified.</Text>
+                        <Text className='text-md font-semibold'>If a mistake is made, a member who was previously Checked Off can be Unchecked.</Text>
                     </View>
                 </View>
             </DismissibleModal>
