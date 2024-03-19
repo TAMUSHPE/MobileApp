@@ -161,9 +161,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [showCommitteesModal, setShowCommitteesModal] = useState<boolean>(false);
     const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
 
-    const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
-
-
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     useEffect(() => {
@@ -307,24 +304,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
             });
     }
 
-    const updateCommitteeCounts = async () => {
-        const addedCommittees = committees.filter(x => !prevCommittees.includes(x));
-        const removedCommittees = prevCommittees.filter(x => !committees.includes(x));
-
-        const committeeChanges = [
-            ...addedCommittees.map(committeeName => ({ committeeName, change: 1 })),
-            ...removedCommittees.map(committeeName => ({ committeeName, change: -1 }))
-        ];
-
-        if (committeeChanges.length > 0) {
-            try {
-                await updateCommitteeMembersCount({ committeeChanges });
-                console.log("Committee member counts updated successfully.");
-            } catch (error) {
-                console.error("Error updating committee counts:", error);
-            }
-        }
-    }
 
     const CommitteeListItemComponent = ({ committeeData, onPress, darkMode, isChecked, committeeIndex }: any) => {
         return (
@@ -522,50 +501,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     )
                 }
             />
-            {/* Committees Modal */}
-            <SettingsModal
-                visible={showCommitteesModal}
-                darkMode={darkMode}
-                onCancel={() => {
-                    setCommittees(userInfo?.publicInfo?.committees ?? defaultVals.committees);
-                    setShowCommitteesModal(false);
-                }}
-                onDone={() => {
-                    saveChanges();
-                    updateCommitteeCounts();
-                    setShowCommitteesModal(false);
-                }}
-                content={(
-                    <View className='flex-col'>
-                        <ScrollView
-                            showsVerticalScrollIndicator={false}
-                            contentContainerStyle={{
-                                minHeight: "130%",
-                            }}
-                        >
-                            <Text className={`text-lg px-4 mb-2 ${darkMode ? "text-gray-300" : "text-black"}`}>The number displayed beside each committee represents the order in which they will be displayed on your profile.</Text>
-                            <View className='w-full h-full flex-col items-center'>
-                                {committeesData.map((committeeData: Committee, index) => {
-                                    const committeeIndex = committees.findIndex(
-                                        userCommittee => userCommittee === committeeData.firebaseDocName
-                                    );
-                                    return (
-                                        <CommitteeListItemComponent
-                                            key={index}
-                                            committeeIndex={committeeIndex}
-                                            committeeData={committeeData}
-                                            darkMode={darkMode}
-                                            isChecked={committees.includes(committeeData?.firebaseDocName!)}
-                                            committees={committees ?? defaultVals.committees}
-                                            onPress={() => handleCommitteeToggle(committeeData?.firebaseDocName!)}
-                                        />
-                                    )
-                                })}
-                            </View>
-                        </ScrollView>
-                    </View>
-                )}
-            />
+
             {/* Resume Modal */}
             <SettingsModal
                 visible={showResumeModal}
@@ -675,15 +611,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 <View className="max-w-11/12 shadow-sm shadow-slate-300 p-3 mx-3 my-3">
                     <View className='flex-row items-center mb-6'>
                         <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
-                        <TouchableHighlight
-                            onPress={() => {
-                                setPrevCommittees(committees)
-                                setShowCommitteesModal(true)
-                            }}
-                            className='px-5 py-1 rounded-md bg-pale-blue ml-3 justify-center items-center' underlayColor={"#72A9BE"}
-                        >
-                            <Text className='text-white text-center text-lg'>Edit</Text>
-                        </TouchableHighlight>
                     </View>
                     <View className='flex-row flex-wrap'>
                         {committees?.map((committeeDocName, index) => {
