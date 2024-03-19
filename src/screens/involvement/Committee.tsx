@@ -69,7 +69,10 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                 setLocalTeamMembers(newTeamMembers);
             }
         };
+
         fetchEvents();
+        fetchUserData();
+
     }, [])
 
     useEffect(() => {
@@ -210,6 +213,7 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                                 onPress={async () => {
                                     // TODO ADD REQUEST JOIN/LEAVE COMMITTEE FUNCTIONALITY HERE
                                     // KEEP IN MIND CAN AUTO JOIN IF COMMITTEE IS OPEN
+
                                     setConfirmVisible(false);
                                 }}
                             >
