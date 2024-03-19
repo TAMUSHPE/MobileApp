@@ -608,7 +608,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     onPress={() => setShowAcademicInfoModal(true)}
                 />
                 <SettingsSectionTitle text='SHPE Info' darkMode={darkMode} />
-                <View className="max-w-11/12 shadow-sm shadow-slate-300 p-3 mx-3 my-3">
+                {/* <View className="max-w-11/12 shadow-sm shadow-slate-300 p-3 mx-3 my-3">
                     <View className='flex-row items-center mb-6'>
                         <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
                     </View>
@@ -626,7 +626,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                             );
                         })}
                     </View>
-                </View>
+                </View> */}
                 <SettingsButton
                     mainText='Edit Resume'
                     darkMode={darkMode}
