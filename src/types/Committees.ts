@@ -1,4 +1,3 @@
-import { PublicUserInfo } from "./User";
 import SHPEtinas from '../../assets/shpetinas.svg';
 import TechnicalAffairs from '../../assets/technical_affairs_logo.svg';
 import DefaultIcon from '../../assets/generic_course_icon.svg';
@@ -48,5 +47,6 @@ export type Committee = {
     leadApplicationLink?: string;
     logo?: keyof typeof committeeLogos;
     memberCount?: number;
+    isOpen?: boolean;
 }
 

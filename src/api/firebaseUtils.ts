@@ -358,6 +358,7 @@ export const setCommitteeData = async (committeeData: Committee) => {
             leadApplicationLink: committeeData.leadApplicationLink || "",
             logo: committeeData.logo || "default",
             memberCount: committeeData.memberCount || 0,
+            isOpen: committeeData.isOpen || false
         }, { merge: true });
         return true;
     } catch (err) {
