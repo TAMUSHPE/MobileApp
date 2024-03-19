@@ -18,7 +18,7 @@ import { PublicUserInfo } from '../../types/User';
 const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
 
-    const { name, color, logo, head, leads, representatives, description, memberApplicationLink, leadApplicationLink, firebaseDocName } = initialCommittee;
+    const { name, color, logo, head, leads, representatives, description, memberApplicationLink, leadApplicationLink, firebaseDocName, isOpen } = initialCommittee;
     const [memberCount, setMemberCount] = useState<number>(initialCommittee.memberCount || 0);
     const [events, setEvents] = useState<SHPEEvent[]>([]);
     const { LogoComponent, height, width } = getLogoComponent(logo);
@@ -122,8 +122,9 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
 
                     {/* Name and Application Buttons */}
                     <View className='flex-col flex-1 py-2 ml-6'>
-                        <View className='flex-row mb-4 w-full justify-center'>
+                        <View className='flex-row mb-4 w-full justify-center items-center'>
                             <Text className="text-xl font-semibold">{name}</Text>
+                            <Text className="text-md font-semibold"> {isOpen ? "(Open)" : "(Closed)"}</Text>
                         </View>
                         <View className='flex-col items-center'>
                             {memberApplicationLink && (
