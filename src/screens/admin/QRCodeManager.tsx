@@ -1,5 +1,5 @@
-import { View, Text, Alert, Platform, ActivityIndicator, Modal } from 'react-native'
-import React, { useEffect, useState, useRef } from 'react'
+import { View, Text, Alert, ActivityIndicator } from 'react-native'
+import React, { useState, useRef } from 'react'
 import { QRCodeProps, QRCodeScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
 import QRCode from 'react-native-qrcode-svg';
@@ -7,9 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { TouchableOpacity, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Octicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
-import { Button, ToastAndroid } from 'react-native';
+import { Button } from 'react-native';
 import * as Sharing from 'expo-sharing';
-import { ScrollView } from 'react-native';
 import DismissibleModal from '../../components/DismissibleModal';
 
 
@@ -95,7 +94,7 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
     return (
         <GestureHandlerRootView>
             <SafeAreaView>
-                <ScrollView>
+                <View>
                     <View className='flex-row items-center h-10'>                        
                         <View className='pl-6'>
                             <TouchableOpacity className="pr-4" onPress={() => {
@@ -116,7 +115,7 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                         <View className='justify-center items-center'>
                             {
                                 typeof event.signInPoints == "number" &&
-                                <View className='my-4 border-pale-blue'style={{borderWidth: 1, padding: 5, width: 300, height: 80}}>
+                                <View className='my-4 border-pale-blue border-2 rounded-md'style={{borderWidth: 1, padding: 5, width: 300, height: 80}}>
                                    <TouchableOpacity onPress={() => setSignInModal(true)} style={{ flexDirection: 'row', alignItems: 'center'}}>
                                         <View className='my-4 flex-row items-center' style={{marginRight: 5}}>
                                             <Text className='text-2xl text-center font-bold text-pale-blue'>Sign In QR Code</Text>
@@ -132,7 +131,7 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                             }
                             {
                                 typeof event.signOutPoints == "number" &&
-                                <View className='my-4 border-pale-blue' style={{borderWidth: 1, padding: 5, width: 300, height: 80}}>
+                                <View className='my-4 border-pale-blue border-2 rounded-md' style={{borderWidth: 1, padding: 5, width: 300, height: 80}}>
                                    <TouchableOpacity onPress={() => setSignOutModal(true)} style={{ flexDirection: 'row', alignItems: 'center'}}>
                                         <View className='my-4 flex-row items-center' style={{marginRight: 5}}>
                                             <Text className='text-2xl text-center font-bold text-pale-blue'>Sign Out QR Code</Text>
@@ -149,7 +148,7 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                             {loading && <ActivityIndicator size="large" color="#0000ff" />}
                         </View>
                     </View>
-                </ScrollView>
+                </View>
                 <DismissibleModal
                     visible={showSignInModal}
                     setVisible={setSignInModal}
