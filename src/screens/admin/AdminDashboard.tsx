@@ -11,6 +11,8 @@ const functions = getFunctions();
 const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
     const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
+    const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
+
 
     return (
         <View className='flex-1'>
@@ -103,6 +105,17 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         >
                             <Text className='text-white text-xl'>Update All User Points</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => {
+                                updateCommitteeCount()
+                                Alert.alert('Update Committee Count', 'Update committee count has been called')
+                            }}
+                            className='bg-black rounded-md py-4 px-2 items-center justify-center'
+                        >
+                            <Text className='text-white text-xl'>Update Committee Count</Text>
+                        </TouchableOpacity>
+
                         <TouchableOpacity
                             onPress={() => navigation.navigate('ResetOfficeHours')}
                             className='bg-black rounded-md py-4 px-2 items-center justify-center'

@@ -313,7 +313,6 @@ export const getCommittees = async (): Promise<Committee[]> => {
         const committeeCollectionRef = collection(db, 'committees');
         const snapshot = await getDocs(committeeCollectionRef);
         const committees = snapshot.docs
-            .filter(doc => doc.id !== "committeeCounts") // ignore committeeCounts document
             .map(doc => ({
                 firebaseDocName: doc.id,
                 ...doc.data()
