@@ -1,10 +1,10 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
-import { getCommitteeEvents, getPublicUserData } from '../../api/firebaseUtils';
+import { getCommitteeEvents, getPublicUserData, setPublicUserData } from '../../api/firebaseUtils';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
 import { handleLinkPress } from '../../helpers/links';
 import { CommitteeScreenProps } from '../../types/Navigation';
@@ -14,11 +14,14 @@ import CommitteeTeamCard from './CommitteeTeamCard';
 import DismissibleModal from '../../components/DismissibleModal';
 import EventsList from '../../components/EventsList';
 import { PublicUserInfo } from '../../types/User';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { auth, db } from '../../config/firebaseConfig';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
 
-    const { name, color, logo, head, leads, representatives, description, memberApplicationLink, leadApplicationLink, firebaseDocName, isOpen } = initialCommittee;
+    const { name, color, logo, description, memberApplicationLink, leadApplicationLink, firebaseDocName, isOpen } = initialCommittee;
     const [memberCount, setMemberCount] = useState<number>(initialCommittee.memberCount || 0);
     const [events, setEvents] = useState<SHPEEvent[]>([]);
     const { LogoComponent, height, width } = getLogoComponent(logo);
@@ -29,14 +32,14 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
+    const [loadingCountChange, setLoadingCountChange] = useState<boolean>(false)
+    const [isRequesting, setIsRequesting] = useState(false);
 
     const [localTeamMembers, setLocalTeamMembers] = useState<TeamMembersState>({
         leads: [],
         representatives: [],
         head: null,
     });
-
-
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -80,6 +83,87 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
         setIsInCommittee(committeeExists);
     }, [userInfo]);
 
+    useEffect(() => {
+        const checkRequestStatus = async () => {
+            if (auth.currentUser && !isInCommittee) {
+                const requestRef = doc(db, `committeeVerification/${firebaseDocName}/requests/${auth.currentUser.uid}`);
+                const requestSnapshot = await getDoc(requestRef);
+                setIsRequesting(requestSnapshot.exists());
+            }
+        };
+
+        checkRequestStatus();
+    }, [auth.currentUser, isInCommittee, firebaseDocName, db]);
+
+    const submitCommitteeRequest = useCallback(async () => {
+        if (auth.currentUser) {
+            await setDoc(doc(db, `committeeVerification/${firebaseDocName}/requests/${auth.currentUser.uid}`), {
+                uploadDate: new Date().toISOString(),
+            }, { merge: true });
+        }
+    }, [userInfo]);
+
+    const handleJoinLeave = async () => {
+        setLoadingCountChange(true);
+        if (isInCommittee) {
+            let updatedCommittees = [...userInfo?.publicInfo?.committees || []];
+            updatedCommittees = updatedCommittees.filter(c => c !== firebaseDocName);
+
+            try {
+                await setPublicUserData({ committees: updatedCommittees });
+
+                const updatedUserInfo = {
+                    ...userInfo,
+                    publicInfo: {
+                        ...userInfo?.publicInfo,
+                        committees: updatedCommittees
+                    }
+                };
+
+                try {
+                    await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
+                    setUserInfo(updatedUserInfo);
+                } catch (error) {
+                    console.error("Error updating user info:", error);
+                }
+
+            } catch (err) {
+                console.error(err);
+            }
+        } else {
+            if (isOpen) {
+                let updatedCommittees = [...userInfo?.publicInfo?.committees || []];
+                updatedCommittees.push(firebaseDocName!);
+
+                try {
+                    await setPublicUserData({ committees: updatedCommittees });
+
+                    const updatedUserInfo = {
+                        ...userInfo,
+                        publicInfo: {
+                            ...userInfo?.publicInfo,
+                            committees: updatedCommittees
+                        }
+                    };
+
+                    try {
+                        await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
+                        setUserInfo(updatedUserInfo);
+                    } catch (error) {
+                        console.error("Error updating user info:", error);
+                    }
+
+                } catch (err) {
+                    console.error(err);
+                }
+            } else {
+                submitCommitteeRequest();
+                setIsRequesting(true);
+            }
+        }
+        setLoadingCountChange(false);
+    }
+
     return (
         <View className='flex-1' style={{ backgroundColor: color }} >
             <StatusBar style={isLightColor ? "light" : "dark"} />
@@ -108,17 +192,20 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                     {/* Logo and Join/Leave Button */}
                     <View className='rounded-2xl flex-col' style={{ backgroundColor: color }} >
                         <View className='items-center justify-center h-full rounded-2xl px-3' style={{ backgroundColor: "rgba(255,255,255,0.4)" }}>
-                            <LogoComponent width={height} height={width} />
+                            <LogoComponent width={height} height={width} style={{ minWidth: 70 }} />
                         </View>
                         <TouchableOpacity
-                            className={`px-4 py-[2px] rounded-lg items-center mt-2 mx-2 ${isInCommittee ? "bg-[#FF4545]" : "bg-[#AEF359]"}`}
+                            className={`px-4 py-[2px] rounded-lg items-center mt-2 mx-2 ${isInCommittee ? "bg-[#FF4545]" : isRequesting ? "bg-gray-400" : "bg-[#AEF359]"}`}
                             onPress={() => setConfirmVisible(!confirmVisible)}
+                            disabled={loadingCountChange || isRequesting}
                         >
-                            {/* TODO: ADD LOGIC HERE AND add "Request" Label */}
-                            {true ? (
+
+                            {loadingCountChange ? (
                                 <ActivityIndicator color="#000000" />
                             ) : (
-                                <Text className='text-lg font-semibold'>{isInCommittee ? "Leave" : "Join"}</Text>
+                                <Text className='text-lg font-semibold'>
+                                    {isInCommittee ? "Leave" : isRequesting ? "Pending\nRequest" : "Join"}
+                                </Text>
                             )}
                         </TouchableOpacity>
                     </View>
@@ -211,10 +298,8 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                             <TouchableOpacity
                                 className="bg-pale-blue rounded-xl justify-center items-center"
                                 onPress={async () => {
-                                    // TODO ADD REQUEST JOIN/LEAVE COMMITTEE FUNCTIONALITY HERE
-                                    // KEEP IN MIND CAN AUTO JOIN IF COMMITTEE IS OPEN
-
                                     setConfirmVisible(false);
+                                    handleJoinLeave();
                                 }}
                             >
                                 <Text className='text-xl font-bold text-white px-8'>{isInCommittee ? "Leave" : "Join"}</Text>
