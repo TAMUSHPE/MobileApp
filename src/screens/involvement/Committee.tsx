@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
@@ -16,13 +16,13 @@ import EventsList from '../../components/EventsList';
 import { PublicUserInfo } from '../../types/User';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth, db } from '../../config/firebaseConfig';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
+import MembersList from '../../components/MembersList';
 
 const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
 
-    const { name, color, logo, description, memberApplicationLink, leadApplicationLink, firebaseDocName, isOpen } = initialCommittee;
-    const [memberCount, setMemberCount] = useState<number>(initialCommittee.memberCount || 0);
+    const { name, color, logo, description, memberApplicationLink, leadApplicationLink, firebaseDocName, isOpen, memberCount } = initialCommittee;
     const [events, setEvents] = useState<SHPEEvent[]>([]);
     const { LogoComponent, height, width } = getLogoComponent(logo);
     const luminosity = calculateHexLuminosity(color!);
@@ -32,8 +32,13 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
+    const [loadingMembers, setLoadingMembers] = useState<boolean>(false);
     const [loadingCountChange, setLoadingCountChange] = useState<boolean>(false)
     const [isRequesting, setIsRequesting] = useState(false);
+    const [members, setMembers] = useState<PublicUserInfo[]>([]);
+    const [forceUpdate, setForceUpdate] = useState(0);
+    const [membersListVisible, setMembersListVisible] = useState<boolean>(false);
+    const insets = useSafeAreaInsets();
 
     const [localTeamMembers, setLocalTeamMembers] = useState<TeamMembersState>({
         leads: [],
@@ -75,7 +80,6 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
 
         fetchEvents();
         fetchUserData();
-
     }, [])
 
     useEffect(() => {
@@ -94,6 +98,28 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
 
         checkRequestStatus();
     }, [auth.currentUser, isInCommittee, firebaseDocName, db]);
+
+    const fetchCommitteeMembers = async (committeeFirebaseDocName: string) => {
+        // Force update only happens once
+        if (forceUpdate == 1) {
+            return;
+        }
+        setLoadingMembers(true);
+
+        const allUsersSnapshot = await await getDocs(collection(db, 'users'));
+        const committeeMembers: PublicUserInfo[] = [];
+
+        for (const userDoc of allUsersSnapshot.docs) {
+            const userData = userDoc.data();
+            if (userData.committees && userData.committees.includes(committeeFirebaseDocName)) {
+                committeeMembers.push({ ...userData, uid: userDoc.id });
+            }
+        }
+
+        setMembers(committeeMembers);
+        setLoadingMembers(false);
+        setForceUpdate(1);
+    };
 
     const submitCommitteeRequest = useCallback(async () => {
         if (auth.currentUser) {
@@ -172,9 +198,18 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                 <View className='flex-row items-center mx-5 mt-1'>
                     <View className='absolute w-full justify-center items-center'>
                         <Text className={`text-2xl font-semibold text-${isLightColor ? "white" : "black"}`} >{name}</Text>
-                        <View className='absolute top-full'>
+                        <TouchableOpacity
+                            className='absolute top-full px-2 py-1 rounded-md'
+                            style={{
+                                backgroundColor: isLightColor ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'
+                            }}
+                            onPress={() => {
+                                setMembersListVisible(true);
+                                fetchCommitteeMembers(firebaseDocName!);
+                            }}
+                        >
                             <Text className={`text-lg font-semibold text-${isLightColor ? "white" : "black"}`} >{memberCount} Members</Text>
-                        </View>
+                        </TouchableOpacity>
                     </View>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Octicons name="chevron-left" size={30} color={isLightColor ? "white" : "black"} />
@@ -284,7 +319,49 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                 </View>
 
                 <View className='mb-28' />
-            </ScrollView >
+            </ScrollView>
+
+            <DismissibleModal
+                visible={membersListVisible}
+                setVisible={setMembersListVisible}
+            >
+                <View className='flex opacity-100 bg-white rounded-md space-y-6 h-screen w-screen'>
+                    <View
+                        className='flex-row items-center justify-between mx-5 mt-6'
+                        style={{ paddingTop: insets.top }}
+                    >
+                        <View className='flex-row items-center'>
+                            <Text className='text-3xl font-semibold ml-4'>{name}</Text>
+                        </View>
+                        <View>
+                            <TouchableOpacity onPress={() => {
+                                setMembersListVisible(false);
+                            }}>
+                                <Octicons name="x" size={24} color="black" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {loadingMembers && (
+                        <View>
+                            <ActivityIndicator className='mt-4' size={"large"} />
+                        </View>
+                    )}
+
+                    <View className='mt-9 flex-1'>
+                        <MembersList
+                            key={forceUpdate}
+                            handleCardPress={(uid) => {
+                                navigation.navigate('PublicProfile', { uid })
+                                setMembersListVisible(false);
+                            }}
+                            users={members}
+                        />
+                    </View>
+
+                </View>
+            </DismissibleModal>
+
 
             <DismissibleModal
                 visible={confirmVisible}
