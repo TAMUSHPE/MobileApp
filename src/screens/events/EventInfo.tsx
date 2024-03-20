@@ -17,6 +17,7 @@ import MapIcon from '../../../assets/map-pale-blue.svg'
 import { handleLinkPress } from '../../helpers/links';
 import MemberCard from '../../components/MemberCard';
 import { PublicUserInfo } from '../../types/User';
+import { reverseFormattedFirebaseName } from '../../types/Committees';
 
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<SHPEEventScreenRouteProp>();
@@ -218,12 +219,4 @@ const EventInfo = ({ navigation }: EventProps) => {
         </ScrollView>
     )
 }
-
-const reverseFormattedFirebaseName = (firebaseName: string) => {
-    return firebaseName
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-};
-
 export default EventInfo
