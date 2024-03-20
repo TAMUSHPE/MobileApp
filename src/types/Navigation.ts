@@ -116,6 +116,7 @@ export type AdminDashboardParams = {
     RestrictionsEditor: undefined;
     Feedback: undefined;
     MemberSHPEConfirm: undefined;
+    CommitteeConfirm: undefined;
     ResumeConfirm: undefined;
     Home: undefined;
     PublicProfile: {
