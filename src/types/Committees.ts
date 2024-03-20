@@ -50,3 +50,9 @@ export type Committee = {
     isOpen?: boolean;
 }
 
+export const reverseFormattedFirebaseName = (firebaseName: string) => {
+    return firebaseName
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+};
