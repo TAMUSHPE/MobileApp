@@ -125,6 +125,36 @@ export const sendNotificationMemberSHPE = functions.https.onCall(async (data, co
     }
 });
 
+export const sendNotificationCommitteeRequest = functions.https.onCall(async (data, context) => {
+    const notificationType = data.type;
+    const committeeName = data.committeeName;
+    const uid = data.uid;
+    const memberTokens = await getMemberTokens(uid);
+
+    const expo = new Expo();
+    const messages: ExpoPushMessage[] = [];
+    for (const expoToken of memberTokens) {
+        const parsedToken = JSON.parse(expoToken);
+        messages.push({
+            to: parsedToken.data,
+            sound: 'default',
+            title: "Committee Membership Update",
+            body: `Your ${committeeName} membership status has been ${notificationType}`,
+            data: { type: notificationType },
+        });
+    }
+
+    const chunks = expo.chunkPushNotifications(messages);
+
+    for (const chunk of chunks) {
+        try {
+            const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+            console.log(ticketChunk);
+        } catch (error) {
+            console.error('Error sending chunk:', error);
+        }
+    }
+});
 
 /**
  * This will be used both to send notification to member that was approve/deny and this will also be used
