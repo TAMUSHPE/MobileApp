@@ -9,10 +9,8 @@ import { AdminDashboardParams } from '../../types/Navigation';
 const functions = getFunctions();
 
 const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
-    const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
     const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
     const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
-
 
     return (
         <View className='flex-1'>
@@ -31,20 +29,28 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                 <View className='py-4 px-2 mx-5'>
                     <Text className='text-2xl font-semibold mb-3'>Verification</Text>
                     <View className='flex-row flex-wrap'>
-
-
                         <TouchableOpacity
                             onPress={() => navigation.navigate('MemberSHPEConfirm')}
                             className='bg-red-orange rounded-md py-4 px-2 items-center justify-center mr-4'
                         >
                             <Text className='text-white text-xl'>MemberSHPE</Text>
                         </TouchableOpacity>
+
                         <TouchableOpacity
                             onPress={() => navigation.navigate('ResumeConfirm')}
                             className='bg-red-orange rounded-md py-4 px-2 items-center justify-center'
                         >
                             <Text className='text-white text-xl'>Resume Bank</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('CommitteeConfirm')}
+                            className='bg-red-orange rounded-md py-4 px-2 items-center justify-center mt-3'
+                        >
+                            <Text className='text-white text-xl'>Committee Membership</Text>
+                        </TouchableOpacity>
+
+
                     </View>
                 </View>
 
