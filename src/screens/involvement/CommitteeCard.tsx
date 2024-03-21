@@ -7,7 +7,7 @@ import { Images } from "../../../assets"
 import { PublicUserInfo } from '../../types/User';
 import { getPublicUserData } from '../../api/firebaseUtils';
 
-const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, canEdit, handleCardPress, navigation }) => {
+const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPress, navigation }) => {
     const { name, color, logo, head, memberCount } = committee;
     const { userInfo } = useContext(UserContext)!;
     const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
@@ -66,7 +66,7 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, canEdit, handl
                 </View>
 
             </TouchableOpacity>
-            {(isSuperUser && canEdit) && (
+            {isSuperUser && (
                 <TouchableOpacity
                     onPress={() => { navigation.navigate("CommitteeEdit", { committee }) }}
                     className='absolute right-10 bg-pale-blue rounded-lg px-5 py-1 -top-3'
