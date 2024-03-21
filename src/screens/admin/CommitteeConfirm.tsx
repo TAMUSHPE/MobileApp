@@ -5,16 +5,17 @@ import { Octicons } from '@expo/vector-icons';
 import { AdminDashboardParams } from '../../types/Navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DismissibleModal from '../../components/DismissibleModal';
-import { Committee, reverseFormattedFirebaseName } from '../../types/Committees';
+import { Committee, getLogoComponent, reverseFormattedFirebaseName } from '../../types/Committees';
 import { useFocusEffect } from '@react-navigation/core';
 import { getCommittees } from '../../api/firebaseUtils';
 import CommitteeCard from '../involvement/CommitteeCard';
-import { collection, deleteDoc, doc, getDoc, getDocs, runTransaction } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, where } from 'firebase/firestore';
 import { db, functions } from '../../config/firebaseConfig';
 import { PublicUserInfo } from '../../types/User';
 import MembersList from '../../components/MembersList';
 import MemberCard from '../../components/MemberCard';
 import { httpsCallable } from 'firebase/functions';
+import { calculateHexLuminosity } from '../../helpers';
 
 const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [committees, setCommittees] = useState<Committee[]>([]);
@@ -35,8 +36,19 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     useFocusEffect(
         useCallback(() => {
             const fetchCommittees = async () => {
-                const response = await getCommittees();
-                setCommittees(response);
+                try {
+                    const committeeCollectionRef = collection(db, 'committees');
+                    const q = query(committeeCollectionRef, where("isOpen", "==", false));
+                    const snapshot = await getDocs(q);
+                    const committees = snapshot.docs.map(doc => ({
+                        firebaseDocName: doc.id,
+                        ...doc.data() as Committee
+                    }))
+                    setCommittees(committees);
+                } catch (err) {
+                    console.error("Error fetching open committees:", err);
+                    return [];
+                }
             };
 
             fetchCommittees();
@@ -83,13 +95,12 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     useEffect(() => {
         console.log(selectedCommittee)
         if (selectedCommittee) {
-            const committeeMembers = committeeRequests[selectedCommittee] || [];
+            const committeeMembers = committeeRequests![selectedCommittee] || [];
             setMembers(committeeMembers);
         } else {
             setMembers([]);
         }
     }, [selectedCommittee, committeeRequests]);
-    console.log(members)
 
     const [forceUpdate, setForceUpdate] = useState(0);
     useEffect(() => {
@@ -179,18 +190,49 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                 {loading && (
                     <ActivityIndicator size="large" />
                 )}
-                {!loading && committees.map((committee) => (
-                    <CommitteeCard
-                        key={committee.name}
-                        canEdit={false}
-                        committee={committee}
-                        handleCardPress={(committeeFirebaseDocName) => {
-                            setSelectedCommittee(committeeFirebaseDocName)
-                            setCommitteeListVisible(true)
-                            setInitialLoad(false)
-                        }}
-                    />
-                ))}
+                {!loading && committees.map((committee) => {
+                    const { name, color, logo, firebaseDocName } = committee;
+                    const { LogoComponent, height, width } = getLogoComponent(logo);
+
+                    const requestCount = committeeRequests[firebaseDocName!]?.length ?? 0;
+
+
+                    const isTextLight = (colorHex: string) => {
+                        const luminosity = calculateHexLuminosity(colorHex);
+                        return luminosity < 155;
+                    };
+
+                    return (
+                        <View className='flex items-center mb-8 w-full' key={firebaseDocName}>
+                            <TouchableOpacity
+                                onPress={() => {
+                                    setSelectedCommittee(firebaseDocName)
+                                    setCommitteeListVisible(true)
+                                    setInitialLoad(false)
+                                }}
+                                className='flex-row w-[90%] h-28 rounded-xl'
+                                style={{ backgroundColor: color }}
+                            >
+                                <View className='flex-1 rounded-l-xl' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
+                                    <View className='items-center justify-center h-full'>
+                                        <LogoComponent width={height} height={width} />
+                                    </View>
+                                </View>
+
+                                <View className='w-[70%] justify-end py-3 px-5'>
+                                    <View className='justify-end flex-row'>
+                                        <Text className={`font-bold text-2xl text-${isTextLight(color!) ? "white" : "black"}`}>{name}</Text>
+                                    </View>
+                                    <View className='justify-end flex-row'>
+                                        <Text className={`font-semibold text-${isTextLight(color!) ? "white" : "black"}`}>{requestCount} Request</Text>
+                                    </View>
+                                </View>
+
+                            </TouchableOpacity>
+
+                        </View>
+                    );
+                })}
             </ScrollView>
 
             <DismissibleModal
