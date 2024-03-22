@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import LottieView from "lottie-react-native";
 import { EventLogStatus } from '../../types/Events';
 import { ActivityIndicator } from "react-native";
-import { Vibration } from "react-native";
+import * as Haptics from 'expo-haptics';
 
 const EventVerification = ({ navigation }: EventVerificationProps) => {
     const route = useRoute<EventVerificationScreenRouteProp>();
@@ -137,16 +137,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
     }, [logStatus]);*/
 
 
-    // const ONE_SECOND_IN_MS = 1000;
-
-    // const PATTERN = [
-    // 1 * ONE_SECOND_IN_MS, // wait 1 sec
-    // 2 * ONE_SECOND_IN_MS, // vibrate 2 seconds
-    // 3 * ONE_SECOND_IN_MS, // wait 3 sec
-    // ];
-
-    // const runVibration = () => {Vibration.vibrate(15000)};
-
+    
     return (
         <SafeAreaView className={`w-screen h-screen   bg-dark-navy ${(logStatus === EventLogStatus.SUCCESS) && "bg-green-500"}`}>
             {
@@ -163,7 +154,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/check_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => {redirectToPage();}}
+                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)}}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>You've successfully signed in</Text>
@@ -177,7 +168,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/check_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => {redirectToPage();}}
+                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)}}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>You have already logged into this event.</Text>
@@ -191,7 +182,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/red_x_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => redirectToPage()}
+                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)}}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>An internal error occurred while attempting. Please try again.</Text>
@@ -205,7 +196,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/red_x_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => redirectToPage()}
+                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)}}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>This event has not started yet.</Text>
@@ -219,7 +210,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/red_x_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => redirectToPage()}
+                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)}}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>This event has already ended.</Text>
@@ -233,7 +224,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/red_x_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => redirectToPage()}
+                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)}}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>This event could not be found. Please try either </Text>

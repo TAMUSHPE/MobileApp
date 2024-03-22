@@ -13,7 +13,6 @@ import MOTMCard from '../../components/MOTMCard';
 import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
 import Ishpe from './Ishpe';
 
-
 /**
  * Renders the home screen of the application.
  * It includes the feature slider, office hours, and office sign-in components.
