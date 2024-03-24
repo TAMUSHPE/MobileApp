@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated, Switch } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -784,7 +784,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
  * These changes will go through firebase where an email will be sent to the user. 
  */
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    const { userInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
@@ -795,6 +795,32 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 subText={auth.currentUser?.email ?? "EMAIL"}
                 darkMode={darkMode}
             />
+
+            <SettingsButton
+                mainText={userInfo?.publicInfo?.isEmailPublic ? "Make Email Private" : "Make Email Public"}
+                onPress={
+                    async () => {
+                        const updatedPublicData = {
+                            ...userInfo?.publicInfo,
+                            isEmailPublic: !userInfo?.publicInfo?.isEmailPublic,
+                            email: !userInfo?.publicInfo?.isEmailPublic ? auth.currentUser?.email || "" : "",
+                        };
+
+                        await setPublicUserData(updatedPublicData);
+
+                        const updatedUserInfo = {
+                            ...userInfo,
+                            publicInfo: updatedPublicData,
+                        };
+
+                        await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
+                        setUserInfo(updatedUserInfo);
+                        Alert.alert("Email visibility updated successfully");
+                    }
+                }
+                darkMode={darkMode}
+            />
+
             <SettingsListItem
                 mainText='Unique Identifier'
                 subText={auth.currentUser?.uid ?? "UID"}
