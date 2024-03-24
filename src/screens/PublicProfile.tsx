@@ -27,7 +27,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
     const route = useRoute<MembersScreenRouteProp>();
     const { uid } = route.params;
     const [publicUserData, setPublicUserData] = useState<PublicUserInfo | undefined>();
-    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, tamuEmail, committees, pointsRank } = publicUserData || {};
+    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, isStudent, committees, pointsRank, isEmailPublic } = publicUserData || {};
     const [committeesData, setCommitteesData] = useState<Committee[]>([]);
     const [modifiedRoles, setModifiedRoles] = useState<Roles | undefined>(undefined);
     const [isVerified, setIsVerified] = useState<boolean>(false);
@@ -202,19 +202,21 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     <Text className='text-2xl italic'>
                         {roles?.customTitle ? roles.customTitle :
                             (isVerified ? "Member" :
-                                (tamuEmail != "" ? "Student" : "Guest"))
+                                (isStudent ? "Student" : "Guest"))
                         }
                     </Text>
                 </View>
                 <Text className='text-lg mt-2'>{bio}</Text>
                 <View className='flex-row mt-4 items-center'>
-                    <TouchableOpacity
-                        className='items-center justify-center mr-6'
-                        onPress={() => (handleLinkPress('mailto:' + email))}
-                    >
-                        <FontAwesome name="envelope" size={24} color="black" />
-                        <Text className='text-lg font-semibold'>Email</Text>
-                    </TouchableOpacity>
+                    {(isEmailPublic && email != "") && (
+                        <TouchableOpacity
+                            className='items-center justify-center mr-6'
+                            onPress={() => (handleLinkPress('mailto:' + email))}
+                        >
+                            <FontAwesome name="envelope" size={24} color="black" />
+                            <Text className='text-lg font-semibold'>Email</Text>
+                        </TouchableOpacity>
+                    )}
 
                     {resumeVerified &&
                         <TouchableOpacity

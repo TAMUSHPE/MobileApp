@@ -10,7 +10,7 @@ const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigat
         return null;
     }
 
-    const { name, roles, uid, photoURL, chapterExpiration, nationalExpiration, email } = userData
+    const { name, roles, uid, photoURL, chapterExpiration, nationalExpiration, email, isEmailPublic } = userData
     const isOfficer = roles ? roles.officer : false;
     const [isVerified, setIsVerified] = useState<boolean>(false);
 
@@ -43,7 +43,9 @@ const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigat
                             <Text className='font-bold text-lg'>{name}</Text>
                             {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
                         </View>
-                        <Text className='text-md text-gray-500 font-semibold'>{email}</Text>
+                        {(isEmailPublic && email != "") && (
+                            <Text className='text-md text-gray-500 font-semibold'>{email}</Text>
+                        )}
                     </View>
                 </View>
             </View>
