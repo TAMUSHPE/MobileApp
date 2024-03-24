@@ -27,8 +27,6 @@ describe("Verify user data can be created and modified in firestore", () => {
     test("Test setting and getting publicUserInfo", async () => {
         expect(auth.currentUser).toBeTruthy();
         const publicData: PublicUserInfo = {
-            email: randomStrRange(0, 80),
-            tamuEmail: randomStrRange(0, 80),
             displayName: randomStrRange(0, 80),
             photoURL: randomStrRange(0, 100),
             roles: {
@@ -44,6 +42,8 @@ describe("Verify user data can be created and modified in firestore", () => {
             committees: [randomStrRange(0, 80), randomStrRange(0, 80)],
             pointsRank: Math.random() * 10000,
             rankChange: "same",
+            isStudent: Math.random() < 0.5,
+            isEmailPublic: Math.random() < 0.5,
         };
         await firebaseUtils.setPublicUserData(publicData);
 
@@ -66,6 +66,8 @@ describe("Verify user data can be created and modified in firestore", () => {
                 randomStr(50),
                 randomStr(50),
             ],
+            email: randomStrRange(0, 80),
+            resumeURL: randomStrRange(0, 80),
         };
 
         await firebaseUtils.setPrivateUserData(privateData);

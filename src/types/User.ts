@@ -24,7 +24,6 @@ export interface PublicUserInfo {
     // Firestore parameters
     uid?: string
     email?: string;
-    tamuEmail?: string;
     displayName?: string;
     photoURL?: string;
     resumePublicURL?: string;
@@ -42,6 +41,8 @@ export interface PublicUserInfo {
     interests?: string[];
     points?: number;
     pointsThisMonth?: number;
+    isStudent?: boolean;
+    isEmailPublic?: boolean;
 };
 
 /**
@@ -62,6 +63,7 @@ export interface PrivateUserInfo {
     expoPushTokens?: string[];
     expirationDate?: Date;
     resumeURL?: string;
+    email?: string;
 };
 
 
