@@ -8,7 +8,6 @@ on:
 
 jobs:
     jest-test:
-
         runs-on: ubuntu-latest
 
         strategy:
@@ -17,9 +16,28 @@ jobs:
 
         steps:
         - uses: actions/checkout@v3
+        
         - name: Use Node.js ${{ matrix.node-version }}
           uses: actions/setup-node@v3
           with:
             node-version: ${{ matrix.node-version }}
-        - run: yarn install
-        - run: yarn test
+            
+        - name: Set Environment Variables
+          env:
+            GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+            FLICKER_USER_ID: ${{ secrets.FLICKER_USER_ID }}
+            FLICKER_API_KEY: ${{ secrets.FLICKER_API_KEY }}
+            GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+            
+          run: echo "Environment variables set"
+          
+        - name: Install dependencies
+          run: yarn install
+          
+        - name: Run tests
+          env:
+            GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+            FLICKER_USER_ID: ${{ secrets.FLICKER_USER_ID }}
+            FLICKER_API_KEY: ${{ secrets.FLICKER_API_KEY }}
+            GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+          run: yarn test
