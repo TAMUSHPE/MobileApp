@@ -39,20 +39,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
         setTimeout(() => {
             navigation?.reset({
                 index: 0,
-                routes: [
-                    {
-                        name: 'HomeBottomTabs',
-                        params: {
-                            screen: 'Events',
-                            params: {
-                                screen: 'EventInfo',
-                                params: {
-                                    eventId: id,
-                                }
-                            },
-                        },
-                    },
-                ],
+                routes: [{ name: 'HomeBottomTabs' }],
             });
         }, 1000);
     };

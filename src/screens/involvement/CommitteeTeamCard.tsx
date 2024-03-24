@@ -6,6 +6,10 @@ import { Images } from '../../../assets'
 import TwitterSvg from '../../components/TwitterSvg'
 
 const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigation }) => {
+    if (!userData || Object.keys(userData).length === 0) {
+        return null;
+    }
+
     const { name, roles, uid, photoURL, chapterExpiration, nationalExpiration, email } = userData
     const isOfficer = roles ? roles.officer : false;
     const [isVerified, setIsVerified] = useState<boolean>(false);

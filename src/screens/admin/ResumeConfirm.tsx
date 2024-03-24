@@ -64,40 +64,42 @@ const ResumeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardPara
         }
     }, [selectedMemberUID, members]);
 
-    const handleApprove = async () => {
-        const userDocRef = doc(db, 'users', selectedMemberUID!);
+    const handleApprove = async (uid: string) => {
+        const userDocRef = doc(db, 'users', uid);
         await updateDoc(userDocRef, {
             resumeVerified: true,
         });
 
 
-        const memberDocRef = doc(db, 'resumeVerification', selectedMemberUID!);
+        const memberDocRef = doc(db, 'resumeVerification', uid);
         await deleteDoc(memberDocRef);
-        await fetchMembers();
+
+        setMembers(members.filter(member => member.uid !== uid));
 
         const sendNotificationToMember = httpsCallable(functions, 'sendNotificationResumeConfirm');
         await sendNotificationToMember({
-            uid: selectedMemberUID,
+            uid: uid,
             type: "approved",
         });
     };
 
 
-    const handleDeny = async () => {
-        const userDocRef = doc(db, 'users', selectedMemberUID!);
+    const handleDeny = async (uid: string) => {
+        const userDocRef = doc(db, 'users', uid);
 
         await updateDoc(userDocRef, {
             resumePublicURL: deleteField(),
             resumeVerified: false,
         });
 
-        const memberDocRef = doc(db, 'resumeVerification', selectedMemberUID!);
+        const memberDocRef = doc(db, 'resumeVerification', uid);
         await deleteDoc(memberDocRef);
-        await fetchMembers();
+
+        setMembers(members.filter(member => member.uid !== uid));
 
         const sendNotificationToMember = httpsCallable(functions, 'sendNotificationResumeConfirm');
         await sendNotificationToMember({
-            uid: selectedMemberUID,
+            uid: uid,
             type: "denied",
         });
     };
@@ -171,7 +173,7 @@ const ResumeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardPara
                         <View className='flex-col w-[47%]'>
                             <TouchableOpacity
                                 onPress={() => {
-                                    handleApprove()
+                                    handleApprove(selectedMemberUID!)
                                     setConfirmVisible(false);
                                 }}
                                 className='bg-[#AEF359] items-center py-2 rounded-lg'
@@ -181,7 +183,7 @@ const ResumeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardPara
 
                             <TouchableOpacity
                                 onPress={() => {
-                                    handleDeny()
+                                    handleDeny(selectedMemberUID!)
                                     setConfirmVisible(false);
                                 }}
                                 className='items-center py-2 rounded-lg mt-1'
