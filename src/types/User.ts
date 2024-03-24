@@ -27,7 +27,6 @@ export interface PublicUserInfo {
     tamuEmail?: string;
     displayName?: string;
     photoURL?: string;
-    resumeURL?: string;
     resumePublicURL?: string;
     roles?: Roles;
     name?: string;
@@ -62,6 +61,7 @@ export interface PrivateUserInfo {
     settings?: AppSettings;
     expoPushTokens?: string[];
     expirationDate?: Date;
+    resumeURL?: string;
 };
 
 
