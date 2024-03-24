@@ -31,7 +31,6 @@ describe("Verify user data can be created and modified in firestore", () => {
             tamuEmail: randomStrRange(0, 80),
             displayName: randomStrRange(0, 80),
             photoURL: randomStrRange(0, 100),
-            resumeURL: randomStrRange(0, 100),
             roles: {
                 reader: Math.random() < 0.5,
                 admin: Math.random() < 0.5,

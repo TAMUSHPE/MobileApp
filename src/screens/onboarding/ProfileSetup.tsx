@@ -397,7 +397,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
         console.log("File available at", URL);
         if (auth.currentUser) {
             setResumeURL(URL);
-            await setPublicUserData({
+            await setPrivateUserData({
                 resumeURL: URL
             });
         }

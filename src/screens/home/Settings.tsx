@@ -142,7 +142,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
     //Hooks used to save state of modified fields before user hits "save"
     const [photoURL, setPhotoURL] = useState<string | undefined>(userInfo?.publicInfo?.photoURL);
-    const [resumeURL, setResumeURL] = useState<string | undefined>(userInfo?.publicInfo?.resumeURL);
+    const [resumeURL, setResumeURL] = useState<string | undefined>(userInfo?.private?.privateInfo?.resumeURL);
     const [displayName, setDisplayName] = useState<string | undefined>(userInfo?.publicInfo?.displayName);
     const [name, setName] = useState<string | undefined>(userInfo?.publicInfo?.name);
     const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
@@ -246,7 +246,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         console.log("File available at", URL);
         if (auth.currentUser) {
             setResumeURL(URL);
-            await setPublicUserData({
+            await setPrivateUserData({
                 resumeURL: URL
             });
         }
@@ -272,9 +272,8 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
          * By adding a conditional and the && operator next to the child object, this essentially creates a "Conditional Key Addition".
          * This makes it so the information will not be overridden in Firebase if the value of a key is empty/undefined.
          */
-        await setPublicUserData({
+        setPublicUserData({
             ...(photoURL !== undefined) && { photoURL: photoURL },
-            ...(resumeURL !== undefined) && { resumeURL: resumeURL },
             ...(displayName !== undefined) && { displayName: displayName },
             ...(name !== undefined) && { name: name },
             ...(bio !== undefined) && { bio: bio },
@@ -305,6 +304,10 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 setLoading(false);
                 setShowSaveButton(false);
             });
+
+        setPrivateUserData({
+            ...(resumeURL !== undefined) && { resumeURL: resumeURL },
+        })
     }
 
     const updateCommitteeCounts = async () => {
