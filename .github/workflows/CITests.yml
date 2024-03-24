@@ -28,7 +28,6 @@ jobs:
             FLICKER_USER_ID: ${{ secrets.FLICKER_USER_ID }}
             FLICKER_API_KEY: ${{ secrets.FLICKER_API_KEY }}
             GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
-            
           run: echo "Environment variables set"
           
         - name: Install dependencies
