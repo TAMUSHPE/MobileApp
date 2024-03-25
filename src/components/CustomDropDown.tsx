@@ -51,11 +51,12 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
     const [search, setSearch] = useState('');
     const [filteredData, setFilteredData] = useState(data);
     const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null)
+    const [isFocused, setIsFocused] = useState(false);
     const searchRef = useRef<TextInput>(null);
     const moveTitle = useRef(new Animated.Value(0)).current;
     const [componentLayout, setComponentLayout] = useState<LayoutRectangle | null>(null);
 
-    const titleStartY = 20;
+    const titleStartY = 30;
     const titleEndY = -5;
 
     useEffect(() => {
@@ -70,6 +71,16 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
         if (selectedItemProp && selectedItemProp?.value != "")
             setSelectedItem(selectedItemProp);
     }, []);
+
+
+    // Disable ScrollView when dropdown is closed. This allows CustomDropDownMenu to be nested inside a ScrollView.
+    // The ScrollView in the parent must have "scrollEnabled" set to false when the dropdown is open.
+    useEffect(() => {
+        if (!isOpen) {
+            setIsFocused(false);
+        }
+    }, [isOpen])
+
 
     const moveTitleTop = () => {
         Animated.timing(moveTitle, {
@@ -195,7 +206,10 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                 <TouchableOpacity
                     className='flex-row justify-between items-center self-center bg-white rounded-md w-[100%] h-12 px-3 border-gray-400 border'
                     activeOpacity={1}
-                    onPress={() => onToggle()}>
+                    onPress={() => {
+                        onToggle()
+                        setIsFocused(true)
+                    }}>
 
                     <Text className={'font-bold text-gray-400 text-xl ' + textClassName}>
                         {getDisplayText()}
@@ -226,7 +240,9 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                         />
                     )}
 
-                    <ScrollView className='mt-4'>
+                    <ScrollView className='mt-4'
+                        scrollEnabled={isFocused}
+                    >
                         {filteredData.map((item, index) => (
                             <TouchableOpacity
                                 onPress={() => handleSelect(item)}
