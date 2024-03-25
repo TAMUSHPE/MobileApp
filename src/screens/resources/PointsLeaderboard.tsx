@@ -4,15 +4,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { auth } from "../../config/firebaseConfig"
-import { queryGoogleSpreadsheet, GoogleSheetsIDs } from '../../api/fetchGoogleSheets'
-import { getUserByEmail, getPublicUserData } from '../../api/firebaseUtils'
+import { auth, db } from "../../config/firebaseConfig"
+import { getPublicUserData } from '../../api/firebaseUtils'
 import { RankChange, PublicUserInfo } from '../../types/User';
-import { GoogleSheetsResponse } from '../../types/GoogleSheetsTypes';
 import { ResourcesStackParams } from '../../types/Navigation';
 import { Images } from '../../../assets';
 import DismissibleModal from '../../components/DismissibleModal';
 import RankCard from './RankCard';
+import { collection, getDocs, limit, orderBy, query, startAt, where } from 'firebase/firestore';
 
 const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
     const [rankCards, setRankCards] = useState<PublicUserInfo[]>([])
@@ -33,45 +32,22 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
     const [userRank, setUserRank] = useState(-1);
     const [userRankChange, setUserRankChange] = useState<RankChange>('same');
 
-    const prepPointSheet = async (data: GoogleSheetsResponse, offset: number): Promise<PublicUserInfo[]> => {
-        const dataRow = data.table?.rows;
-        if (!dataRow || dataRow.length === 0) {
-            setEndOfData(true);
-            return []
-        }
-        const usersDataPromises = dataRow.map(async (entry, index) => {
-            if (!entry.c[0] || !entry.c[2] || !entry.c[3]) {
-                setNullDataOffset(prevNullDataOffset => prevNullDataOffset + 1);
-                return null;
-            }
-            const email = entry.c[2].v as string;
-            const fetchUser = await getUserByEmail(email);
-            const userData = fetchUser?.userData;
-            const userUID = fetchUser?.userUID;
-            const profileURL = userData?.photoURL;
-            const rankChange = userData?.rankChange;
-            return {
-                name: `${entry.c[0].v} ${entry.c[1].v || ""}`,
-                email: email,
-                points: +entry.c[3].f,
-                pointsRank: index + offset + 1,
-                photoURL: profileURL,
-                rankChange: rankChange as RankChange,
-                uid: userUID
-            };
-        });
+    const prepPointSheet = async (amount: number, offset: number): Promise<PublicUserInfo[]> => {
+        const userRef = collection(db, 'users');
+        const sortedUsersQuery = query(userRef, orderBy("pointsRank", "asc"), limit(amount), startAt(offset), where("points", ">", 0));
 
-        const usersData = await Promise.all(usersDataPromises);
-        return usersData.filter(user => user !== null) as PublicUserInfo[];
+        const data = (await getDocs(sortedUsersQuery)).docs;
+
+        setEndOfData(data.length < amount);
+
+        return data.map((value) => {
+            return value.data();
+        });
     }
 
-    const queryAndSetRanks = async (limit: number, offset: number) => {
-        const query = `select A, B, C, D LIMIT ${limit} OFFSET ${offset}`;
-        queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, query)
-            .then(response => {
-                setLoading(true);
-                return prepPointSheet(response!, offset)
-            }).then(data => {
+    const queryAndSetRanks = async (amount: number, offset: number) => {
+        prepPointSheet(amount, offset)
+            .then(data => {
                 setRankCards([...rankCards, ...data]);
             })
             .catch(error => {
@@ -85,15 +61,15 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
     useEffect(() => {
         const fetchData = async () => {
             getPublicUserData(auth?.currentUser?.uid!).then(user => {
-                setUserRank(user?.pointsRank ? user?.pointsRank : -1);
-                setUserRankChange(user?.rankChange ? user?.rankChange as RankChange : "same" as RankChange);
-                setUserPoints(user?.points ? user?.points : -1)
+                setUserRank(user?.pointsRank || -1);
+                setUserRankChange(user?.rankChange ?? "same");
+                setUserPoints(user?.points || -1);
             }).then(() => {
                 queryAndSetRanks(100, 0);
             })
         }
         fetchData();
-    }, [])
+    }, []);
 
     const renderRankChangeIcon = () => {
         switch (userRankChange) {
@@ -104,7 +80,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
             default:
                 return <Octicons name="dash" size={22} color="gray" />
         }
-    };
+    }
 
 
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
