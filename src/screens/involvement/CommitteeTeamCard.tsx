@@ -43,7 +43,7 @@ const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigat
                             <Text className='font-bold text-lg'>{name}</Text>
                             {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
                         </View>
-                        {(isEmailPublic && email != "") && (
+                        {(isEmailPublic && email && email.trim() !== "") && (
                             <Text className='text-md text-gray-500 font-semibold'>{email}</Text>
                         )}
                     </View>
