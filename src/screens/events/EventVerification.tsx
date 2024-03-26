@@ -7,11 +7,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import LottieView from "lottie-react-native";
 import { EventLogStatus } from '../../types/Events';
 import { ActivityIndicator } from "react-native";
+import * as Haptics from 'expo-haptics';
 
 const EventVerification = ({ navigation }: EventVerificationProps) => {
     const route = useRoute<EventVerificationScreenRouteProp>();
     const { id, mode } = route.params;
     const [logStatus, setLogStatus] = useState<EventLogStatus>();
+    console.log(logStatus);
     const [loading, setLoading] = useState<boolean>(true);
     useEffect(() => {
         switch (mode) {
@@ -42,63 +44,6 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
         }, 1000);
     };
 
-    useEffect(() => {
-        if (logStatus !== EventLogStatus.SUCCESS && logStatus !== undefined) {
-            let alertTitle = '';
-            let alertDescription = '';
-
-            switch (logStatus) {
-                case EventLogStatus.ERROR:
-                    alertTitle = 'Error';
-                    alertDescription = 'An internal error occurred while attempting. Please try again.';
-                    break;
-                case EventLogStatus.ALREADY_LOGGED:
-                    alertTitle = 'Already Logged';
-                    alertDescription = 'You have already logged into this event.';
-                    break;
-                case EventLogStatus.EVENT_NOT_STARTED:
-                    alertTitle = 'Event Not Started';
-                    alertDescription = 'This event has not started yet.';
-                    break;
-                case EventLogStatus.EVENT_OVER:
-                    alertTitle = 'Event Over';
-                    alertDescription = 'The event has already ended.';
-                    break;
-                case EventLogStatus.EVENT_NOT_FOUND:
-                    alertTitle = 'Event Not Found';
-                    alertDescription = 'This event could not be found. Please try either '
-                    break;
-                default:
-                    alertTitle = 'Unknown Status';
-                    alertDescription = 'An unknown status was returned. This should never happen.';
-                    break;
-            }
-
-            Alert.alert(alertTitle, alertDescription, [
-                {
-                    text: 'OK',
-                    onPress: () => {
-                        navigation?.reset({
-                            index: 0,
-                            routes: [
-                                {
-                                    name: 'HomeBottomTabs',
-                                    params: {
-                                        screen: 'Events',
-                                        params: {
-                                            screen: 'EventsScreen',
-                                        },
-                                    },
-                                },
-                            ],
-                        });
-                    },
-                },
-            ],
-            );
-        }
-    }, [logStatus]);
-
     return (
         <SafeAreaView className={`w-screen h-screen   bg-dark-navy ${(logStatus === EventLogStatus.SUCCESS) && "bg-green-500"}`}>
             {
@@ -115,10 +60,80 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/check_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => redirectToPage()}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) }}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>You've successfully signed in</Text>
+                </View>
+            }
+            {
+                (logStatus === EventLogStatus.ALREADY_LOGGED) &&
+                <View className='w-screen h-[70%] items-center justify-center'>
+                    <View className=' w-screen h-40 '>
+                        <LottieView
+                            source={require("../../../assets/check_animation.json")}
+                            autoPlay
+                            loop={false}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) }}
+                        />
+                    </View>
+                    <Text className='text-lg font-semibold'>You have already logged into this event.</Text>
+                </View>
+            }
+            {
+                (logStatus === EventLogStatus.ERROR) &&
+                <View className='w-screen h-[70%] items-center justify-center'>
+                    <View className=' w-screen h-40 '>
+                        <LottieView
+                            source={require("../../../assets/red_x_animation.json")}
+                            autoPlay
+                            loop={false}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) }}
+                        />
+                    </View>
+                    <Text className='text-lg font-semibold'>An internal error occurred while attempting. Please try again.</Text>
+                </View>
+            }
+            {
+                (logStatus === EventLogStatus.EVENT_NOT_STARTED) &&
+                <View className='w-screen h-[70%] items-center justify-center'>
+                    <View className=' w-screen h-40 '>
+                        <LottieView
+                            source={require("../../../assets/red_x_animation.json")}
+                            autoPlay
+                            loop={false}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) }}
+                        />
+                    </View>
+                    <Text className='text-lg font-semibold'>This event has not started yet.</Text>
+                </View>
+            }
+            {
+                (logStatus === EventLogStatus.EVENT_OVER) &&
+                <View className='w-screen h-[70%] items-center justify-center'>
+                    <View className=' w-screen h-40 '>
+                        <LottieView
+                            source={require("../../../assets/red_x_animation.json")}
+                            autoPlay
+                            loop={false}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) }}
+                        />
+                    </View>
+                    <Text className='text-lg font-semibold'>This event has already ended.</Text>
+                </View>
+            }
+            {
+                (logStatus === EventLogStatus.EVENT_NOT_FOUND) &&
+                <View className='w-screen h-[70%] items-center justify-center'>
+                    <View className=' w-screen h-40 '>
+                        <LottieView
+                            source={require("../../../assets/red_x_animation.json")}
+                            autoPlay
+                            loop={false}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) }}
+                        />
+                    </View>
+                    <Text className='text-lg font-semibold'>This event could not be found. Please try either </Text>
                 </View>
             }
         </SafeAreaView>
