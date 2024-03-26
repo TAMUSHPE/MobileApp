@@ -41,7 +41,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     const [endTime, setEndTime] = useState<Timestamp | undefined>(event.endTime ?? undefined);
     const [description, setDescription] = useState<string>("");
     const [coverImageURI, setCoverImageURI] = useState<string>();
-    const [general, setIsGeneral] = useState<boolean>(event.general ?? false);
+    const [isGeneral, setIsGeneral] = useState<boolean>(event.general ?? false);
 
     const selectCoverImage = async () => {
         const result = await selectImage({
