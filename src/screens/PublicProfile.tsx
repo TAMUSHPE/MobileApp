@@ -208,7 +208,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                 </View>
                 <Text className='text-lg mt-2'>{bio}</Text>
                 <View className='flex-row mt-4 items-center'>
-                    {(isEmailPublic && email != "") && (
+                    {(isEmailPublic && email && email.trim() !== "") && (
                         <TouchableOpacity
                             className='items-center justify-center mr-6'
                             onPress={() => (handleLinkPress('mailto:' + email))}
