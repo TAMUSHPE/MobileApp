@@ -398,10 +398,10 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Club-Wide Event</Text>
                             <Switch
                                 trackColor={{ false: "#999796", true: "#001F5B" }}
-                                thumbColor={general ? "#72A9BE" : "#f4f3f4"}
+                                thumbColor={isGeneral ? "#72A9BE" : "#f4f3f4"}
                                 ios_backgroundColor="#999796"
                                 onValueChange={() => setIsGeneral(previousState => !previousState)}
-                                value={general}
+                                value={isGeneral}
                             />
                         </View>
                     </KeyboardAvoidingView>
