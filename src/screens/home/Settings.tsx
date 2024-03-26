@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated, Switch } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -142,7 +142,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
     //Hooks used to save state of modified fields before user hits "save"
     const [photoURL, setPhotoURL] = useState<string | undefined>(userInfo?.publicInfo?.photoURL);
-    const [resumeURL, setResumeURL] = useState<string | undefined>(userInfo?.publicInfo?.resumeURL);
+    const [resumeURL, setResumeURL] = useState<string | undefined>(userInfo?.private?.privateInfo?.resumeURL);
     const [displayName, setDisplayName] = useState<string | undefined>(userInfo?.publicInfo?.displayName);
     const [name, setName] = useState<string | undefined>(userInfo?.publicInfo?.name);
     const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
@@ -243,7 +243,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         console.log("File available at", URL);
         if (auth.currentUser) {
             setResumeURL(URL);
-            await setPublicUserData({
+            await setPrivateUserData({
                 resumeURL: URL
             });
         }
@@ -269,9 +269,8 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
          * By adding a conditional and the && operator next to the child object, this essentially creates a "Conditional Key Addition".
          * This makes it so the information will not be overridden in Firebase if the value of a key is empty/undefined.
          */
-        await setPublicUserData({
+        setPublicUserData({
             ...(photoURL !== undefined) && { photoURL: photoURL },
-            ...(resumeURL !== undefined) && { resumeURL: resumeURL },
             ...(displayName !== undefined) && { displayName: displayName },
             ...(name !== undefined) && { name: name },
             ...(bio !== undefined) && { bio: bio },
@@ -302,6 +301,10 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 setLoading(false);
                 setShowSaveButton(false);
             });
+
+        setPrivateUserData({
+            ...(resumeURL !== undefined) && { resumeURL: resumeURL },
+        })
     }
 
 
@@ -708,7 +711,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
  * These changes will go through firebase where an email will be sent to the user. 
  */
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    const { userInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
@@ -719,6 +722,32 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 subText={auth.currentUser?.email ?? "EMAIL"}
                 darkMode={darkMode}
             />
+
+            <SettingsButton
+                mainText={userInfo?.publicInfo?.isEmailPublic ? "Make Email Private" : "Make Email Public"}
+                onPress={
+                    async () => {
+                        const updatedPublicData = {
+                            ...userInfo?.publicInfo,
+                            isEmailPublic: !userInfo?.publicInfo?.isEmailPublic,
+                            email: !userInfo?.publicInfo?.isEmailPublic ? auth.currentUser?.email || "" : "",
+                        };
+
+                        await setPublicUserData(updatedPublicData);
+
+                        const updatedUserInfo = {
+                            ...userInfo,
+                            publicInfo: updatedPublicData,
+                        };
+
+                        await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
+                        setUserInfo(updatedUserInfo);
+                        Alert.alert("Email visibility updated successfully");
+                    }
+                }
+                darkMode={darkMode}
+            />
+
             <SettingsListItem
                 mainText='Unique Identifier'
                 subText={auth.currentUser?.uid ?? "UID"}

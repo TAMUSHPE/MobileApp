@@ -140,9 +140,6 @@ export type HomeDrawerParams = {
 // Bottom Tabs
 export type HomeBottomTabParams = {
     Home: undefined;
-    Profile: {
-        email: string;
-    };
 };
 
 export type ResourcesProps = {
