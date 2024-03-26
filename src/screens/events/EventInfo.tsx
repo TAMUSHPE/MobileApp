@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Platform } from 'react-native'
+import { KeyboardAvoidingView, Switch, View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Platform } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,6 +14,7 @@ import { StatusBar } from 'expo-status-bar';
 import CalendarIcon from '../../../assets/calandar_pale_blue.svg'
 import ClockIcon from '../../../assets/clock-pale-blue.svg'
 import MapIcon from '../../../assets/map-pale-blue.svg'
+import TargetIcon from '../../../assets/target-pale-blue.svg'
 import { handleLinkPress } from '../../helpers/links';
 import MemberCard from '../../components/MemberCard';
 import { PublicUserInfo } from '../../types/User';
@@ -142,8 +143,9 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 </View>
                             </View>
                         )}
-
-                        <View className='flex-col relative items-center'>
+                        
+                        {/* TODO: bug here navagating back from home */}
+                        <View className='flex-col relative items-center'> 
                             {hasPrivileges &&
                                 <TouchableOpacity
                                     onPress={() => navigation.navigate("UpdateEvent", { event })}
@@ -177,7 +179,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
                 )}
                 <Text className={`text-xl first-letter:italic font-bold ${(description && description != "") && "mt-7"}`}>Time and Location</Text>
-                <View className='flex-row mt-2'>
+                <View className='flex-row mt-2'> 
                     <CalendarIcon width={20} height={20} />
                     <Text className='text-lg ml-2'>{(startTime && endTime) ? formatEventDate(startTime.toDate(), endTime.toDate()) : ""}</Text>
                 </View>
@@ -207,6 +209,12 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
                 )}
 
+                { event.general && (
+                  <View className='flex-row mt-1'>
+                      <TargetIcon width={20} height={20} />
+                      <Text className={`text-lg ml-2`}>Club-Wide Event</Text>
+                  </View>
+                )}
                 {creatorData && (
                     <View className='mt-4'>
                         <Text className='text-xl mt-2 italic font-bold mb-2'>Event Host</Text>
