@@ -7,7 +7,7 @@ import { Images } from "../../../assets"
 import { PublicUserInfo } from '../../types/User';
 import { getPublicUserData } from '../../api/firebaseUtils';
 
-const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) => {
+const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPress, navigation }) => {
     const { name, color, logo, head, memberCount } = committee;
     const { userInfo } = useContext(UserContext)!;
     const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
@@ -33,7 +33,14 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
     return (
         <View className='flex items-center mb-8 w-full'>
             <TouchableOpacity
-                onPress={() => navigation.navigate("CommitteeScreen", { committee })}
+                onPress={() => {
+                    if (navigation) {
+                        navigation.navigate("CommitteeScreen", { committee })
+                    }
+                    if (handleCardPress) {
+                        handleCardPress(committee?.firebaseDocName!)
+                    }
+                }}
                 className='flex-row w-[90%] h-28 rounded-xl'
                 style={{ backgroundColor: color }}
             >
@@ -74,7 +81,9 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
 
 interface CommitteeCardProps {
     committee: Committee
-    navigation: any
+    navigation?: any
+    canEdit?: boolean
+    handleCardPress?: (uid: string) => string | void;
 }
 
 
