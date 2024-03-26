@@ -44,87 +44,6 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
         }, 1000);
     };
 
-    /*useEffect(() => {
-        if (logStatus !== EventLogStatus.SUCCESS && logStatus !== undefined) {
-            let alertTitle = '';
-            let alertDescription = '';
-
-            switch (logStatus) {
-                case EventLogStatus.ERROR:
-                    alertTitle = 'Error';
-                    alertDescription = 'An internal error occurred while attempting. Please try again.';
-                    break;
-                case EventLogStatus.ALREADY_LOGGED:
-                    alertTitle = 'Already Logged';
-                    alertDescription = 'You have already logged into this event.';
-                    break;
-                case EventLogStatus.EVENT_NOT_STARTED:
-                    alertTitle = 'Event Not Started';
-                    alertDescription = 'This event has not started yet.';
-                    break;
-                case EventLogStatus.EVENT_OVER:
-                    alertTitle = 'Event Over';
-                    alertDescription = 'The event has already ended.';
-                    break;
-                case EventLogStatus.EVENT_NOT_FOUND:
-                    alertTitle = 'Event Not Found';
-                    alertDescription = 'This event could not be found. Please try either '
-                    break;
-                default:
-                    alertTitle = 'Unknown Status';
-                    alertDescription = 'An unknown status was returned. This should never happen.';
-                    Alert.alert(alertTitle, alertDescription, [
-                        {
-                            text: 'OK',
-                            onPress: () => {
-                                navigation?.reset({
-                                    index: 0,
-                                    routes: [
-                                        {
-                                            name: 'HomeBottomTabs',
-                                            params: {
-                                                screen: 'Events',
-                                                params: {
-                                                    screen: 'EventsScreen',
-                                                },
-                                            },
-                                        },
-                                    ],
-                                });
-                            },
-                        },
-                    ],
-                    );
-                    break;
-            }
-
-            /*Alert.alert(alertTitle, alertDescription, [
-                {
-                    text: 'OK',
-                    onPress: () => {
-                        navigation?.reset({
-                            index: 0,
-                            routes: [
-                                {
-                                    name: 'HomeBottomTabs',
-                                    params: {
-                                        screen: 'Events',
-                                        params: {
-                                            screen: 'EventsScreen',
-                                        },
-                                    },
-                                },
-                            ],
-                        });
-                    },
-                },
-            ],
-            );
-        }
-    }, [logStatus]);*/
-
-
-    
     return (
         <SafeAreaView className={`w-screen h-screen   bg-dark-navy ${(logStatus === EventLogStatus.SUCCESS) && "bg-green-500"}`}>
             {
@@ -141,11 +60,11 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/check_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)}}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) }}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>You've successfully signed in</Text>
-                </View> 
+                </View>
             }
             {
                 (logStatus === EventLogStatus.ALREADY_LOGGED) &&
@@ -155,7 +74,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/check_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)}}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success) }}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>You have already logged into this event.</Text>
@@ -169,7 +88,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/red_x_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)}}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) }}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>An internal error occurred while attempting. Please try again.</Text>
@@ -183,7 +102,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/red_x_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)}}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) }}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>This event has not started yet.</Text>
@@ -197,7 +116,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/red_x_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)}}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) }}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>This event has already ended.</Text>
@@ -211,7 +130,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                             source={require("../../../assets/red_x_animation.json")}
                             autoPlay
                             loop={false}
-                            onAnimationFinish={() => {redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)}}
+                            onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error) }}
                         />
                     </View>
                     <Text className='text-lg font-semibold'>This event could not be found. Please try either </Text>
