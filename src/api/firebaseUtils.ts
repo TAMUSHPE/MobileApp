@@ -237,8 +237,8 @@ export const initializeCurrentUserData = async (): Promise<User> => {
      * Should any values not exist in the returned object from firebase, the default data will be used instead.
      */
     const defaultPublicInfo: PublicUserInfo = {
-        email: auth.currentUser?.email ?? "",
-        tamuEmail: validateTamuEmail(auth.currentUser?.email, false) ? auth.currentUser!.email! : "",
+        email: "",
+        isStudent: validateTamuEmail(auth.currentUser?.email, false) ? true : false,
         displayName: auth.currentUser?.displayName ?? "",
         photoURL: auth.currentUser?.photoURL ?? "",
         roles: {
@@ -247,6 +247,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
             admin: false,
             developer: false,
         },
+        isEmailPublic: false,
     };
 
     const oneWeekFromNow = new Date();
@@ -258,6 +259,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
             darkMode: false,
         },
         expirationDate: oneWeekFromNow,
+        email: auth.currentUser?.email ?? "",
     };
 
     const user = await getUser(auth.currentUser?.uid!);
@@ -278,6 +280,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
             publicInfo: {
                 ...Object.assign(defaultPublicInfo, user.publicInfo),
                 roles: Object.assign(defaultRoles, user.publicInfo?.roles),
+                email: user.publicInfo?.isEmailPublic ? auth.currentUser?.email || "" : "",
             },
             private: {
                 privateInfo: Object.assign(defaultPrivateInfo, user.private?.privateInfo),
