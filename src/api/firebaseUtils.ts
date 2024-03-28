@@ -989,7 +989,15 @@ export const getMembersToShirtVerify = async (): Promise<PublicUserInfo[]> => {
     for (const userId of shirtUserIds) {
         const userDocRef = doc(db, 'users', userId);
         const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists()) {
+        if (userDocSnap.exists() && !userDocSnap.data()?.shirtPickedUp) {
+            members.push({ uid: userId, ...userDocSnap.data() });
+        }
+    }
+
+    for (const userId of shirtUserIds) {
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists() && userDocSnap.data()?.shirtPickedUp) {
             members.push({ uid: userId, ...userDocSnap.data() });
         }
     }
