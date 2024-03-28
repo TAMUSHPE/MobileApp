@@ -64,42 +64,24 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
         }
     }, [selectedMemberUID, members]);
 
-    const handleApprove = async () => {
+    const handleCheck = async () => {
         const userDocRef = doc(db, 'users', selectedMemberUID!);
         await updateDoc(userDocRef, {
-            resumeVerified: true,
+            shirtPickedUp: true,
         });
 
-
-        const memberDocRef = doc(db, 'resumeVerification', selectedMemberUID!);
-        await deleteDoc(memberDocRef);
         await fetchMembers();
-
-        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationResumeConfirm');
-        await sendNotificationToMember({
-            uid: selectedMemberUID,
-            type: "approved",
-        });
     };
 
 
-    const handleDeny = async () => {
+    const handleUncheck = async () => {
         const userDocRef = doc(db, 'users', selectedMemberUID!);
 
         await updateDoc(userDocRef, {
-            shirtSize: deleteField(),
-            resumeVerified: false,
+            shirtPickedUp: false,
         });
 
-        const memberDocRef = doc(db, 'resumeVerification', selectedMemberUID!);
-        await deleteDoc(memberDocRef);
         await fetchMembers();
-
-        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationResumeConfirm');
-        await sendNotificationToMember({
-            uid: selectedMemberUID,
-            type: "denied",
-        });
     };
 
     return (
@@ -163,25 +145,28 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                             <Text className='text-xl font-semibold'>Shirt Size:</Text>
                             <Text className='text-xl font-semibold'>{selectedMemberDocuments?.shirtSize}</Text>
 
-                            <TouchableOpacity
-                                onPress={() => {
-                                    handleApprove()
-                                    setConfirmVisible(false);
-                                }}
-                                className='flex-row py-3 rounded-lg justify-center bg-[#00ff00] w-[47%] space-x-2'
-                            >
-                                <Text className='text-lg font-semibold'>Check Off</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                onPress={() => {
-                                    handleDeny()
-                                    setConfirmVisible(false);
-                                }}
-                                className='flex-row py-3 rounded-lg justify-center bg-[#ff0000] w-[47%] space-x-2'
-                            >
-                                <Text className='text-lg font-semibold'>Uncheck</Text>
-                            </TouchableOpacity>
+                            {selectedMember?.shirtPickedUp ? (
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        handleUncheck
+                                ()
+                                        setConfirmVisible(false);
+                                    }}
+                                    className='flex-row py-3 rounded-lg justify-center bg-[#ff0000] w-[47%] space-x-2'
+                                >
+                                    <Text className='text-lg font-semibold'>Uncheck</Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        handleCheck()
+                                        setConfirmVisible(false);
+                                    }}
+                                    className='flex-row py-3 rounded-lg justify-center bg-[#00ff00] w-[47%] space-x-2'
+                                >
+                                    <Text className='text-lg font-semibold'>Check Off</Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
                     </View>
 
@@ -233,6 +218,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
 
 interface shirtResponse {
     shirtSize: string;
+    shirtPickedUp: boolean;
 }
 
 export default ShirtConfirm
