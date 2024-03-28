@@ -18,7 +18,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
     const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
     const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();
-    const [selectedMemberDocuments, setSelectedMemberDocuments] = useState<resumeResponse | null>(null);
+    const [selectedMemberDocuments, setSelectedMemberDocuments] = useState<shirtResponse | null>(null);
 
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [infoVisible, setInfoVisible] = useState(false);
@@ -45,7 +45,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
         const memberDocSnap = await getDoc(memberDocRef);
 
         if (memberDocSnap.exists()) {
-            const memberData = memberDocSnap.data() as resumeResponse;
+            const memberData = memberDocSnap.data() as shirtResponse;
             setSelectedMemberDocuments(memberData);
         } else {
             console.log('No such document!');
@@ -87,7 +87,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
         const userDocRef = doc(db, 'users', selectedMemberUID!);
 
         await updateDoc(userDocRef, {
-            resumePublicURL: deleteField(),
+            shirtSize: deleteField(),
             resumeVerified: false,
         });
 
@@ -156,18 +156,19 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                             </TouchableOpacity>
                         </View>
                     </View>
-
                     <MemberCard userData={selectedMember} />
 
-                    <View className='flex-row justify-center'>
+                    <View className='flex-row justify-between'>
+                        <View className='flex-row justify-between'>
+                            <Text className='text-xl font-semibold'>Shirt Size:</Text>
+                            <Text className='text-xl font-semibold'>{selectedMemberDocuments?.shirtSize}</Text>
 
-                        <View className='flex-col w-[47%]'>
                             <TouchableOpacity
                                 onPress={() => {
                                     handleApprove()
                                     setConfirmVisible(false);
                                 }}
-                                className='bg-[#AEF359] items-center py-2 rounded-lg'
+                                className='flex-row py-3 rounded-lg justify-center bg-[#00ff00] w-[47%] space-x-2'
                             >
                                 <Text className='text-lg font-semibold'>Check Off</Text>
                             </TouchableOpacity>
@@ -177,7 +178,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                                     handleDeny()
                                     setConfirmVisible(false);
                                 }}
-                                className='bg-[#ff0000] items-center py-2 rounded-lg mt-1'
+                                className='flex-row py-3 rounded-lg justify-center bg-[#ff0000] w-[47%] space-x-2'
                             >
                                 <Text className='text-lg font-semibold'>Uncheck</Text>
                             </TouchableOpacity>
@@ -230,8 +231,8 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
 }
 
 
-interface resumeResponse {
-    resumePublicURL: string;
+interface shirtResponse {
+    shirtSize: string;
 }
 
 export default ShirtConfirm
