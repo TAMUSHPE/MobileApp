@@ -3,20 +3,26 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Octicons } from '@expo/vector-icons';
-import { getMemberOfTheMonth, getMembersExcludeOfficers, setMemberOfTheMonth } from '../../api/firebaseUtils';
+import { getMOTM, getMembersExcludeOfficers, setMOTM } from '../../api/firebaseUtils';
+import { httpsCallable, getFunctions } from 'firebase/functions';
 import { AdminDashboardParams } from '../../types/Navigation';
 import { PublicUserInfo } from '../../types/User';
 import MembersList from '../../components/MembersList';
 import DismissibleModal from '../../components/DismissibleModal';
 import MemberCard from '../../components/MemberCard';
+import SwipeableMemberCard from '../../components/SwipeableMemberCard';
 import { useFocusEffect } from '@react-navigation/core';
-import MemberOfTheMonth from '../../components/MOTMCard';
+import MOTM from '../../components/MOTMCard';
 
-const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const functions = getFunctions();
+
+const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [members, setMembers] = useState<PublicUserInfo[]>([])
     const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
     const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();
-    const [localMemberOfTheMonth, setLocalMemberOfTheMonth] = useState<PublicUserInfo>();
+    const [localMOTM, setLocalMOTM] = useState<PublicUserInfo>();
+    const [localSuggestedMOTM, setSuggestedLocalMOTM] = useState<PublicUserInfo[] | undefined>(undefined);
+    const calculateMOTM = httpsCallable(functions, 'calculateMOTM');
 
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [infoVisible, setInfoVisible] = useState(false);
@@ -56,21 +62,31 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
         }
     };
 
-    const fetchMemberOfTheMonth = async () => {
+    const fetchMOTM = async () => {
         try {
-            const fetchedMemberOfTheMonth = await getMemberOfTheMonth();
-            setLocalMemberOfTheMonth(fetchedMemberOfTheMonth);
+            const fetchedMOTM = await getMOTM();
+            setLocalMOTM(fetchedMOTM);
         } catch (error) {
             console.error('Error fetching member of the month:', error);
         } finally {
             setLoadingMOTM(false);
         }
-
     }
 
     useEffect(() => {
         fetchMembers();
-        fetchMemberOfTheMonth();
+        const fetchSuggestedLocalMOTM = async () => {
+            try {
+                const response = await calculateMOTM();
+                if (response && response.data) {
+                    setSuggestedLocalMOTM(response.data as PublicUserInfo[]);
+                }
+            } catch (error) {
+                console.error('Error fetching user info:', error);
+            }
+        };
+
+        fetchSuggestedLocalMOTM();
     }, []);
 
     // Logic for expiration modal closing is more complicated then simply setting visibility to false
@@ -104,19 +120,53 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                 <ActivityIndicator size="large" className='mt-8' />
             ) : (
                 <View className='flex-1'>
-                    <MemberOfTheMonth
-                        userData={localMemberOfTheMonth}
+                    <MOTM
+                        userData={localMOTM}
                         navigation={navigation}
                         handleCardPress={() => {
-                            navigation.navigate("PublicProfile", { uid: localMemberOfTheMonth?.uid! })
+                            navigation.navigate("PublicProfile", { uid: localMOTM?.uid! })
                         }}
                     />
 
-                    <View className='mt-6 mx-5'>
-                        <Text className='font-bold text-xl'>Suggest MOTM</Text>
-                    </View>
+                    {localSuggestedMOTM && (
+                        <View>
+                            <View className='mt-6 mx-5 pb-3'>
+                                <Text className='font-bold text-xl'>Suggested MOTM</Text>
+                            </View>
+                        
+                            {localSuggestedMOTM?.map((userData, index) => {
+                                if (!userData.name) {
+                                    return null;
+                                }
+                                return (
+                                    <View key = {index} className='mx-4 px-3 '>
+                                        <MemberCard
+                                            userData={userData}
+                                            navigation={navigation}
+                                            displayPoints={true}
+                                            handleCardPress={() => {
+                                                navigation.navigate("PublicProfile", { uid: userData.uid! })
+                                        }} />
 
-                    <TouchableOpacity className='flex-row p-5 mt-2'
+                                        {/* <SwipeableMemberCard
+                                            userData={userData}
+                                            handleCardPress={() => {
+                                                navigation.navigate("PublicProfile", { uid: userData.uid! })
+                                            }}
+                                            displayPoints={true}
+                                            onSwipeRight={() => {
+                                                console.log('Swiped right on user:', userData.uid);
+                                                setMOTM(selectedMember!)
+                                                setConfirmVisible(false)
+                                                fetchMOTM();
+                                        }}/> */}
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    )}
+
+                    <TouchableOpacity className='mx-4 px-4 py-3 rounded-md bg-gray-300'
                         onPress={() => setMembersModal(true)}
                     >
                         <Text className='font-bold text-xl'>Select another member</Text>
@@ -191,9 +241,9 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
                         <TouchableOpacity
                             className='bg-[#AEF359] w-[40%] items-center py-2 rounded-md'
                             onPress={() => {
-                                setMemberOfTheMonth(selectedMember!)
+                                setMOTM(selectedMember!)
                                 setConfirmVisible(false)
-                                fetchMemberOfTheMonth();
+                                fetchMOTM();
                             }}
                         >
                             <Text className='font-semibold text-lg'>Confirm</Text>
@@ -242,4 +292,4 @@ const MemberOfTheMonthEditor = ({ navigation }: NativeStackScreenProps<AdminDash
     )
 }
 
-export default MemberOfTheMonthEditor
+export default MOTMEditor
