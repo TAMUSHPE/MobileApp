@@ -246,6 +246,8 @@ export const initializeCurrentUserData = async (): Promise<User> => {
             officer: false,
             admin: false,
             developer: false,
+            lead: false,
+            representative: false,
         },
     };
 
@@ -748,7 +750,7 @@ export const isUserSignedIn = async (eventId: string, uid: string) => {
     }
 }
 
-export const getMemberOfTheMonth = async () => {
+export const getMOTM = async () => {
     return getDoc(doc(db, `member-of-the-month/member`))
         .then((res) => {
             const responseData = res.data();
@@ -765,7 +767,7 @@ export const getMemberOfTheMonth = async () => {
         });
 }
 
-export const setMemberOfTheMonth = async (member: PublicUserInfo) => {
+export const setMOTM = async (member: PublicUserInfo) => {
     try {
         await setDoc(doc(db, `member-of-the-month/member`), {
             member: member

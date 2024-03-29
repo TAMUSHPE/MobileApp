@@ -4,7 +4,7 @@ import { AdminDashboardParams } from '../types/Navigation';
 import { HomeStack } from "./HomeStack";
 import RestrictionsEditor from "../screens/admin/RestrictionsEditor";
 import AdminDashboard from "../screens/admin/AdminDashboard";
-import MemberOfTheMonthEditor from "../screens/admin/MemberOfTheMonthEditor";
+import MOTMEditor from "../screens/admin/MOTMEditor";
 import FeaturedSlideEditor from "../screens/admin/FeaturedSlideEditor";
 import ResumeDownloader from "../screens/admin/ResumeDownloader";
 import ResetOfficeHours from "../screens/admin/ResetOfficeHours";
@@ -20,7 +20,7 @@ const AdminDashboardStack = () => {
         <Stack.Navigator>
             <Stack.Group screenOptions={{ headerShown: false }} >
                 <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
-                <Stack.Screen name="MemberOfTheMonthEditor" component={MemberOfTheMonthEditor} />
+                <Stack.Screen name="MOTMEditor" component={MOTMEditor} />
                 <Stack.Screen name="FeaturedSlideEditor" component={FeaturedSlideEditor} />
                 <Stack.Screen name="ResumeDownloader" component={ResumeDownloader} />
                 <Stack.Screen name="ResetOfficeHours" component={ResetOfficeHours} />
