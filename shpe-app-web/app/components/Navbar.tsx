@@ -14,8 +14,8 @@ const Navbar = () => {
 
     return (
         
-        <div className="flex flex-col bg-[#500000] h-screen w-fit justify-between">
-            <nav className='flex flex-col w-fit text-[18px] font-bold'>
+        <div className="flex flex-col bg-[#500000] h-screen w-52 justify-between shrink-0">
+            <nav className='flex flex-col w-full text-[18px] font-bold'>
                 <Image src='logo.svg' alt="SHPE Logo" width={200} height={200}  className="mb-10"/>
 
                 <Link href={'/dashboard'} className="pr-5 pl-5 hover:shadow-inner-strong  w-full  h-[45px] pt-2" 

@@ -1,0 +1,17 @@
+import React from 'react';
+
+interface HeaderProps {
+    title: string;
+    iconPath: string;
+}
+
+const Header: React.FC<HeaderProps> = ({ title, iconPath }) => {
+    return (
+        <header className="bg-[#5D2D2D]  h-32 w-full flex flex-row place-items-end justify-between ">
+            <h1 className='font-bold p-5 text-2xl'>{title}</h1>
+            <img className="w-28 h-5/6 mr-12" src={iconPath} alt="icon" />
+        </header>
+    );
+};
+
+export default Header;
