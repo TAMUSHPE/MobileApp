@@ -4,24 +4,18 @@ import { RankChange } from "./types";
 import { AggregateField } from 'firebase-admin/firestore';
 
 /** Determines rank change based on current and new ranks. */
-const getRankChange = (userData: any, newRank: number): RankChange => {
-    if (userData.rank < newRank) return "increased";
-    if (userData.rank > newRank) return "decreased";
+const getRankChange = (oldRank: any, newRank: number): RankChange => {
+    if (oldRank < newRank) return "increased";
+    if (oldRank > newRank) return "decreased";
     return "same";
 }
 
 /** Updates the rank and rank change status of a user in Firestore database */
-const updateUserRank = async (uid: string, newRank: number) => {
-    if (!uid) return;
+const updateUserRank = async (uid: string, userData: FirebaseFirestore.DocumentData, newRank: number) => {
+    if (!uid || !userData) return;
 
     const userDocRef = db.collection('users').doc(uid);
-    const userDoc = await userDocRef.get();
-    if (!userDoc.exists) return;
-
-    const userData = userDoc.data();
-    if (!userData) return;
-
-    const rankChange = getRankChange(userData, newRank);
+    const rankChange = getRankChange(userData.pointsRank ?? newRank, newRank);
 
     await userDocRef.set({
         pointsRank: newRank,
@@ -30,15 +24,16 @@ const updateUserRank = async (uid: string, newRank: number) => {
 }
 
 /** Fetches data from Google Spreadsheet and updates users' ranks in Firestore */
-const updateRanks = async () => {
+const updateRanks = async (): Promise<string> => {
     try {
         const snapshot = await db.collection('users').orderBy("points", "desc").get();
 
         let currentRank = 1;
         snapshot.forEach((doc) => {
-            updateUserRank(doc.id, currentRank);
+            updateUserRank(doc.id, doc.data, currentRank);
             currentRank++;
         });
+        return "Success";
     } catch (error) {
         console.error("Error in updateRanks:", error);
         throw new Error("Internal Server error");
@@ -47,7 +42,7 @@ const updateRanks = async () => {
 
 /** Scheduled function to update ranks daily at 5AM CST */
 export const updateRanksScheduled = functions.pubsub.schedule('0 5 * * *').timeZone('America/Chicago').onRun(async (context) => {
-    await updateRanks()
+    await updateRanks();
 });
 
 /** Callable function to manually update ranks */
