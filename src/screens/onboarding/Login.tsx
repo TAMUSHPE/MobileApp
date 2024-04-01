@@ -10,6 +10,10 @@ import InteractButton from "../../components/InteractButton";
 const LoginScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const { signOutUser } = useContext(UserContext)!;
 
+    useEffect(() => {
+        signOutUser(false);
+    }, [])
+
     return (
         <SafeAreaView className="flex-1 justify-between bg-dark-navy items-center">
             <View className="flex-col items-center my-8">
