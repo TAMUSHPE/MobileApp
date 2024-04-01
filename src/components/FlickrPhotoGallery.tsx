@@ -6,6 +6,7 @@ const windowWidth = Dimensions.get('window').width;
 
 const flickerApiKey = process.env.FLICKER_API_KEY;
 const flickerUserId = process.env.FLICKER_USER_ID;
+const flickrPhotoSetId = '72177720315651880';
 
 
 const FlickrPhotoItem = memo(({ item }: { item: FlickrPhoto }) => {
@@ -42,7 +43,7 @@ const FlickrPhotoGallery = () => {
 
     const fetchPhotos = async () => {
         try {
-            const response = await fetch(`https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=${flickerApiKey}&user_id=${flickerUserId}&format=json&nojsoncallback=1`);
+            const response = await fetch(`https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=${flickerApiKey}&user_id=${flickerUserId}&format=json&nojsoncallback=1&photoset_id=${flickrPhotoSetId}`);
             const json = await response.json();
             const shuffledPhotos = shufflePhotos(json.photos.photo);
             setPhotos([shuffledPhotos[shuffledPhotos.length - 1], ...shuffledPhotos, shuffledPhotos[0]]);

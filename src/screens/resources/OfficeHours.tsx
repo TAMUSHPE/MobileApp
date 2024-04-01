@@ -80,18 +80,22 @@ const OfficeHours = () => {
                     <View className='flex items-center w-[80%] space-y-8'>
                         <Text className="text-center text-lg font-bold">Are you sure you want to send a notification to officers?</Text>
                         <View className="flex-row">
+                            <TouchableOpacity 
+                                onPress={async () => { 
+                                    setConfirmVisible(false) 
+                                }}
+                                className="border-pale-blue border-2 rounded-xl mr-1"
+                            >
+                                <Text className='text-xl font-bold py-3 px-8'>Cancel</Text>
+                            </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={async () => {
                                     setConfirmVisible(false)
                                     knockOnWall()
                                 }}
-                                className="bg-pale-blue rounded-xl justify-center items-center"
+                                className="bg-pale-blue rounded-xl justify-center items-center ml-1"
                             >
                                 <Text className='text-xl font-bold text-white px-3'>Send Notification</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity onPress={async () => { setConfirmVisible(false) }}>
-                                <Text className='text-xl font-bold py-3 px-8'>Cancel</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
