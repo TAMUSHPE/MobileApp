@@ -3,10 +3,14 @@ import { db } from "./firebaseConfig"
 import { RankChange } from "./types";
 import { AggregateField } from 'firebase-admin/firestore';
 
-/** Determines rank change based on current and new ranks. */
+/** Determines rank change based on current and new ranks.
+ *  - "increased" means that the overall rank *value* is lower than before
+ *  - "decreased" means that the overall rank *value* is higher than before
+ *  - "same" means that the overall rank has stayed the same
+ */
 const getRankChange = (oldRank: any, newRank: number): RankChange => {
-    if (oldRank < newRank) return "increased";
-    if (oldRank > newRank) return "decreased";
+    if (oldRank < newRank) return "decreased";
+    if (oldRank > newRank) return "increased";
     return "same";
 }
 
@@ -15,7 +19,7 @@ const updateUserRank = async (uid: string, userData: FirebaseFirestore.DocumentD
     if (!uid || !userData) return;
 
     const userDocRef = db.collection('users').doc(uid);
-    const rankChange = getRankChange(userData.pointsRank ?? newRank, newRank);
+    const rankChange = userData.pointsRank ? getRankChange(userData.pointsRank, newRank) : "same";
 
     await userDocRef.set({
         pointsRank: newRank,
@@ -30,9 +34,10 @@ const updateRanks = async (): Promise<string> => {
 
         let currentRank = 1;
         snapshot.forEach((doc) => {
-            updateUserRank(doc.id, doc.data, currentRank);
+            updateUserRank(doc.id, doc.data(), currentRank);
             currentRank++;
         });
+        console.info(`${snapshot.size} documents updated`);
         return "Success";
     } catch (error) {
         console.error("Error in updateRanks:", error);
