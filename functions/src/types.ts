@@ -1,5 +1,9 @@
-export type RankChange = "decreased" | "same" | "increased";
 import { GeoPoint, Timestamp } from 'firebase-admin/firestore';
+
+/**
+ * Determines whether a person has moved up, down, or not at all in the point leaderboard
+ */
+export type RankChange = "increased" | "decreased" | "same";
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop
