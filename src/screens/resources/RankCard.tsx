@@ -40,7 +40,7 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
                     <View className='w-[65%]'>
                         <Text className='text-xl font-medium'>{name}</Text>
                         <View className='flex-row items-center'>
-                            <Text className='text-xl font-medium text-gray-500'>{points?.toFixed(1)} pts</Text>
+                            <Text className='text-xl font-medium text-gray-500'>{points?.toFixed(2)} pts</Text>
                         </View>
                     </View>
                 </View>
