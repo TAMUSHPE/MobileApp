@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated, Switch } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -142,7 +142,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
     //Hooks used to save state of modified fields before user hits "save"
     const [photoURL, setPhotoURL] = useState<string | undefined>(userInfo?.publicInfo?.photoURL);
-    const [resumeURL, setResumeURL] = useState<string | undefined>(userInfo?.publicInfo?.resumeURL);
+    const [resumeURL, setResumeURL] = useState<string | undefined>(userInfo?.private?.privateInfo?.resumeURL);
     const [displayName, setDisplayName] = useState<string | undefined>(userInfo?.publicInfo?.displayName);
     const [name, setName] = useState<string | undefined>(userInfo?.publicInfo?.name);
     const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
@@ -160,9 +160,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [showAcademicInfoModal, setShowAcademicInfoModal] = useState<boolean>(false);
     const [showCommitteesModal, setShowCommitteesModal] = useState<boolean>(false);
     const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
-
-    const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
-
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
@@ -246,7 +243,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
         console.log("File available at", URL);
         if (auth.currentUser) {
             setResumeURL(URL);
-            await setPublicUserData({
+            await setPrivateUserData({
                 resumeURL: URL
             });
         }
@@ -272,9 +269,8 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
          * By adding a conditional and the && operator next to the child object, this essentially creates a "Conditional Key Addition".
          * This makes it so the information will not be overridden in Firebase if the value of a key is empty/undefined.
          */
-        await setPublicUserData({
+        setPublicUserData({
             ...(photoURL !== undefined) && { photoURL: photoURL },
-            ...(resumeURL !== undefined) && { resumeURL: resumeURL },
             ...(displayName !== undefined) && { displayName: displayName },
             ...(name !== undefined) && { name: name },
             ...(bio !== undefined) && { bio: bio },
@@ -305,26 +301,12 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 setLoading(false);
                 setShowSaveButton(false);
             });
+
+        setPrivateUserData({
+            ...(resumeURL !== undefined) && { resumeURL: resumeURL },
+        })
     }
 
-    const updateCommitteeCounts = async () => {
-        const addedCommittees = committees.filter(x => !prevCommittees.includes(x));
-        const removedCommittees = prevCommittees.filter(x => !committees.includes(x));
-
-        const committeeChanges = [
-            ...addedCommittees.map(committeeName => ({ committeeName, change: 1 })),
-            ...removedCommittees.map(committeeName => ({ committeeName, change: -1 }))
-        ];
-
-        if (committeeChanges.length > 0) {
-            try {
-                await updateCommitteeMembersCount({ committeeChanges });
-                console.log("Committee member counts updated successfully.");
-            } catch (error) {
-                console.error("Error updating committee counts:", error);
-            }
-        }
-    }
 
     const CommitteeListItemComponent = ({ committeeData, onPress, darkMode, isChecked, committeeIndex }: any) => {
         return (
@@ -522,50 +504,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     )
                 }
             />
-            {/* Committees Modal */}
-            <SettingsModal
-                visible={showCommitteesModal}
-                darkMode={darkMode}
-                onCancel={() => {
-                    setCommittees(userInfo?.publicInfo?.committees ?? defaultVals.committees);
-                    setShowCommitteesModal(false);
-                }}
-                onDone={() => {
-                    saveChanges();
-                    updateCommitteeCounts();
-                    setShowCommitteesModal(false);
-                }}
-                content={(
-                    <View className='flex-col'>
-                        <ScrollView
-                            showsVerticalScrollIndicator={false}
-                            contentContainerStyle={{
-                                minHeight: "130%",
-                            }}
-                        >
-                            <Text className={`text-lg px-4 mb-2 ${darkMode ? "text-gray-300" : "text-black"}`}>The number displayed beside each committee represents the order in which they will be displayed on your profile.</Text>
-                            <View className='w-full h-full flex-col items-center'>
-                                {committeesData.map((committeeData: Committee, index) => {
-                                    const committeeIndex = committees.findIndex(
-                                        userCommittee => userCommittee === committeeData.firebaseDocName
-                                    );
-                                    return (
-                                        <CommitteeListItemComponent
-                                            key={index}
-                                            committeeIndex={committeeIndex}
-                                            committeeData={committeeData}
-                                            darkMode={darkMode}
-                                            isChecked={committees.includes(committeeData?.firebaseDocName!)}
-                                            committees={committees ?? defaultVals.committees}
-                                            onPress={() => handleCommitteeToggle(committeeData?.firebaseDocName!)}
-                                        />
-                                    )
-                                })}
-                            </View>
-                        </ScrollView>
-                    </View>
-                )}
-            />
+
             {/* Resume Modal */}
             <SettingsModal
                 visible={showResumeModal}
@@ -672,18 +611,9 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     onPress={() => setShowAcademicInfoModal(true)}
                 />
                 <SettingsSectionTitle text='SHPE Info' darkMode={darkMode} />
-                <View className="max-w-11/12 shadow-sm shadow-slate-300 p-3 mx-3 my-3">
+                {/* <View className="max-w-11/12 shadow-sm shadow-slate-300 p-3 mx-3 my-3">
                     <View className='flex-row items-center mb-6'>
                         <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
-                        <TouchableHighlight
-                            onPress={() => {
-                                setPrevCommittees(committees)
-                                setShowCommitteesModal(true)
-                            }}
-                            className='px-5 py-1 rounded-md bg-pale-blue ml-3 justify-center items-center' underlayColor={"#72A9BE"}
-                        >
-                            <Text className='text-white text-center text-lg'>Edit</Text>
-                        </TouchableHighlight>
                     </View>
                     <View className='flex-row flex-wrap'>
                         {committees?.map((committeeDocName, index) => {
@@ -699,7 +629,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                             );
                         })}
                     </View>
-                </View>
+                </View> */}
                 <SettingsButton
                     mainText='Edit Resume'
                     darkMode={darkMode}
@@ -781,7 +711,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
  * These changes will go through firebase where an email will be sent to the user. 
  */
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    const { userInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
@@ -792,6 +722,32 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 subText={auth.currentUser?.email ?? "EMAIL"}
                 darkMode={darkMode}
             />
+
+            <SettingsButton
+                mainText={userInfo?.publicInfo?.isEmailPublic ? "Make Email Private" : "Make Email Public"}
+                onPress={
+                    async () => {
+                        const updatedPublicData = {
+                            ...userInfo?.publicInfo,
+                            isEmailPublic: !userInfo?.publicInfo?.isEmailPublic,
+                            email: !userInfo?.publicInfo?.isEmailPublic ? auth.currentUser?.email || "" : "",
+                        };
+
+                        await setPublicUserData(updatedPublicData);
+
+                        const updatedUserInfo = {
+                            ...userInfo,
+                            publicInfo: updatedPublicData,
+                        };
+
+                        await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
+                        setUserInfo(updatedUserInfo);
+                        Alert.alert("Email visibility updated successfully");
+                    }
+                }
+                darkMode={darkMode}
+            />
+
             <SettingsListItem
                 mainText='Unique Identifier'
                 subText={auth.currentUser?.uid ?? "UID"}
