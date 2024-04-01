@@ -13,7 +13,6 @@ import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
 import Ishpe from './Ishpe';
 import { getUser } from '../../api/firebaseUtils';
 
-
 /**
  * Renders the home screen of the application.
  * It includes the feature slider, office hours, and office sign-in components.

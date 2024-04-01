@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Pressable } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Pressable, Switch } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
@@ -19,7 +19,8 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
         memberCount: 0,
         memberApplicationLink: '',
         representativeApplicationLink: '',
-        leadApplicationLink: ''
+        leadApplicationLink: '',
+        isOpen: false
     });
 
     const [localTeamMembers, setLocalTeamMembers] = useState<TeamMembersState>({
@@ -45,6 +46,7 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
     const [isMemberLinkActive, setIsMemberLinkActive] = useState<boolean>(!!committeeData?.memberApplicationLink);
     const [isRepLinkActive, setIsRepLinkActive] = useState<boolean>(!!committeeData?.representativeApplicationLink);
     const [isLeadLinkActive, setIsLeadLinkActive] = useState<boolean>(!!committeeData?.leadApplicationLink);
+    const [isOpen, setIsOpen] = useState<boolean>(!!committeeData?.isOpen);
 
     const insets = useSafeAreaInsets();
 
@@ -323,6 +325,21 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                                 placeholder='Select a committee name'
                             />
                         </View>
+
+                        <View className="flex flex-row items-center justify-between py-2">
+                            <Text className="text-lg">Open Committee</Text>
+                            <Switch
+                                trackColor={{ false: "#999796", true: "#001F5B" }}
+                                thumbColor={isOpen ? "#72A9BE" : "#f4f3f4"}
+                                ios_backgroundColor="#999796"
+                                onValueChange={() => {
+                                    setIsOpen(previousState => !previousState)
+                                    setLocalCommitteeData({ ...localCommitteeData, isOpen: !isOpen })
+                                }}
+                                value={isOpen}
+                            />
+                        </View>
+
                         {selectedLogoData && (
                             <View className='z-50 flex-1'>
                                 <CustomColorPicker onColorChosen={handleColorChosen} initialColor={localCommitteeData.color} />
