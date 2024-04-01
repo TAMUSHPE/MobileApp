@@ -14,12 +14,11 @@ import RankCard from './RankCard';
 import { collection, getDocs, limit, orderBy, query, startAt, where } from 'firebase/firestore';
 
 const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
-    const [rankCards, setRankCards] = useState<PublicUserInfo[]>([])
+    const [fetchedUsers, setFetchedUsers] = useState<PublicUserInfo[]>([])
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
     const [initLoading, setInitLoading] = useState(true);
     const [loading, setLoading] = useState(true);
     const [endOfData, setEndOfData] = useState(false);
-    const [nullDataOffset, setNullDataOffset] = useState(0);
     const [infoVisible, setInfoVisible] = useState(false);
 
     /**
@@ -32,10 +31,12 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
     const [userRank, setUserRank] = useState(-1);
     const [userRankChange, setUserRankChange] = useState<RankChange>('same');
 
-    const prepPointSheet = async (amount: number, offset: number): Promise<PublicUserInfo[]> => {
+    /**
+     * Returns a list of user data sorted by their rank.
+     */
+    const getSortedUserData = async (amount: number, offset: number): Promise<PublicUserInfo[]> => {
         const userRef = collection(db, 'users');
-        const sortedUsersQuery = query(userRef, orderBy("pointsRank", "asc"), limit(amount), startAt(offset), where("points", ">", 0));
-
+        const sortedUsersQuery = query(userRef, orderBy("pointsRank", "asc"), limit(amount), startAt(offset));
         const data = (await getDocs(sortedUsersQuery)).docs;
 
         setEndOfData(data.length < amount);
@@ -45,10 +46,13 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
         });
     }
 
+    /**
+     * Obtains user data from firebase and appends the data to the current collection.
+     */
     const queryAndSetRanks = async (amount: number, offset: number) => {
-        prepPointSheet(amount, offset)
+        getSortedUserData(amount, offset)
             .then(data => {
-                setRankCards([...rankCards, ...data]);
+                setFetchedUsers([...fetchedUsers, ...data]);
             })
             .catch(error => {
                 console.error("Failed to fetch data:", error);
@@ -86,12 +90,10 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
         const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
             const paddingToBottom = 20;
-            return layoutMeasurement.height + contentOffset.y >=
-                contentSize.height - paddingToBottom;
+            return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
         };
 
-        if (!isCloseToBottom(nativeEvent)) return;
-        if (endOfData) return;
+        if (!isCloseToBottom(nativeEvent) || endOfData) return;
 
         setLoading(true);
 
@@ -100,11 +102,11 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
         }
 
         debounceTimer.current = setTimeout(() => {
-            const offset = rankCards.length;
-            queryAndSetRanks(50, offset + nullDataOffset);
+            const offset = fetchedUsers.length;
+            queryAndSetRanks(50, offset);
             debounceTimer.current = null;
         }, 300);
-    }, [rankCards, nullDataOffset, endOfData]);
+    }, [fetchedUsers, endOfData]);
 
     return (
         <SafeAreaView className="bg-pale-blue h-full" edges={["top"]} >
@@ -136,14 +138,14 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     <View>
                         <TouchableOpacity
                             className='border-gray-400 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'
-                            disabled={rankCards[1]?.uid === undefined}
-                            onPress={() => { navigation.navigate("PublicProfile", { uid: rankCards[1]?.uid! }) }}
+                            disabled={fetchedUsers[1]?.uid === undefined}
+                            onPress={() => { navigation.navigate("PublicProfile", { uid: fetchedUsers[1]?.uid! }) }}
                         >
                             <View className='justify-center items-center h-full'>
                                 <Image
                                     className="w-20 h-20 rounded-full justify-center"
                                     defaultSource={Images.DEFAULT_USER_PICTURE}
-                                    source={rankCards[1]?.photoURL ? { uri: rankCards[1].photoURL } : Images.DEFAULT_USER_PICTURE}
+                                    source={fetchedUsers[1]?.photoURL ? { uri: fetchedUsers[1].photoURL } : Images.DEFAULT_USER_PICTURE}
                                 />
                             </View>
                             <View className='absolute w-full items-center'>
@@ -153,21 +155,21 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                             </View>
                         </TouchableOpacity>
                         <View className='mt-4 w-[100px]'>
-                            <Text className='text-center text-xl font-bold text-white '>{rankCards[1]?.name}</Text>
+                            <Text className='text-center text-xl font-bold text-white '>{fetchedUsers[1]?.name}</Text>
                         </View>
                     </View>
 
                     <View>
                         <TouchableOpacity
                             className='border-yellow-400 border-8 justify-end rounded-full h-[92px] w-[92px]'
-                            disabled={rankCards[0]?.uid === undefined}
-                            onPress={() => { navigation.navigate("PublicProfile", { uid: rankCards[0]?.uid! }) }}
+                            disabled={fetchedUsers[0]?.uid === undefined}
+                            onPress={() => { navigation.navigate("PublicProfile", { uid: fetchedUsers[0]?.uid! }) }}
                         >
                             <View className='justify-center items-center h-full'>
                                 <Image
                                     className="w-20 h-20 rounded-full justify-center"
                                     defaultSource={Images.DEFAULT_USER_PICTURE}
-                                    source={rankCards[0]?.photoURL ? { uri: rankCards[0].photoURL } : Images.DEFAULT_USER_PICTURE}
+                                    source={fetchedUsers[0]?.photoURL ? { uri: fetchedUsers[0].photoURL } : Images.DEFAULT_USER_PICTURE}
                                 />
                             </View>
 
@@ -178,21 +180,21 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                             </View>
                         </TouchableOpacity>
                         <View className='mt-4 w-[100px]'>
-                            <Text className='text-center text-xl font-bold text-white'>{rankCards[0]?.name}</Text>
+                            <Text className='text-center text-xl font-bold text-white'>{fetchedUsers[0]?.name}</Text>
                         </View>
                     </View>
 
                     <View>
                         <TouchableOpacity
                             className='border-amber-700 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'
-                            disabled={rankCards[2]?.uid === undefined}
-                            onPress={() => { navigation.navigate("PublicProfile", { uid: rankCards[2]?.uid! }) }}
+                            disabled={fetchedUsers[2]?.uid === undefined}
+                            onPress={() => { navigation.navigate("PublicProfile", { uid: fetchedUsers[2]?.uid! }) }}
                         >
                             <View className='justify-center items-center h-full'>
                                 <Image
                                     className="w-20 h-20 rounded-full justify-center"
                                     defaultSource={Images.DEFAULT_USER_PICTURE}
-                                    source={rankCards[2]?.photoURL ? { uri: rankCards[2].photoURL } : Images.DEFAULT_USER_PICTURE}
+                                    source={fetchedUsers[2]?.photoURL ? { uri: fetchedUsers[2].photoURL } : Images.DEFAULT_USER_PICTURE}
                                 />
                             </View>
 
@@ -203,13 +205,13 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                             </View>
                         </TouchableOpacity>
                         <View className='mt-4 w-[100px]'>
-                            <Text className='text-center text-xl font-bold text-white'>{rankCards[2]?.name}</Text>
+                            <Text className='text-center text-xl font-bold text-white'>{fetchedUsers[2]?.name}</Text>
                         </View>
                     </View>
 
                 </View>
 
-                <View className={`bg-[#F9F9F9] rounded-t-2xl flex-1 ${rankCards.length === 0 && "h-screen"}`}>
+                <View className={`bg-[#F9F9F9] rounded-t-2xl flex-1 ${fetchedUsers.length === 0 && "h-screen"}`}>
                     {/* User Ranking */}
                     {!initLoading && (
                         <View>
@@ -246,17 +248,17 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     )}
 
                     {/* Leaderboard */}
-                    {rankCards.slice(3).map((userData, index) => (
+                    {fetchedUsers.slice(3).map((userData, index) => (
                         <RankCard key={index + 3} userData={userData} navigation={navigation} />
                     ))}
-                    <View className={`justify-center h-20 items-center ${rankCards.length === 0 && "h-[50%]"}`}>
+                    <View className={`justify-center h-20 items-center ${fetchedUsers.length === 0 && "h-[50%]"}`}>
                         {loading && (
                             <ActivityIndicator size={"large"} />
                         )}
                         {endOfData && (
                             <View className='pb-6 items-center justify-center'>
                                 <Text>
-                                    End of Leaderboard
+                                    No more ranked users
                                 </Text>
                             </View>
                         )}
@@ -316,4 +318,4 @@ const colorMapping: Record<RankChange, string> = {
     "decreased": "#B22222"
 };
 
-export default PointsLeaderboard
+export default PointsLeaderboard;
