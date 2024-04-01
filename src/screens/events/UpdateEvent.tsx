@@ -478,7 +478,6 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             }
                         </View>
                     </View>
-                    
                     {/* toggle to make events appear on general tab*/}
                     <KeyboardAvoidingView className='py-3'>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Scope</Text>
@@ -835,6 +834,7 @@ const createCommitteeList = (committees: Committee[]) => {
 };
 
 const POINTS = [
+    { point: "0", iso: "0" },
     { point: "1", iso: "1" },
     { point: "2", iso: "2" },
     { point: "3", iso: "3" },
