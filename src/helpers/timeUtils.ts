@@ -44,7 +44,7 @@ export const formatTime = (date: Date): string => {
     const hour = date.getHours();
     const minute = date.getMinutes();
 
-    return `${hour % 12}:${minute.toString().padStart(2, '0')} ${hour > 11 ? "PM" : "AM"}`
+    return `${hour % 12 == 0 ? 12 : hour % 12}:${minute.toString().padStart(2, '0')} ${hour > 11 ? "PM" : "AM"}`
 }
 
 /**
