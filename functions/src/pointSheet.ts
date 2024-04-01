@@ -32,7 +32,7 @@ const updateUserRank = async (uid: string, newRank: number) => {
 /** Fetches data from Google Spreadsheet and updates users' ranks in Firestore */
 const updateRanks = async () => {
     try {
-        const snapshot = await db.collection('users').orderBy("points").get();
+        const snapshot = await db.collection('users').orderBy("points", "desc").get();
 
         let currentRank = 1;
         snapshot.forEach((doc) => {
