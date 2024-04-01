@@ -57,10 +57,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         fetchUser();
         handleBannedUser();
         manageNotificationPermissions();
-
-        if (!auth.currentUser?.uid) {
-            signOutUser(true);
-        }
     }, []);
 
     return (

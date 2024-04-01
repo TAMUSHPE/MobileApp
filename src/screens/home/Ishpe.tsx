@@ -13,6 +13,8 @@ import SHPELogo from '../../../assets/SHPE_black.svg';
 import EventsList from '../../components/EventsList';
 import DismissibleModal from '../../components/DismissibleModal';
 import ProfileBadge from '../../components/ProfileBadge';
+import { auth } from "../../config/firebaseConfig";
+
 
 const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
@@ -62,17 +64,19 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
 
     useFocusEffect(
         useCallback(() => {
-            const fetchCommittees = async () => {
-                const response = await getCommittees();
-                setCommitteesData(response);
+            if (auth.currentUser) {
+                const fetchCommittees = async () => {
+                    const response = await getCommittees();
+                    setCommitteesData(response);
+                }
+
+                fetchEvents();
+                fetchCommittees();
+                setWeekStartDate(getCurrentSunday());
             }
 
-            fetchEvents();
-            fetchCommittees();
-            setWeekStartDate(getCurrentSunday());
-
             return () => { };
-        }, [])
+        }, [auth.currentUser])
     );
 
     useEffect(() => {
