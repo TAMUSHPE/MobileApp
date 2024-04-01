@@ -314,7 +314,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
 
 const colorMapping: Record<RankChange, string> = {
     "increased": "#AEF359",
-    "same": "#7F7F7F",
+    "same": "#aFaFaF",
     "decreased": "#B22222"
 };
 
