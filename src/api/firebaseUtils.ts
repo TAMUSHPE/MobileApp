@@ -2,7 +2,6 @@ import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
-import { memberPoints } from "./fetchGoogleSheets";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
@@ -27,11 +26,7 @@ export const getPublicUserData = async (uid: string = ""): Promise<PublicUserInf
     return getDoc(doc(db, "users", uid))
         .then(async (res) => {
             const responseData = res.data()
-            const points = await memberPoints(responseData?.email); // Queries google sheets for points data
-            return {
-                ...responseData,
-                points: points,
-            }
+            return responseData;
         })
         .catch(err => {
             console.error(err);

@@ -46,18 +46,23 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
+
+    const fetchUserData = async () => {
+        try {
+            const firebaseUser = await getUser(auth.currentUser?.uid!)
+            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+            setUserInfo(firebaseUser);
+        } catch (error) {
+            console.error("Error updating user:", error);
+        } finally {
+            setRefreshing(false);
+        }
+    }
+
     const onRefresh = useCallback(async () => {
         if (isCurrentUser) {
             setRefreshing(true);
-            try {
-                const firebaseUser = await getUser(auth.currentUser?.uid!)
-                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                await setUserInfo(firebaseUser);
-            } catch (error) {
-                console.error("Error updating user:", error);
-            } finally {
-                setRefreshing(false);
-            }
+            fetchUserData();
         }
     }, [uid]);
 
@@ -75,6 +80,10 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     });
             };
 
+
+            if (isCurrentUser) {
+                fetchUserData();
+            }
             fetchPublicUserData();
 
             return () => { };

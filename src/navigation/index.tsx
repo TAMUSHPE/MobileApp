@@ -8,6 +8,8 @@ import Splash from '../screens/Splash';
 import { Images } from '../../assets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setPrivateUserData } from '../api/firebaseUtils';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { auth } from '../config/firebaseConfig';
 /**
  * Renders the root navigator for the application.
  * It determines whether to show the splash screen, authentication stack, or main stack
@@ -16,7 +18,7 @@ import { setPrivateUserData } from '../api/firebaseUtils';
  * @returns  The rendered root navigator.
  */
 const RootNavigator = () => {
-    const { userInfo, setUserInfo, userLoading } = useContext(UserContext)!;
+    const { userInfo, setUserInfo, userLoading, signOutUser } = useContext(UserContext)!;
     const [splashLoading, setSplashLoading] = useState<boolean>(true);
 
     /**
@@ -61,6 +63,31 @@ const RootNavigator = () => {
             checkDataExpiration();
         }
     }, [userInfo]);
+
+    useEffect(() => {
+        const handleBannedUser = async () => {
+            if (!auth.currentUser?.uid) {
+                return;
+            }
+
+            const functions = getFunctions();
+            const isUserInBlacklist = httpsCallable<{ uid: string }, { isInBlacklist: boolean }>(functions, 'isUserInBlacklist');
+            try {
+                const checkBlackListResponse = await isUserInBlacklist({ uid: auth.currentUser?.uid! });
+
+                if (checkBlackListResponse.data.isInBlacklist) {
+                    signOutUser(true);
+                    alert("You have been banned from the app");
+                    return;
+                }
+            } catch (error) {
+                console.error('Error during user authentication:', error);
+            }
+
+        }
+
+        handleBannedUser();
+    }, [auth.currentUser?.uid])
 
 
     if (splashLoading) {
