@@ -219,6 +219,7 @@ const createCommitteeList = (committees: Committee[]) => {
 };
 
 const POINTS = [
+    { point: "0", iso: "0" },
     { point: "1", iso: "1" },
     { point: "2", iso: "2" },
     { point: "3", iso: "3" },
