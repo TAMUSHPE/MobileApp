@@ -94,7 +94,10 @@ const FlickrPhotoGallery = () => {
     };
 
     useEffect(() => {
-        resetAndStartAutoSlide();
+        if (photos.length > 0) {
+            photoListRef.current?.scrollToIndex({ animated: false, index: 1 });
+            resetAndStartAutoSlide();
+        }
         return () => clearInterval(slideInterval.current!);
     }, [photos]);
 

@@ -37,37 +37,3 @@ export const queryGoogleSpreadsheet = async (sheetID: string, query: string = "s
             return null
         });
 };
-
-
-/**
- * Queries the points sheet for a user with a given email. If any abnormal data is passed or received, the default value is 0.
- * 
- * @param email - The email of the user to query.
- * @returns - A promise for the point value given an email address. If no points are found or an error occurs, defaults to 0.
- */
-export const memberPoints = async (email: string): Promise<number> => {
-    if (!validateTamuEmail(email)) {
-        return 0;
-    }
-
-    return await queryGoogleSpreadsheet(GoogleSheetsIDs.POINTS_ID, `where C contains "${email}"`, "Master")
-        .then((data) => {
-            if (!data || data["table"]["rows"].length < 1 || !email) {
-                return 0;
-            }
-
-            const userPointsRow = data["table"]["rows"].at(0);
-
-            if (!userPointsRow || userPointsRow["c"].length < 1 || userPointsRow["c"][PointsColumnVals.EMAIL]["v"] != email) {
-                return 0;
-            }
-            else {
-                const value = userPointsRow["c"].at(PointsColumnVals.TOTAL_POINTS)!["v"];
-                return typeof value === "number" ? value : 0;
-            }
-        })
-        .catch((err) => {
-            console.error(err);
-            return 0;
-        });
-};
