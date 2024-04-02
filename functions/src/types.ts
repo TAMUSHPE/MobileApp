@@ -1,9 +1,13 @@
-export type RankChange = "decreased" | "same" | "increased";
+/** Anything added to this document needs to be added to src/types/Events.ts */
 import { Timestamp, GeoPoint } from 'firebase-admin/firestore';
 import { MillisecondTimes, getNextHourMillis } from './timeUtils';
 import { PublicUserInfo } from '../../src/types/User';
+export type RankChange = "decreased" | "same" | "increased";
 
-/** Anything added to this document needs to be added to src/types/Events.ts */
+/**
+ * Determines whether a person has moved up, down, or not at all in the point leaderboard
+ */
+export type RankChange = "increased" | "decreased" | "same";
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop
