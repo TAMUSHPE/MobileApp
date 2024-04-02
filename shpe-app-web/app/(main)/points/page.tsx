@@ -60,6 +60,12 @@ const Points = () => {
             <div className="text-black">{member.displayName}</div>
           </div>
         ))}
+
+        {!loading && events.map((event) => (
+          <div className="bg-white">
+            <div className="text-black">{event.name}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
