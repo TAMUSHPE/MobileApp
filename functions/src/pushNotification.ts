@@ -1,6 +1,7 @@
 import * as functions from 'firebase-functions';
 import { db } from './firebaseConfig';
 import { Expo, ExpoPushMessage } from 'expo-server-sdk';
+import { SHPEEvent } from './types';
 
 /**
  * Fetches the Expo push tokens of a member.
@@ -190,3 +191,20 @@ export const sendNotificationResumeConfirm = functions.https.onCall(async (data,
     }
 });
 
+
+export const notifyUpcomingEvents = functions.pubsub.schedule('every 5 minutes').onRun(async (context) => {
+    console.log('Running Event Notificatoin Sent');
+    const now = new Date();
+    const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+    const eventsToNotify = await db.collection('events')
+        .where('startTime', '>=', now)
+        .where('startTime', '<=', oneHourLater)
+        .where('notificationSent', '!=', true)
+        .get();
+
+
+    for (const eventDoc of eventsToNotify.docs) {
+        const event = eventDoc.data() as SHPEEvent;
+        console.log(event)
+    }
+});
