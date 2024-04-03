@@ -54,6 +54,8 @@ export abstract class SHPEEvent {
     public nationalConventionEligible?: boolean | null;
     /** Specifies if event should display on "General" tab of ishpe, if it is club-wide */
     public general?: boolean | null;
+    /** A flag to indicate that the notification has been sent */
+    public notificationSent?: boolean | null;
 
 
     /**
@@ -73,6 +75,7 @@ export abstract class SHPEEvent {
         this.geofencingRadius = null;
         this.creator = null;
         this.nationalConventionEligible = null;
+        this.notificationSent = null;
     }
 
     /**
@@ -117,6 +120,7 @@ export class GeneralMeeting extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
+    public notificationSent: boolean | null;
 
 
     public constructor() {
@@ -132,6 +136,7 @@ export class GeneralMeeting extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = true;
+        this.notificationSent = false;
     }
 
 
@@ -151,6 +156,7 @@ export class CommitteeMeeting extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
+    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -164,6 +170,7 @@ export class CommitteeMeeting extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
+        this.notificationSent = false;
     }
 }
 
@@ -185,6 +192,7 @@ export class StudyHours extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
+    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -200,6 +208,7 @@ export class StudyHours extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = true;
+        this.notificationSent = false;
     }
 }
 
@@ -220,6 +229,7 @@ export class Workshop extends SHPEEvent {
     public geolocation: GeoPoint | null;
     public workshopType: WorkshopType;
     public general: boolean;
+    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -234,6 +244,7 @@ export class Workshop extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
+        this.notificationSent = false;
     }
 }
 
@@ -251,6 +262,7 @@ export class VolunteerEvent extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
+    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -264,6 +276,7 @@ export class VolunteerEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
+        this.notificationSent = false;
     }
 }
 
@@ -281,6 +294,7 @@ export class SocialEvent extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
+    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -294,6 +308,7 @@ export class SocialEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
+        this.notificationSent = false;
     }
 }
 
@@ -311,6 +326,7 @@ export class IntramuralEvent extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
+    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -324,6 +340,7 @@ export class IntramuralEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
+        this.notificationSent = false;
     }
 }
 
@@ -343,6 +360,7 @@ export class CustomEvent extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
+    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -358,6 +376,7 @@ export class CustomEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
+        this.notificationSent = false;
     }
 }
 
