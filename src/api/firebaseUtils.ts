@@ -642,20 +642,16 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     return EventLogStatus.ERROR;
 };
 
-export const getAttendanceNumber = async (eventId: string): Promise<number | null> => {
+export const getAttendanceNumber = async (eventId: string): Promise<number> => {
     try {
-        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
-        const summaryDocRef = await getDoc(summaryDoc);
+        const logsRef = collection(db, `events/${eventId}/logs`);
+        const q = query(logsRef);
+        const querySnapshot = await getDocs(q);
 
-        if (summaryDocRef.exists()) {
-            const data = summaryDocRef.data();
-            return data?.attendance || 0;
-        } else {
-            return null;
-        }
-    } catch (e) {
-        console.error("Error fetching attendance number: ", e);
-        return null;
+        return querySnapshot.docs.length;
+    } catch (error) {
+        console.error("Error calculating attendance number:", error);
+        throw new Error("Unable to calculate attendance.");
     }
 }
 
