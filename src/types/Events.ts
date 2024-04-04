@@ -136,7 +136,7 @@ export class GeneralMeeting extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = true;
-        this.notificationSent = false;
+        this.notificationSent = true;
     }
 
 
@@ -170,7 +170,7 @@ export class CommitteeMeeting extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = false;
+        this.notificationSent = true;
     }
 }
 
@@ -208,7 +208,7 @@ export class StudyHours extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = true;
-        this.notificationSent = false;
+        this.notificationSent = true;
     }
 }
 
@@ -244,7 +244,7 @@ export class Workshop extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = false;
+        this.notificationSent = true;
     }
 }
 
@@ -276,7 +276,7 @@ export class VolunteerEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = false;
+        this.notificationSent = true;
     }
 }
 
@@ -308,7 +308,7 @@ export class SocialEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = false;
+        this.notificationSent = true;
     }
 }
 
@@ -340,7 +340,7 @@ export class IntramuralEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = false;
+        this.notificationSent = true;
     }
 }
 
@@ -376,7 +376,7 @@ export class CustomEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = false;
+        this.notificationSent = true;
     }
 }
 
