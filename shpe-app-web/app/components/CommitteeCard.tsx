@@ -14,7 +14,7 @@ const CommitteCard: React.FC<CommitteeCardProps> = ({ committee }) => {
                 <div className="flex  rounded-full absolute right-3 top-3 w-10">
                     <Image
                         className="rounded-full"
-                        src={committee.head?.photoURL ? committee.head.photoURL as string : 'layer-group.svg'}
+                        src={committee.head?.photoURL ? committee.head.photoURL as string : 'default-profile-pic.svg'}
                         alt={''}
                         width={30}
                         height={30}
