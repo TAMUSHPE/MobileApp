@@ -10,7 +10,6 @@ import { PublicUserInfo } from '../../types/User';
 import MembersList from '../../components/MembersList';
 import DismissibleModal from '../../components/DismissibleModal';
 import MemberCard from '../../components/MemberCard';
-import SwipeableMemberCard from '../../components/SwipeableMemberCard';
 import { useFocusEffect } from '@react-navigation/core';
 import MOTM from '../../components/MOTMCard';
 
