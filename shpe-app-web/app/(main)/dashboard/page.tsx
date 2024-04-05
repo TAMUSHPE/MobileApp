@@ -5,7 +5,7 @@ import {handleLogout} from "@/helpers/auth";
 import { collection, getDocs } from "firebase/firestore";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
+import Navbar from "../../components/Navbar";
 
 interface UserData {
  id: string;
@@ -46,15 +46,14 @@ const Dashboard = () => {
 
     if (loading) {
         return (
-            <div className="flex flex-col w-full h-screen items-center justify-center bg-white">
+            <div className="flex w-full h-screen items-center justify-center">
                 <object type="image/svg+xml" data="spinner.svg" className="animate-spin -ml-1 mr-3 h-14 w-14 text-white"></object>
             </div>
         );
     }
 
     return (
-        <div className=" bg-white">
-            <Navbar />
+        <div>
         </div>
     );
 };

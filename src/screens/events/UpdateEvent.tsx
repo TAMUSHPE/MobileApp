@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal, ActivityIndicator, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal, ActivityIndicator, Alert, Switch } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
@@ -64,6 +64,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType);
     const [committee, setCommittee] = useState<string | undefined | null>(event.committee);
     const [nationalConventionEligible, setNationalConventionEligible] = useState<boolean | undefined | null>(event.nationalConventionEligible);
+    const [general, setIsGeneral] = useState<boolean | undefined | null>(event.general);
 
     useEffect(() => {
         getCommittees()
@@ -137,6 +138,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 locationName,
                 geolocation,
                 geofencingRadius,
+                general,
                 workshopType,
                 committee,
                 nationalConventionEligible,
@@ -476,6 +478,23 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             }
                         </View>
                     </View>
+                    {/* toggle to make events appear on general tab*/}
+                    <KeyboardAvoidingView className='py-3'>
+                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Scope</Text>
+                        <View className="flex flex-row items-center justify-between py-2">
+                            <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Club-Wide Event</Text>
+                            <Switch
+                                trackColor={{ false: "#999796", true: "#001F5B" }}
+                                thumbColor={general ? "#72A9BE" : "#f4f3f4"}
+                                ios_backgroundColor="#999796"
+                                onValueChange={() => {
+                                    setIsGeneral(previousState => !previousState)
+                                    setChangesMade(true);
+                                }}
+                                value={general || false}
+                            />
+                        </View>
+                    </KeyboardAvoidingView>
 
                     {/* Description */}
                     <KeyboardAvoidingView behavior='position' className='py-3'>
@@ -815,6 +834,7 @@ const createCommitteeList = (committees: Committee[]) => {
 };
 
 const POINTS = [
+    { point: "0", iso: "0" },
     { point: "1", iso: "1" },
     { point: "2", iso: "2" },
     { point: "3", iso: "3" },

@@ -27,7 +27,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
     const route = useRoute<MembersScreenRouteProp>();
     const { uid } = route.params;
     const [publicUserData, setPublicUserData] = useState<PublicUserInfo | undefined>();
-    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, tamuEmail, committees, pointsRank } = publicUserData || {};
+    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, isStudent, committees, pointsRank, isEmailPublic } = publicUserData || {};
     const [committeesData, setCommitteesData] = useState<Committee[]>([]);
     const [modifiedRoles, setModifiedRoles] = useState<Roles | undefined>(undefined);
     const [isVerified, setIsVerified] = useState<boolean>(false);
@@ -46,18 +46,23 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
+
+    const fetchUserData = async () => {
+        try {
+            const firebaseUser = await getUser(auth.currentUser?.uid!)
+            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+            setUserInfo(firebaseUser);
+        } catch (error) {
+            console.error("Error updating user:", error);
+        } finally {
+            setRefreshing(false);
+        }
+    }
+
     const onRefresh = useCallback(async () => {
         if (isCurrentUser) {
             setRefreshing(true);
-            try {
-                const firebaseUser = await getUser(auth.currentUser?.uid!)
-                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                await setUserInfo(firebaseUser);
-            } catch (error) {
-                console.error("Error updating user:", error);
-            } finally {
-                setRefreshing(false);
-            }
+            fetchUserData();
         }
     }, [uid]);
 
@@ -75,6 +80,10 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     });
             };
 
+
+            if (isCurrentUser) {
+                fetchUserData();
+            }
             fetchPublicUserData();
 
             return () => { };
@@ -202,19 +211,21 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     <Text className='text-2xl italic'>
                         {roles?.customTitle ? roles.customTitle :
                             (isVerified ? "Member" :
-                                (tamuEmail != "" ? "Student" : "Guest"))
+                                (isStudent ? "Student" : "Guest"))
                         }
                     </Text>
                 </View>
                 <Text className='text-lg mt-2'>{bio}</Text>
                 <View className='flex-row mt-4 items-center'>
-                    <TouchableOpacity
-                        className='items-center justify-center mr-6'
-                        onPress={() => (handleLinkPress('mailto:' + email))}
-                    >
-                        <FontAwesome name="envelope" size={24} color="black" />
-                        <Text className='text-lg font-semibold'>Email</Text>
-                    </TouchableOpacity>
+                    {(isEmailPublic && email && email.trim() !== "") && (
+                        <TouchableOpacity
+                            className='items-center justify-center mr-6'
+                            onPress={() => (handleLinkPress('mailto:' + email))}
+                        >
+                            <FontAwesome name="envelope" size={24} color="black" />
+                            <Text className='text-lg font-semibold'>Email</Text>
+                        </TouchableOpacity>
+                    )}
 
                     {resumeVerified &&
                         <TouchableOpacity
