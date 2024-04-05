@@ -3,6 +3,7 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/core';
+import { auth } from "../../config/firebaseConfig";
 import { UserContext } from '../../context/UserContext';
 import { getCommitteeEvents, getCommittees, getInterestsEvent, getUpcomingEvents, setPublicUserData } from '../../api/firebaseUtils';
 import { monthNames, MillisecondTimes } from '../../helpers/timeUtils';
@@ -49,9 +50,7 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
 
             // Fetch generalEvents and filter out ishpeEvents and interestEvents
             const generalResponse = await getUpcomingEvents();
-            const filteredGeneralEvents = generalResponse.filter(generalEvent =>
-                !mergedEvents.some(event => event.id === generalEvent.id)
-            );
+            const filteredGeneralEvents = generalResponse.filter(generalEvent => generalEvent.general === true);
             setGeneralEvents(filteredGeneralEvents);
 
         } catch (error) {
@@ -61,6 +60,7 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
             setLoadingGeneralEvents(false);
         }
     };
+
 
     useFocusEffect(
         useCallback(() => {

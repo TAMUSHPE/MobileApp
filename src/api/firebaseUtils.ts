@@ -2,7 +2,6 @@ import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
-import { memberPoints } from "./fetchGoogleSheets";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
@@ -27,11 +26,7 @@ export const getPublicUserData = async (uid: string = ""): Promise<PublicUserInf
     return getDoc(doc(db, "users", uid))
         .then(async (res) => {
             const responseData = res.data()
-            const points = await memberPoints(responseData?.email); // Queries google sheets for points data
-            return {
-                ...responseData,
-                points: points,
-            }
+            return responseData;
         })
         .catch(err => {
             console.error(err);
@@ -237,8 +232,8 @@ export const initializeCurrentUserData = async (): Promise<User> => {
      * Should any values not exist in the returned object from firebase, the default data will be used instead.
      */
     const defaultPublicInfo: PublicUserInfo = {
-        email: auth.currentUser?.email ?? "",
-        tamuEmail: validateTamuEmail(auth.currentUser?.email, false) ? auth.currentUser!.email! : "",
+        email: "",
+        isStudent: validateTamuEmail(auth.currentUser?.email, false) ? true : false,
         displayName: auth.currentUser?.displayName ?? "",
         photoURL: auth.currentUser?.photoURL ?? "",
         roles: {
@@ -249,6 +244,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
             lead: false,
             representative: false,
         },
+        isEmailPublic: false,
     };
 
     const oneWeekFromNow = new Date();
@@ -260,6 +256,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
             darkMode: false,
         },
         expirationDate: oneWeekFromNow,
+        email: auth.currentUser?.email ?? "",
     };
 
     const user = await getUser(auth.currentUser?.uid!);
@@ -280,6 +277,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
             publicInfo: {
                 ...Object.assign(defaultPublicInfo, user.publicInfo),
                 roles: Object.assign(defaultRoles, user.publicInfo?.roles),
+                email: user.publicInfo?.isEmailPublic ? auth.currentUser?.email || "" : "",
             },
             private: {
                 privateInfo: Object.assign(defaultPrivateInfo, user.private?.privateInfo),
@@ -315,7 +313,6 @@ export const getCommittees = async (): Promise<Committee[]> => {
         const committeeCollectionRef = collection(db, 'committees');
         const snapshot = await getDocs(committeeCollectionRef);
         const committees = snapshot.docs
-            .filter(doc => doc.id !== "committeeCounts") // ignore committeeCounts document
             .map(doc => ({
                 firebaseDocName: doc.id,
                 ...doc.data()
@@ -360,6 +357,7 @@ export const setCommitteeData = async (committeeData: Committee) => {
             leadApplicationLink: committeeData.leadApplicationLink || "",
             logo: committeeData.logo || "default",
             memberCount: committeeData.memberCount || 0,
+            isOpen: committeeData.isOpen || false
         }, { merge: true });
         return true;
     } catch (err) {

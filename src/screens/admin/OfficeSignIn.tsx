@@ -76,19 +76,19 @@ const OfficeSignIn = () => {
                     <View className='flex items-center w-[80%] space-y-8'>
                         <Text className="text-center text-lg font-bold"> {isSignedIn ? "Are you sure you want to sign out?" : "You will receive notifications from members. Are you sure you want to sign in?"}</Text>
                         <View className="flex-row">
+                            <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
+                                <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
+                            </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={async () => {
                                     setConfirmVisible(false)
                                     signInOut()
                                 }}
-                                className="bg-pale-blue rounded-xl justify-center items-center"
+                                className="bg-pale-blue rounded-xl justify-center items-center ml-1"
                             >
                                 <Text className='text-xl font-bold px-6 text-white'> {isSignedIn ? "Sign Out" : "Sign In"} </Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity onPress={async () => { setConfirmVisible(false) }} >
-                                <Text className='text-xl font-bold py-3 px-8'> Cancel </Text>
-                            </TouchableOpacity>
                         </View>
                     </View>
                 </View>
