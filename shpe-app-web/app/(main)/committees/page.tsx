@@ -14,7 +14,6 @@ const Committees = () => {
   const [committees, setCommittees] = useState<Committee[]>([]);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [headData, setHeadData] = useState<PublicUserInfo | undefined>();
 
   const fetchCommittees = async () => {
     setLoading(true);
@@ -24,7 +23,6 @@ const Committees = () => {
     committees.map(committee => {
       const fetchHeadData = async () => {
         const data = await getPublicUserData(committee.head?.uid);
-        setHeadData(data);
         committee.head = data;
         console.log(committee.head);
       }
