@@ -43,6 +43,7 @@ export interface PublicUserInfo {
     interests?: string[];
     points?: number;
     pointsThisMonth?: number;
+    shirtPickedUp?: boolean;
 };
 
 /**
