@@ -8,7 +8,6 @@ export const calculateMOTM = functions.https.onCall(async (data, context) => {
     if (pastMOTMSnapshot.exists) {
         const pastMOTMData = pastMOTMSnapshot.data();
         if (pastMOTMData && Array.isArray(pastMOTMData.members)) {
-            // Safe to access 'members' as it's confirmed to be an array here
             pastMOTMIds.push(...pastMOTMData.members);
         }
     }
