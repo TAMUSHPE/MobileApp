@@ -3,11 +3,9 @@ import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Octicons } from '@expo/vector-icons';
-import { db, functions } from '../../config/firebaseConfig'
+import { db } from '../../config/firebaseConfig'
 import { getMembersToShirtVerify } from '../../api/firebaseUtils'
-import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
-import { httpsCallable } from 'firebase/functions'
-import { handleLinkPress } from '../../helpers/links'
+import { doc, getDoc, updateDoc } from 'firebase/firestore'
 import { PublicUserInfo } from '../../types/User'
 import { AdminDashboardParams } from '../../types/Navigation';
 import MemberCard from '../../components/MemberCard'
@@ -138,7 +136,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <MemberCard userData={selectedMember} />
+                    <MemberCard userData={selectedMember} onShirtScreen = {true} pickedUpShirt={selectedMember?.shirtPickedUp}/>
 
                     <View className='flex-row justify-between'>
                         <View className='flex-row justify-between'>
@@ -148,8 +146,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                             {selectedMember?.shirtPickedUp ? (
                                 <TouchableOpacity
                                     onPress={() => {
-                                        handleUncheck
-                                ()
+                                        handleUncheck()
                                         setConfirmVisible(false);
                                     }}
                                     className='flex-row py-3 rounded-lg justify-center bg-[#ff0000] w-[47%] space-x-2'

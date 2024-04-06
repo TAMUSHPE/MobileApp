@@ -5,7 +5,7 @@ import { Images } from '../../assets'
 import TwitterSvg from './TwitterSvg'
 import { getBadgeColor, isMemberVerified } from '../helpers/membership'
 
-const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation }) => {
+const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation, onShirtScreen, pickedUpShirt }) => {
     if (!userData) { return }
 
     const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration } = userData
@@ -39,6 +39,7 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
                             {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
                         </View>
                         <Text className='text-md text-grey'> {displayName}</Text>
+                        {onShirtScreen && pickedUpShirt && <Text className='text-md text-grey'> User has picked up shirt </Text>}
                     </View>
                 </View>
             </View>
