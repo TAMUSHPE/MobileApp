@@ -770,6 +770,11 @@ export const setMOTM = async (member: PublicUserInfo) => {
         await setDoc(doc(db, `member-of-the-month/member`), {
             member: member
         }, { merge: true });
+
+        const pastMembersRef = doc(db, "member-of-the-month", "past-members");
+        await updateDoc(pastMembersRef, {
+            members: arrayUnion(member.uid)
+        });
         return true;
     } catch (err) {
         console.error(err);
