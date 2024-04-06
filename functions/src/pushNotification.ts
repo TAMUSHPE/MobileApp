@@ -200,9 +200,6 @@ export const notifyUpcomingEvents = functions.pubsub.schedule('every 5 minutes')
     for (const eventDoc of eventsToNotify.docs) {
         const event = eventDoc.data() as SHPEEvent;
         const eventNotificationTargets = await determineEventNotificationTargets(event);
-        console.log("Notifying tokens:", eventNotificationTargets);
-
-        console.log(eventNotificationTargets.length)
 
         if (eventNotificationTargets.length > 0) {
             await sendEventNotification(eventNotificationTargets, event);
@@ -218,7 +215,6 @@ async function determineEventNotificationTargets(event: SHPEEvent): Promise<stri
 
     // Case 1: Club-wide event
     if (event.general) {
-        console.log("is club wide")
         const allMembersSnapshot = await db.collection('users').get();
         for (const doc of allMembersSnapshot.docs) {
             const tokens = await getMemberTokens(doc.id);
