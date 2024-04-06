@@ -140,3 +140,7 @@ export const getEvents = async (): Promise<SHPEEvent[]> => {
         throw new Error("Unable to fetch events.");
     }
 };
+
+
+
+
