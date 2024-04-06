@@ -75,7 +75,7 @@ export abstract class SHPEEvent {
         this.geofencingRadius = null;
         this.creator = null;
         this.nationalConventionEligible = null;
-        this.notificationSent = null;
+        this.notificationSent = true;
     }
 
     /**
@@ -136,7 +136,7 @@ export class GeneralMeeting extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = true;
-        this.notificationSent = true;
+        this.notificationSent = false;
     }
 
 
@@ -156,7 +156,6 @@ export class CommitteeMeeting extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
-    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -170,7 +169,6 @@ export class CommitteeMeeting extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = true;
     }
 }
 
@@ -192,7 +190,6 @@ export class StudyHours extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
-    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -229,7 +226,6 @@ export class Workshop extends SHPEEvent {
     public geolocation: GeoPoint | null;
     public workshopType: WorkshopType;
     public general: boolean;
-    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -244,7 +240,6 @@ export class Workshop extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = true;
     }
 }
 
@@ -262,7 +257,6 @@ export class VolunteerEvent extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
-    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -276,7 +270,6 @@ export class VolunteerEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = true;
     }
 }
 
@@ -294,7 +287,6 @@ export class SocialEvent extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
-    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -308,7 +300,6 @@ export class SocialEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = true;
     }
 }
 
@@ -326,7 +317,6 @@ export class IntramuralEvent extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
-    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -340,7 +330,6 @@ export class IntramuralEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = true;
     }
 }
 
@@ -360,7 +349,6 @@ export class CustomEvent extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
-    public notificationSent: boolean | null;
 
     public constructor() {
         super();
@@ -376,7 +364,6 @@ export class CustomEvent extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = false
-        this.notificationSent = true;
     }
 }
 
