@@ -2,7 +2,6 @@
 import { Timestamp, GeoPoint } from 'firebase-admin/firestore';
 import { MillisecondTimes, getNextHourMillis } from './timeUtils';
 import { PublicUserInfo } from '../../src/types/User';
-export type RankChange = "decreased" | "same" | "increased";
 
 /**
  * Determines whether a person has moved up, down, or not at all in the point leaderboard
