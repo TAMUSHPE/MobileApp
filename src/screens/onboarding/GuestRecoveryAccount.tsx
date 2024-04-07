@@ -19,7 +19,7 @@ const GuestRecoveryAccount = ({ navigation }: NativeStackScreenProps<AuthStackPa
         }
 
         try {
-            await sendPasswordResetEmail(auth, email);
+            await sendPasswordResetEmail(auth, email.trim());
             Alert.alert(
                 "Check your email",
                 "A link to reset your password has been sent to your email address."

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Switch } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation';
@@ -28,6 +28,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const [signOutPoints, setSignOutPoints] = useState<number | undefined>(event.signOutPoints ?? undefined);
     const [pointsPerHour, setPointsPerHour] = useState<number | undefined>(event.pointsPerHour ?? undefined);
     const [nationalConventionEligible, setNationalConventionEligible] = useState<boolean | undefined>(event.nationalConventionEligible ?? undefined);
+    const [notificationSent, setNotificationSent] = useState<boolean | undefined>(event.notificationSent ?? undefined);
 
     useEffect(() => {
         getCommittees()
@@ -173,17 +174,35 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                     </View>
                 }
 
-                <TouchableOpacity
-                    className='flex-row mt-4 items-center -z-20'
-                    onPress={() => setNationalConventionEligible(!nationalConventionEligible)}
-                >
-                    <View className='h-8 w-8 border-2 border-pale-blue rounded-md items-center justify-center'>
-                        {nationalConventionEligible && (
-                            <Octicons name="check" size={26} color="#72A9BE" />
-                        )}
+                {/* When notification is set to off. Then the event's notificationSent will be set to true  */}
+                <KeyboardAvoidingView className='py-3'>
+                    <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Notification Settings</Text>
+                    <View className="flex flex-row items-center justify-between py-2">
+                        <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Notification</Text>
+                        <Switch
+                            trackColor={{ false: "#999796", true: "#001F5B" }}
+                            thumbColor={!notificationSent ? "#72A9BE" : "#f4f3f4"}
+                            ios_backgroundColor="#999796"
+                            onValueChange={() => setNotificationSent(previousState => !previousState)}
+                            value={!notificationSent}
+                        />
                     </View>
-                    <Text className='ml-2 text-lg'>Eligible for National Convention</Text>
-                </TouchableOpacity>
+                </KeyboardAvoidingView>
+
+                <View>
+                    <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>National Convention</Text>
+                    <TouchableOpacity
+                        className='flex-row mt-4 items-center -z-20'
+                        onPress={() => setNationalConventionEligible(!nationalConventionEligible)}
+                    >
+                        <View className='h-8 w-8 border-2 border-pale-blue rounded-md items-center justify-center'>
+                            {nationalConventionEligible && (
+                                <Octicons name="check" size={26} color="#72A9BE" />
+                            )}
+                        </View>
+                        <Text className='ml-2 text-lg'>Eligible for National Convention</Text>
+                    </TouchableOpacity>
+                </View>
 
                 <InteractButton
                     buttonClassName='bg-pale-blue mt-8 mb-4 py-1 rounded-xl w-1/2 mx-auto -z-20'
@@ -199,7 +218,8 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 signOutPoints,
                                 pointsPerHour,
                                 committee,
-                                nationalConventionEligible
+                                nationalConventionEligible,
+                                notificationSent,
                             });
                             navigation.navigate("setLocationEventDetails", { event: event });
                         }
@@ -219,6 +239,7 @@ const createCommitteeList = (committees: Committee[]) => {
 };
 
 const POINTS = [
+    { point: "0", iso: "0" },
     { point: "1", iso: "1" },
     { point: "2", iso: "2" },
     { point: "3", iso: "3" },
