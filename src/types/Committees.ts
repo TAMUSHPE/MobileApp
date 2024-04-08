@@ -1,4 +1,3 @@
-import { PublicUserInfo } from "./User";
 import SHPEtinas from '../../assets/shpetinas.svg';
 import TechnicalAffairs from '../../assets/technical_affairs_logo.svg';
 import DefaultIcon from '../../assets/generic_course_icon.svg';
@@ -40,13 +39,20 @@ export type Committee = {
     name?: string;
     color?: string,
     description?: string;
-    head?: PublicUserInfo;
-    representatives?: PublicUserInfo[];
-    leads?: PublicUserInfo[];
+    head?: string;
+    representatives?: string[];
+    leads?: string[];
     memberApplicationLink?: string;
     representativeApplicationLink?: string;
     leadApplicationLink?: string;
     logo?: keyof typeof committeeLogos;
     memberCount?: number;
+    isOpen?: boolean;
 }
 
+export const reverseFormattedFirebaseName = (firebaseName: string) => {
+    return firebaseName
+        .split('-')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+};

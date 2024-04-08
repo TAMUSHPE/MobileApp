@@ -7,8 +7,9 @@ import { MainStack } from './MainStack';
 import Splash from '../screens/Splash';
 import { Images } from '../../assets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { eventEmitter } from '../context/eventEmitter';
 import { setPrivateUserData } from '../api/firebaseUtils';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+import { auth } from '../config/firebaseConfig';
 /**
  * Renders the root navigator for the application.
  * It determines whether to show the splash screen, authentication stack, or main stack
@@ -17,7 +18,7 @@ import { setPrivateUserData } from '../api/firebaseUtils';
  * @returns  The rendered root navigator.
  */
 const RootNavigator = () => {
-    const { userInfo, setUserInfo, userLoading } = useContext(UserContext)!;
+    const { userInfo, setUserInfo, userLoading, signOutUser } = useContext(UserContext)!;
     const [splashLoading, setSplashLoading] = useState<boolean>(true);
 
     /**
@@ -63,21 +64,31 @@ const RootNavigator = () => {
         }
     }, [userInfo]);
 
-    // auto update user data on load
-    // works with app.tsx file to update user data
     useEffect(() => {
-        const handleUserUpdate = async () => {
-            const userData = await AsyncStorage.getItem('@user');
-            if (userData) {
-                setUserInfo(JSON.parse(userData));
+        const handleBannedUser = async () => {
+            if (!auth.currentUser?.uid) {
+                return;
             }
-        };
 
-        eventEmitter.on('userUpdated', handleUserUpdate);
-        return () => {
-            eventEmitter.off('userUpdated', handleUserUpdate);
-        };
-    }, []);
+            const functions = getFunctions();
+            const isUserInBlacklist = httpsCallable<{ uid: string }, { isInBlacklist: boolean }>(functions, 'isUserInBlacklist');
+            try {
+                const checkBlackListResponse = await isUserInBlacklist({ uid: auth.currentUser?.uid! });
+
+                if (checkBlackListResponse.data.isInBlacklist) {
+                    signOutUser(true);
+                    alert("You have been banned from the app");
+                    return;
+                }
+            } catch (error) {
+                console.error('Error during user authentication:', error);
+            }
+
+        }
+
+        handleBannedUser();
+    }, [auth.currentUser?.uid])
+
 
     if (splashLoading) {
         return <Splash setIsLoading={setSplashLoading} />;
