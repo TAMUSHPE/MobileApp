@@ -54,7 +54,6 @@ export type ProfileSetupStackParams = {
     SetupNameAndBio: undefined;
     SetupProfilePicture: undefined;
     SetupAcademicInformation: undefined;
-    SetupCommittees: undefined;
     SetupInterests: undefined;
     SetupResume: undefined;
     MainStack: undefined;
@@ -82,6 +81,7 @@ export type InvolvementStackParams = {
     CommitteeEdit: {
         committee?: Committee;
     };
+    EventInfo: undefined;
 }
 
 export type EventsStackParams = {
@@ -116,6 +116,7 @@ export type AdminDashboardParams = {
     RestrictionsEditor: undefined;
     Feedback: undefined;
     MemberSHPEConfirm: undefined;
+    CommitteeConfirm: undefined;
     ResumeConfirm: undefined;
     ShirtConfirm: undefined;
     Home: undefined;
@@ -140,9 +141,6 @@ export type HomeDrawerParams = {
 // Bottom Tabs
 export type HomeBottomTabParams = {
     Home: undefined;
-    Profile: {
-        email: string;
-    };
 };
 
 export type ResourcesProps = {

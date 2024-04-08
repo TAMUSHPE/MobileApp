@@ -7,15 +7,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Octicons } from '@expo/vector-icons';
 import { Circle, Svg } from 'react-native-svg';
 import { UserContext } from '../../context/UserContext';
-import { auth, functions } from '../../config/firebaseConfig';
-import { getCommittees, getUser, setPrivateUserData, setPublicUserData } from '../../api/firebaseUtils';
+import { auth } from '../../config/firebaseConfig';
+import { getUser, setPrivateUserData, setPublicUserData } from '../../api/firebaseUtils';
 import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/fileSelection';
 import { updateProfile } from 'firebase/auth';
-import { httpsCallable } from 'firebase/functions';
 import { CommonMimeTypes, validateName } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
-import { calculateHexLuminosity } from '../../helpers/colorUtils';
-import { Committee, getLogoComponent } from '../../types/Committees';
 import { MAJORS, classYears } from '../../types/User';
 import { ProfileSetupStackParams } from '../../types/Navigation';
 import { Images } from '../../../assets';
@@ -397,7 +394,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
         console.log("File available at", URL);
         if (auth.currentUser) {
             setResumeURL(URL);
-            await setPublicUserData({
+            await setPrivateUserData({
                 resumeURL: URL
             });
         }
@@ -595,155 +592,11 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
                         <InteractButton
                             onPress={async () => {
                                 if (canContinue && auth.currentUser) {
+                                    setLoading(true);
                                     await setPublicUserData({
                                         interests: userInterests,
                                     });
 
-                                    navigation.navigate("SetupCommittees");
-                                }
-                            }}
-
-                            label='Continue'
-                            buttonClassName={`${!canContinue ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
-                            textClassName={`${!canContinue ? "text-gray-700" : "text-white"} text-lg font-bold`}
-                            opacity={!canContinue ? 1 : 0.8}
-                            underlayColor={`${!canContinue ? "" : "#A22E2B"}`}
-                        />
-                    </View>
-                    <InteractButton
-                        onPress={async () => {
-                            if (auth.currentUser) {
-                                await setPublicUserData({
-                                    interests: [],
-                                });
-
-                                navigation.navigate("SetupCommittees");
-                            }
-                        }}
-                        label='Skip For Now'
-                        buttonClassName='justify-center items-center  rounded-md w-10/12'
-                        textClassName='text-pale-orange text-lg font-bold'
-                        underlayColor='transparent'
-                    />
-                    {loading && (
-                        <ActivityIndicator className="mb-4" size={"large"} />
-                    )}
-                </View>
-            </View>
-        </SafeAreaView>
-    );
-};
-
-
-/**
- * This screen is where the user will choose which committees they're in, if any. The user can select committees, 
- * choose to skip, or select "None For Now".
- * Skipping and selecting "None For Now" will do the same thing and set their committees as ["None"]
- */
-const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
-    const [canContinue, setCanContinue] = useState<boolean>(true);
-    const [committees, setCommittees] = useState<Committee[]>([]);
-    const [userCommittees, setUserCommittees] = useState<string[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-
-    const { setUserInfo } = useContext(UserContext)!;
-
-
-    useEffect(() => {
-        const fetchCommittees = async () => {
-            const response = await getCommittees();
-            setCommittees(response)
-        }
-        fetchCommittees();
-    }, []);
-
-    const handleCommitteeToggle = (firebaseDocName: string) => {
-        setUserCommittees(prevCommittees => {
-            if (prevCommittees.includes(firebaseDocName)) {
-                return prevCommittees.filter(name => name !== firebaseDocName);
-            } else {
-                return [...prevCommittees, firebaseDocName];
-            }
-        });
-    };
-
-    useEffect(() => {
-        setCanContinue(userCommittees.length > 0);
-    }, [userCommittees]);
-
-    return (
-        <SafeAreaView className={safeAreaViewStyle}>
-            <View className='flex-col'>
-                <TouchableOpacity
-                    className="mb-4"
-                    onPress={() => { navigation.goBack(); }}
-                >
-                    <Octicons name="chevron-left" size={30} color="white" />
-                </TouchableOpacity>
-                <View className='items-center'>
-                    <View className='flex-col items-center'>
-                        <Text className='text-white text-center text-3xl'>Committees</Text>
-                        <Text className='text-white text-center text-lg mt-4'>{"Are you part of any committees? If yes, we'd love to know which ones."}</Text>
-                    </View>
-                    <ScrollView
-                        className='w-11/12 h-1/2 flex-col bg-[#b5b5cc2c] my-5 rounded-md'
-                        persistentScrollbar
-                        scrollToOverflowEnabled
-                    >
-                        <View className='flex-wrap flex-row w-full h-full pb-28 justify-around pt-4'>
-                            {committees.map((committee: Committee) => {
-                                const isLight = (colorHex: string) => {
-                                    const luminosity = calculateHexLuminosity(colorHex);
-                                    return luminosity < 155;
-                                };
-
-                                const { LogoComponent, height, width } = getLogoComponent(committee.logo);
-                                const isSelected = userCommittees.includes(committee.firebaseDocName!);
-
-                                return (
-                                    <TouchableOpacity
-                                        key={committee.firebaseDocName}
-                                        onPress={() => handleCommitteeToggle(committee?.firebaseDocName!)}
-                                        className='flex-col rounded-md w-[45%]'
-                                        style={{ backgroundColor: committee.color, minHeight: 90 }}
-                                    >
-                                        <View className='flex-1 rounded-md items-center' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
-                                            <View className='flex-1 items-center flex-row justify-center py-2'>
-                                                {isSelected ? (
-                                                    <View className="items-center justify-center h-10 w-10 rounded-full" style={{ backgroundColor: committee.color }}>
-                                                        <Octicons name="check" size={30} color="white" />
-                                                    </View>
-                                                ) : (
-                                                    <LogoComponent width={height / 2} height={width / 2} />
-
-                                                )}
-                                            </View>
-                                            <Text className={`justify-end font-bold text-lg text-black text-${isLight(committee.color!) ? "white" : "black"}`}>{committee.name}</Text>
-                                        </View>
-                                    </TouchableOpacity>
-                                );
-                            })}
-                        </View>
-                    </ScrollView>
-
-                    <View className='w-10/12 mb-2'>
-                        <InteractButton
-                            onPress={async () => {
-                                if (canContinue && auth.currentUser) {
-                                    setLoading(true);
-                                    // Update committee member counts
-                                    const committeeChanges = userCommittees.map(committeeName => ({
-                                        committeeName,
-                                        change: 1
-                                    }));
-
-                                    const updateCommitteeMembersCount = httpsCallable(functions, 'updateCommitteeMembersCount');
-                                    await updateCommitteeMembersCount({ committeeChanges });
-
-                                    // Save user data to firebase
-                                    await setPublicUserData({
-                                        committees: userCommittees,
-                                    });
                                     await setPrivateUserData({
                                         completedAccountSetup: true,
                                     });
@@ -768,13 +621,13 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                         onPress={async () => {
                             if (auth.currentUser) {
                                 await setPublicUserData({
-                                    committees: [],
+                                    interests: [],
                                 });
+
                                 await setPrivateUserData({
                                     completedAccountSetup: true,
                                 });
                             }
-                            // On Register, save user to local
 
                             const firebaseUser = await getUser(auth.currentUser?.uid!)
                             await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
@@ -794,4 +647,4 @@ const SetupCommittees = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     );
 };
 
-export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupResume, SetupInterests, SetupCommittees };
+export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupResume, SetupInterests };
