@@ -120,7 +120,6 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                             setConfirmVisible(true)
                         }}
                         users={members}
-                        onShirtScreen={true}
                     />
                 </View>
             )}

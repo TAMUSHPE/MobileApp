@@ -199,6 +199,8 @@ export type MemberCardProp = {
     handleCardPress?: (uid: string | void) => void;
     userData?: PublicUserInfo;
     navigation?: NativeStackNavigationProp<any>
+    onShirtScreen?: boolean;
+    pickedUpShirt?: boolean;
 }
 
 export type IShpeProps = {
