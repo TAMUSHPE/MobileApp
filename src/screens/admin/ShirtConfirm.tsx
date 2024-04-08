@@ -120,6 +120,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                             setConfirmVisible(true)
                         }}
                         users={members}
+                        onShirtScreen={true}
                     />
                 </View>
             )}
@@ -138,34 +139,36 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                     </View>
                     <MemberCard userData={selectedMember} onShirtScreen = {true} pickedUpShirt={selectedMember?.shirtPickedUp}/>
 
-                    <View className='flex-row justify-between'>
-                        <View className='flex-row justify-between'>
-                            <Text className='text-xl font-semibold'>Shirt Size:</Text>
-                            <Text className='text-xl font-semibold'>{selectedMemberDocuments?.shirtSize}</Text>
+                        <View style={{ alignItems: 'center' }}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' }}>
+                                <Text style={{ marginHorizontal: 0 }} className='text-xl font-semibold'>Shirt Size:</Text>
+                                <Text style={{ marginHorizontal: 5 }} className='text-xl font-semibold'>{selectedMemberDocuments?.shirtSize}</Text>
 
-                            {selectedMember?.shirtPickedUp ? (
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        handleUncheck()
-                                        setConfirmVisible(false);
-                                    }}
-                                    className='flex-row py-3 rounded-lg justify-center bg-[#ff0000] w-[47%] space-x-2'
-                                >
-                                    <Text className='text-lg font-semibold'>Uncheck</Text>
-                                </TouchableOpacity>
-                            ) : (
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        handleCheck()
-                                        setConfirmVisible(false);
-                                    }}
-                                    className='flex-row py-3 rounded-lg justify-center bg-[#00ff00] w-[47%] space-x-2'
-                                >
-                                    <Text className='text-lg font-semibold'>Check Off</Text>
-                                </TouchableOpacity>
-                            )}
+                                {selectedMember?.shirtPickedUp ? (
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            handleUncheck()
+                                            setConfirmVisible(false);
+                                        }}
+                                        style={{ marginHorizontal: 10 }}
+                                        className='py-3 rounded-lg items-center justify-center bg-[#ff0000] w-[47%]'
+                                    >
+                                        <Text className='text-lg font-semibold'>Uncheck</Text>
+                                    </TouchableOpacity>
+                                ) : (
+                                    <TouchableOpacity
+                                        onPress={() => {
+                                            handleCheck()
+                                            setConfirmVisible(false);
+                                        }}
+                                        style={{ marginHorizontal: 10 }}
+                                        className='py-3 rounded-lg items-center justify-center bg-[#00ff00] w-[47%]'
+                                    >
+                                        <Text className='text-lg font-semibold'>Check Off</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         </View>
-                    </View>
 
                 </View>
             </DismissibleModal>
