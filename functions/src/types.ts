@@ -1,7 +1,6 @@
 /** Anything added to this document needs to be added to src/types/Events.ts */
 import { Timestamp, GeoPoint } from 'firebase-admin/firestore';
 import { MillisecondTimes, getNextHourMillis } from './timeUtils';
-import { PublicUserInfo } from '../../src/types/User';
 
 /**
  * Determines whether a person has moved up, down, or not at all in the point leaderboard
@@ -390,4 +389,40 @@ export enum EventLogStatus {
     EVENT_NOT_FOUND,
     ALREADY_LOGGED,
     ERROR,
+}
+
+export interface PublicUserInfo {
+    // Firestore parameters
+    uid?: string
+    email?: string;
+    displayName?: string;
+    photoURL?: string;
+    resumePublicURL?: string;
+    roles?: Roles;
+    name?: string;
+    bio?: string;
+    major?: string;
+    classYear?: string;
+    committees?: string[];
+    pointsRank?: number;
+    rankChange?: RankChange;
+    nationalExpiration?: Timestamp;
+    chapterExpiration?: Timestamp;
+    resumeVerified?: boolean;
+    interests?: string[];
+    points?: number;
+    pointsThisMonth?: number;
+    isStudent?: boolean;
+    isEmailPublic?: boolean;
+}
+
+export interface Roles {
+    reader?: boolean;
+    officer?: boolean;
+    admin?: boolean;
+    developer?: boolean;
+    representative?: boolean;
+    lead?: boolean;
+    secretary?: boolean;
+    customTitle?: string;
 }

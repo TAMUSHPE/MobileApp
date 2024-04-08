@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import { db } from './firebaseConfig';
 import { Expo, ExpoPushMessage } from 'expo-server-sdk';
-
+import { SHPEEvent } from './types';
 /**
  * Fetches the Expo push tokens of a member.
  *
@@ -14,12 +14,7 @@ const getMemberTokens = async (uid: string) => {
     const privateInfoRef = db.doc(`users/${uid}/private/privateInfo`);
     const docSnap = await privateInfoRef.get();
 
-    if (docSnap.exists) {
-        return docSnap.data()?.expoPushTokens;
-    } else {
-        console.error("User does not exist");
-        return null;
-    }
+    return docSnap.data()?.expoPushTokens || [];
 };
 
 /**
@@ -190,3 +185,110 @@ export const sendNotificationResumeConfirm = functions.https.onCall(async (data,
     }
 });
 
+
+export const notifyUpcomingEvents = functions.pubsub.schedule('every 5 minutes').onRun(async (context) => {
+    console.log('Running Event Notification Sent');
+    const now = new Date();
+    const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
+    const eventsToNotify = await db.collection('events')
+        .where('startTime', '>=', now)
+        .where('startTime', '<=', oneHourLater)
+        .where('notificationSent', '!=', true)
+        .get();
+
+
+    for (const eventDoc of eventsToNotify.docs) {
+        const event = eventDoc.data() as SHPEEvent;
+        const eventNotificationTargets = await determineEventNotificationTargets(event);
+
+        if (eventNotificationTargets.length > 0) {
+            await sendEventNotification(eventNotificationTargets, event);
+        }
+
+        await eventDoc.ref.update({ notificationSent: true });
+    }
+});
+
+async function determineEventNotificationTargets(event: SHPEEvent): Promise<string[]> {
+    const allTokens: Set<string> = new Set();
+    const processedUserIds: Set<string> = new Set();
+
+    // Case 1: Club-wide event
+    if (event.general) {
+        const allMembersSnapshot = await db.collection('users').get();
+        for (const doc of allMembersSnapshot.docs) {
+            const tokens = await getMemberTokens(doc.id);
+            tokens.forEach((token: string) => allTokens.add(token));
+        }
+        return Array.from(allTokens);
+    }
+
+    // Case 2: Event associated with a committee
+    if (event.committee && event.committee !== "") {
+        const committeeMembersSnapshot = await db.collection('users').where('committees', 'array-contains', event.committee).get();
+        for (const doc of committeeMembersSnapshot.docs) {
+            if (!processedUserIds.has(doc.id)) {
+                const tokens = await getMemberTokens(doc.id);
+                tokens.forEach((token: string) => allTokens.add(token));
+                processedUserIds.add(doc.id);
+            }
+        }
+    }
+
+    // Case 3: Notify users based on their interests
+    const eventType = event.eventType as string;
+    if (["Study Hours", "Workshop", "Volunteer Event", "Social Event", "Intramural Event"].includes(eventType)) {
+        const interestedUsersSnapshot = await db.collection('users').where('interests', 'array-contains', event.eventType).get();
+        for (const doc of interestedUsersSnapshot.docs) {
+            if (!processedUserIds.has(doc.id)) {
+                const tokens = await getMemberTokens(doc.id);
+                tokens.forEach((token: string) => allTokens.add(token));
+                processedUserIds.add(doc.id);
+            }
+        }
+    }
+
+    return Array.from(allTokens);
+}
+
+async function sendEventNotification(tokens: string[], event: SHPEEvent) {
+    const expo = new Expo();
+    const messages: ExpoPushMessage[] = [];
+
+    tokens.forEach((tokenString: string) => {
+        let token;
+        try {
+            const tokenObj = JSON.parse(tokenString);
+            token = tokenObj.data;
+        } catch (error) {
+            console.error(`Error parsing token string: ${tokenString}`, error);
+            return;
+        }
+
+        if (!Expo.isExpoPushToken(token)) {
+            console.error(`Push token ${token} is not a valid Expo push token`);
+            return; // Skip this token
+        }
+
+        messages.push({
+            to: token,
+            sound: 'default',
+            title: event?.name || "Event",
+            body: `Reminder: ${event.name} is starting soon!`,
+            data: { event },
+        });
+    });
+
+    const chunks = expo.chunkPushNotifications(messages);
+    const tickets = [];
+
+    for (const chunk of chunks) {
+        try {
+            const ticketChunk = await expo.sendPushNotificationsAsync(chunk);
+            console.log('Notification tickets', ticketChunk);
+            tickets.push(...ticketChunk);
+        } catch (error) {
+            console.error('Error sending notifications', error);
+        }
+    }
+}

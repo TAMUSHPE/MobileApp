@@ -1,4 +1,4 @@
-export { sendNotificationOfficeHours, sendNotificationMemberSHPE, sendNotificationCommitteeRequest, sendNotificationResumeConfirm } from "./pushNotification";
+export { notifyUpcomingEvents, sendNotificationOfficeHours, sendNotificationMemberSHPE, sendNotificationCommitteeRequest, sendNotificationResumeConfirm } from "./pushNotification";
 export { updateRanksScheduled, updateRanksOnCall, updateUserPoints, updateAllUserPoints } from "./pointSheet";
 export { updateCommitteeCount } from "./committees";
 export { resetOfficeScheduler, resetOfficeOnCall } from "./officeReset";
