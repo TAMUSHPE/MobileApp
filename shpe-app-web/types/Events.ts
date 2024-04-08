@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase/firestore'; 
+import { Timestamp } from 'firebase/firestore';
 
 export interface SHPEEvent {
     name?: string;
@@ -18,9 +18,19 @@ export interface SHPEEventID extends SHPEEvent {
 export enum EventLogStatus {
     SUCCESS = "success",
     EVENT_OVER = "event_over",
-    EVENT_ONGOING  = "event_ongoing",
+    EVENT_ONGOING = "event_ongoing",
     ALREADY_LOGGED = "already_logged",
     ERROR = "error",
 }
 
 export const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+export interface SHPEEventLog {
+    uid?: string;
+    points?: number;
+    eventId?: string; // Used when data is copied to user collection
+    signInTime?: Timestamp;
+    signOutTime?: Timestamp;
+    creationTime?: Timestamp
+    verified?: boolean;
+}

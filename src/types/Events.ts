@@ -54,6 +54,8 @@ export abstract class SHPEEvent {
     public nationalConventionEligible?: boolean | null;
     /** Specifies if event should display on "General" tab of ishpe, if it is club-wide */
     public general?: boolean | null;
+    /** A flag to indicate that the notification has been sent */
+    public notificationSent?: boolean | null;
 
 
     /**
@@ -73,6 +75,7 @@ export abstract class SHPEEvent {
         this.geofencingRadius = null;
         this.creator = null;
         this.nationalConventionEligible = null;
+        this.notificationSent = true;
     }
 
     /**
@@ -117,6 +120,7 @@ export class GeneralMeeting extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
+    public notificationSent: boolean | null;
 
 
     public constructor() {
@@ -132,6 +136,7 @@ export class GeneralMeeting extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = true;
+        this.notificationSent = false;
     }
 
 
@@ -200,6 +205,7 @@ export class StudyHours extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = true;
+        this.notificationSent = true;
     }
 }
 
