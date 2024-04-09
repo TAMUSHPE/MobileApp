@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, ScrollView, Image, Platform } from 'react-native';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
@@ -7,7 +7,7 @@ import { UserContext } from '../../context/UserContext';
 import { useRoute } from '@react-navigation/core';
 import { Images } from '../../../assets';
 import { formatEventDate, formatTime } from '../../helpers/timeUtils';
-import { createEvent } from '../../api/firebaseUtils';
+import { createEvent, getPublicUserData } from '../../api/firebaseUtils';
 import { StatusBar } from 'expo-status-bar';
 import CalendarIcon from '../../../assets/calandar_pale_blue.svg'
 import ClockIcon from '../../../assets/clock-pale-blue.svg'
@@ -25,6 +25,20 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
     const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, workshopType, committee, creator, nationalConventionEligible } = event || {};
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    const [creatorData, setCreatorData] = useState<PublicUserInfo | null>()
+
+    useEffect(() => {
+        const fetchCreatorInfo = async () => {
+            if (creator) {
+                const fetchedCreator = await getPublicUserData(creator);
+                setCreatorData(fetchedCreator || null);
+            }
+        }
+
+        fetchCreatorInfo();
+    }, [creator])
+
 
     return (
         <ScrollView
@@ -52,7 +66,7 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                 />
 
                 <View className='absolute w-full h-full bg-[#00000055]' />
-                <View className='absolute bottom-0 px-5 py-3    '>
+                <View className='absolute bottom-0 px-5 py-3'>
                     <View className=''>
                         <Text className="text-white text-4xl font-bold">{name ?? "Name"}</Text>
                         <Text className="text-white text-lg font-bold">{eventType}{workshopType && (" • " + workshopType)}{committee && (" • " + reverseFormattedFirebaseName(committee))} • {(signInPoints || 0) + (signOutPoints || 0) + (pointsPerHour || 0)} points</Text>
@@ -113,11 +127,10 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                         {geolocation && (
                             <TouchableOpacity
                                 onPress={() => {
-                                    console.log(geolocation.latitude, geolocation.longitude)
                                     if (Platform.OS === 'ios') {
-                                        handleLinkPress(`http://maps.apple.com/?ll=${geolocation.latitude},${geolocation.longitude}`);
+                                        handleLinkPress(`http://maps.apple.com/?daddr=${geolocation.latitude},${geolocation.longitude}`);
                                     } else if (Platform.OS === 'android') {
-                                        handleLinkPress(`https://www.google.com/maps?q=${geolocation.latitude},${geolocation.longitude}`);
+                                        handleLinkPress(`https://www.google.com/maps/dir/?api=1&destination=${geolocation.latitude},${geolocation.longitude}`);
                                     }
                                 }}
                             >
@@ -127,10 +140,12 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                     </View>
                 )}
 
-                <View className='mt-4'>
-                    <Text className='text-xl mt-2 italic font-bold mb-2'>Event Host</Text>
-                    <MemberCard userData={creator as PublicUserInfo} />
-                </View>
+                {creatorData && (
+                    <View className='mt-4'>
+                        <Text className='text-xl mt-2 italic font-bold mb-2'>Event Host</Text>
+                        <MemberCard userData={creatorData} />
+                    </View>
+                )}
             </View>
         </ScrollView>
     );

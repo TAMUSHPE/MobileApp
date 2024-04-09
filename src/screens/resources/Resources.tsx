@@ -10,7 +10,7 @@ import ResumeIcon from '../../../assets/resume-icon.svg';
 import ExamIcon from '../../../assets/exam-icon.svg';
 import OfficeHours from './OfficeHours';
 import { UserContext } from '../../context/UserContext';
-import OfficeSignIn from '../home/OfficeSignIn';
+import OfficeSignIn from '../admin/OfficeSignIn';
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
     const { userInfo } = useContext(UserContext)!;

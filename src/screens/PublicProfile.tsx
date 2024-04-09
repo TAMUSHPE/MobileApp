@@ -27,7 +27,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
     const route = useRoute<MembersScreenRouteProp>();
     const { uid } = route.params;
     const [publicUserData, setPublicUserData] = useState<PublicUserInfo | undefined>();
-    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, tamuEmail, committees, pointsRank } = publicUserData || {};
+    const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, isStudent, committees, pointsRank, isEmailPublic } = publicUserData || {};
     const [committeesData, setCommitteesData] = useState<Committee[]>([]);
     const [modifiedRoles, setModifiedRoles] = useState<Roles | undefined>(undefined);
     const [isVerified, setIsVerified] = useState<boolean>(false);
@@ -46,18 +46,23 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
+
+    const fetchUserData = async () => {
+        try {
+            const firebaseUser = await getUser(auth.currentUser?.uid!)
+            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+            setUserInfo(firebaseUser);
+        } catch (error) {
+            console.error("Error updating user:", error);
+        } finally {
+            setRefreshing(false);
+        }
+    }
+
     const onRefresh = useCallback(async () => {
         if (isCurrentUser) {
             setRefreshing(true);
-            try {
-                const firebaseUser = await getUser(auth.currentUser?.uid!)
-                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                await setUserInfo(firebaseUser);
-            } catch (error) {
-                console.error("Error updating user:", error);
-            } finally {
-                setRefreshing(false);
-            }
+            fetchUserData();
         }
     }, [uid]);
 
@@ -75,6 +80,10 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     });
             };
 
+
+            if (isCurrentUser) {
+                fetchUserData();
+            }
             fetchPublicUserData();
 
             return () => { };
@@ -95,19 +104,6 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
             setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
         }
     }, [nationalExpiration, chapterExpiration])
-
-
-    // if no roles are selected, clear custom title
-    useEffect(() => {
-        if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead) {
-            if (modifiedRoles?.customTitle !== "") {
-                setModifiedRoles({
-                    ...modifiedRoles,
-                    customTitle: "",
-                });
-            }
-        }
-    }, [modifiedRoles]);
 
     const RoleItem = ({ roleName, isActive, onToggle, darkMode }: {
         roleName: string,
@@ -194,6 +190,17 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                         <View className='items-center justify-center'>
                             <Text className="text-white text-lg font-semibold" >{`${major} ${"'" + classYear?.substring(2)}`} • {`${points?.toFixed(2)} pts`} {pointsRank && `• rank ${pointsRank}`} </Text>
                         </View>
+                        {isSuperUser &&
+                            <View className='items-center justify-center'>
+                                <TouchableOpacity
+                                    onPress={() => setShowRoleModal(true)}
+                                    className="rounded-md px-3 py-2"
+                                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                                >
+                                    <Text className='text-white text-xl'>Edit Role</Text>
+                                </TouchableOpacity>
+                            </View>
+                        }
                     </View>
                 </SafeAreaView>
             </View>
@@ -204,30 +211,21 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     <Text className='text-2xl italic'>
                         {roles?.customTitle ? roles.customTitle :
                             (isVerified ? "Member" :
-                                (tamuEmail != "" ? "Student" : "Guest"))
+                                (isStudent ? "Student" : "Guest"))
                         }
                     </Text>
-
-                    {isSuperUser &&
-                        <View className='items-center justify-center'>
-                            <TouchableOpacity
-                                onPress={() => setShowRoleModal(true)}
-                                className='rounded-md px-2 py-1 ml-4 bg-pale-blue'
-                            >
-                                <Text className='text-white text-xl'>Edit Role</Text>
-                            </TouchableOpacity>
-                        </View>
-                    }
                 </View>
                 <Text className='text-lg mt-2'>{bio}</Text>
                 <View className='flex-row mt-4 items-center'>
-                    <TouchableOpacity
-                        className='items-center justify-center mr-6'
-                        onPress={() => (handleLinkPress('mailto:' + email))}
-                    >
-                        <FontAwesome name="envelope" size={24} color="black" />
-                        <Text className='text-lg font-semibold'>Email</Text>
-                    </TouchableOpacity>
+                    {(isEmailPublic && email && email.trim() !== "") && (
+                        <TouchableOpacity
+                            className='items-center justify-center mr-6'
+                            onPress={() => (handleLinkPress('mailto:' + email))}
+                        >
+                            <FontAwesome name="envelope" size={24} color="black" />
+                            <Text className='text-lg font-semibold'>Email</Text>
+                        </TouchableOpacity>
+                    )}
 
                     {resumeVerified &&
                         <TouchableOpacity
@@ -341,8 +339,17 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     <View className="flex-row justify-between items-center my-6 mx-5">
                         <TouchableOpacity
                             onPress={async () => {
+
+                                // checks if has role but no custom title
                                 if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
                                     Alert.alert("Missing Title", "You must enter a title ");
+                                    return;
+                                }
+
+
+                                // Checks if has custom title but no role
+                                if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead && modifiedRoles?.customTitle) {
+                                    Alert.alert("Missing Role", "If a custom title is entered, you must select a role.");
                                     return;
                                 }
 

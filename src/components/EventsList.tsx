@@ -2,14 +2,16 @@ import { View, Text, ActivityIndicator, Image, TouchableOpacity } from 'react-na
 import React from 'react'
 import { Timestamp } from 'firebase/firestore';
 import { Committee, getLogoComponent } from '../types/Committees';
-import { SHPEEvent, monthNames } from '../types/Events';
+import { SHPEEvent } from '../types/Events';
 import { Images } from '../../assets';
+import { monthNames } from '../helpers/timeUtils';
 
-const EventsList = ({ events, navigation, isLoading, showImage = true }: {
+const EventsList = ({ events, navigation, isLoading, showImage = true, onEventClick }: {
     events: SHPEEventWithCommitteeData[],
     navigation?: any
     , isLoading?: boolean,
     showImage?: boolean
+    onEventClick?: () => void
 }) => {
     if (isLoading) {
         return (
@@ -33,7 +35,12 @@ const EventsList = ({ events, navigation, isLoading, showImage = true }: {
                     <TouchableOpacity
                         key={index}
                         className="flex-row space-x-2 pt-4"
-                        onPress={() => navigation.navigate("EventInfo", { eventId: event.id })}
+                        onPress={() => {
+                            navigation.navigate("EventInfo", { eventId: event.id });
+                            if (onEventClick) {
+                                onEventClick();
+                            }
+                        }}
                     >
                         {/* If Committee is associated with event, then show Committee Logo */}
                         {LogoComponent && (

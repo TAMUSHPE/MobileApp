@@ -1,13 +1,12 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, serverTimestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
-import { memberPoints } from "./fetchGoogleSheets";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
 import { SHPEEvent, EventLogStatus } from "../types/Events";
-
+import * as Location from 'expo-location';
 
 /**
  * Obtains the public information of a user given their UID.
@@ -27,11 +26,7 @@ export const getPublicUserData = async (uid: string = ""): Promise<PublicUserInf
     return getDoc(doc(db, "users", uid))
         .then(async (res) => {
             const responseData = res.data()
-            const points = await memberPoints(responseData?.email); // Queries google sheets for points data
-            return {
-                ...responseData,
-                points: points,
-            }
+            return responseData;
         })
         .catch(err => {
             console.error(err);
@@ -237,8 +232,8 @@ export const initializeCurrentUserData = async (): Promise<User> => {
      * Should any values not exist in the returned object from firebase, the default data will be used instead.
      */
     const defaultPublicInfo: PublicUserInfo = {
-        email: auth.currentUser?.email ?? "",
-        tamuEmail: validateTamuEmail(auth.currentUser?.email, false) ? auth.currentUser!.email! : "",
+        email: "",
+        isStudent: validateTamuEmail(auth.currentUser?.email, false) ? true : false,
         displayName: auth.currentUser?.displayName ?? "",
         photoURL: auth.currentUser?.photoURL ?? "",
         roles: {
@@ -246,7 +241,10 @@ export const initializeCurrentUserData = async (): Promise<User> => {
             officer: false,
             admin: false,
             developer: false,
+            lead: false,
+            representative: false,
         },
+        isEmailPublic: false,
     };
 
     const oneWeekFromNow = new Date();
@@ -258,6 +256,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
             darkMode: false,
         },
         expirationDate: oneWeekFromNow,
+        email: auth.currentUser?.email ?? "",
     };
 
     const user = await getUser(auth.currentUser?.uid!);
@@ -278,6 +277,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
             publicInfo: {
                 ...Object.assign(defaultPublicInfo, user.publicInfo),
                 roles: Object.assign(defaultRoles, user.publicInfo?.roles),
+                email: user.publicInfo?.isEmailPublic ? auth.currentUser?.email || "" : "",
             },
             private: {
                 privateInfo: Object.assign(defaultPrivateInfo, user.private?.privateInfo),
@@ -313,7 +313,6 @@ export const getCommittees = async (): Promise<Committee[]> => {
         const committeeCollectionRef = collection(db, 'committees');
         const snapshot = await getDocs(committeeCollectionRef);
         const committees = snapshot.docs
-            .filter(doc => doc.id !== "committeeCounts") // ignore committeeCounts document
             .map(doc => ({
                 firebaseDocName: doc.id,
                 ...doc.data()
@@ -358,6 +357,7 @@ export const setCommitteeData = async (committeeData: Committee) => {
             leadApplicationLink: committeeData.leadApplicationLink || "",
             logo: committeeData.logo || "default",
             memberCount: committeeData.memberCount || 0,
+            isOpen: committeeData.isOpen || false
         }, { merge: true });
         return true;
     } catch (err) {
@@ -383,8 +383,9 @@ export const resetCommittee = async (firebaseDocName: string) => {
 
             const usersSnapshot = await getDocs(collection(db, 'users'));
             usersSnapshot.forEach((userDoc) => {
-                if (userDoc.data().committees.includes(firebaseDocName)) {
-                    const updatedCommittees = userDoc.data().committees.filter((committee: string) => committee !== firebaseDocName);
+                const userData = userDoc.data();
+                if (Array.isArray(userData.committees) && userData.committees.includes(firebaseDocName)) {
+                    const updatedCommittees = userData.committees.filter((committee: string) => committee !== firebaseDocName);
                     transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
                 }
             });
@@ -403,8 +404,9 @@ export const deleteCommittee = async (firebaseDocName: string) => {
 
             const usersSnapshot = await getDocs(collection(db, 'users'));
             usersSnapshot.forEach((userDoc) => {
-                if (userDoc.data().committees.includes(firebaseDocName)) {
-                    const updatedCommittees = userDoc.data().committees.filter((committee: string) => committee !== firebaseDocName);
+                const userCommittees = userDoc.data().committees;
+                if (Array.isArray(userCommittees) && userCommittees.includes(firebaseDocName)) {
+                    const updatedCommittees = userCommittees.filter((committee) => committee !== firebaseDocName);
                     transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
                 }
             });
@@ -561,10 +563,17 @@ export const getUpcomingEvents = async () => {
     return events;
 };
 
-export const getPastEvents = async () => {
+export const getPastEvents = async (numLimit?: number) => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endTime", "<", currentTime));
+    let q;
+
+    if (numLimit !== undefined) {
+        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"), limit(numLimit));
+    } else {
+        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"));
+    }
+
     const querySnapshot = await getDocs(q);
     const events: SHPEEventWithCommitteeData[] = [];
 
@@ -579,13 +588,7 @@ export const getPastEvents = async () => {
         events.push({ id: doc.id, ...eventData, committeeData });
     }
 
-    events.sort((a, b) => {
-        const dateA = a.startTime ? a.startTime.toDate() : undefined;
-        const dateB = b.startTime ? b.startTime.toDate() : undefined;
-
-        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
-    });
-
+    // Events are already ordered by endTime due to the query, no need to sort again
     return events;
 };
 
@@ -641,20 +644,16 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     return EventLogStatus.ERROR;
 };
 
-export const getAttendanceNumber = async (eventId: string): Promise<number | null> => {
+export const getAttendanceNumber = async (eventId: string): Promise<number> => {
     try {
-        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
-        const summaryDocRef = await getDoc(summaryDoc);
+        const logsRef = collection(db, `events/${eventId}/logs`);
+        const q = query(logsRef);
+        const querySnapshot = await getDocs(q);
 
-        if (summaryDocRef.exists()) {
-            const data = summaryDocRef.data();
-            return data?.attendance || 0;
-        } else {
-            return null;
-        }
-    } catch (e) {
-        console.error("Error fetching attendance number: ", e);
-        return null;
+        return querySnapshot.docs.length;
+    } catch (error) {
+        console.error("Error calculating attendance number:", error);
+        throw new Error("Unable to calculate attendance.");
     }
 }
 
@@ -664,8 +663,14 @@ export const getAttendanceNumber = async (eventId: string): Promise<number | nul
  * @returns Status representing the status of the cloud function
  */
 export const signInToEvent = async (eventID: string): Promise<EventLogStatus> => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    let location: null | { longitude: number, latitude: number } = null;
+    if (status == 'granted') {
+        const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
+        location = (new GeoPoint(latitude, longitude)).toJSON();
+    }
     return await httpsCallable(functions, "eventSignIn")
-        .call(null, { eventID })
+        .call(null, { eventID, location })
         .then((result) => {
             if (typeof result.data == "object" && result.data && (result.data as any).success) {
                 return EventLogStatus.SUCCESS
@@ -697,8 +702,14 @@ export const signInToEvent = async (eventID: string): Promise<EventLogStatus> =>
  * @returns Status representing the status of the cloud function
  */
 export const signOutOfEvent = async (eventID: string): Promise<EventLogStatus> => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    let location: null | { longitude: number, latitude: number } = null;
+    if (status == 'granted') {
+        const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
+        location = (new GeoPoint(latitude, longitude)).toJSON();
+    }
     return await httpsCallable(functions, "eventSignOut")
-        .call(null, { eventID })
+        .call(null, { eventID, location })
         .then((result) => {
             if (typeof result.data == "object" && result.data && (result.data as any).success) {
                 return EventLogStatus.SUCCESS
@@ -733,7 +744,7 @@ export const isUserSignedIn = async (eventId: string, uid: string) => {
     }
 }
 
-export const getMemberOfTheMonth = async () => {
+export const getMOTM = async () => {
     return getDoc(doc(db, `member-of-the-month/member`))
         .then((res) => {
             const responseData = res.data();
@@ -750,11 +761,16 @@ export const getMemberOfTheMonth = async () => {
         });
 }
 
-export const setMemberOfTheMonth = async (member: PublicUserInfo) => {
+export const setMOTM = async (member: PublicUserInfo) => {
     try {
         await setDoc(doc(db, `member-of-the-month/member`), {
             member: member
         }, { merge: true });
+
+        const pastMembersRef = doc(db, "member-of-the-month", "past-members");
+        await updateDoc(pastMembersRef, {
+            members: arrayUnion(member.uid)
+        });
         return true;
     } catch (err) {
         console.error(err);
@@ -802,7 +818,6 @@ export const setUserRoles = async (uid: string, roles: Roles): Promise<HttpsCall
             return res;
         });
 };
-
 
 export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => {
     try {
@@ -928,19 +943,23 @@ export const getLeads = async (): Promise<PublicUserInfo[]> => {
 
 export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
     const memberSHPERef = collection(db, 'memberSHPE');
-    const memberSHPEQuery = query(memberSHPERef);
+    const memberSHPEQuery = query(memberSHPERef, where('nationalURL', '!=', ''));
     const memberSHPESnapshot = await getDocs(memberSHPEQuery);
-    const memberSHPEUserIds = memberSHPESnapshot.docs.map(doc => doc.id);
+
 
     const members: PublicUserInfo[] = [];
-    for (const userId of memberSHPEUserIds) {
-        const userDocRef = doc(db, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists()) {
-            members.push({ uid: userId, ...userDocSnap.data() });
+    for (const document of memberSHPESnapshot.docs) {
+        const memberSHPEData = document.data();
+        if (memberSHPEData.chapterURL && memberSHPEData.nationalURL) {
+            const userId = document.id;
+            const userDocRef = doc(db, 'users', userId);
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+                members.push({ uid: userId, ...userDocSnap.data() });
+            }
+
         }
     }
-
     return members;
 };
 
@@ -962,6 +981,31 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
     return members;
 };
 
+export const getMembersToShirtVerify = async (): Promise<PublicUserInfo[]> => {
+    const shirtRef = collection(db, 'shirt-sizes');
+    const shirtQuery = query(shirtRef);
+    const shirtSnapshot = await getDocs(shirtQuery);
+    const shirtUserIds = shirtSnapshot.docs.map(doc => doc.id);
+
+    const members: PublicUserInfo[] = [];
+    for (const userId of shirtUserIds) {
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists() && !userDocSnap.data()?.shirtPickedUp) {
+            members.push({ uid: userId, ...userDocSnap.data() });
+        }
+    }
+
+    for (const userId of shirtUserIds) {
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists() && userDocSnap.data()?.shirtPickedUp) {
+            members.push({ uid: userId, ...userDocSnap.data() });
+        }
+    }
+
+    return members;
+};
 
 export const isUsernameUnique = async (username: string): Promise<boolean> => {
     const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');

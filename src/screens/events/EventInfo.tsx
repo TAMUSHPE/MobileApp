@@ -1,10 +1,10 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Platform } from 'react-native'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
-import { getEvent, getAttendanceNumber, isUserSignedIn } from '../../api/firebaseUtils';
+import { getEvent, getAttendanceNumber, isUserSignedIn, getPublicUserData } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { formatEventDate, formatTime } from '../../helpers/timeUtils';
 import { EventProps, SHPEEventScreenRouteProp } from '../../types/Navigation'
@@ -14,16 +14,19 @@ import { StatusBar } from 'expo-status-bar';
 import CalendarIcon from '../../../assets/calandar_pale_blue.svg'
 import ClockIcon from '../../../assets/clock-pale-blue.svg'
 import MapIcon from '../../../assets/map-pale-blue.svg'
+import TargetIcon from '../../../assets/target-pale-blue.svg'
 import { handleLinkPress } from '../../helpers/links';
 import MemberCard from '../../components/MemberCard';
 import { PublicUserInfo } from '../../types/User';
+import { reverseFormattedFirebaseName } from '../../types/Committees';
 
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<SHPEEventScreenRouteProp>();
     const { eventId } = route.params;
     const [event, setEvent] = useState<SHPEEvent>();
+    const [creatorData, setCreatorData] = useState<PublicUserInfo | null>(null)
     const [userSignedIn, setUserSignedIn] = useState(false);
-    const [attendance, setAttendance] = useState<number | null>(0);
+    const [attendance, setAttendance] = useState<number>(0);
     const { userInfo } = useContext(UserContext)!;
 
     const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, workshopType, committee, creator, nationalConventionEligible } = event || {};
@@ -52,7 +55,8 @@ const EventInfo = ({ navigation }: EventProps) => {
             const fetchAttendance = async () => {
                 try {
                     const attendanceCount = await getAttendanceNumber(eventId);
-                    setAttendance(attendanceCount || 0);
+                    setAttendance(attendanceCount);
+                    console.log(attendanceCount)
                 } catch (error) {
                     console.error("An error occurred while fetching the attendance: ", error);
                 }
@@ -66,6 +70,18 @@ const EventInfo = ({ navigation }: EventProps) => {
             return () => { };
         }, [eventId])
     );
+
+
+    useEffect(() => {
+        const fetchCreatorInfo = async () => {
+            if (creator) {
+                const fetchedCreator = await getPublicUserData(creator);
+                setCreatorData(fetchedCreator || null);
+            }
+        }
+
+        fetchCreatorInfo();
+    }, [creator])
 
 
     if (!event) {
@@ -111,7 +127,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                 <SafeAreaView edges={['top']}>
                     <View className='flex-row justify-between items-center mx-5 mt-1'>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate("EventsScreen")}
+                            onPress={() => { navigation.goBack(); }}
                             className="rounded-full w-10 h-10 justify-center items-center"
                             style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
                         >
@@ -130,6 +146,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                             </View>
                         )}
 
+                        {/* TODO: bug here navagating back from home */}
                         <View className='flex-col relative items-center'>
                             {hasPrivileges &&
                                 <TouchableOpacity
@@ -181,7 +198,6 @@ const EventInfo = ({ navigation }: EventProps) => {
                         {geolocation && (
                             <TouchableOpacity
                                 onPress={() => {
-                                    console.log(geolocation.latitude, geolocation.longitude)
                                     if (Platform.OS === 'ios') {
                                         handleLinkPress(`http://maps.apple.com/?daddr=${geolocation.latitude},${geolocation.longitude}`);
                                     } else if (Platform.OS === 'android') {
@@ -195,10 +211,16 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
                 )}
 
-                {creator && (
+                {event.general && (
+                    <View className='flex-row mt-1'>
+                        <TargetIcon width={20} height={20} />
+                        <Text className={`text-lg ml-2`}>Club-Wide Event</Text>
+                    </View>
+                )}
+                {creatorData && (
                     <View className='mt-4'>
                         <Text className='text-xl mt-2 italic font-bold mb-2'>Event Host</Text>
-                        <MemberCard userData={creator as PublicUserInfo} />
+                        <MemberCard userData={creatorData} />
                     </View>
                 )}
             </View>
@@ -206,12 +228,4 @@ const EventInfo = ({ navigation }: EventProps) => {
         </ScrollView>
     )
 }
-
-const reverseFormattedFirebaseName = (firebaseName: string) => {
-    return firebaseName
-        .split('-')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ');
-};
-
 export default EventInfo

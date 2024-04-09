@@ -47,15 +47,17 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
 
 
     const registerUser = () => {
+        const trimmedEmail = email.trim();
+
         if (password !== confirmationPassword) {
             setError("Password Mismatch. Original password and re-entered password do not match!");
             return;
         }
-        else if (!validateEmail(email)) {
+        else if (!validateEmail(trimmedEmail)) {
             setError("Invalid Email.")
             return;
         }
-        else if (validateTamuEmail(email)) {
+        else if (validateTamuEmail(trimmedEmail)) {
             setError("Guests must register with their personal email")
             return;
         } else if (!validatePassword(password)) {
@@ -67,7 +69,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
         }
         setLoading(true);
 
-        createUserWithEmailAndPassword(auth, email, password)
+        createUserWithEmailAndPassword(auth, trimmedEmail, password)
             .then(async (authUser: UserCredential) => {
                 await sendEmailVerification(authUser.user)
                 await updateProfile(authUser.user, {

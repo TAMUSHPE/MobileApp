@@ -1,6 +1,11 @@
-export type RankChange = "decreased" | "same" | "increased";
-import { Timestamp } from 'firebase-admin/firestore';
+/** Anything added to this document needs to be added to src/types/Events.ts */
+import { Timestamp, GeoPoint } from 'firebase-admin/firestore';
 import { MillisecondTimes, getNextHourMillis } from './timeUtils';
+
+/**
+ * Determines whether a person has moved up, down, or not at all in the point leaderboard
+ */
+export type RankChange = "increased" | "decreased" | "same";
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop
@@ -8,7 +13,7 @@ import { MillisecondTimes, getNextHourMillis } from './timeUtils';
 export type WorkshopType = "Professional" | "Academic" | "None";
 
 /**
- * Generic Event Interface. All events must implement this type
+ * Generic Event Interface. All SHPE related events must implement or extend this type
  */
 export abstract class SHPEEvent {
     /** Document name in firebase */
@@ -40,12 +45,22 @@ export abstract class SHPEEvent {
     /** Text description of location */
     public locationName?: string | null;
     /** Real location of event */
-    public geolocation?: Geolocation | null;
+    public geolocation?: GeoPoint | null;
+    /** Allowed radius for being able to sign into an event */
+    public geofencingRadius?: number | null;
     /** Attribute used specifically for workshops */
     public workshopType?: WorkshopType;
+    /** Specifies which committee this event is associated with */
+    public committee?: string | null;
+    /** Specifies who created this event */
+    public creator?: PublicUserInfo | null;
+    public nationalConventionEligible?: boolean | null;
+    /** Specifies if event should display on "General" tab of ishpe */
+    public general?: boolean | null;
+
 
     /**
-     * Instantiates all fields that are required for all SHPE Events
+     * Instantiates all fields that exist on all SHPE Events
      */
     public constructor() {
         this.name = null;
@@ -55,6 +70,12 @@ export abstract class SHPEEvent {
         this.startTime = null;
         this.endTime = null;
         this.coverImageURI = null;
+        this.committee = null;
+        this.general = null;
+        this.geolocation = null;
+        this.geofencingRadius = null;
+        this.creator = null;
+        this.nationalConventionEligible = null;
     }
 
     /**
@@ -97,7 +118,9 @@ export class GeneralMeeting extends SHPEEvent {
     public signInPoints: number | null;
     public signOutPoints: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
+    public general: boolean;
+
 
     public constructor() {
         super();
@@ -111,6 +134,7 @@ export class GeneralMeeting extends SHPEEvent {
         this.signOutPoints = 0;
         this.locationName = null;
         this.geolocation = null;
+        this.general = true;
     }
 
 
@@ -128,7 +152,8 @@ export class CommitteeMeeting extends SHPEEvent {
     public endTime: Timestamp | null;
     public signInPoints: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
+    public general: boolean | null;
 
     public constructor() {
         super();
@@ -141,6 +166,7 @@ export class CommitteeMeeting extends SHPEEvent {
         this.signInPoints = 1;
         this.locationName = null;
         this.geolocation = null;
+        this.general = null;
     }
 }
 
@@ -160,7 +186,8 @@ export class StudyHours extends SHPEEvent {
     public signOutPoints: number | null;
     public pointsPerHour: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -175,6 +202,7 @@ export class StudyHours extends SHPEEvent {
         this.pointsPerHour = 1;
         this.locationName = null;
         this.geolocation = null;
+        this.general = true;
     }
 }
 
@@ -192,8 +220,9 @@ export class Workshop extends SHPEEvent {
     public endTime: Timestamp | null;
     public signInPoints: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
     public workshopType: WorkshopType;
+    public general: boolean | null;
 
     public constructor() {
         super();
@@ -207,6 +236,7 @@ export class Workshop extends SHPEEvent {
         this.signInPoints = 3;
         this.locationName = null;
         this.geolocation = null;
+        this.general = null;
     }
 }
 
@@ -222,7 +252,8 @@ export class VolunteerEvent extends SHPEEvent {
     public endTime: Timestamp | null;
     public pointsPerHour: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
+    public general: boolean | null;
 
     public constructor() {
         super();
@@ -235,6 +266,7 @@ export class VolunteerEvent extends SHPEEvent {
         this.pointsPerHour = 2;
         this.locationName = null;
         this.geolocation = null;
+        this.general = null;
     }
 }
 
@@ -250,7 +282,8 @@ export class SocialEvent extends SHPEEvent {
     public endTime: Timestamp | null;
     public signInPoints: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
+    public general: boolean | null;
 
     public constructor() {
         super();
@@ -263,6 +296,7 @@ export class SocialEvent extends SHPEEvent {
         this.signInPoints = 1;
         this.locationName = null;
         this.geolocation = null;
+        this.general = null;
     }
 }
 
@@ -278,7 +312,8 @@ export class IntramuralEvent extends SHPEEvent {
     public endTime: Timestamp | null;
     public signInPoints: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
+    public general: boolean | null;
 
     public constructor() {
         super();
@@ -291,6 +326,7 @@ export class IntramuralEvent extends SHPEEvent {
         this.signInPoints = 1;
         this.locationName = null;
         this.geolocation = null;
+        this.general = null;
     }
 }
 
@@ -308,7 +344,8 @@ export class CustomEvent extends SHPEEvent {
     public signOutPoints: number | null;
     public pointsPerHour: number | null;
     public locationName: string | null;
-    public geolocation: Geolocation | null;
+    public geolocation: GeoPoint | null;
+    public general: boolean | null;
 
     public constructor() {
         super();
@@ -318,11 +355,12 @@ export class CustomEvent extends SHPEEvent {
         this.tags = [];
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.signInPoints = null;
-        this.signOutPoints = null;
-        this.pointsPerHour = null;
+        this.signInPoints = 0;
+        this.signOutPoints = 0;
+        this.pointsPerHour = 0;
         this.locationName = null;
         this.geolocation = null;
+        this.general = null;
     }
 }
 
@@ -338,4 +376,53 @@ export enum EventType {
     SOCIAL_EVENT = "Social Event",
     INTRAMURAL_EVENT = "Intramural Event",
     CUSTOM_EVENT = "Custom Event",
+}
+
+/**
+ * Status of an event that user attempts to sign in to or out of
+ */
+export enum EventLogStatus {
+    SUCCESS,
+    EVENT_OVER,
+    EVENT_ONGOING,
+    EVENT_NOT_STARTED,
+    EVENT_NOT_FOUND,
+    ALREADY_LOGGED,
+    ERROR,
+}
+
+export interface PublicUserInfo {
+    // Firestore parameters
+    uid?: string
+    email?: string;
+    displayName?: string;
+    photoURL?: string;
+    resumePublicURL?: string;
+    roles?: Roles;
+    name?: string;
+    bio?: string;
+    major?: string;
+    classYear?: string;
+    committees?: string[];
+    pointsRank?: number;
+    rankChange?: RankChange;
+    nationalExpiration?: Timestamp;
+    chapterExpiration?: Timestamp;
+    resumeVerified?: boolean;
+    interests?: string[];
+    points?: number;
+    pointsThisMonth?: number;
+    isStudent?: boolean;
+    isEmailPublic?: boolean;
+}
+
+export interface Roles {
+    reader?: boolean;
+    officer?: boolean;
+    admin?: boolean;
+    developer?: boolean;
+    representative?: boolean;
+    lead?: boolean;
+    secretary?: boolean;
+    customTitle?: string;
 }

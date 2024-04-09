@@ -11,7 +11,6 @@ import MOTMCard from '../../components/MOTMCard';
 import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
 import Ishpe from './Ishpe';
 
-
 /**
  * Renders the home screen of the application.
  * It includes the feature slider, office hours, and office sign-in components.
@@ -20,32 +19,9 @@ import Ishpe from './Ishpe';
  * @returns The rendered home screen.
  */
 const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, signOutUser } = useContext(UserContext)!;
-
     useEffect(() => {
-        const handleBannedUser = async () => {
-            const functions = getFunctions();
-            const isUserInBlacklist = httpsCallable<{ uid: string }, { isInBlacklist: boolean }>(functions, 'isUserInBlacklist');
-            try {
-                const checkBlackListResponse = await isUserInBlacklist({ uid: auth.currentUser?.uid! });
-
-                if (checkBlackListResponse.data.isInBlacklist) {
-                    signOutUser(true);
-                    alert("You have been banned from the app");
-                    return;
-                }
-            } catch (error) {
-                console.error('Error during user authentication:', error);
-            }
-
-        }
-
         manageNotificationPermissions();
-        handleBannedUser();
-        if (!auth.currentUser?.uid) {
-            signOutUser(true);
-        }
-    }, []);
+    }, [])
 
     return (
         <ScrollView className="flex flex-col bg-offwhite">

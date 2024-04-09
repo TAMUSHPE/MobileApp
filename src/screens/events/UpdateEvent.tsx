@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal, ActivityIndicator, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal, ActivityIndicator, Alert, Switch } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
 import { useRoute } from '@react-navigation/core';
@@ -15,7 +15,6 @@ import { StatusBar } from 'expo-status-bar';
 import DismissibleModal from '../../components/DismissibleModal';
 import * as ImagePicker from "expo-image-picker";
 import { Committee } from '../../types/Committees';
-import { PublicUserInfo } from '../../types/User';
 import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
 import LocationPicker from '../../components/LocationPicker';
 import { getBlobFromURI, selectImage, uploadFile } from '../../api/fileSelection';
@@ -44,6 +43,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
     const [localEventName, setLocalEventName] = useState<string | undefined | null>(event.name);
     const [localCoverImageURI, setLocalCoverImageURI] = useState<string>(event.coverImageURI ?? '');
+    const [isFocused, setIsFocused] = useState<boolean>(true);
 
 
     // Form Data Hooks
@@ -63,14 +63,22 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [geofencingRadius, setGeofencingRadius] = useState<number | undefined | null>(event.geofencingRadius);
     const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType);
     const [committee, setCommittee] = useState<string | undefined | null>(event.committee);
-    const [creator, setCreator] = useState<PublicUserInfo | undefined | null>(event.creator);
     const [nationalConventionEligible, setNationalConventionEligible] = useState<boolean | undefined | null>(event.nationalConventionEligible);
+    const [general, setIsGeneral] = useState<boolean | undefined | null>(event.general);
 
     useEffect(() => {
         getCommittees()
             .then((result) => setSelectableCommittees(result))
             .catch(err => console.error("Issue getting committees:", err));
     }, []);
+
+    useEffect(() => {
+        if (openDropdown === null) {
+            setIsFocused(true);
+        } else {
+            setIsFocused(false);
+        }
+    }, [openDropdown])
 
     const handleUpdateEvent = async () => {
         setLoading(true);
@@ -130,9 +138,9 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 locationName,
                 geolocation,
                 geofencingRadius,
+                general,
                 workshopType,
                 committee,
-                creator,
                 nationalConventionEligible,
             })
         }
@@ -215,6 +223,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 </View>
             )}
             <ScrollView
+                scrollEnabled={isFocused}
                 className={`flex flex-col flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`}
                 contentContainerStyle={{
                     paddingBottom: "50%"
@@ -469,6 +478,23 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             }
                         </View>
                     </View>
+                    {/* toggle to make events appear on general tab*/}
+                    <KeyboardAvoidingView className='py-3'>
+                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Scope</Text>
+                        <View className="flex flex-row items-center justify-between py-2">
+                            <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Club-Wide Event</Text>
+                            <Switch
+                                trackColor={{ false: "#999796", true: "#001F5B" }}
+                                thumbColor={general ? "#72A9BE" : "#f4f3f4"}
+                                ios_backgroundColor="#999796"
+                                onValueChange={() => {
+                                    setIsGeneral(previousState => !previousState)
+                                    setChangesMade(true);
+                                }}
+                                value={general || false}
+                            />
+                        </View>
+                    </KeyboardAvoidingView>
 
                     {/* Description */}
                     <KeyboardAvoidingView behavior='position' className='py-3'>
@@ -808,6 +834,7 @@ const createCommitteeList = (committees: Committee[]) => {
 };
 
 const POINTS = [
+    { point: "0", iso: "0" },
     { point: "1", iso: "1" },
     { point: "2", iso: "2" },
     { point: "3", iso: "3" },
