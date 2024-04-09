@@ -978,6 +978,31 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
     return members;
 };
 
+export const getMembersToShirtVerify = async (): Promise<PublicUserInfo[]> => {
+    const shirtRef = collection(db, 'shirt-sizes');
+    const shirtQuery = query(shirtRef);
+    const shirtSnapshot = await getDocs(shirtQuery);
+    const shirtUserIds = shirtSnapshot.docs.map(doc => doc.id);
+
+    const members: PublicUserInfo[] = [];
+    for (const userId of shirtUserIds) {
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists() && !userDocSnap.data()?.shirtPickedUp) {
+            members.push({ uid: userId, ...userDocSnap.data() });
+        }
+    }
+
+    for (const userId of shirtUserIds) {
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists() && userDocSnap.data()?.shirtPickedUp) {
+            members.push({ uid: userId, ...userDocSnap.data() });
+        }
+    }
+
+    return members;
+};
 
 export const isUsernameUnique = async (username: string): Promise<boolean> => {
     const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');
