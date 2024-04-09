@@ -241,6 +241,8 @@ export const initializeCurrentUserData = async (): Promise<User> => {
             officer: false,
             admin: false,
             developer: false,
+            lead: false,
+            representative: false,
         },
         isEmailPublic: false,
     };
@@ -742,7 +744,7 @@ export const isUserSignedIn = async (eventId: string, uid: string) => {
     }
 }
 
-export const getMemberOfTheMonth = async () => {
+export const getMOTM = async () => {
     return getDoc(doc(db, `member-of-the-month/member`))
         .then((res) => {
             const responseData = res.data();
@@ -759,11 +761,16 @@ export const getMemberOfTheMonth = async () => {
         });
 }
 
-export const setMemberOfTheMonth = async (member: PublicUserInfo) => {
+export const setMOTM = async (member: PublicUserInfo) => {
     try {
         await setDoc(doc(db, `member-of-the-month/member`), {
             member: member
         }, { merge: true });
+
+        const pastMembersRef = doc(db, "member-of-the-month", "past-members");
+        await updateDoc(pastMembersRef, {
+            members: arrayUnion(member.uid)
+        });
         return true;
     } catch (err) {
         console.error(err);

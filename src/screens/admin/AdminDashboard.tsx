@@ -66,7 +66,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                     <Text className='text-2xl font-semibold mb-3'>Other Tools</Text>
                     <View className='flex-row flex-wrap'>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('MemberOfTheMonthEditor')}
+                            onPress={() => navigation.navigate('MOTMEditor')}
                             className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center mr-4'
                         >
                             <Text className='text-white text-xl'>MOTM</Text>
