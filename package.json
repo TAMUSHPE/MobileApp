@@ -1,6 +1,6 @@
 {
   "name": "shpe-app",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "scripts": {
     "start": "npx expo start --dev-client",
     "test": "jest --coverage=true --verbose --bail --config ./jest.config.ts",
