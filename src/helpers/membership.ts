@@ -1,38 +1,40 @@
-export const isMemberVerified = (nationalExpiration: string|undefined, chapterExpiration:string|undefined) => {
-    const nationalExpirationString = nationalExpiration;
-    const chapterExpirationString = chapterExpiration;
+import { Timestamp } from "firebase/firestore";
+
+export const isMemberVerified = (nationalExpiration: Timestamp | { seconds: number; nanoseconds: number; } | undefined, chapterExpiration: Timestamp | { seconds: number; nanoseconds: number; } | undefined) => {
+    const nationalExpirationDate = nationalExpiration instanceof Timestamp ? nationalExpiration.toDate() : nationalExpiration ? new Date(nationalExpiration.seconds * 1000) : undefined;
+    const chapterExpirationDate = chapterExpiration instanceof Timestamp ? chapterExpiration.toDate() : chapterExpiration ? new Date(chapterExpiration.seconds * 1000) : undefined;
 
     const currentDate = new Date();
     let isNationalValid = true;
     let isChapterValid = true;
 
-    if (nationalExpirationString) {
-        const nationalExpirationDate = new Date(nationalExpirationString);
+    if (nationalExpirationDate) {
         isNationalValid = currentDate <= nationalExpirationDate;
     }
 
-    if (chapterExpirationString) {
-        const chapterExpirationDate = new Date(chapterExpirationString);
+    if (chapterExpirationDate) {
         isChapterValid = currentDate <= chapterExpirationDate;
     }
 
     return isNationalValid && isChapterValid
 };
 
-export const getBadgeColor = (isOfficer:boolean, isVerified:boolean) => {
+export const getBadgeColor = (isOfficer: boolean, isVerified: boolean) => {
     if (isOfficer) return '#FCE300';
     if (isVerified) return '#500000';
     return '';
 };
 
-export const formatExpirationDate = (dateString: string | undefined): string => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
+
+export const formatExpirationDate = (expiration: Timestamp | { seconds: number; nanoseconds: number; } | undefined): string => {
+    if (!expiration) return ''; // Handle undefined cases
     const options: Intl.DateTimeFormatOptions = {
         year: 'numeric',
         month: 'long',
         day: 'numeric'
     };
 
-    return new Intl.DateTimeFormat('en-US', options).format(date);
-}
+    const expirationDate = expiration instanceof Timestamp ? expiration.toDate() : new Date(expiration.seconds * 1000);
+
+    return new Intl.DateTimeFormat('en-US', options).format(expirationDate);
+};

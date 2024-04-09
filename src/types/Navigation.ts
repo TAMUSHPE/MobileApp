@@ -54,7 +54,6 @@ export type ProfileSetupStackParams = {
     SetupNameAndBio: undefined;
     SetupProfilePicture: undefined;
     SetupAcademicInformation: undefined;
-    SetupCommittees: undefined;
     SetupInterests: undefined;
     SetupResume: undefined;
     MainStack: undefined;
@@ -82,6 +81,7 @@ export type InvolvementStackParams = {
     CommitteeEdit: {
         committee?: Committee;
     };
+    EventInfo: undefined;
 }
 
 export type EventsStackParams = {
@@ -109,14 +109,16 @@ export type HomeStackParams = {
 
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
-    MemberOfTheMonthEditor: undefined;
+    MOTMEditor: undefined;
     FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
     ResetOfficeHours: undefined;
     RestrictionsEditor: undefined;
     Feedback: undefined;
     MemberSHPEConfirm: undefined;
+    CommitteeConfirm: undefined;
     ResumeConfirm: undefined;
+    ShirtConfirm: undefined;
     Home: undefined;
     PublicProfile: {
         uid: string;
@@ -139,9 +141,6 @@ export type HomeDrawerParams = {
 // Bottom Tabs
 export type HomeBottomTabParams = {
     Home: undefined;
-    Profile: {
-        email: string;
-    };
 };
 
 export type ResourcesProps = {
@@ -197,7 +196,10 @@ export type MemberListProps = {
 export type MemberCardProp = {
     handleCardPress?: (uid: string | void) => void;
     userData?: PublicUserInfo;
+    displayPoints?: Boolean;
     navigation?: NativeStackNavigationProp<any>
+    onShirtScreen?: boolean;
+    pickedUpShirt?: boolean;
 }
 
 export type IShpeProps = {

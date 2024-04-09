@@ -1,13 +1,17 @@
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput } from 'react-native'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { UserContext } from '../../context/UserContext';
 import { auth, db } from '../../config/firebaseConfig';
 import { getBlobFromURI, selectFile, uploadFile } from '../../api/fileSelection';
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { Timestamp, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { CommonMimeTypes } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
 import { formatExpirationDate, isMemberVerified } from '../../helpers/membership';
 import UploadIcon from '../../../assets/upload-solid.svg';
+import { FontAwesome } from '@expo/vector-icons';
+import { darkMode } from '../../../tailwind.config';
+import DismissibleModal from '../../components/DismissibleModal';
+import { Pressable } from 'react-native';
 
 const MemberSHPE = () => {
     const { userInfo } = useContext(UserContext)!;
@@ -19,12 +23,13 @@ const MemberSHPE = () => {
     const [uploadedChapter, setUploadedChapter] = useState(false)
     const [isVerified, setIsVerified] = useState(false)
     const [loading, setLoading] = useState(false)
+    const [updatingSizes, setUpdatingSizes] = useState<boolean>(false);
 
     useEffect(() => {
         if (nationalExpiration && chapterExpiration) {
             setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
         }
-    }, [nationalExpiration, chapterExpiration])
+    }, [nationalExpiration, chapterExpiration]);
 
     useEffect(() => {
         const unsubscribe = () => {
@@ -50,12 +55,17 @@ const MemberSHPE = () => {
     }, [])
 
     const uploadDocument = async (type: 'national' | 'chapter') => {
+        if(type === 'chapter') {
+            setShowShirtModal(true);
+        }
+        else {
         const document = await selectDocument();
-        if (document) {
-            setLoading(true);
-            const path = `user-docs/${auth.currentUser?.uid}/${type}-verification`;
-            const onSuccess = type === 'national' ? onNationalUploadSuccess : onChapterUploadSuccess;
-            uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
+            if (document) {
+                setLoading(true);
+                const path = `user-docs/${auth.currentUser?.uid}/${type}-verification`;
+                const onSuccess = type === 'national' ? onNationalUploadSuccess : onChapterUploadSuccess;
+                uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
+            }
         }
     };
 
@@ -69,10 +79,11 @@ const MemberSHPE = () => {
     }
 
     const onNationalUploadSuccess = async (URL: string) => {
-        const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year from now
+        const today = new Date();
+        const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
         await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
-            nationalUploadDate: new Date().toISOString(),
-            nationalExpiration: expirationDate,
+            nationalUploadDate: Timestamp.fromDate(today),
+            nationalExpiration: Timestamp.fromDate(expirationDate),
             nationalURL: URL
         }, { merge: true });
         setLoading(false);
@@ -86,14 +97,38 @@ const MemberSHPE = () => {
             expirationYear += 1;
         }
 
-        const expirationDate = new Date(expirationYear, 7, 20).toISOString(); // August 20th of the following year
+        const expirationDate = new Date(expirationYear, 7, 20); // August 20th of the following year
         await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
-            chapterUploadDate: new Date().toISOString(),
-            chapterExpiration: expirationDate,
-            chapterURL: URL
+            chapterUploadDate: Timestamp.fromDate(today),
+            chapterExpiration: Timestamp.fromDate(expirationDate),
+            chapterURL: URL,
+            shirtSize: shirtSize
         }, { merge: true });
-        setLoading(false);
 
+        await setDoc(doc(db, `shirt-sizes/${auth.currentUser?.uid}`), {
+            shirtUploadDate: Timestamp.fromDate(today),
+            shirtExpiration: Timestamp.fromDate(expirationDate),
+            shirtSize: shirtSize
+        }, { merge: true });
+
+
+        setLoading(false);
+    };
+
+    const [showShirtModal, setShowShirtModal] = useState<boolean>(false);
+    const [shirtSize, setShirtSize] = useState<string | undefined>(undefined);
+
+    const ShirtSize = ({ size, isActive, onToggle }: {
+        size: string,
+        isActive: boolean,
+        onToggle: () => void,
+    }) => {
+        return (
+            <Pressable onPress={onToggle} className='flex-row items-center py-1 mb-3'>
+                <View className={`w-7 h-7 mr-3 rounded-full border ${isActive && "bg-black"}`} />
+                <Text className={`${darkMode ? "text-white" : "text-black"} text-lg`}>{size}</Text>
+            </Pressable>
+        );
     };
 
 
@@ -102,13 +137,15 @@ const MemberSHPE = () => {
             {/* Not Verified Member */}
             <View className='border-b pb-4'>
                 {!isVerified && (
-                    <View className='px-8 mt-5'>
-                        <Text className='text-3xl font-semibold'>Become a Member!</Text>
-                        <Text className='text-gray-500 text-lg font-semibold'>Follow the instructions below and upload the necessary screenshot.</Text>
-                        <View className='flex-row mt-10 justify-between'>
+                    <View className='mt-5'>
+                        <View className='px-8'>
+                            <Text className='text-3xl font-semibold'>Become a Member!</Text>
+                            <Text className='text-gray-500 text-lg font-semibold'>Follow the instructions below and upload the necessary screenshot.</Text>
+                        </View>
+                        <View className='flex-row mt-10 justify-around px-2'>
                             <TouchableOpacity
                                 className={`px-3 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-500" : "bg-maroon"}`}
-                                onPress={() => uploadDocument('national')}
+                                onPress={() => uploadDocument('chapter')}
                                 disabled={uploadedChapter}
                             >
                                 <View className='flex-row'>
@@ -119,7 +156,7 @@ const MemberSHPE = () => {
 
                             <TouchableOpacity
                                 className={`px-3 py-2 rounded-lg items-center ${uploadedNational ? "bg-gray-500" : "bg-pale-orange"}`}
-                                onPress={() => uploadDocument('chapter')}
+                                onPress={() => uploadDocument('national')}
                                 disabled={uploadedNational}
                             >
                                 <View className='flex-row'>
@@ -128,6 +165,7 @@ const MemberSHPE = () => {
                                 </View>
                             </TouchableOpacity>
                         </View>
+                            
                         {loading && (
                             <View className='items-center mt-2'>
                                 <ActivityIndicator size="small" />
@@ -146,11 +184,15 @@ const MemberSHPE = () => {
                     <View className='flex-row px-8 mt-5'>
                         <View className='w-[50%]'>
                             <Text className='font-bold text-maroon'>TAMU Chapter Membership Expiration</Text>
-                            <Text className='font-bold text-maroon mt-3'>{formatExpirationDate(userInfo?.publicInfo?.chapterExpiration!)}</Text>
+                            <Text className='font-bold text-maroon mt-3'>
+                                {userInfo?.publicInfo?.chapterExpiration ? formatExpirationDate(userInfo.publicInfo.chapterExpiration) : ''}
+                            </Text>
                         </View>
                         <View className='w-[50%]'>
                             <Text className='font-bold text-pale-orange text-right'>SHPE National Membership Expiration</Text>
-                            <Text className='font-bold text-pale-orange text-right mt-3'>{formatExpirationDate(userInfo?.publicInfo?.nationalExpiration!)}</Text>
+                            <Text className='font-bold text-pale-orange text-right mt-3'>
+                                {userInfo?.publicInfo?.nationalExpiration ? formatExpirationDate(userInfo.publicInfo.nationalExpiration) : ''}
+                            </Text>
                         </View>
                     </View>
                 )}
@@ -207,7 +249,101 @@ const MemberSHPE = () => {
             </View>
 
             <View className='mb-20'></View>
+
+            <DismissibleModal
+                visible={showShirtModal}
+                setVisible={setShowShirtModal}
+            >
+                <View
+                    className='flex opacity-100 bg-white rounded-md px-6 pt-6'
+                    style={{ minWidth: 300 }}
+                >
+                    {/* Title */}
+                    <View className='flex-row items-center mb-4'>
+                        <FontAwesome name="user" color="black" size={30} />
+                        <Text className='text-2xl font-semibold ml-2'>Shirt Selection</Text>
+                    </View>
+
+                    {/* Position Custom Title */}
+                    <View>
+                        <Text className='text-lg font-semibold mb-2'>Select T-Shirt Size</Text>
+                    </View>
+
+                    {/* Position Selection */}
+                    <View>
+                        <ShirtSize
+                            size="XS"
+                            isActive={shirtSize === "XS"}
+                            onToggle={() => setShirtSize(shirtSize === 'XS' ? undefined : 'XS')}
+                        />
+                        <ShirtSize
+                            size="S"
+                            isActive={shirtSize === "S"}
+                            onToggle={() => setShirtSize(shirtSize === 'S' ? undefined : 'S')}
+                        />
+                        <ShirtSize
+                            size="M"
+                            isActive={shirtSize === "M"}
+                            onToggle={() => setShirtSize(shirtSize === 'M' ? undefined : 'M')}
+                        />
+                        <ShirtSize
+                            size="L"
+                            isActive={shirtSize === "L"}
+                            onToggle={() => setShirtSize(shirtSize === 'L' ? undefined : 'L')}
+                        />
+                        <ShirtSize
+                            size="XL"
+                            isActive={shirtSize === "XL"}
+                            onToggle={() => setShirtSize(shirtSize === 'XL' ? undefined : 'XL')}
+                        />
+                    </View>
+
+                    {/* Action Buttons */}
+                    <View className="flex-row justify-between items-center my-6 mx-5">
+                        <TouchableOpacity
+                            onPress={async () => {
+
+                                // checks if has role but no custom title
+                                if (!(shirtSize === "XS" || shirtSize === "S" || shirtSize === "M" || shirtSize === "L" || shirtSize === "XL")) {
+                                    Alert.alert("Missing Shrit Size", "You must enter a shirt size ");
+                                    return;
+                                }
+
+                                setUpdatingSizes(true);
+                                if (shirtSize) {
+                                    const document = await selectDocument();
+                                    if (document) {
+                                        setLoading(true);
+                                        const path = `user-docs/${auth.currentUser?.uid}/$-verification`;
+                                        const onSuccess = onChapterUploadSuccess;
+                                        uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
+                                    }
+                                }
+
+                                setUpdatingSizes(false);
+                                setShowShirtModal(false);
+                            }}
+                            className="bg-pale-blue rounded-lg justify-center items-center px-4 py-1"
+                        >
+                            <Text className='text-xl font-bold text-white px-2'>Done</Text>
+                        </TouchableOpacity>
+
+
+                        <TouchableOpacity
+                            onPress={async () => {
+                                setShirtSize(shirtSize)
+                                setShowShirtModal(false)
+                            }} >
+                            <Text className='text-xl font-bold px-4 py-1'>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                    {updatingSizes && <ActivityIndicator className='mb-4' size={30} />}
+                </View>
+            </DismissibleModal>
+
         </ScrollView>
+
+
 
     )
 }

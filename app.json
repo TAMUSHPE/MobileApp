@@ -52,11 +52,11 @@
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ],
-      "versionCode": 1
+      "versionCode": 8
     },
     "ios": {
       "bundleIdentifier": "com.tamu.shpe",
-      "buildNumber": "1"
+      "buildNumber": "22"
     },
     "extra": {
       "eas": {

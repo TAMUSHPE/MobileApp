@@ -24,10 +24,8 @@ export interface PublicUserInfo {
     // Firestore parameters
     uid?: string
     email?: string;
-    tamuEmail?: string;
     displayName?: string;
     photoURL?: string;
-    resumeURL?: string;
     resumePublicURL?: string;
     roles?: Roles;
     name?: string;
@@ -37,12 +35,15 @@ export interface PublicUserInfo {
     committees?: string[];
     pointsRank?: number;
     rankChange?: RankChange;
-    nationalExpiration?: string;
-    chapterExpiration?: string;
+    nationalExpiration?: Timestamp;
+    chapterExpiration?: Timestamp;
     resumeVerified?: boolean;
     interests?: string[];
     points?: number;
     pointsThisMonth?: number;
+    shirtPickedUp?: boolean;
+    isStudent?: boolean;
+    isEmailPublic?: boolean;
 };
 
 /**
@@ -62,6 +63,8 @@ export interface PrivateUserInfo {
     settings?: AppSettings;
     expoPushTokens?: string[];
     expirationDate?: Date;
+    resumeURL?: string;
+    email?: string;
 };
 
 
@@ -127,6 +130,7 @@ export const MAJORS: Array<{ major: string, iso: string }> = [
     { major: 'Electrical Engineering', iso: 'ECEN' },
     { major: 'Electronic Systems Engineering Technology', iso: 'ESET' },
     { major: 'Environmental Engineering', iso: 'EVEN' },
+    { major: 'General Engineering', iso: 'ENGR' },
     { major: 'Industrial & Systems Engineering', iso: 'ISEN' },
     { major: 'Industrial Distribution', iso: 'IDIS' },
     { major: 'Information Technology Service Management', iso: 'ITSV' },
@@ -139,4 +143,5 @@ export const MAJORS: Array<{ major: string, iso: string }> = [
     { major: 'Ocean Engineering', iso: 'OCEN' },
     { major: 'Petroleum Engineering', iso: 'PETE' },
     { major: 'Technology Management', iso: 'TCMG' },
+    { major: 'Other', iso: 'OTHER' }
 ];

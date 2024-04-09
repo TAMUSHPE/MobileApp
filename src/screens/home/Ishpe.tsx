@@ -3,9 +3,10 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/core';
+import { auth } from "../../config/firebaseConfig";
 import { UserContext } from '../../context/UserContext';
 import { getCommitteeEvents, getCommittees, getInterestsEvent, getUpcomingEvents, setPublicUserData } from '../../api/firebaseUtils';
-import { monthNames } from '../../helpers/timeUtils';
+import { monthNames, MillisecondTimes } from '../../helpers/timeUtils';
 import { EventType, SHPEEvent } from '../../types/Events';
 import { Committee } from '../../types/Committees';
 import { IShpeProps } from '../../types/Navigation';
@@ -49,9 +50,7 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
 
             // Fetch generalEvents and filter out ishpeEvents and interestEvents
             const generalResponse = await getUpcomingEvents();
-            const filteredGeneralEvents = generalResponse.filter(generalEvent =>
-                !mergedEvents.some(event => event.id === generalEvent.id)
-            );
+            const filteredGeneralEvents = generalResponse.filter(generalEvent => generalEvent.general === true);
             setGeneralEvents(filteredGeneralEvents);
 
         } catch (error) {
@@ -61,6 +60,7 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
             setLoadingGeneralEvents(false);
         }
     };
+
 
     useFocusEffect(
         useCallback(() => {
@@ -159,9 +159,9 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
             <TouchableOpacity
                 onPress={() => handleInterestToggle(interestEvent)}
                 className='rounded-md border-2 mr-5 px-2 py-1 mt-5'
-                style={{ borderColor: isSelected ? "#72A9BE" : "black" }}
+                style={{ borderColor: isSelected ? "#C24E3A" : "#B2B2B2" }}
             >
-                <Text className={`font-semibold text-lg ${isSelected && "text-pale-blue"}`}>{label}</Text>
+                <Text className={`font-semibold text-lg ${isSelected ? "text-red-orange" : "text-[#B2B2B2]"}`}>{label}</Text>
             </TouchableOpacity>
         );
     }
@@ -239,7 +239,7 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
                     <EventsList events={displayIshpeEvents} isLoading={loadingIshpeEvents} navigation={navigation} />
                     {(displayIshpeEvents.length === 0 && !loadingIshpeEvents) && (
                         <View className='flex-1 justify-center items-center'>
-                            <Text className='text-xl font-semibold'>No events this week</Text>
+                            <Text className='text-xl font-semibold'>There are no events with your interest or committee.</Text>
                         </View>
                     )}
                 </View>
@@ -327,7 +327,7 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
                                         setLoading(false);
                                     }}
                                 >
-                                    <View className='items-center justify-center bg-pale-blue w-1/2 rounded-md px-2 py-2'>
+                                    <View className='items-center justify-center bg-red-orange w-1/2 rounded-md px-2 py-2'>
                                         <Text className='text-white font-bold text-xl'>Save Changes</Text>
                                     </View>
                                 </TouchableOpacity>
@@ -388,7 +388,7 @@ const addDays = (date: Date, days: number) => {
 
 
 const adjustWeekRange = (currentStartDate: Date, direction: string) => {
-    const oneWeek = 7 * 24 * 60 * 60 * 1000; // milliseconds in one week
+    const oneWeek = MillisecondTimes.WEEK;
     let newStartDate = new Date(currentStartDate.getTime() + (direction === 'forwards' ? oneWeek : -oneWeek));
     return newStartDate;
 }

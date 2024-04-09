@@ -5,10 +5,10 @@ import { Images } from '../../assets'
 import TwitterSvg from './TwitterSvg'
 import { getBadgeColor, isMemberVerified } from '../helpers/membership'
 
-const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation }) => {
+const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation, onShirtScreen, pickedUpShirt, displayPoints }) => {
     if (!userData) { return }
 
-    const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration } = userData
+    const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration, pointsThisMonth } = userData
     const isOfficer = roles ? roles.officer : false;
 
     const [isVerified, setIsVerified] = useState<boolean>(false);
@@ -37,8 +37,13 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
                         <View className="flex-row items-center">
                             <Text className='font-semibold text-lg'>{name}</Text>
                             {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
-                        </View>
+                        
                         <Text className='text-md text-grey'> {displayName}</Text>
+                        {displayPoints && userData.pointsThisMonth?.valueOf && (
+                            <Text>Points: {parseFloat(userData.pointsThisMonth.toFixed(3))}</Text>
+                        )}
+                        </View>
+                        {onShirtScreen && pickedUpShirt && <Text className='text-md text-grey'> User has picked up shirt </Text>}
                     </View>
                 </View>
             </View>
