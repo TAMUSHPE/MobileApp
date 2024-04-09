@@ -37,12 +37,11 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
                         <View className="flex-row items-center">
                             <Text className='font-semibold text-lg'>{name}</Text>
                             {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
-                        
-                        <Text className='text-md text-grey'> {displayName}</Text>
-                        {displayPoints && userData.pointsThisMonth?.valueOf && (
-                            <Text>Points: {parseFloat(userData.pointsThisMonth.toFixed(3))}</Text>
-                        )}
                         </View>
+                        <Text className='text-md text-grey'>{displayName}</Text>
+                        {displayPoints && pointsThisMonth?.valueOf && (
+                            <Text>{parseFloat(pointsThisMonth.toFixed(3))} pts</Text>
+                        )}
                         {onShirtScreen && pickedUpShirt && <Text className='text-md text-grey'> User has picked up shirt </Text>}
                     </View>
                 </View>
