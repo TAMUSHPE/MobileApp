@@ -7,3 +7,4 @@ export { updateUserRole } from "./roles";
 export { checkUsernameUniqueness } from "./checkUsername";
 export { eventSignIn, eventSignOut } from "./events";
 export { isUserInBlacklist } from "./restriction";
+export { calculateMOTM } from "./points";

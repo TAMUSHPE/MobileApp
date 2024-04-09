@@ -109,7 +109,7 @@ export type HomeStackParams = {
 
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
-    MemberOfTheMonthEditor: undefined;
+    MOTMEditor: undefined;
     FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
     ResetOfficeHours: undefined;
@@ -196,6 +196,7 @@ export type MemberListProps = {
 export type MemberCardProp = {
     handleCardPress?: (uid: string | void) => void;
     userData?: PublicUserInfo;
+    displayPoints?: Boolean;
     navigation?: NativeStackNavigationProp<any>
     onShirtScreen?: boolean;
     pickedUpShirt?: boolean;
