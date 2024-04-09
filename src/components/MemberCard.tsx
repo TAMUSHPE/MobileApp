@@ -5,7 +5,7 @@ import { Images } from '../../assets'
 import TwitterSvg from './TwitterSvg'
 import { getBadgeColor, isMemberVerified } from '../helpers/membership'
 
-const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation, displayPoints }) => {
+const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation, onShirtScreen, pickedUpShirt, displayPoints }) => {
     if (!userData) { return }
 
     const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration, pointsThisMonth } = userData
@@ -43,6 +43,7 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
                             <Text>Points: {parseFloat(userData.pointsThisMonth.toFixed(3))}</Text>
                         )}
                         </View>
+                        {onShirtScreen && pickedUpShirt && <Text className='text-md text-grey'> User has picked up shirt </Text>}
                     </View>
                 </View>
             </View>

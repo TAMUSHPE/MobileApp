@@ -1,4 +1,4 @@
-import { KeyboardAvoidingView, Switch, View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Platform } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Platform } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,7 +26,7 @@ const EventInfo = ({ navigation }: EventProps) => {
     const [event, setEvent] = useState<SHPEEvent>();
     const [creatorData, setCreatorData] = useState<PublicUserInfo | null>(null)
     const [userSignedIn, setUserSignedIn] = useState(false);
-    const [attendance, setAttendance] = useState<number | null>(0);
+    const [attendance, setAttendance] = useState<number>(0);
     const { userInfo } = useContext(UserContext)!;
 
     const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, workshopType, committee, creator, nationalConventionEligible } = event || {};
@@ -55,7 +55,8 @@ const EventInfo = ({ navigation }: EventProps) => {
             const fetchAttendance = async () => {
                 try {
                     const attendanceCount = await getAttendanceNumber(eventId);
-                    setAttendance(attendanceCount || 0);
+                    setAttendance(attendanceCount);
+                    console.log(attendanceCount)
                 } catch (error) {
                     console.error("An error occurred while fetching the attendance: ", error);
                 }
@@ -144,9 +145,9 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 </View>
                             </View>
                         )}
-                        
+
                         {/* TODO: bug here navagating back from home */}
-                        <View className='flex-col relative items-center'> 
+                        <View className='flex-col relative items-center'>
                             {hasPrivileges &&
                                 <TouchableOpacity
                                     onPress={() => navigation.navigate("UpdateEvent", { event })}
@@ -180,7 +181,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
                 )}
                 <Text className={`text-xl first-letter:italic font-bold ${(description && description != "") && "mt-7"}`}>Time and Location</Text>
-                <View className='flex-row mt-2'> 
+                <View className='flex-row mt-2'>
                     <CalendarIcon width={20} height={20} />
                     <Text className='text-lg ml-2'>{(startTime && endTime) ? formatEventDate(startTime.toDate(), endTime.toDate()) : ""}</Text>
                 </View>
@@ -210,11 +211,11 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
                 )}
 
-                { event.general && (
-                  <View className='flex-row mt-1'>
-                      <TargetIcon width={20} height={20} />
-                      <Text className={`text-lg ml-2`}>Club-Wide Event</Text>
-                  </View>
+                {event.general && (
+                    <View className='flex-row mt-1'>
+                        <TargetIcon width={20} height={20} />
+                        <Text className={`text-lg ml-2`}>Club-Wide Event</Text>
+                    </View>
                 )}
                 {creatorData && (
                     <View className='mt-4'>

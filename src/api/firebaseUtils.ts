@@ -644,20 +644,16 @@ const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
     return EventLogStatus.ERROR;
 };
 
-export const getAttendanceNumber = async (eventId: string): Promise<number | null> => {
+export const getAttendanceNumber = async (eventId: string): Promise<number> => {
     try {
-        const summaryDoc = doc(db, `events/${eventId}/summaries/default`);
-        const summaryDocRef = await getDoc(summaryDoc);
+        const logsRef = collection(db, `events/${eventId}/logs`);
+        const q = query(logsRef);
+        const querySnapshot = await getDocs(q);
 
-        if (summaryDocRef.exists()) {
-            const data = summaryDocRef.data();
-            return data?.attendance || 0;
-        } else {
-            return null;
-        }
-    } catch (e) {
-        console.error("Error fetching attendance number: ", e);
-        return null;
+        return querySnapshot.docs.length;
+    } catch (error) {
+        console.error("Error calculating attendance number:", error);
+        throw new Error("Unable to calculate attendance.");
     }
 }
 
@@ -985,6 +981,31 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
     return members;
 };
 
+export const getMembersToShirtVerify = async (): Promise<PublicUserInfo[]> => {
+    const shirtRef = collection(db, 'shirt-sizes');
+    const shirtQuery = query(shirtRef);
+    const shirtSnapshot = await getDocs(shirtQuery);
+    const shirtUserIds = shirtSnapshot.docs.map(doc => doc.id);
+
+    const members: PublicUserInfo[] = [];
+    for (const userId of shirtUserIds) {
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists() && !userDocSnap.data()?.shirtPickedUp) {
+            members.push({ uid: userId, ...userDocSnap.data() });
+        }
+    }
+
+    for (const userId of shirtUserIds) {
+        const userDocRef = doc(db, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists() && userDocSnap.data()?.shirtPickedUp) {
+            members.push({ uid: userId, ...userDocSnap.data() });
+        }
+    }
+
+    return members;
+};
 
 export const isUsernameUnique = async (username: string): Promise<boolean> => {
     const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');

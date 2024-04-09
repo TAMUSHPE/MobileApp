@@ -118,6 +118,7 @@ export type AdminDashboardParams = {
     MemberSHPEConfirm: undefined;
     CommitteeConfirm: undefined;
     ResumeConfirm: undefined;
+    ShirtConfirm: undefined;
     Home: undefined;
     PublicProfile: {
         uid: string;
@@ -197,6 +198,8 @@ export type MemberCardProp = {
     userData?: PublicUserInfo;
     displayPoints?: Boolean;
     navigation?: NativeStackNavigationProp<any>
+    onShirtScreen?: boolean;
+    pickedUpShirt?: boolean;
 }
 
 export type IShpeProps = {
