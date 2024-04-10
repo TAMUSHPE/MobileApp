@@ -308,9 +308,9 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                         {localTeamMembers.leads && localTeamMembers.leads.length > 0 && (
                             <>
                                 <Text className='font-bold text-lg mb-2' style={{ color: color }}>Leads</Text>
-                                {localTeamMembers.leads.map((representative, index) => (
+                                {localTeamMembers.leads.map((lead, index) => (
                                     <View className='mb-6' key={index}>
-                                        <CommitteeTeamCard userData={representative || {}} navigation={navigation} />
+                                        <CommitteeTeamCard userData={lead || {}} navigation={navigation} />
                                     </View>
                                 ))}
                             </>
