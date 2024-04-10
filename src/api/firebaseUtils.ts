@@ -1,5 +1,5 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
-import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
+import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateTamuEmail } from "../helpers/validation";
@@ -7,6 +7,7 @@ import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter
 import { Committee } from "../types/Committees";
 import { SHPEEvent, EventLogStatus } from "../types/Events";
 import * as Location from 'expo-location';
+import { deleteUser, getAuth } from "firebase/auth";
 
 /**
  * Obtains the public information of a user given their UID.
@@ -1184,4 +1185,51 @@ export const getInterestsEvent = async (interests: string[]) => {
         return [];
     }
 }
+
+const deleteUserFirestoreData = async (userId: string) => {
+    const userDocRef = doc(db, `users/${userId}`);
+
+    // Delete Private Info
+    const privateInfoDocRef = doc(db, `users/${userId}/private/privateInfo`);
+    await deleteDoc(privateInfoDocRef);
+
+    // Delete Event Logs
+    const eventLogsCollectionRef = collection(db, `users/${userId}/event-logs`);
+    const eventLogs = await getDocs(eventLogsCollectionRef);
+    eventLogs.forEach(async (document) => {
+        await deleteDoc(doc(db, `users/${userId}/event-logs/${document.id}`));
+    });
+
+    await deleteDoc(userDocRef)
+};
+
+const deleteUserStorageData = async (userId: string) => {
+    const userDocsRef = ref(storage, `user-docs/${userId}`);
+
+    try {
+        const listResults = await listAll(userDocsRef);
+        listResults.items.forEach(async (itemRef) => {
+            await deleteObject(itemRef);
+        });
+    } catch (error) {
+        console.log('Error deleting user storage data:', error);
+    }
+};
+
+const deleteUserAuthentication = async (userId: string) => {
+    const auth = getAuth();
+    await deleteUser(auth.currentUser!);
+};
+
+export const deleteAccount = async (userId: string) => {
+    try {
+        await deleteUserFirestoreData(userId);
+        await deleteUserStorageData(userId);
+        await deleteUserAuthentication(userId);
+
+        console.log('Successfully deleted account for user:', userId);
+    } catch (error) {
+        console.error('Error deleting account:', error);
+    }
+};
 
