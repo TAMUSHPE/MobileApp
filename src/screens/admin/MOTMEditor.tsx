@@ -11,7 +11,7 @@ import MembersList from '../../components/MembersList';
 import DismissibleModal from '../../components/DismissibleModal';
 import MemberCard from '../../components/MemberCard';
 import { useFocusEffect } from '@react-navigation/core';
-import MOTM from '../../components/MOTMCard';
+import MOTMCard from '../../components/MOTMCard';
 import SwipeableMemberList from '../../components/SwipeableMemberList';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -21,7 +21,6 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
     const [members, setMembers] = useState<PublicUserInfo[]>([])
     const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
     const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();
-    const [localMOTM, setLocalMOTM] = useState<PublicUserInfo>();
     const [localSuggestedMOTM, setSuggestedLocalMOTM] = useState<PublicUserInfo[]>();
     const calculateMOTM = httpsCallable(functions, 'calculateMOTM');
 
@@ -32,6 +31,8 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
     const [loadingMember, setLoadingMember] = useState(true);
     const [loadingMOTM, setLoadingMOTM] = useState(true);
 
+    // Very Hacky way to force update MOTM Card from both swipeable and modal
+    const [forceUpdate, setForceUpdate] = useState(0);
     const insets = useSafeAreaInsets();
 
     useFocusEffect(
@@ -62,17 +63,6 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
             setLoadingMember(false);
         }
     };
-
-    const fetchMOTM = async () => {
-        try {
-            const fetchedMOTM = await getMOTM();
-            setLocalMOTM(fetchedMOTM);
-        } catch (error) {
-            console.error('Error fetching member of the month:', error);
-        } finally {
-            setLoadingMOTM(false);
-        }
-    }
 
     useEffect(() => {
         fetchMembers();
@@ -122,18 +112,15 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
                     <ActivityIndicator size="large" className='mt-8' />
                 ) : (
                     <View className='flex-1'>
-                        <MOTM
-                            userData={localMOTM}
-                            navigation={navigation}
-                            handleCardPress={() => {
-                                navigation.navigate("PublicProfile", { uid: localMOTM?.uid! })
-                            }}
-                        />
+                        <MOTMCard navigation={navigation} key={forceUpdate} />
 
                         <View className='mt-6 mx-5 pb-3'>
                             <Text className='font-bold text-xl'>Suggested MOTM</Text>
                         </View>
-                        <SwipeableMemberList userData={localSuggestedMOTM!}/> 
+                        <SwipeableMemberList
+                            userData={localSuggestedMOTM!}
+                            onSwipe={(userData: any) => { setForceUpdate(prev => prev + 1); }}
+                        />
 
                         <TouchableOpacity className='mx-4 px-4 py-3 rounded-md bg-gray-300'
                             onPress={() => setMembersModal(true)}
@@ -211,7 +198,7 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
                                 onPress={() => {
                                     setMOTM(selectedMember!)
                                     setConfirmVisible(false)
-                                    fetchMOTM();
+                                    setForceUpdate(prev => prev + 1);
                                 }}
                             >
                                 <Text className='font-semibold text-lg'>Confirm</Text>
