@@ -199,25 +199,22 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     {/* User Ranking */}
                     {!initLoading && (
                         <View>
-                            {currentUserInfo?.pointsRank !== undefined ? (
+                            {currentUserInfo?.pointsRank === undefined ? (
                                 <View className='flex-col h-20 mx-4 px-4 mt-8 rounded-xl items-center justify-center'
                                     style={{ backgroundColor: colorMapping[currentUserInfo?.rankChange ?? "same"] }}>
                                     <Text className='text-xl font-medium'>You are unranked</Text>
                                 </View>
                             ) : (
-                                <View className='flex-row h-20 mx-4 px-4 mt-8 rounded-xl items-center'
-                                    style={{ backgroundColor: colorMapping[currentUserInfo?.rankChange ?? "same"] }}>
-
-                                    {currentUserInfo?.points ? (
-                                        <RankCard key="userCard" userData={currentUserInfo} navigation={navigation} />
-                                    ) : (<Text className='text-xl font-medium'>You don't any have points.</Text>)}
-                                </View>
+                                currentUserInfo?.points ? (
+                                    <RankCard key="userCard" userData={currentUserInfo} navigation={navigation} />
+                                ) : (<Text className='text-xl font-medium'>You don't any have points.</Text>)
                             )}
                         </View>
                     )}
 
                     {/* Leaderboard */}
-                    {fetchedUsers.slice(3).map((userData, index) => (
+                    <View className='bg-gray-300 mb-2 m-black mt-8 mx-8 h-1 rounded-full' />
+                    {fetchedUsers.map((userData, index) => (
                         <RankCard key={index + 3} userData={userData} navigation={navigation} />
                     ))}
                     <View className={`justify-center h-20 items-center ${fetchedUsers.length === 0 && "h-[50%]"}`}>
