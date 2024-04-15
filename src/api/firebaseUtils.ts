@@ -1,6 +1,6 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, DocumentSnapshot } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
@@ -1185,3 +1185,21 @@ export const getInterestsEvent = async (interests: string[]) => {
     }
 }
 
+const queryUserEventLogs = async (uid: string): Promise<Array<SHPEEvent>> => {
+    console.log(`users/${uid}/event-logs`);
+    const userEventLogsCollectionRef = collection(db, `users/${uid}/event-logs`);
+    const eventLogSnapshot = await getDocs(userEventLogsCollectionRef);
+    const docPromises: Array<Promise<DocumentSnapshot>> = [];
+    const events: Array<SHPEEvent> = [];
+
+    eventLogSnapshot.forEach((document) => {
+        docPromises.push(getDoc(doc(db, "events", document.id)));
+    });
+    
+    for (let index = 0; index < docPromises.length; index++) {
+        const document = docPromises[index];
+        events.push((await document).data() as SHPEEvent);   
+    }
+
+    return events;
+}
