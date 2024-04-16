@@ -232,7 +232,11 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                             </View>
                         </View>
                         <View className='items-center justify-center'>
-                            <Text className="text-white text-lg font-semibold" >{`${major} ${"'" + classYear?.substring(2)}`} • {`${points?.toFixed(2)} pts`} {pointsRank && `• rank ${pointsRank}`} </Text>
+                            <Text className="text-white text-lg font-semibold">
+                                {`${major} ${"'" + classYear?.substring(2)}`}
+                                {points !== undefined && ` • ${points.toFixed(2)} pts`}
+                                {points !== undefined && pointsRank && ` • rank ${pointsRank}`}
+                            </Text>
                         </View>
                         {isSuperUser &&
                             <View className='items-center justify-center'>
