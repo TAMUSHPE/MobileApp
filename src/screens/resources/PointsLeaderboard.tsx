@@ -16,10 +16,10 @@ import { collection, getDocs, limit, orderBy, query, startAt, where } from 'fire
 const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
     const [fetchedUsers, setFetchedUsers] = useState<PublicUserInfo[]>([])
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
-    const [initLoading, setInitLoading] = useState(true);
-    const [loading, setLoading] = useState(true);
-    const [endOfData, setEndOfData] = useState(false);
-    const [infoVisible, setInfoVisible] = useState(false);
+    const [initLoading, setInitLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [endOfData, setEndOfData] = useState<boolean>(false);
+    const [infoVisible, setInfoVisible] = useState<boolean>(false);
 
     /**
      * userPoints obtained from google sheets
@@ -27,9 +27,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
      * (this also means that rankChange is only obtain if user exist on firebase)
      * This method may be changed in the future
      */
-    const [userPoints, setUserPoints] = useState(-1);
-    const [userRank, setUserRank] = useState(-1);
-    const [userRankChange, setUserRankChange] = useState<RankChange>('same');
+    const [currentUserInfo, setCurrentUserInfo] = useState<PublicUserInfo>();
 
     /**
      * Returns a list of user data sorted by their rank.
@@ -65,27 +63,13 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
     useEffect(() => {
         const fetchData = async () => {
             getPublicUserData(auth?.currentUser?.uid!).then(user => {
-                setUserRank(user?.pointsRank || -1);
-                setUserRankChange(user?.rankChange ?? "same");
-                setUserPoints(user?.points || -1);
+                setCurrentUserInfo(user);
             }).then(() => {
                 queryAndSetRanks(100, 0);
             })
         }
         fetchData();
     }, []);
-
-    const renderRankChangeIcon = () => {
-        switch (userRankChange) {
-            case "increased":
-                return <Octicons name="chevron-up" size={24} color="#AEF359" />;
-            case "decreased":
-                return <Octicons name="chevron-down" size={24} color="#FF0000" />;
-            default:
-                return <Octicons name="dash" size={22} color="gray" />
-        }
-    }
-
 
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
         const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
@@ -215,40 +199,22 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     {/* User Ranking */}
                     {!initLoading && (
                         <View>
-                            {userRank === -1 ? (
+                            {currentUserInfo?.pointsRank === undefined ? (
                                 <View className='flex-col h-20 mx-4 px-4 mt-8 rounded-xl items-center justify-center'
-                                    style={{ backgroundColor: colorMapping[userRankChange] }}>
+                                    style={{ backgroundColor: colorMapping[currentUserInfo?.rankChange ?? "same"] }}>
                                     <Text className='text-xl font-medium'>You are unranked</Text>
                                 </View>
                             ) : (
-                                <View className='flex-row h-20 mx-4 px-4 mt-8 rounded-xl items-center'
-                                    style={{ backgroundColor: colorMapping[userRankChange] }}>
-
-                                    {userPoints != -1 ? (
-                                        <View className='flex-row'>
-                                            <View className='flex-1 flex-row items-center'>
-                                                <View className='w-[65%] '>
-                                                    <Text className='text-xl font-medium'>Your Ranking</Text>
-                                                    <View className='flex-row items-center'>
-                                                        <Text className='text-xl font-medium'>{userPoints} pts </Text>
-                                                    </View>
-                                                </View>
-                                            </View>
-                                            <View className='flex-row'>
-                                                <Text className='text-xl font-medium mr-4'>{userRank}</Text>
-                                                <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
-                                                    {renderRankChangeIcon()}
-                                                </View>
-                                            </View>
-                                        </View>
-                                    ) : (<Text className='text-xl font-medium'>You don't any have points.</Text>)}
-                                </View>
+                                currentUserInfo?.points ? (
+                                    <RankCard key="userCard" userData={currentUserInfo} navigation={navigation} />
+                                ) : (<Text className='text-xl font-medium'>You don't any have points.</Text>)
                             )}
                         </View>
                     )}
 
                     {/* Leaderboard */}
-                    {fetchedUsers.slice(3).map((userData, index) => (
+                    <View className='bg-gray-300 mb-2 m-black mt-8 mx-8 h-1 rounded-full' />
+                    {fetchedUsers.map((userData, index) => (
                         <RankCard key={index + 3} userData={userData} navigation={navigation} />
                     ))}
                     <View className={`justify-center h-20 items-center ${fetchedUsers.length === 0 && "h-[50%]"}`}>
