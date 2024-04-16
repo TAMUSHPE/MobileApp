@@ -6,7 +6,7 @@ const windowWidth = Dimensions.get('window').width;
 
 const flickerApiKey = process.env.FLICKER_API_KEY;
 const flickerUserId = process.env.FLICKER_USER_ID;
-const flickrPhotoSetId = '72177720315651880';
+const flickrPhotoSetId = '72177720316068498';
 
 
 const FlickrPhotoItem = memo(({ item }: { item: FlickrPhoto }) => {
@@ -43,9 +43,12 @@ const FlickrPhotoGallery = () => {
 
     const fetchPhotos = async () => {
         try {
-            const response = await fetch(`https://www.flickr.com/services/rest/?method=flickr.people.getPublicPhotos&api_key=${flickerApiKey}&user_id=${flickerUserId}&format=json&nojsoncallback=1&photoset_id=${flickrPhotoSetId}`);
+            const url = `https://www.flickr.com/services/rest/?method=flickr.photosets.getPhotos&api_key=${flickerApiKey}&user_id=${flickerUserId}&photoset_id=${flickrPhotoSetId}&format=json&nojsoncallback=1`;
+
+            const response = await fetch(url);
             const json = await response.json();
-            const shuffledPhotos = shufflePhotos(json.photos.photo);
+
+            const shuffledPhotos = shufflePhotos(json.photoset.photo);
             setPhotos([shuffledPhotos[shuffledPhotos.length - 1], ...shuffledPhotos, shuffledPhotos[0]]);
         } catch (error) {
             console.error(error);
@@ -116,7 +119,7 @@ const FlickrPhotoGallery = () => {
         <Animated.FlatList
             data={photos}
             renderItem={renderItem}
-            keyExtractor={(item, index) => `${item.id}-${index}`}
+            keyExtractor={(item, index) => `${item.id} - ${index}`}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
