@@ -1,6 +1,6 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
@@ -1186,21 +1186,37 @@ export const getInterestsEvent = async (interests: string[]) => {
     }
 }
 
-const deleteUserFirestoreData = async (userId: string) => {
+const backupAndDeleteUserData = async (userId: string) => {
     const userDocRef = doc(db, `users/${userId}`);
+    const backupUserDocRef = doc(db, `deleted-accounts/${userId}`);
+    const batch = writeBatch(db);
 
-    // Delete Private Info
+    // Backup user data
+    const userData = await getDoc(userDocRef);
+    if (userData.exists()) {
+        batch.set(backupUserDocRef, userData.data());
+    }
+
+    // Backup and delete Private Info
     const privateInfoDocRef = doc(db, `users/${userId}/private/privateInfo`);
-    await deleteDoc(privateInfoDocRef);
+    const privateData = await getDoc(privateInfoDocRef);
+    if (privateData.exists()) {
+        const backupPrivateInfoDocRef = doc(db, `deleted-accounts/${userId}/private/privateInfo`);
+        batch.set(backupPrivateInfoDocRef, privateData.data());
+        batch.delete(privateInfoDocRef);
+    }
 
-    // Delete Event Logs
+    // Backup and delete Event Logs
     const eventLogsCollectionRef = collection(db, `users/${userId}/event-logs`);
     const eventLogs = await getDocs(eventLogsCollectionRef);
-    eventLogs.forEach(async (document) => {
-        await deleteDoc(doc(db, `users/${userId}/event-logs/${document.id}`));
+    eventLogs.forEach((document) => {
+        const backupEventLogDocRef = doc(db, `deleted-accounts/${userId}/event-logs/${document.id}`);
+        batch.set(backupEventLogDocRef, document.data());
+        batch.delete(doc(db, `users/${userId}/event-logs/${document.id}`));
     });
 
-    await deleteDoc(userDocRef)
+    batch.delete(userDocRef);
+    await batch.commit();
 };
 
 const deleteUserStorageData = async (userId: string) => {
@@ -1217,13 +1233,20 @@ const deleteUserStorageData = async (userId: string) => {
 };
 
 const deleteUserAuthentication = async (userId: string) => {
-    const auth = getAuth();
-    await deleteUser(auth.currentUser!);
+    try {
+        if (auth.currentUser) {
+            await deleteUser(auth.currentUser);
+        } else {
+            console.log('No user currently logged in or user not found.');
+        }
+    } catch (error) {
+        console.error('Error deleting user authentication:', error);
+    }
 };
 
 export const deleteAccount = async (userId: string) => {
     try {
-        await deleteUserFirestoreData(userId);
+        await backupAndDeleteUserData(userId);
         await deleteUserStorageData(userId);
         await deleteUserAuthentication(userId);
 
