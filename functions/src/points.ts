@@ -15,9 +15,9 @@ export const calculateMOTM = functions.https.onCall(async (data, context) => {
     console.log("pastMOTMIds", pastMOTMIds);
 
     const eligibleUsersRef = db.collection('users')
-                            .where('roles.officer', '==', false)
-                            .where('roles.lead', '==', false)
-                            .orderBy('pointsThisMonth', 'desc');
+        .where('roles.officer', '==', false)
+        .where('roles.representative', '==', false)
+        .orderBy('pointsThisMonth', 'desc');
 
     const eligibleUsersSnapshot = await eligibleUsersRef.get();
     const eligibleUsers: FirebaseFirestore.DocumentData[] = [];
