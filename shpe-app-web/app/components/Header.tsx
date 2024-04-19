@@ -1,10 +1,5 @@
 import React from 'react';
 
-interface HeaderProps {
-    title: string;
-    iconPath: string;
-}
-
 const Header: React.FC<HeaderProps> = ({ title, iconPath }) => {
     return (
         <header className="bg-[#794141]  h-32 w-full flex flex-row place-items-end justify-between ">
@@ -13,5 +8,11 @@ const Header: React.FC<HeaderProps> = ({ title, iconPath }) => {
         </header>
     );
 };
+
+
+interface HeaderProps {
+    title: string;
+    iconPath: string;
+}
 
 export default Header;

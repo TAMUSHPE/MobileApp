@@ -1,47 +1,16 @@
 'use client'
-
-import { auth, db } from "@/api/firebaseConfig";
-import {handleLogout} from "@/helpers/auth";
-import { collection, getDocs } from "firebase/firestore";
+import Header from "@/app/components/Header";
+import { checkAuthAndRedirect } from "@/helpers/auth";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
-import Navbar from "../../components/Navbar";
-
-interface UserData {
- id: string;
-}
-
-async function fetchAllDocuments(): Promise<UserData[]> {
-  const users = collection(db, "users");
-  const snapshot = await getDocs(users);
-  const documents = snapshot.docs.map(doc => ({ id: doc.id}));
-  return documents;
-}
 
 const Dashboard = () => {
     const router = useRouter();
-    const [documents, setDocuments] = useState<UserData[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const checkAuth = async () => {
-            if (!auth.currentUser) {
-                router.push('/');
-            } else {
-                const token = await auth.currentUser.getIdTokenResult()
-                if (!token.claims.admin && !token.claims.developer && !token.claims.officer) {
-                    // TODO: Error Message
-                    handleLogout(router);
-                    router.push('/');
-                }
-                else{
-                    const fetchedDocuments = await fetchAllDocuments();
-                    setDocuments(fetchedDocuments);
-                    setLoading(false);
-                }
-            }
-        };
-        checkAuth();
+        checkAuthAndRedirect(router);
+        setLoading(false);
     }, []);
 
     if (loading) {
@@ -53,7 +22,8 @@ const Dashboard = () => {
     }
 
     return (
-        <div>
+        <div className="w-full h-full">
+            <Header title="Dashboard" iconPath="calendar-solid-gray.svg" />
         </div>
     );
 };

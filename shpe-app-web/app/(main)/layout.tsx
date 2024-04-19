@@ -1,11 +1,7 @@
 import React, { ReactNode } from 'react';
 import Navbar from '../components/Navbar';
 
-type Props = {
-    children: ReactNode;
-};
-
-const Layout = ({ children }: Props) => {
+const Layout = ({ children }: { children: ReactNode; }) => {
     return (
         <div className='flex bg-white'>
             <Navbar />

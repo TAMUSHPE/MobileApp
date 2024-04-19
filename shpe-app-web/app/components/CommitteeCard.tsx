@@ -2,7 +2,8 @@ import { Committee } from "@/types/Committees";
 import { getLogoComponent } from "@/types/Committees";
 import Image from 'next/image';
 import { CommitteeLogosName } from "@/types/Committees";
-const CommitteCard: React.FC<CommitteeCardProps> = ({ committee }) => {
+
+const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee }) => {
     const { name, color, logo, head, memberCount } = committee;
     const { LogoComponent, height, width } = getLogoComponent(logo as CommitteeLogosName);
     const truncate = (str: string) => str.length > 19 ? str.substring(0, 19) + "..." : str;
@@ -44,4 +45,4 @@ interface CommitteeCardProps {
 }
 
 
-export default CommitteCard;
+export default CommitteeCard;

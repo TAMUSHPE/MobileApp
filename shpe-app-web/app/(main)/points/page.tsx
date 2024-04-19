@@ -1,7 +1,7 @@
 'use client'
 
-import { auth } from "@/api/firebaseConfig";
-import { handleLogout } from "@/helpers/auth";
+import Header from "@/app/components/Header";
+import { checkAuthAndRedirect } from "@/helpers/auth";
 import { getEvents, getMembers } from "@/helpers/firebaseUtils";
 import { SHPEEvent } from "@/types/Events";
 import { PublicUserInfo } from "@/types/User";
@@ -27,21 +27,10 @@ const Points = () => {
   }
 
   useEffect(() => {
-    const checkAuth = async () => {
-      if (!auth.currentUser) {
-        router.push('/');
-      } else {
-        const token = await auth.currentUser.getIdTokenResult()
-        if (!token.claims.admin && !token.claims.developer && !token.claims.officer) {
-          handleLogout(router);
-          router.push('/');
-        }
-      }
-    };
-
-    checkAuth();
+    checkAuthAndRedirect(router);
     fetchMembers();
     fetchEvents();
+    setLoading(false)
   }, []);
 
 
@@ -52,16 +41,19 @@ const Points = () => {
       </div>
     );
   }
+
   return (
     <div className="bg-white h-full">
+      <Header title="Event Management" iconPath="calendar-solid-gray.svg" />
+
       <div className="bg-white flex flex-col h-screen w-screen">
-        {!loading && members.map((member) => (
+        {members.map((member) => (
           <div className="bg-white">
             <div className="text-black">{member.displayName}</div>
           </div>
         ))}
 
-        {!loading && events.map((event) => (
+        {events.map((event) => (
           <div className="bg-white">
             <div className="text-black">{event.name}</div>
           </div>

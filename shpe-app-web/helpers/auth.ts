@@ -2,7 +2,7 @@ import { auth } from "@/api/firebaseConfig";
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
-const handleLogout = async (router: AppRouterInstance) => {
+export const handleLogout = async (router: AppRouterInstance) => {
     signOut(auth).then(() => {
         router.push('/');
     }).catch((error) => {
@@ -10,7 +10,7 @@ const handleLogout = async (router: AppRouterInstance) => {
     });
 }
 
-const handleLogin = async (router: AppRouterInstance) => {
+export const handleLogin = async (router: AppRouterInstance) => {
     const provider = new GoogleAuthProvider();
     provider.addScope("email")
     provider.setCustomParameters({
@@ -29,4 +29,17 @@ const handleLogin = async (router: AppRouterInstance) => {
     });
 }
 
-export { handleLogout, handleLogin };
+export const checkAuthAndRedirect = async (router: AppRouterInstance): Promise<void> => {
+    if (!auth.currentUser) {
+        router.push('/');
+    } else {
+        const token = await auth.currentUser.getIdTokenResult();
+        if (!token.claims.admin && !token.claims.developer && !token.claims.officer) {
+            alert("You do not have permission to this website. Please sign in with an authorized account.")
+            auth.signOut();
+            router.push('/');
+        }
+    }
+};
+
+
