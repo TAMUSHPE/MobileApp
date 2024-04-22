@@ -1185,7 +1185,7 @@ export const getInterestsEvent = async (interests: string[]) => {
     }
 }
 
-const queryUserEventLogs = async (uid: string): Promise<Array<SHPEEvent>> => {
+export const queryUserEventLogs = async (uid: string): Promise<Array<SHPEEvent>> => {
     console.log(`users/${uid}/event-logs`);
     const userEventLogsCollectionRef = collection(db, `users/${uid}/event-logs`);
     const eventLogSnapshot = await getDocs(userEventLogsCollectionRef);

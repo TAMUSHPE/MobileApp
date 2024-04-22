@@ -135,6 +135,7 @@ export type HomeDrawerParams = {
     }
 
     ProfileSettingsScreen: undefined;
+    PersonalEventLogScreen: undefined;
 };
 
 

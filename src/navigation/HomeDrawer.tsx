@@ -11,6 +11,7 @@ import { HomeDrawerParams } from '../types/Navigation';
 import { Images } from '../../assets';
 import TwitterSvg from '../components/TwitterSvg';
 import PublicProfileScreen from "../screens/PublicProfile";
+import PersonalEventLogScreen from '../screens/events/PersonalEventLog';
 import { HomeStack } from './HomeStack'
 
 
@@ -190,6 +191,13 @@ const HomeDrawer = () => {
             <Drawer.Screen
                 name="PublicProfile"
                 component={PublicProfileScreen}
+                options={{
+                    headerShown: false,
+                }}
+            />
+            <Drawer.Screen
+                name="PersonalEventLogScreen"
+                component={PersonalEventLogScreen}
                 options={{
                     headerShown: false,
                 }}

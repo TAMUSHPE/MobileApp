@@ -39,6 +39,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
     const [refreshing, setRefreshing] = useState(false);
     const [updatingRoles, setUpdatingRoles] = useState<boolean>(false);
     const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
+    const [showEventsLogModal, setEventsLogModal] = useState<boolean>(false);
 
     // Data related to currently authenticated user
     const { userInfo, setUserInfo } = useContext(UserContext)!;
@@ -191,14 +192,23 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                             <Text className="text-white text-lg font-semibold" >{`${major} ${"'" + classYear?.substring(2)}`} • {`${points?.toFixed(2)} pts`} {pointsRank && `• rank ${pointsRank}`} </Text>
                         </View>
                         {isSuperUser &&
-                            <View className='items-center justify-center'>
-                                <TouchableOpacity
-                                    onPress={() => setShowRoleModal(true)}
-                                    className="rounded-md px-3 py-2"
-                                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                                >
-                                    <Text className='text-white text-xl'>Edit Role</Text>
-                                </TouchableOpacity>
+                            <View className='flex items-center justify-center'>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <TouchableOpacity
+                                        onPress={() => setShowRoleModal(true)}
+                                        className="rounded-md px-3 py-2"
+                                        style={{ backgroundColor: 'rgba(0,0,0,0.3)', marginRight: 10 }}
+                                    >
+                                        <Text className='text-white text-xl'>Edit Role</Text>
+                                    </TouchableOpacity>
+                                    <TouchableOpacity
+                                        onPress={() => navigation.navigate("PersonalEventLogScreen")}
+                                        className="rounded-md px-3 py-2"
+                                        style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                                    >
+                                        <Text className='text-white text-xl'>Personal Event Logs</Text>
+                                    </TouchableOpacity>
+                                </View>
                             </View>
                         }
                     </View>
@@ -384,6 +394,18 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     {updatingRoles && <ActivityIndicator className='mb-4' size={30} />}
                 </View>
             </DismissibleModal>
+            <DismissibleModal
+                    visible={showEventsLogModal}
+                    setVisible={setEventsLogModal}
+                >
+                    <View
+                        className='flex opacity-100 bg-white rounded-md px-6 pt-2 pb-6'
+                        style={{ minWidth: 350 }}
+                    >
+                        <Text className='text-2xl text-center pb-2'>Sign In QR Code</Text>
+                    </View>
+
+                </DismissibleModal>
         </ScrollView>
     )
 }
