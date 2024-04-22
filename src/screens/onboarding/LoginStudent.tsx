@@ -125,15 +125,16 @@ const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) =
             </View>
             <View className="items-center pb-40">
                 <View className="flex-col w-4/5">
-                    <Text className="text-white font-bold text-3xl">Student Login</Text>
-                    <Text className="text-pale-orange text-lg">Sign in using tamu.edu email</Text>
+                    <View className='items-center'>
+                        <Text className="text-white font-bold text-3xl" style={{fontSize : 30, marginTop: 0}}>Student Login</Text>
+                    </View>
 
-                    <View className="flex-col mt-2">
+                    <View className="flex-col mt-2" style={{marginTop: 90}}>
                         <InteractButton
                             onPress={() => googleSignIn()}
                             label="Sign In with Google"
-                            buttonClassName="bg-white mt-5 rounded-3xl py-1"
-                            textClassName="text-[#3b3b3b] font-bold text-xl"
+                            buttonClassName="bg-white mt-5 rounded-3xl py-2"
+                            textClassName="text-[#3b3b3b] font-bold"
                             iconSource={{ uri: "https://developers.google.com/static/identity/images/g-logo.png" }}
                         />
                         {error && <Text style={{ color: 'red' }} className="text-center mt-2">{error}</Text>}
@@ -142,19 +143,20 @@ const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) =
                         )}
                     </View>
                     <View className="items-center">
+                        <Text className="font-bold" style={{color : "#FD652F", marginTop : 20, fontSize : 12}}>Students sign in using tamu.edu account</Text>
                     </View>
                 </View>
             </View>
 
             <View className="flex-1 justify-end items-center">
                 <View className="flex-row items-center">
-                    <Text className="text-slate-400 text-lg">Don't have a student account?</Text>
+                    <Text className="" style={{color : "#808080"}}>Don't have a student account? </Text>
                     <TouchableOpacity
                         className="items-center"
                         onPress={() => navigation.navigate("LoginGuest")}
                         activeOpacity={1}
                     >
-                        <Text className="text-pale-orange text-lg ml-1">Guest Login</Text>
+                        <Text className= "" style={{color : "#FD652F"}}>Guest Login</Text>
                     </TouchableOpacity>
 
                 </View>
