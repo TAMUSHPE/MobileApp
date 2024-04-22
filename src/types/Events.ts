@@ -394,6 +394,9 @@ export enum EventLogStatus {
     ERROR,
 }
 
-
+export type UserEventData = {
+    eventData?: SHPEEvent,
+    eventLog?: SHPEEventLog,
+}
 
 
