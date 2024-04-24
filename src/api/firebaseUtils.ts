@@ -1,12 +1,13 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
-import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, DocumentSnapshot } from "firebase/firestore";
+import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject } from "firebase/storage";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
 import { SHPEEvent, EventLogStatus } from "../types/Events";
 import * as Location from 'expo-location';
+import { deleteUser, getAuth } from "firebase/auth";
 
 /**
  * Obtains the public information of a user given their UID.
@@ -1185,6 +1186,76 @@ export const getInterestsEvent = async (interests: string[]) => {
     }
 }
 
+const backupAndDeleteUserData = async (userId: string) => {
+    const userDocRef = doc(db, `users/${userId}`);
+    const backupUserDocRef = doc(db, `deleted-accounts/${userId}`);
+    const batch = writeBatch(db);
+
+    // Backup user data
+    const userData = await getDoc(userDocRef);
+    if (userData.exists()) {
+        batch.set(backupUserDocRef, userData.data());
+    }
+
+    // Backup and delete Private Info
+    const privateInfoDocRef = doc(db, `users/${userId}/private/privateInfo`);
+    const privateData = await getDoc(privateInfoDocRef);
+    if (privateData.exists()) {
+        const backupPrivateInfoDocRef = doc(db, `deleted-accounts/${userId}/private/privateInfo`);
+        batch.set(backupPrivateInfoDocRef, privateData.data());
+        batch.delete(privateInfoDocRef);
+    }
+
+    // Backup and delete Event Logs
+    const eventLogsCollectionRef = collection(db, `users/${userId}/event-logs`);
+    const eventLogs = await getDocs(eventLogsCollectionRef);
+    eventLogs.forEach((document) => {
+        const backupEventLogDocRef = doc(db, `deleted-accounts/${userId}/event-logs/${document.id}`);
+        batch.set(backupEventLogDocRef, document.data());
+        batch.delete(doc(db, `users/${userId}/event-logs/${document.id}`));
+    });
+
+    batch.delete(userDocRef);
+    await batch.commit();
+};
+
+const deleteUserStorageData = async (userId: string) => {
+    const userDocsRef = ref(storage, `user-docs/${userId}`);
+
+    try {
+        const listResults = await listAll(userDocsRef);
+        listResults.items.forEach(async (itemRef) => {
+            await deleteObject(itemRef);
+        });
+    } catch (error) {
+        console.log('Error deleting user storage data:', error);
+    }
+};
+
+const deleteUserAuthentication = async (userId: string) => {
+    try {
+        if (auth.currentUser) {
+            await deleteUser(auth.currentUser);
+        } else {
+            console.log('No user currently logged in or user not found.');
+        }
+    } catch (error) {
+        console.error('Error deleting user authentication:', error);
+    }
+};
+
+export const deleteAccount = async (userId: string) => {
+    try {
+        await backupAndDeleteUserData(userId);
+        await deleteUserStorageData(userId);
+        await deleteUserAuthentication(userId);
+
+        console.log('Successfully deleted account for user:', userId);
+    } catch (error) {
+        console.error('Error deleting account:', error);
+    }
+};
+
 const queryUserEventLogs = async (uid: string): Promise<Array<SHPEEvent>> => {
     console.log(`users/${uid}/event-logs`);
     const userEventLogsCollectionRef = collection(db, `users/${uid}/event-logs`);
@@ -1195,10 +1266,10 @@ const queryUserEventLogs = async (uid: string): Promise<Array<SHPEEvent>> => {
     eventLogSnapshot.forEach((document) => {
         docPromises.push(getDoc(doc(db, "events", document.id)));
     });
-    
+
     for (let index = 0; index < docPromises.length; index++) {
         const document = docPromises[index];
-        events.push((await document).data() as SHPEEvent);   
+        events.push((await document).data() as SHPEEvent);
     }
 
     return events;
