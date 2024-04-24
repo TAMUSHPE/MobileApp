@@ -130,6 +130,50 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
         );
     }
 
+    if (!uid || uid === "") {
+        return (
+            <View>
+
+                <StatusBar style="light" />
+                <View>
+                    <Image
+                        className="flex w-full absolute h-full"
+                        defaultSource={Images.DEFAULT_USER_PICTURE}
+                        source={Images.DEFAULT_USER_PICTURE}
+                        blurRadius={15}
+                    />
+                    <View className='absolute w-full h-full bg-[#0007]' />
+
+                    <SafeAreaView edges={['top']} >
+                        <View className='flex-row justify-between items-center mx-5 mt-1'>
+                            <TouchableOpacity
+                                onPress={() => navigation.goBack()}
+                                className="rounded-full w-10 h-10 justify-center items-center"
+                                style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                            >
+                                <Octicons name="chevron-left" size={30} color="white" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View className='flex items-center justify-center -mt-2 mb-8'>
+                            <Image
+                                className="flex w-52 h-52 rounded-full"
+                                defaultSource={Images.DEFAULT_USER_PICTURE}
+                                source={Images.DEFAULT_USER_PICTURE}
+                            />
+
+                            <View className="flex-col justify-center mt-2">
+                                <View className="relative flex-row items-center">
+                                    <Text className="text-white text-3xl font-semibold">No User Found</Text>
+                                </View>
+                            </View>
+                        </View>
+                    </SafeAreaView>
+                </View>
+            </View>
+        )
+    }
+
     return (
         <ScrollView
             refreshControl={
@@ -188,7 +232,11 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                             </View>
                         </View>
                         <View className='items-center justify-center'>
-                            <Text className="text-white text-lg font-semibold" >{`${major} ${"'" + classYear?.substring(2)}`} • {`${points?.toFixed(2)} pts`} {pointsRank && `• rank ${pointsRank}`} </Text>
+                            <Text className="text-white text-lg font-semibold">
+                                {`${major} ${"'" + classYear?.substring(2)}`}
+                                {points !== undefined && ` • ${points.toFixed(2)} pts`}
+                                {points !== undefined && pointsRank && ` • rank ${pointsRank}`}
+                            </Text>
                         </View>
                         {isSuperUser &&
                             <View className='items-center justify-center'>

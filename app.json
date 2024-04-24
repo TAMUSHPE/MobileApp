@@ -56,7 +56,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.tamu.shpe",
-      "buildNumber": "2"
+      "buildNumber": "3"
     },
     "extra": {
       "eas": {
