@@ -6,6 +6,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar";
+import Header from "@/app/components/Header";
 
 interface UserData {
  id: string;
@@ -46,15 +47,19 @@ const Dashboard = () => {
 
     if (loading) {
         return (
-            <div className="flex w-full h-screen items-center justify-center">
-                <object type="image/svg+xml" data="spinner.svg" className="animate-spin -ml-1 mr-3 h-14 w-14 text-white"></object>
+            <div className="flex w-full h-screen flex-col">
+                <Header title="Dashboard" iconPath="calendar-solid-gray.svg"/>
+                <div className="flex w-full h-full items-center justify-center">
+                    <object type="image/svg+xml" data="spinner.svg" className="animate-spin -ml-1 mr-3 h-14 w-14 text-white"></object>
+                </div>
             </div>
         );
     }
 
     return (
-        <div>
-        </div>
+     <div className="w-full h-full">
+        <Header title="Dashboard" iconPath="house-solid-gray.svg"/>
+      </div>
     );
 };
 

@@ -22,7 +22,7 @@ const Navbar = () => {
             <nav className='flex flex-col w-full text-[18px] font-bold'>
                 <Image src='logo.svg' alt="SHPE Logo" width={200} height={200}  className="mb-10"/>
 
-                <Link href={'/dashboard'} className={`pr-5 pl-5 hover:shadow-inner-strong  w-full  h-[45px] pt-2 ${path == '/dashboard' ? 'bg-[#794141]' : 'bg-[#50000]'}`} > 
+                <Link href={'/dashboard'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/dashboard' ? 'bg-[#794141]' : 'bg-[#500000]'}`} > 
                     <div className="flex flex-row">
                         <Image src ="house-solid.svg" alt="Dashboard" width={20} height={20} />
                         <div className=" pl-3 "> Dashboard </div>
@@ -38,7 +38,7 @@ const Navbar = () => {
 
                 </Link>
 
-                <Link href={'/events'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/events' ? 'bg-[#794141]' : 'bg-[#50000]'}`} >  
+                <Link href={'/events'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/events' ? 'bg-[#794141]' : 'bg-[#500000]'}`} >  
 
                     <div className="flex flex-row ">
                         <Image src ="calendar-solid.svg" alt="Dashboard" width={20} height={20} />
@@ -57,7 +57,7 @@ const Navbar = () => {
                     
                 </Link>
 
-                <Link href={'/points'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/points' ? 'bg-[#794141]' : 'bg-[#50000]'}`}>  
+                <Link href={'/points'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/points' ? 'bg-[#794141]' : 'bg-[#500000]'}`}>  
                 
                     <div className="flex flex-row ">
                         <Image src ="ranking-star-solid 2.svg" alt="Dashboard" width={20} height={20} />
@@ -75,7 +75,7 @@ const Navbar = () => {
                 
                 </Link>
 
-                <Link href={'/committees'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/committees' ? 'bg-[#794141]' : 'bg-[#50000]'}`} >  
+                <Link href={'/committees'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/committees' ? 'bg-[#794141]' : 'bg-[#500000]'}`} >  
                 
                     <div className="flex flex-row ">
                         <Image src ="layer-group.svg" alt="Dashboard" width={20} height={20} />
@@ -93,7 +93,7 @@ const Navbar = () => {
 
                 </Link>
 
-                <Link href={'/membership'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/membership' ? 'bg-[#794141]' : 'bg-[#50000]'}`} >
+                <Link href={'/membership'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/membership' ? 'bg-[#794141]' : 'bg-[#500000]'}`} >
                     <div className="flex flex-row ">
                         <Image src ="Vector.svg" alt="Dashboard" width={20} height={20} />
                         <div className=" pl-3 "> Membership </div>
@@ -110,7 +110,7 @@ const Navbar = () => {
 
                 </Link>
 
-                <Link href={'/users'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/users' ? 'bg-[#794141]' : 'bg-[#50000]'}`} >
+                <Link href={'/users'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/users' ? 'bg-[#794141]' : 'bg-[#500000]'}`} >
                     <div className="flex flex-row ">
                         <Image src ="user-solid.svg" alt="Dashboard" width={20} height={20} />
                         <div className=" pl-3 "> Users </div>
@@ -127,7 +127,7 @@ const Navbar = () => {
 
                 </Link>
 
-                <Link href={'/tools'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/tools' ? 'bg-[#794141]' : 'bg-[#50000]'}`} > 
+                <Link href={'/tools'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/tools' ? 'bg-[#794141]' : 'bg-[#500000]'}`} > 
                     <div className="flex flex-row ">
                         <Image src ="screwdriver-sold.svg" alt="Dashboard" width={20} height={20} />
                         <div className=" pl-3 "> Tools </div>
