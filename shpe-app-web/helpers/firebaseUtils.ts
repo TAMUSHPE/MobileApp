@@ -141,6 +141,18 @@ export const getEvents = async (): Promise<SHPEEvent[]> => {
     }
 };
 
+export const getEventLogs = async (eventId: string): Promise<SHPEEventLog[]> => {
+    try {
+        const eventLogsRef = collection(db, `events/${eventId}/logs`);
+        const querySnapshot = await getDocs(eventLogsRef);
 
+        const eventLogs: SHPEEventLog[] = querySnapshot.docs.map(doc => ({
+            ...doc.data() as SHPEEventLog
+        }));
 
-
+        return eventLogs;
+    } catch (error) {
+        console.error("Error fetching event logs:", error);
+        throw new Error("Unable to fetch event logs.");
+    }
+};
