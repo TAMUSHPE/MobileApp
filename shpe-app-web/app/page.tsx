@@ -18,7 +18,7 @@ const SignIn = () => {
   
   return (
     <div className='flex flex-col w-screen h-screen items-center'>
-      <img src="officer-picture.svg" className='z-0 absolute h-screen w-screen bg-[#500000] opacity-40' />
+      <img src="officer-picture.svg" className='z-0 absolute h-full w-screen bg-[#500000] opacity-40 object-cover' />
       <div className="flex flex-col w-full h-full items-center justify-center z-10"
       style={{ backgroundImage: "url(../public/officer-picture.svg')" }}>
         <div className="flex flex-col items-center bg-[#500000] w-4/12 h-3/6 rounded-lg">
