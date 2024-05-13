@@ -53,8 +53,8 @@ const Points = () => {
     );
   }
   return (
-    <div className="bg-white h-full">
-      <div className="bg-white flex flex-col h-screen w-screen">
+    <div className="bg-white h-full w-full">
+      <div className="bg-white flex flex-col h-screen">
         {!loading && members.map((member) => (
           <div className="bg-white">
             <div className="text-black">{member.displayName}</div>
