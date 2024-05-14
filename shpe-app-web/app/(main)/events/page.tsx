@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Header from "../../components/Header";
 import PendingEvent from "./components/PendingEvent";
-import { getEvents } from "@/helpers/firebaseUtils";
+import { getEvents, getEventLogs } from "@/helpers/firebaseUtils";
 import { SHPEEvent, SHPEEventLog } from "@/types/Events";
 
 const Page = () => {
-  const [events, setEvents] = useState<SHPEEvent[] | undefined>(undefined);
+  const [pendingEvents, setPendingEvents] = useState<SHPEEvent[] | undefined>(undefined);
   const listRef = useRef<HTMLOListElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
@@ -15,8 +15,14 @@ const Page = () => {
 
   useEffect(() => {
     const getData = async () => {
-      const fetchedEvents = await getEvents();
-      setEvents(fetchedEvents);
+      const fetchedPendingEvents: SHPEEvent[] = [];
+      for(const event of await getEvents()) {
+        // Check if the event requires approval
+        if((await getEventLogs(event.id!)).some(log => !log.verified)) {
+          fetchedPendingEvents.push(event);
+        }
+      }
+      setPendingEvents(fetchedPendingEvents);
     };
     getData();
   }, []);
@@ -40,7 +46,7 @@ const Page = () => {
     const x = e.pageX - listRef.current!.offsetLeft;
     const walk = (x - startX) * 1.5;
     listRef.current!.scrollLeft = startScrollLeft - walk;
-  }
+  };
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -49,15 +55,15 @@ const Page = () => {
       {/* Pending Approval Subheading */}
       <div className="flex flex-row items-center flex-nowrap">
         <h2 className="text-black font-semibold text-2xl p-5 whitespace-nowrap">Pending Approval</h2>
-        {(events?.length ?? 0 > 0) && (
+        {(pendingEvents?.length ?? 0 > 0) && (
           <div className="bg-yellow-300 rounded-full h-7 w-7 items-center flex justify-center flex-shrink-0">
-            <p className="text-black font-bold">{events?.length}</p>
+            <p className="text-black font-bold">{pendingEvents?.length}</p>
           </div>
         )}
       </div>
 
       {/* Pending Events List*/}
-      <div className="flex flex-row w-full gap-2 px-2 items-center">
+      <div className="flex flex-row w-full gap-2 px-5 items-center">
         <button onClick={() => listRef.current!.scrollLeft -= 250} className="h-9 w-9 rounded-full bg-[#E0E0E0] flex items-center justify-center flex-shrink-0">
           <img src="arrow-solid-black.svg" alt="O" className="w-6"/>
         </button>
@@ -67,7 +73,7 @@ const Page = () => {
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
         >
-          {events?.map((event: SHPEEvent, index) => {
+          {pendingEvents?.map((event: SHPEEvent, index) => {
             return <PendingEvent event={event} key={index}/>
           })}
         </ol>
