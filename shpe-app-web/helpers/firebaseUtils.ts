@@ -126,13 +126,20 @@ export const getMembers = async (): Promise<(PublicUserInfo & { privateInfo?: Pr
 
 export const getEvents = async (): Promise<SHPEEvent[]> => {
     try {
-        const eventsRef = collection(db, 'events');
+        const eventsRef = collection(db, "events");
         const q = query(eventsRef);
         const querySnapshot = await getDocs(q);
-
         const events: SHPEEvent[] = querySnapshot.docs.map(doc => ({
+            id: doc.id,
             ...doc.data() as SHPEEvent
         }));
+        
+        events.sort((a, b) => {
+            const dateA = a.startTime ? a.startTime.toDate() : undefined;
+            const dateB = b.startTime ? b.startTime.toDate() : undefined;
+
+            return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
+        });
 
         return events;
     } catch (error) {
