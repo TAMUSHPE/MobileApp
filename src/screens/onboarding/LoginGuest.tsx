@@ -122,7 +122,9 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
             </View>
             <View className="flex items-center">
                 <View className="flex-col w-[80%]">
-                    <Text className="text-white font-bold text-3xl mb-3">Guest Login</Text>
+                    <View className="items-center" style={{marginTop : -10}}>
+                        <Text className="text-white font-bold text-3xl mb-3">Guest Login</Text>
+                    </View>
                     <KeyboardAvoidingView className="flex-col my-2">
                         <TextInputWithFloatingTitle
                             setTextFunction={(text: string) => setEmail(text)}
@@ -158,13 +160,13 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
                             className="pr-4" onPress={() => navigation.navigate("GuestRecoveryAccount")}
                             activeOpacity={1}
                         >
-                            <Text className="text-slate-400 text-xl">Forgot Your Password?</Text>
+                            <Text className="text-xl" style={{color : '#808080', fontSize : 15}}>Forgot your password?</Text>
                         </TouchableOpacity>
                         <InteractButton
                             onPress={() => emailSignIn()}
                             label="Login"
-                            buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl py-2"
-                            textClassName="text-white font-bold text-xl"
+                            buttonClassName="justify-center items-center bg-continue-dark mt-10 rounded-xl py-2"
+                            textClassName="text-white font-bold"
                             underlayColor="#A22E2B"
                         />
                         {error && <Text style={{ color: 'red' }} className="text-center mt-2">{error}</Text>}
@@ -181,7 +183,7 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
                         onPress={() => navigation.navigate("RegisterScreen")}
                         activeOpacity={1}
                     >
-                        <Text className="text-pale-orange text-lg ml-1">Sign up</Text>
+                        <Text className="text-lg ml-1" style={{color : '#FD652F'}}>Sign up</Text>
                     </TouchableOpacity>
                 </View>
             </View>
