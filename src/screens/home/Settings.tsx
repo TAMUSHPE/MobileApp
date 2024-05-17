@@ -977,6 +977,13 @@ const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackPar
                 subText={`${Platform.OS} ${Platform.Version as string}`}
                 darkMode={darkMode}
             />
+
+            <TouchableOpacity
+                className='justify-center ml-5'
+                onPress={() => handleLinkPress("https://jasonisazn.github.io/")}
+            >
+                <Text className='text-2xl'>Privacy Policy</Text>
+            </TouchableOpacity>
         </ScrollView>
     );
 };
