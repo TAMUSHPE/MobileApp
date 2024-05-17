@@ -712,7 +712,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const { userInfo, setUserInfo, signOutUser } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
-    const deleteConfirmationText = "AllDataWillBeDeleteIncludingPoints";
+    const deleteConfirmationText = "DELETECONFIRM";
 
     const [deleteText, setDeleteText] = useState('');
     const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
