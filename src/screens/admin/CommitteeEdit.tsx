@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Pressable, Switch } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Pressable, Switch, FlatList } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
@@ -242,6 +242,22 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                 </Pressable>
                 <Text className=" text-lg">{label}</Text>
             </View>
+        );
+    };
+
+    const renderItem = ({ item }: { item: any }) => {
+        const [name, logoData] = item;
+        return (
+            <TouchableOpacity
+                className='flex-1 items-center mx-5 my-5'
+                key={name}
+                onPress={() => {
+                    setLocalCommitteeData({ ...localCommitteeData, logo: name });
+                    setLogoSelectModal(false);
+                }}
+            >
+                <logoData.LogoComponent width={logoData.width} height={logoData.height} />
+            </TouchableOpacity>
         );
     };
 
@@ -655,7 +671,7 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                 visible={logoSelectModal}
                 setVisible={setLogoSelectModal}
             >
-                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6 w-3/4 h-1/2' style={{ maxWidth: 350 }}>
+                <View className='flex opacity-100 bg-white rounded-md px-5 py-5 space-y-6 w-[90%] h-1/2'>
                     <View className='flex-row items-center justify-between'>
                         <View className='items-center'>
                             <Text className='text-2xl font-semibold ml-2'>Select a Logo</Text>
@@ -667,20 +683,14 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                         </View>
                     </View>
 
-                    <ScrollView className='bg-gray-400 py-4 rounded-xl'>
-                        {Object.entries(committeeLogos).map(([name, logoData]) => (
-                            <TouchableOpacity
-                                className='items-center py-5'
-                                key={name}
-                                onPress={() => {
-                                    setLocalCommitteeData({ ...localCommitteeData, logo: name as keyof typeof committeeLogos });
-                                    setLogoSelectModal(false);
-                                }}
-                            >
-                                <logoData.LogoComponent width={logoData.width} height={logoData.height} />
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
+                    <FlatList
+                        data={Object.entries(committeeLogos)}
+                        renderItem={renderItem}
+                        keyExtractor={(item) => item[0]}
+                        numColumns={3}
+                        contentContainerStyle={{ padding: 10 }}
+                        style={{ backgroundColor: 'gray', borderRadius: 10 }}
+                    />
                 </View>
             </DismissibleModal>
 

@@ -40,7 +40,7 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
         <ScrollView className='pt-4'>
             <View>
                 {isSuperUser && (
-                    <View className='flex items-center mb-8 w-full'>
+                    <View className='flex items-center w-full'>
                         <TouchableOpacity
                             onPress={() => navigation.navigate("CommitteeEdit", { committee: undefined })}
                             className='flex-row w-[90%] h-28 rounded-xl bg-[#D3D3D3]'
@@ -62,8 +62,11 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
                 )}
 
                 {loading && (
-                    <ActivityIndicator size="large" />
+                    <ActivityIndicator className='mt-8' size="large" />
                 )}
+
+                <View className="mt-8" />
+
                 {!loading && committees.map((committee) => (
                     <CommitteeCard
                         key={committee.name}
