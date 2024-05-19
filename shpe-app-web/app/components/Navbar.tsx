@@ -13,12 +13,11 @@ const Navbar = () => {
     // const path = usePathname();
     const router = useRouter();
     const path = usePathname();
-    console.log(path);
 
 
     return (
         
-        <div className="flex flex-col bg-[#500000] h-screen w-52 justify-between shrink-0">
+        <div className="flex flex-col bg-[#500000] h-screen w-52 justify-between shrink-0 overflow-x-hidden overflow-y-auto">
             <nav className='flex flex-col w-full text-[18px] font-bold'>
                 <Image src='logo.svg' alt="SHPE Logo" width={200} height={200}  className="mb-10"/>
 
@@ -31,7 +30,7 @@ const Navbar = () => {
 
                     path == '/dashboard' ?
                     <Image src ="Polygon1.svg" alt="Dashboard" width={25} height={20} 
-                    style={{position:'absolute' , top: 9 , right:-1 , zIndex: 0}} />
+                    style={{position:'absolute' , top: 9 , right:-2 , zIndex: 0}} />
                     : ''
                     
                     }
@@ -48,7 +47,7 @@ const Navbar = () => {
                     
                     path == '/events' ?
                     <Image src ="Polygon1.svg" alt="Dashboard" width={25} height={20} 
-                    style={{position:'absolute' , top: 9 , right:-1 , zIndex: 0}} />
+                    style={{position:'absolute' , top: 9 , right:-2 , zIndex: 0}} />
                     : ''
 
                     }
@@ -67,7 +66,7 @@ const Navbar = () => {
                     
                     path == '/points' ?
                     <Image src ="Polygon1.svg" alt="Dashboard" width={25} height={20} 
-                    style={{position:'absolute' , top: 9 , right:-1 , zIndex: 0}} />
+                    style={{position:'absolute' , top: 9 , right:-2 , zIndex: 0}} />
                     : ''
                     
                     }
@@ -85,7 +84,7 @@ const Navbar = () => {
                     
                     path == '/committees' ?
                     <Image src ="Polygon1.svg" alt="Dashboard" width={25} height={20} 
-                    style={{position:'absolute' , top: 9 , right:-1 , zIndex: 0}} />
+                    style={{position:'absolute' , top: 9 , right:-2 , zIndex: 0}} />
                     : ''
                     
                     }
@@ -103,7 +102,7 @@ const Navbar = () => {
                     
                     path == '/membership' ?
                     <Image src ="Polygon1.svg" alt="Dashboard" width={25} height={20} 
-                    style={{position:'absolute' , top: 9 , right:-1 , zIndex: 0}} />
+                    style={{position:'absolute' , top: 9 , right:-2 , zIndex: 0}} />
                     : ''
                     
                     }
@@ -120,7 +119,7 @@ const Navbar = () => {
                     
                     path == '/users' ?
                     <Image src ="Polygon1.svg" alt="Dashboard" width={25} height={20} 
-                    style={{position:'absolute' , top: 9 , right:-1 , zIndex: 0}} />
+                    style={{position:'absolute' , top: 9 , right:-2 , zIndex: 0}} />
                     : ''
                     
                     }
@@ -136,7 +135,7 @@ const Navbar = () => {
                     
                     path == '/tools' ?
                     <Image src ="Polygon1.svg" alt="Dashboard" width={25} height={20} 
-                    style={{position:'absolute' , top: 9 , right:-1 , zIndex: 0}} />
+                    style={{position:'absolute' , top: 9 , right:-2 , zIndex: 0}} />
                     : ''
                     
                     }
