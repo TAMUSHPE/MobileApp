@@ -22,8 +22,8 @@ const MainStack = () => {
                     headerShown: false
                 }}
             >
-                <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
-                <Stack.Screen name="AdminDashboardStack" component={AdminDashboardStack} />
+                <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} options={{ title: "" }} />
+                <Stack.Screen name="AdminDashboardStack" component={AdminDashboardStack} options={{ title: "" }} />
             </Stack.Group>
 
             {/* Settings Screens */}
