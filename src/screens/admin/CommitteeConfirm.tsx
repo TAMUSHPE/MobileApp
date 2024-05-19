@@ -191,8 +191,8 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                     <ActivityIndicator size="large" />
                 )}
                 {!loading && committees.map((committee) => {
-                    const { name, color, logo, firebaseDocName } = committee;
-                    const { LogoComponent, height, width } = getLogoComponent(logo);
+                    const { name, color, firebaseDocName } = committee;
+                    const { LogoComponent, height, width } = getLogoComponent(committee.logo);
 
                     const requestCount = committeeRequests[firebaseDocName!]?.length ?? 0;
 

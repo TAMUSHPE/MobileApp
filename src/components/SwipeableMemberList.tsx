@@ -21,7 +21,7 @@ const rightSwipeActions = () => {
 
 
 // Swipeable Member Card 
-const SwipeableMemberCard = ({ userData }: { userData: PublicUserInfo }) => {
+const SwipeableMemberCard = ({ userData, onSwipe }: { userData: PublicUserInfo, onSwipe: any }) => {
     // Create a ref for the Swipeable component
     const swipeableRef = useRef<Swipeable | null>(null);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
@@ -71,8 +71,9 @@ const SwipeableMemberCard = ({ userData }: { userData: PublicUserInfo }) => {
                         <TouchableOpacity
                             className='bg-[#AEF359] w-[40%] items-center py-2 rounded-md'
                             onPress={() => {
-                                setMOTM(userData!)
+                                setMOTM(userData)
                                 setConfirmVisible(false)
+                                onSwipe(userData)
                             }}
                         >
                             <Text className='font-semibold text-lg'>Confirm</Text>
@@ -92,15 +93,15 @@ const SwipeableMemberCard = ({ userData }: { userData: PublicUserInfo }) => {
 };
 
 // Main component
-const SwipeableMemberList = ({ userData }: { userData: PublicUserInfo[] }) => {
+const SwipeableMemberList = ({ userData, onSwipe }: { userData: PublicUserInfo[], onSwipe: any }) => {
     return (
         <>
-        <StatusBar />
+            <StatusBar />
             <SafeAreaView style={styles.container}>
                 <FlatList
                     data={userData}
                     keyExtractor={(item) => item.uid!}
-                    renderItem={({ item }) => <SwipeableMemberCard userData={item} />}
+                    renderItem={({ item }) => <SwipeableMemberCard userData={item} onSwipe={onSwipe} />}
                     ItemSeparatorComponent={Separator}
                 />
             </SafeAreaView>
@@ -131,7 +132,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         paddingVertical: 20,
     },
-    });
+});
 
 export default SwipeableMemberList;
 
