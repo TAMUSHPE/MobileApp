@@ -3,9 +3,10 @@ import { getLogoComponent } from "@/types/Committees";
 import Image from 'next/image';
 import { CommitteeLogosName } from "@/types/Committees";
 const CommitteCard: React.FC<CommitteeCardProps> = ({ committee }) => {
-    const { name, color, logo, head, memberCount } = committee;
+    const { name, color, logo, head, memberCount,description } = committee;
+    console.log(committee);
     const { LogoComponent, height, width } = getLogoComponent(logo as CommitteeLogosName);
-    const truncate = (str: string) => str.length > 19 ? str.substring(0, 19) + "..." : str;
+    const truncate = (str: string , n:number) => str.length > n ? str.substring(0, n) + "..." : str; 
 
     return (
         <div className="flex flex-col transition hover:scale-110">
@@ -29,10 +30,13 @@ const CommitteCard: React.FC<CommitteeCardProps> = ({ committee }) => {
                 <div className="pt-2">
                     {
                         // Truncate the name if it is too long , but if doesnt exist default to untitled
-                        name ? truncate(name) : 'Untittled'
+                        name ? truncate(name,16) : 'Untittled'
                     } </div>
                 <div className="pt-1 text-[9px] text-gray-400">
-                    {committee.description}
+                    {
+                        // Truncate the description if it is too long , but if doesnt exist default to nothing
+                        description ? truncate(description,140) : ''
+                    }
                 </div>
             </div>
         </div>
