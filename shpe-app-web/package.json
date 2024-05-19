@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "date-fns": "^3.6.0",
     "firebase": "^10.7.1",
     "next": "^14.0.4",
     "react": "^18.2.0",
