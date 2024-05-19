@@ -655,7 +655,7 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                 visible={logoSelectModal}
                 setVisible={setLogoSelectModal}
             >
-                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ maxWidth: 350 }}>
+                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6 w-3/4 h-1/2' style={{ maxWidth: 350 }}>
                     <View className='flex-row items-center justify-between'>
                         <View className='items-center'>
                             <Text className='text-2xl font-semibold ml-2'>Select a Logo</Text>
@@ -667,10 +667,10 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                         </View>
                     </View>
 
-                    <View className='flex-row flex-wrap w-full bg-gray-400 py-4 rounded-xl'>
+                    <ScrollView className='bg-gray-400 py-4 rounded-xl'>
                         {Object.entries(committeeLogos).map(([name, logoData]) => (
                             <TouchableOpacity
-                                className='mx-2 rounded-md selection: w-[28%] items-center justify-center'
+                                className='items-center py-5'
                                 key={name}
                                 onPress={() => {
                                     setLocalCommitteeData({ ...localCommitteeData, logo: name as keyof typeof committeeLogos });
@@ -680,7 +680,7 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                                 <logoData.LogoComponent width={logoData.width} height={logoData.height} />
                             </TouchableOpacity>
                         ))}
-                    </View>
+                    </ScrollView>
                 </View>
             </DismissibleModal>
 
