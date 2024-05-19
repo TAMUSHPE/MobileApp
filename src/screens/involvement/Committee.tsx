@@ -22,7 +22,7 @@ import MembersList from '../../components/MembersList';
 const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
 
-    const { name, color, logo, description, memberApplicationLink, leadApplicationLink, firebaseDocName, isOpen, memberCount } = initialCommittee;
+    const { name, color, logo, description, memberApplicationLink, representativeApplicationLink, leadApplicationLink, firebaseDocName, isOpen, memberCount } = initialCommittee;
     const [events, setEvents] = useState<SHPEEvent[]>([]);
     const { LogoComponent, height, width } = getLogoComponent(logo);
     const luminosity = calculateHexLuminosity(color!);
@@ -259,6 +259,16 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                                     onPress={() => handleLinkPress(memberApplicationLink!)}
                                 >
                                     <Text className={`font-semibold text-${isLightColor ? "white" : "black"}`}>Member Application</Text>
+                                </TouchableOpacity>
+                            )}
+                            {representativeApplicationLink && (
+
+                                <TouchableOpacity
+                                    className='py-2 rounded-lg items-center mt-2 w-[80%]'
+                                    style={{ backgroundColor: color }}
+                                    onPress={() => handleLinkPress(representativeApplicationLink!)}
+                                >
+                                    <Text className={`font-semibold text-${isLightColor ? "white" : "black"}`}>Representative Application</Text>
                                 </TouchableOpacity>
                             )}
                             {leadApplicationLink && (
