@@ -12,6 +12,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
     const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
     const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
     const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
+    const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
 
 
     return (
@@ -105,6 +106,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         <TouchableOpacity
                             onPress={() => {
                                 updateAllUserPoints()
+                                updateRanksOnCall()
                                 Alert.alert('Update All User Points', 'Update All User Points has been called')
                             }}
                             className='bg-black rounded-md py-4 px-2 items-center justify-center'

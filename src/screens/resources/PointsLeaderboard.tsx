@@ -111,6 +111,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     </TouchableOpacity>
                 </View>
             </View>
+            <View className='pb-4' />
 
             <ScrollView
                 onScroll={handleScroll}
@@ -207,7 +208,12 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                             ) : (
                                 currentUserInfo?.points ? (
                                     <RankCard key="userCard" userData={currentUserInfo} navigation={navigation} />
-                                ) : (<Text className='text-xl font-medium'>You don't any have points.</Text>)
+                                ) : (
+                                    <View className='flex-col h-20 mx-4 px-4 mt-8 rounded-xl items-center justify-center'
+                                        style={{ backgroundColor: colorMapping[currentUserInfo?.rankChange ?? "same"] }}>
+                                        <Text className='text-xl font-medium'>You don't have any points</Text>
+                                    </View>
+                                )
                             )}
                         </View>
                     )}

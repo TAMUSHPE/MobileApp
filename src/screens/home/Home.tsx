@@ -1,4 +1,4 @@
-import { ScrollView } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import React, { useEffect, useContext } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -33,7 +33,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
             <MOTMCard navigation={navigation} />
 
-
+            <View className="mb-8" />
         </ScrollView>
     );
 }
