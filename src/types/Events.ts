@@ -76,6 +76,8 @@ export abstract class SHPEEvent {
         this.creator = null;
         this.nationalConventionEligible = null;
         this.notificationSent = true;
+        this.endTimeBuffer = null;
+        this.startTimeBuffer = null;
     }
 
     /**
