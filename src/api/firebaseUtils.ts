@@ -664,12 +664,21 @@ export const getAttendanceNumber = async (eventId: string): Promise<number> => {
  * @returns Status representing the status of the cloud function
  */
 export const signInToEvent = async (eventID: string, uid?: string): Promise<EventLogStatus> => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    let location: null | { longitude: number, latitude: number } = null;
-    if (status == 'granted') {
-        const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
-        location = (new GeoPoint(latitude, longitude)).toJSON();
+    const event = await getEvent(eventID);
+    if (!event) {
+        return EventLogStatus.EVENT_NOT_FOUND;
     }
+
+    let location: null | { longitude: number, latitude: number } = null;
+
+    if (event.geofencingRadius && event.geofencingRadius > 0) {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status == 'granted') {
+            const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
+            location = (new GeoPoint(latitude, longitude)).toJSON();
+        }
+    }
+
     return await httpsCallable(functions, "eventSignIn")
         .call(null, { eventID, location, uid })
         .then((result) => {
@@ -703,12 +712,21 @@ export const signInToEvent = async (eventID: string, uid?: string): Promise<Even
  * @returns Status representing the status of the cloud function
  */
 export const signOutOfEvent = async (eventID: string, uid?: string): Promise<EventLogStatus> => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    let location: null | { longitude: number, latitude: number } = null;
-    if (status == 'granted') {
-        const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
-        location = (new GeoPoint(latitude, longitude)).toJSON();
+    const event = await getEvent(eventID);
+    if (!event) {
+        return EventLogStatus.EVENT_NOT_FOUND;
     }
+
+    let location: null | { longitude: number, latitude: number } = null;
+
+    if (event.geofencingRadius && event.geofencingRadius > 0) {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status == 'granted') {
+            const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
+            location = (new GeoPoint(latitude, longitude)).toJSON();
+        }
+    }
+
     return await httpsCallable(functions, "eventSignOut")
         .call(null, { eventID, location, uid })
         .then((result) => {
