@@ -29,6 +29,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const [pointsPerHour, setPointsPerHour] = useState<number | undefined>(event.pointsPerHour ?? undefined);
     const [nationalConventionEligible, setNationalConventionEligible] = useState<boolean | undefined>(event.nationalConventionEligible ?? undefined);
     const [notificationSent, setNotificationSent] = useState<boolean | undefined>(event.notificationSent ?? undefined);
+    const eventTypeNotification = ["Study Hours", "Workshop", "Volunteer Event", "Social Event", "Intramural Event"]
 
     useEffect(() => {
         getCommittees()
@@ -187,6 +188,26 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                             value={!notificationSent}
                         />
                     </View>
+                    {!notificationSent && (
+                        <View>
+                            {event.general ? (
+                                <Text>Event Notification will be sent to all users</Text>
+                            ) : (
+                                <>
+                                    {(committee && committee !== "") && (
+                                        <View>
+                                            <Text>The following committee will be notified: {committee}</Text>
+                                        </View>
+                                    )}
+                                    {eventTypeNotification.includes(event.eventType!) && (
+                                        <View>
+                                            <Text>The following interest will be notified for {event.eventType}</Text>
+                                        </View>
+                                    )}
+                                </>
+                            )}
+                        </View>
+                    )}
                 </KeyboardAvoidingView>
 
                 <View>
