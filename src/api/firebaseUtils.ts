@@ -663,7 +663,7 @@ export const getAttendanceNumber = async (eventId: string): Promise<number> => {
  * @param eventID ID of event to sign into. This is the name of the event document in firestore
  * @returns Status representing the status of the cloud function
  */
-export const signInToEvent = async (eventID: string): Promise<EventLogStatus> => {
+export const signInToEvent = async (eventID: string, uid?: string): Promise<EventLogStatus> => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     let location: null | { longitude: number, latitude: number } = null;
     if (status == 'granted') {
@@ -671,7 +671,7 @@ export const signInToEvent = async (eventID: string): Promise<EventLogStatus> =>
         location = (new GeoPoint(latitude, longitude)).toJSON();
     }
     return await httpsCallable(functions, "eventSignIn")
-        .call(null, { eventID, location })
+        .call(null, { eventID, location, uid })
         .then((result) => {
             if (typeof result.data == "object" && result.data && (result.data as any).success) {
                 return EventLogStatus.SUCCESS
@@ -702,7 +702,7 @@ export const signInToEvent = async (eventID: string): Promise<EventLogStatus> =>
  * @param eventID ID of event to sign into. This is the name of the event document in firestore
  * @returns Status representing the status of the cloud function
  */
-export const signOutOfEvent = async (eventID: string): Promise<EventLogStatus> => {
+export const signOutOfEvent = async (eventID: string, uid?: string): Promise<EventLogStatus> => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     let location: null | { longitude: number, latitude: number } = null;
     if (status == 'granted') {
@@ -710,7 +710,7 @@ export const signOutOfEvent = async (eventID: string): Promise<EventLogStatus> =
         location = (new GeoPoint(latitude, longitude)).toJSON();
     }
     return await httpsCallable(functions, "eventSignOut")
-        .call(null, { eventID, location })
+        .call(null, { eventID, location, uid })
         .then((result) => {
             if (typeof result.data == "object" && result.data && (result.data as any).success) {
                 return EventLogStatus.SUCCESS
@@ -818,6 +818,24 @@ export const setUserRoles = async (uid: string, roles: Roles): Promise<HttpsCall
             }, uid);
             return res;
         });
+};
+
+
+export const getUsers = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const querySnapshot = await getDocs(userRef);
+        const members: PublicUserInfo[] = querySnapshot.docs.map((doc) => ({
+            ...doc.data() as PublicUserInfo,
+            uid: doc.id,
+        }));
+
+        return members;
+
+    } catch (error) {
+        console.error("Error fetching members:", error);
+        throw new Error("Internal Server Error.");
+    }
 };
 
 export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => {
