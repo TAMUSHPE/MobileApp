@@ -176,7 +176,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                 }
 
                 {/* When notification is set to off. Then the event's notificationSent will be set to true  */}
-                <KeyboardAvoidingView className='py-3'>
+                <KeyboardAvoidingView className='py-3 -z-20'>
                     <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Notification Settings</Text>
                     <View className="flex flex-row items-center justify-between py-2">
                         <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Notification</Text>
@@ -210,7 +210,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                     )}
                 </KeyboardAvoidingView>
 
-                <View>
+                <View className='-z-20'>
                     <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>National Convention</Text>
                     <TouchableOpacity
                         className='flex-row mt-4 items-center -z-20'
