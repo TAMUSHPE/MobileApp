@@ -2,7 +2,7 @@ import { View, Text } from 'react-native'
 import React, { useEffect, useState } from 'react';
 import { useRoute } from '@react-navigation/core';
 import { EventVerificationProps, EventVerificationScreenRouteProp } from '../../types/Navigation'
-import { signInToEvent, signOutOfEvent } from '../../api/firebaseUtils';
+import { getEvent, signInToEvent, signOutOfEvent } from '../../api/firebaseUtils';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LottieView from "lottie-react-native";
 import { EventLogStatus, getStatusMessage } from '../../types/Events';
@@ -15,6 +15,7 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
     const { id, mode } = route.params;
     const [logStatus, setLogStatus] = useState<EventLogStatus | undefined>();
     const [loading, setLoading] = useState<boolean>(true);
+    const [checkingLocation, setCheckingLocation] = useState<boolean>(false);
 
     useEffect(() => {
         switch (mode) {
@@ -36,6 +37,24 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                 break;
         }
     }, [id, mode]);
+
+
+    useEffect(() => {
+        const fetchEventDetails = async (eventId: string) => {
+            const event = await getEvent(eventId);
+            if (!event) {
+                setLogStatus(EventLogStatus.EVENT_NOT_FOUND);
+                return;
+            }
+
+            if (event.geofencingRadius && event.geofencingRadius > 0) {
+                setCheckingLocation(true);
+            }
+        };
+
+        fetchEventDetails(id);
+    }, [id]);
+
 
     const redirectToPage = () => {
         setTimeout(() => {
@@ -112,7 +131,10 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
 
             {loading ? (
                 <View className='w-full h-full items-center justify-center'>
-                    <ActivityIndicator className='mt-4' size={"large"} />
+                    <ActivityIndicator className='mt-4' color="white" size={"large"} />
+                    {checkingLocation && (
+                        <Text className='text-lg font-semibold text-white mt-4'>This will take a few seconds as we check your location...</Text>
+                    )}
                 </View>
             ) : (
                 renderStatusView()
