@@ -1,8 +1,9 @@
 import { ScrollView, View } from 'react-native';
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect, useContext, useCallback } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/core';
 import { StatusBar } from 'expo-status-bar';
-import { getFunctions, httpsCallable } from 'firebase/functions';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
 import manageNotificationPermissions from '../../helpers/pushNotification';
@@ -10,6 +11,7 @@ import { HomeStackParams } from "../../types/Navigation"
 import MOTMCard from '../../components/MOTMCard';
 import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
 import Ishpe from './Ishpe';
+import { getUser } from '../../api/firebaseUtils';
 
 /**
  * Renders the home screen of the application.
@@ -19,9 +21,28 @@ import Ishpe from './Ishpe';
  * @returns The rendered home screen.
  */
 const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
+    const { setUserInfo } = useContext(UserContext)!;
+
+    const fetchUserData = async () => {
+        try {
+            const firebaseUser = await getUser(auth.currentUser?.uid!)
+            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+            setUserInfo(firebaseUser);
+        } catch (error) {
+            console.error("Error updating user:", error);
+        }
+    }
+
     useEffect(() => {
+        fetchUserData();
         manageNotificationPermissions();
     }, [])
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchUserData();
+        }, [])
+    );
 
     return (
         <ScrollView className="flex flex-col bg-offwhite">
