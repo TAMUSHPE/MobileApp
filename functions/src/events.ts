@@ -33,7 +33,7 @@ const geographicDistance = (pos1: GeoPoint, pos2: GeoPoint): number => {
 
     const a = (Math.sin(deltaPhi / 2.0) ** 2) + Math.cos(phi1) * Math.cos(phi2) * (Math.sin(deltaLambda / 2.0) ** 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    
+
     return EARTH_RADIUS * c;
 }
 
@@ -68,7 +68,7 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     else if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
         throw new functions.https.HttpsError("deadline-exceeded", "Event has already ended.");
     }
-    else if (event.startTime && (event.startTime.toMillis() - (event.endTimeBuffer ?? 0) > Date.now())) {
+    else if (event.startTime && (event.startTime.toMillis() - (event.startTimeBuffer ?? 0) > Date.now())) {
         throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
     }
     else if (event.geolocation && event.geofencingRadius) {
@@ -133,7 +133,7 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     else if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
         throw new functions.https.HttpsError("deadline-exceeded", "Event has already ended.");
     }
-    else if (event.startTime && (event.startTime.toMillis() - (event.endTimeBuffer ?? 0) > Date.now())) {
+    else if (event.startTime && (event.startTime.toMillis() - (event.startTimeBuffer ?? 0) > Date.now())) {
         throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
     }
     else if (event.geolocation && event.geofencingRadius) {
