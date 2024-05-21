@@ -500,6 +500,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                     description: modifiedDescription,
                                     coverImageURI,
                                     creator: auth.currentUser?.uid,
+                                    general: isGeneral
                                 });
                                 navigation.navigate("SetSpecificEventDetails", { event })
                             }
