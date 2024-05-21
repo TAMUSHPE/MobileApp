@@ -1,8 +1,11 @@
 import { View, Image, ScrollView, Text, TouchableOpacity, ImageSourcePropType } from 'react-native';
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleLinkPress } from '../../helpers/links';
+import { getUser } from '../../api/firebaseUtils';
+import { auth } from '../../config/firebaseConfig';
 import { ResourcesStackParams } from '../../types/Navigation';
 import { Images } from '../../../assets';
 import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
@@ -13,7 +16,24 @@ import { UserContext } from '../../context/UserContext';
 import OfficeSignIn from '../admin/OfficeSignIn';
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
-    const { userInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
+
+    const fetchUserData = async () => {
+        console.log("Fetching user data...");
+        try {
+            const firebaseUser = await getUser(auth.currentUser?.uid!)
+            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+            setUserInfo(firebaseUser);
+        } catch (error) {
+            console.error("Error updating user:", error);
+        }
+    }
+
+    useEffect(() => {
+        fetchUserData();
+    }, [])
+
+
 
     const SocialMediaButton = ({ url, imageSource, bgColor = "" }: {
         url: string,
