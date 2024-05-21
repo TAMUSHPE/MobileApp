@@ -60,20 +60,37 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                 const newTeamMembers: TeamMembersState = { leads: [], representatives: [], head: null };
 
                 if (head) {
-                    newTeamMembers.head = await getPublicUserData(head);
+                    const headData = await getPublicUserData(head);
+                    if (headData) {
+                        headData.uid = head;
+                        newTeamMembers.head = headData;
+                    }
                 }
 
                 if (representatives && representatives.length > 0) {
                     newTeamMembers.representatives = await Promise.all(
-                        representatives.map(async (uid) => await getPublicUserData(uid))
+                        representatives.map(async (uid) => {
+                            const repData = await getPublicUserData(uid);
+                            if (repData) {
+                                repData.uid = uid;
+                            }
+                            return repData;
+                        })
                     );
                 }
 
                 if (leads && leads.length > 0) {
                     newTeamMembers.leads = await Promise.all(
-                        leads.map(async (uid) => await getPublicUserData(uid))
+                        leads.map(async (uid) => {
+                            const leadData = await getPublicUserData(uid);
+                            if (leadData) {
+                                leadData.uid = uid;
+                            }
+                            return leadData;
+                        })
                     );
                 }
+
                 setLocalTeamMembers(newTeamMembers);
             }
         };
