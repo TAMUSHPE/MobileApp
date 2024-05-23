@@ -1,5 +1,7 @@
 import { SHPEEvent } from "@/types/Events";
 import { startOfMonth, endOfMonth, eachDayOfInterval, format, getDay, addDays, subDays, isToday } from "date-fns";
+import { DayModal } from "./DayModal";
+import { useDayModal } from "./useDayModal";
 
 interface MonthViewProps {
     eventsByDate: {[key: string] : SHPEEvent[]};
@@ -26,6 +28,9 @@ const MonthView: React.FC<MonthViewProps> = ({eventsByDate, focusDate}) => {
     const daysInCurrMonth = eachDayOfInterval({start: firstDayOfCurrMonth, end: lastDayOfCurrMonth});
     const daysInNextMonth = eachDayOfInterval({start: firstDayOfNextMonth, end: lastDayOfNextMonth});
 
+
+    const {isShowing, toggle, selectedDay, selectedDayEvents} = useDayModal();
+
     const DayCell = ({day, index, dayState}: {day: Date, index: number, dayState: 'prev' | 'curr' | 'next'}) => {
         const dateKey = format(day, "yyyy-MM-dd");
         const dayEvents = eventsByDate[dateKey] || []; // Get events for date with dateKey
@@ -40,7 +45,7 @@ const MonthView: React.FC<MonthViewProps> = ({eventsByDate, focusDate}) => {
                 )}
 
                 {/* Day number text */}
-                <div className={`${isToday(day) ? 'bg-[#500000] text-white hover:bg-[#753434]' : 'hover:bg-gray-200'} rounded-full w-8 h-8 place-content-center m-1 cursor-pointer hover:-translate-y-0.5`}>
+                <div onClick={() => toggle(day, dayEvents)} className={`${isToday(day) ? 'bg-[#500000] text-white hover:bg-[#753434]' : 'hover:bg-gray-200'} rounded-full w-8 h-8 place-content-center m-1 cursor-pointer hover:-translate-y-0.5`}>
                     <p className={`font-semibold text-center ${(dayState != 'curr') && 'text-[#A8A8A8]'}`}>{format(day, "d")}</p>
                 </div>
 
@@ -63,6 +68,7 @@ const MonthView: React.FC<MonthViewProps> = ({eventsByDate, focusDate}) => {
             {daysInPrevMonth.map((day, index) => <DayCell day={day} index={index} dayState='prev'/>)}
             {daysInCurrMonth.map((day, index) => <DayCell day={day} index={index} dayState='curr'/>)}
             {daysInNextMonth.map((day, index) => <DayCell day={day} index={index} dayState='next'/>)}
+            <DayModal day={selectedDay} events={selectedDayEvents} isShowing={isShowing} hide={() => toggle()}/>
         </div>
     );
 }
