@@ -2,8 +2,10 @@ import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'rea
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useFocusEffect } from '@react-navigation/core'
 import { Octicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext'
-import { getCommittees } from '../../api/firebaseUtils'
+import { auth } from '../../config/firebaseConfig';
+import { getCommittees, getUser } from '../../api/firebaseUtils'
 import { CommitteesListProps } from '../../types/Navigation'
 import { Committee } from "../../types/Committees"
 import CommitteeCard from './CommitteeCard'
@@ -11,7 +13,7 @@ import CommitteeCard from './CommitteeCard'
 const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
     const [committees, setCommittees] = useState<Committee[]>([]);
     const [loading, setLoading] = useState(true);
-    const { userInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
 
     const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
 
@@ -22,8 +24,21 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
         setLoading(false);
     }
 
+
+    const fetchUserData = async () => {
+        console.log("Fetching user data...");
+        try {
+            const firebaseUser = await getUser(auth.currentUser?.uid!)
+            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+            setUserInfo(firebaseUser);
+        } catch (error) {
+            console.error("Error updating user:", error);
+        }
+    }
+
     useEffect(() => {
         fetchCommittees();
+        fetchUserData();
     }, []);
 
     // a refetch for officer for when they update committees
