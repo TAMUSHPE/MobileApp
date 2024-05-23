@@ -76,6 +76,8 @@ export abstract class SHPEEvent {
         this.creator = null;
         this.nationalConventionEligible = null;
         this.notificationSent = true;
+        this.endTimeBuffer = null;
+        this.startTimeBuffer = null;
     }
 
     /**
@@ -394,6 +396,20 @@ export enum EventLogStatus {
     ERROR,
 }
 
+
+export const getStatusMessage = (status: EventLogStatus): string => {
+    const statusMessages = {
+        [EventLogStatus.SUCCESS]: "Successfully signed in/out.",
+        [EventLogStatus.EVENT_OVER]: "The event is already over.",
+        [EventLogStatus.EVENT_ONGOING]: "The event is ongoing.",
+        [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
+        [EventLogStatus.EVENT_NOT_FOUND]: "The event was not found.",
+        [EventLogStatus.ALREADY_LOGGED]: "You have already signed in/out.",
+        [EventLogStatus.ERROR]: "An internal error occurred. Please try again.",
+    };
+
+    return statusMessages[status] || "An unknown error occurred.";
+};
 
 
 

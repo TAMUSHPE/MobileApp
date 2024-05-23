@@ -1,10 +1,7 @@
 import { ScrollView, View } from 'react-native';
-import React, { useEffect, useContext } from 'react';
+import React, { useEffect } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { getFunctions, httpsCallable } from 'firebase/functions';
-import { UserContext } from '../../context/UserContext';
-import { auth } from '../../config/firebaseConfig';
 import manageNotificationPermissions from '../../helpers/pushNotification';
 import { HomeStackParams } from "../../types/Navigation"
 import MOTMCard from '../../components/MOTMCard';
@@ -19,9 +16,10 @@ import Ishpe from './Ishpe';
  * @returns The rendered home screen.
  */
 const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
+
     useEffect(() => {
         manageNotificationPermissions();
-    }, [])
+    }, []);
 
     return (
         <ScrollView className="flex flex-col bg-offwhite">

@@ -82,9 +82,8 @@ export const committeeLogos = {
 };
 
 export const getLogoComponent = (logoName: keyof typeof committeeLogos = 'default') => {
-    return committeeLogos[logoName];
+    return committeeLogos[logoName] || committeeLogos['default'];
 };
-
 export type CommitteeLogosName = keyof typeof committeeLogos;
 
 
