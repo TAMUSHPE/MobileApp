@@ -1,5 +1,5 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
-import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject } from "firebase/storage";
+import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject, getDownloadURL, uploadBytes } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateTamuEmail } from "../helpers/validation";
@@ -7,7 +7,9 @@ import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter
 import { Committee } from "../types/Committees";
 import { SHPEEvent, EventLogStatus } from "../types/Events";
 import * as Location from 'expo-location';
-import { deleteUser, getAuth } from "firebase/auth";
+import { deleteUser } from "firebase/auth";
+import { LinkData } from "../types/Links";
+import { getBlobFromURI } from "./fileSelection";
 
 /**
  * Obtains the public information of a user given their UID.
@@ -1310,3 +1312,48 @@ const queryUserEventLogs = async (uid: string): Promise<Array<SHPEEvent>> => {
 
     return events;
 }
+
+
+export const updateLink = async (linkData: LinkData) => {
+    const linkRef = doc(db, 'links', linkData.id);
+    let imageUrl = linkData.imageUrl || '';
+
+    // If there is an image to upload
+    if (linkData.imageUrl && linkData.imageUrl.startsWith('file://')) {
+        const imageRef = ref(storage, `links/${linkData.name}`);
+        const blob = await getBlobFromURI(linkData.imageUrl);
+
+        if (blob) {
+            await uploadBytes(imageRef, blob);
+            imageUrl = await getDownloadURL(imageRef);
+        }
+    }
+
+
+    const linkToSave: LinkData = {
+        id: linkData.id,
+        name: linkData.name,
+        url: linkData.url,
+        imageUrl: imageUrl,
+    };
+
+    await setDoc(linkRef, linkToSave, { merge: true });
+};
+
+
+export const fetchLink = async (linkID: string): Promise<LinkData | null> => {
+    try {
+        const linkRef = doc(db, 'links', linkID);
+        const linkDoc = await getDoc(linkRef);
+
+        if (linkDoc.exists()) {
+            return linkDoc.data() as LinkData;
+        } else {
+            console.log('No such document!');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching document:', error);
+        return null;
+    }
+};
