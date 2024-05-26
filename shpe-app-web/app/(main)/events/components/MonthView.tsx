@@ -1,4 +1,4 @@
-import { SHPEEvent } from '@/app/types/Events';
+import { SHPEEvent } from '@mobile/types/Events';
 import {
   startOfMonth,
   endOfMonth,

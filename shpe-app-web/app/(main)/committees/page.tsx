@@ -3,8 +3,8 @@ import CommitteeCard from "../../components/CommitteeCard";
 import { useState, useEffect } from "react";
 import { checkAuthAndRedirect } from "@/app/helpers/auth";
 import { useRouter } from "next/navigation";
-import { Committee } from "@/app/types/Committees";
-import { getPublicUserData, getCommittees } from "@/app/helpers/firebaseUtils";
+import { Committee } from "@mobile/types/Committees";
+import { getPublicUserData, getCommittees } from "@mobile/api/firebaseUtils";
 import Header from "../../components/Header";
 
 
@@ -19,14 +19,14 @@ const Committees = () => {
       const committees = await getCommittees();
 
       const updatedCommittees = await Promise.all(committees.map(async (committee) => {
-        if (committee.head?.uid) {
-          const userData = await getPublicUserData(committee.head.uid);
+        if (committee.head) {
+          const userData = await getPublicUserData(committee.head);
           return { ...committee, head: userData };
         }
         return committee;
       }));
 
-      setCommittees(updatedCommittees);
+      setCommittees(updatedCommittees as Committee[]);
       setLoading(false);
     }
 

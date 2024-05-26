@@ -3,8 +3,8 @@
 import Header from "@/app/components/Header";
 import { checkAuthAndRedirect } from "@/app/helpers/auth";
 import { getEvents, getMembers } from "@/app/helpers/firebaseUtils";
-import { SHPEEvent } from "@/app/types/Events";
-import { PublicUserInfo } from "@/app/types/User";
+import { SHPEEvent } from "@mobile/types/Events";
+import { PublicUserInfo } from "@mobile/types/User";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

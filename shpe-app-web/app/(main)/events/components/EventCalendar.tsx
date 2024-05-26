@@ -1,6 +1,6 @@
 'use client';
 
-import { SHPEEvent } from '@/app/types/Events';
+import { SHPEEvent } from '@mobile/types/Events';
 import { format, subMonths, addMonths } from 'date-fns';
 import MonthView from './MonthView';
 import { useMemo, useState } from 'react';

@@ -1,79 +1,8 @@
-import { Committee } from "../types/Committees"
-import { PrivateUserInfo, PublicUserInfo } from "../types/User"
+import { PrivateUserInfo, PublicUserInfo } from "@mobile/types/User"
 import { collection, getDocs, getDoc, doc, query, where, orderBy } from 'firebase/firestore';
-import { db, auth } from "@/app/api/firebaseConfig";
-import { SHPEEvent, SHPEEventLog } from "@/app/types/Events";
-
-export const getCommittees = async (): Promise<Committee[]> => {
-    try {
-        const committeeCollectionRef = collection(db, 'committees');
-        const snapshot = await getDocs(committeeCollectionRef);
-        const committees = snapshot.docs
-            .filter(doc => doc.id !== "committeeCounts") // ignore committeeCounts document
-            .map(doc => ({
-                firebaseDocName: doc.id,
-                ...doc.data()
-            }));
-        return committees;
-    } catch (err) {
-        console.error(err);
-        return [];
-    }
-};
-
-
-/**
-* Obtains the public information of a user given their UID.
-* 
-* @param uid - The universal ID tied to a registered user.
-* @returns - Promise of data. An undefined return means that the file does not exist or the user does not have permissions to access the document.
-*/
-export const getPublicUserData = async (uid: string = ""): Promise<PublicUserInfo | undefined> => {
-    if (!auth.currentUser?.uid) {
-        throw new Error("Authentication Error", { cause: "User uid is undefined" });
-    }
-
-    if (!uid) {
-        uid = auth.currentUser?.uid;
-    }
-
-    return getDoc(doc(db, "users", uid))
-        .then(async (res) => {
-            const responseData = res.data()
-            return {
-                ...responseData
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            return undefined;
-        });
-};
-
-/**
- * Obtains the private data of a user given their UID. Returns undefined if the currently logged-in user does not have permissions.
- * 
- * @param uid - Universal ID tied to a registered user.
- * @returns - Promise of data. An undefined return means that the file does not exist or the user does not have permissions to access the document.
- */
-export const getPrivateUserData = async (uid: string = ""): Promise<PrivateUserInfo | undefined> => {
-    if (!auth.currentUser?.uid) {
-        throw new Error("Authentication Error", { cause: "User uid is undefined" });
-    }
-    else if (!uid) {
-        uid = auth.currentUser?.uid;
-    }
-
-    return await getDoc(doc(db, `users/${uid}/private`, "privateInfo"))
-        .then((res) => {
-            const responseData = res.data()
-            return responseData;
-        })
-        .catch(err => {
-            console.error(err);
-            return undefined;
-        });
-};
+import { db } from "@/app/api/firebaseConfig";
+import { SHPEEvent, SHPEEventLog } from "@mobile/types/Events";
+import { getPrivateUserData } from "@mobile/api/firebaseUtils"
 
 
 export const getMembers = async (): Promise<(PublicUserInfo & { privateInfo?: PrivateUserInfo, eventLogs?: SHPEEventLog[] })[]> => {
