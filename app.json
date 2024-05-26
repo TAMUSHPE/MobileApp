@@ -2,7 +2,7 @@
   "expo": {
     "name": "TAMU SHPE",
     "slug": "TAMU-SHPE",
-    "version": "0.6.0",
+    "version": "0.6.2",
     "owner": "tamu-shpe",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -16,7 +16,7 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app can access photos"
+          "photosPermission": "TAMU SHPE needs to access your photo library to select a profile picture."
         }
       ],
       [
@@ -36,7 +36,7 @@
       [
         "expo-barcode-scanner",
         {
-          "cameraPermission": "Allow tamu shpe app to access camera."
+          "cameraPermission": "TAMU SHPE needs to access the camera to scan QR codes."
         }
       ]
     ],
@@ -56,7 +56,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.tamu.shpe",
-      "buildNumber": "2"
+      "buildNumber": "4"
     },
     "extra": {
       "eas": {

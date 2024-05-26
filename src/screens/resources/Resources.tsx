@@ -1,8 +1,11 @@
-import { View, Image, ScrollView, Text, TouchableOpacity, ImageSourcePropType } from 'react-native';
-import React, { useContext } from 'react';
+import { View, Image, ScrollView, Text, TouchableOpacity, ImageSourcePropType, ActivityIndicator } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleLinkPress } from '../../helpers/links';
+import { fetchLink, getUser } from '../../api/firebaseUtils';
+import { auth } from '../../config/firebaseConfig';
 import { ResourcesStackParams } from '../../types/Navigation';
 import { Images } from '../../../assets';
 import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
@@ -11,9 +14,44 @@ import ExamIcon from '../../../assets/exam-icon.svg';
 import OfficeHours from './OfficeHours';
 import { UserContext } from '../../context/UserContext';
 import OfficeSignIn from '../admin/OfficeSignIn';
+import { LinkData } from '../../types/Links';
+
+
+const linkIDs = ["1", "2", "3", "4", "5"]; // First 5 links are reserved for social media links
+
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
-    const { userInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const [links, setLinks] = useState<LinkData[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchUserData = async () => {
+        console.log("Fetching user data...");
+        try {
+            const firebaseUser = await getUser(auth.currentUser?.uid!)
+            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+            setUserInfo(firebaseUser);
+        } catch (error) {
+            console.error("Error updating user:", error);
+        }
+    }
+
+    const fetchLinks = async () => {
+        const fetchedLinks = await Promise.all(
+            linkIDs.map(async (id) => {
+                const data = await fetchLink(id);
+                return data || { id, name: '', url: '', imageUrl: null };
+            })
+        );
+        setLinks(fetchedLinks);
+        setLoading(false);
+    };
+
+
+    useEffect(() => {
+        fetchUserData();
+        fetchLinks();
+    }, [])
 
     const SocialMediaButton = ({ url, imageSource, bgColor = "" }: {
         url: string,
@@ -25,7 +63,7 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
             onPress={() => handleLinkPress(url)}
         >
             <View className={`h-14 w-14 rounded-full items-center justify-center ${bgColor}`}>
-                <Image source={imageSource} className={bgColor != "" ? "w-11 h-11" : "w-14 h-14"} />
+                <Image source={imageSource} className="w-14 h-14 rounded-full" />
             </View>
         </TouchableOpacity>
     );
@@ -50,6 +88,12 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
         </TouchableOpacity>
     );
 
+    if (loading) {
+        return (
+            <ActivityIndicator className='absolute top-0 bottom-0 left-0 right-0' size={100} />
+        );
+    }
+
     return (
         <SafeAreaView className='flex-1 bg-white' edges={["top"]}>
             {/* Header */}
@@ -65,29 +109,13 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
             <ScrollView >
                 {/* Links */}
                 <View className='flex-row mx-2 mt-4 justify-evenly'>
-                    <SocialMediaButton
-                        url="https://www.geneva.com/"
-                        imageSource={Images.GENEVA}
-                        bgColor="bg-[#A1CEFE]"
-                    />
-                    <SocialMediaButton
-                        url="https://www.instagram.com/tamushpe/"
-                        imageSource={Images.INSTAGRAM}
-                    />
-                    <SocialMediaButton
-                        url="https://www.flickr.com/photos/143848472@N03/albums/"
-                        imageSource={Images.FLICKER}
-                    />
-                    <SocialMediaButton
-                        url="https://www.tamushpe.org/"
-                        imageSource={Images.TAMU_WHITE}
-                        bgColor='bg-maroon'
-                    />
-                    <SocialMediaButton
-                        url="https://shpe.org/"
-                        imageSource={Images.SHPE_LOGO}
-                        bgColor='bg-dark-navy'
-                    />
+                    {links.map((link, index) => (
+                        <SocialMediaButton
+                            key={index}
+                            url={link.url}
+                            imageSource={{ uri: link.imageUrl || '' }}
+                        />
+                    ))}
                 </View>
 
                 {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}

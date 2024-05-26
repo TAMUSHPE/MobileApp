@@ -16,13 +16,13 @@ import EventsList from '../../components/EventsList';
 import { PublicUserInfo } from '../../types/User';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { auth, db } from '../../config/firebaseConfig';
-import { collection, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 import MembersList from '../../components/MembersList';
 
 const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
 
-    const { name, color, logo, description, memberApplicationLink, leadApplicationLink, firebaseDocName, isOpen, memberCount } = initialCommittee;
+    const { name, color, logo, description, memberApplicationLink, representativeApplicationLink, leadApplicationLink, firebaseDocName, isOpen, memberCount } = initialCommittee;
     const [events, setEvents] = useState<SHPEEvent[]>([]);
     const { LogoComponent, height, width } = getLogoComponent(logo);
     const luminosity = calculateHexLuminosity(color!);
@@ -60,20 +60,37 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                 const newTeamMembers: TeamMembersState = { leads: [], representatives: [], head: null };
 
                 if (head) {
-                    newTeamMembers.head = await getPublicUserData(head);
+                    const headData = await getPublicUserData(head);
+                    if (headData) {
+                        headData.uid = head;
+                        newTeamMembers.head = headData;
+                    }
                 }
 
                 if (representatives && representatives.length > 0) {
                     newTeamMembers.representatives = await Promise.all(
-                        representatives.map(async (uid) => await getPublicUserData(uid))
+                        representatives.map(async (uid) => {
+                            const repData = await getPublicUserData(uid);
+                            if (repData) {
+                                repData.uid = uid;
+                            }
+                            return repData;
+                        })
                     );
                 }
 
                 if (leads && leads.length > 0) {
                     newTeamMembers.leads = await Promise.all(
-                        leads.map(async (uid) => await getPublicUserData(uid))
+                        leads.map(async (uid) => {
+                            const leadData = await getPublicUserData(uid);
+                            if (leadData) {
+                                leadData.uid = uid;
+                            }
+                            return leadData;
+                        })
                     );
                 }
+
                 setLocalTeamMembers(newTeamMembers);
             }
         };
@@ -126,6 +143,13 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
             await setDoc(doc(db, `committeeVerification/${firebaseDocName}/requests/${auth.currentUser.uid}`), {
                 uploadDate: new Date().toISOString(),
             }, { merge: true });
+        }
+    }, [userInfo]);
+
+    const removeCommitteeRequest = useCallback(async () => {
+        if (auth.currentUser) {
+            const requestDocRef = doc(db, `committeeVerification/${firebaseDocName}/requests/${auth.currentUser.uid}`);
+            await deleteDoc(requestDocRef);
         }
     }, [userInfo]);
 
@@ -231,15 +255,23 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                         </View>
                         <TouchableOpacity
                             className={`px-4 py-[2px] rounded-lg items-center mt-2 mx-2 ${isInCommittee ? "bg-[#FF4545]" : isRequesting ? "bg-gray-400" : "bg-[#AEF359]"}`}
-                            onPress={() => setConfirmVisible(!confirmVisible)}
-                            disabled={loadingCountChange || isRequesting}
+                            onPress={() => {
+                                if (isRequesting) {
+                                    removeCommitteeRequest();
+                                    setIsRequesting(false)
+                                } else {
+                                    // Join or Leave confirmation
+                                    setConfirmVisible(!confirmVisible)
+                                }
+                            }}
+                            disabled={loadingCountChange}
                         >
 
                             {loadingCountChange ? (
                                 <ActivityIndicator color="#000000" />
                             ) : (
                                 <Text className='text-lg font-semibold'>
-                                    {isInCommittee ? "Leave" : isRequesting ? "Pending\nRequest" : "Join"}
+                                    {isInCommittee ? "Leave" : isRequesting ? "Cancel\nRequest" : "Join"}
                                 </Text>
                             )}
                         </TouchableOpacity>
@@ -259,6 +291,16 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                                     onPress={() => handleLinkPress(memberApplicationLink!)}
                                 >
                                     <Text className={`font-semibold text-${isLightColor ? "white" : "black"}`}>Member Application</Text>
+                                </TouchableOpacity>
+                            )}
+                            {representativeApplicationLink && (
+
+                                <TouchableOpacity
+                                    className='py-2 rounded-lg items-center mt-2 w-[80%]'
+                                    style={{ backgroundColor: color }}
+                                    onPress={() => handleLinkPress(representativeApplicationLink!)}
+                                >
+                                    <Text className={`font-semibold text-${isLightColor ? "white" : "black"}`}>Representative Application</Text>
                                 </TouchableOpacity>
                             )}
                             {leadApplicationLink && (
@@ -308,9 +350,9 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                         {localTeamMembers.leads && localTeamMembers.leads.length > 0 && (
                             <>
                                 <Text className='font-bold text-lg mb-2' style={{ color: color }}>Leads</Text>
-                                {localTeamMembers.leads.map((representative, index) => (
+                                {localTeamMembers.leads.map((lead, index) => (
                                     <View className='mb-6' key={index}>
-                                        <CommitteeTeamCard userData={representative || {}} navigation={navigation} />
+                                        <CommitteeTeamCard userData={lead || {}} navigation={navigation} />
                                     </View>
                                 ))}
                             </>

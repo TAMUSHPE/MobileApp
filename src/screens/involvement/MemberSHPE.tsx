@@ -12,18 +12,37 @@ import { FontAwesome } from '@expo/vector-icons';
 import { darkMode } from '../../../tailwind.config';
 import DismissibleModal from '../../components/DismissibleModal';
 import { Pressable } from 'react-native';
+import { LinkData } from '../../types/Links';
+import { fetchLink } from '../../api/firebaseUtils';
+
+const linkIDs = ["6", "7"]; // ids reserved for TAMU and SHPE National links
 
 const MemberSHPE = () => {
     const { userInfo } = useContext(UserContext)!;
     const { nationalExpiration, chapterExpiration } = userInfo?.publicInfo!;
-    // const TAMU_GOOGLE_FORM = "https://docs.google.com/forms/d/e/1FAIpQLSeJqnOMHljOHcMGVzkhQeVtPgt5eG5Iic8vZlmZjXCYT0qw3g/viewform"
-    const TAMU_PAY_DUES = "https://tamu.estore.flywire.com/products/2023-2024-membershpe-shirt-127459"
-    const NATIONALS = "https://www.shpeconnect.org/eweb/DynamicPage.aspx?WebCode=LoginRequired&expires=yes&Site=shpe"
     const [uploadedNational, setUploadedNational] = useState(false)
     const [uploadedChapter, setUploadedChapter] = useState(false)
     const [isVerified, setIsVerified] = useState(false)
     const [loading, setLoading] = useState(false)
     const [updatingSizes, setUpdatingSizes] = useState<boolean>(false);
+    const [links, setLinks] = useState<LinkData[]>([]);
+
+    const tamuLink = links.find(link => link.id === "6");
+    const nationalsLink = links.find(link => link.id === "7");
+
+    const fetchLinks = async () => {
+        const fetchedLinks = await Promise.all(
+            linkIDs.map(async (id) => {
+                const data = await fetchLink(id);
+                return data || { id, name: '', url: '', imageUrl: null };
+            })
+        );
+        setLinks(fetchedLinks);
+    };
+
+    useEffect(() => {
+        fetchLinks();
+    }, []);
 
     useEffect(() => {
         if (nationalExpiration && chapterExpiration) {
@@ -55,11 +74,11 @@ const MemberSHPE = () => {
     }, [])
 
     const uploadDocument = async (type: 'national' | 'chapter') => {
-        if(type === 'chapter') {
+        if (type === 'chapter') {
             setShowShirtModal(true);
         }
         else {
-        const document = await selectDocument();
+            const document = await selectDocument();
             if (document) {
                 setLoading(true);
                 const path = `user-docs/${auth.currentUser?.uid}/${type}-verification`;
@@ -165,7 +184,7 @@ const MemberSHPE = () => {
                                 </View>
                             </TouchableOpacity>
                         </View>
-                            
+
                         {loading && (
                             <View className='items-center mt-2'>
                                 <ActivityIndicator size="small" />
@@ -205,7 +224,7 @@ const MemberSHPE = () => {
                     <View className='flex-row'>
                         <Text className='text-md font-bold'>1. Pay $20 to cover your</Text>
                         <TouchableOpacity
-                            onPress={() => handleLinkPress(TAMU_PAY_DUES)}
+                            onPress={() => handleLinkPress(tamuLink?.url || "")}
                         >
                             <Text className='text-md font-bold text-blue-400'> #TAMUSHPE </Text>
                         </TouchableOpacity>
@@ -224,7 +243,7 @@ const MemberSHPE = () => {
                     <View className='flex-row'>
                         <Text className='text-md font-bold'>1. Create </Text>
                         <TouchableOpacity
-                            onPress={() => handleLinkPress(NATIONALS)}
+                            onPress={() => handleLinkPress(nationalsLink?.url || "")}
                         >
                             <Text className='text-md font-bold text-blue-400'>SHPE National Account </Text>
                         </TouchableOpacity>

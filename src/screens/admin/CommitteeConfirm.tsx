@@ -7,8 +7,6 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DismissibleModal from '../../components/DismissibleModal';
 import { Committee, getLogoComponent, reverseFormattedFirebaseName } from '../../types/Committees';
 import { useFocusEffect } from '@react-navigation/core';
-import { getCommittees } from '../../api/firebaseUtils';
-import CommitteeCard from '../involvement/CommitteeCard';
 import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, where } from 'firebase/firestore';
 import { db, functions } from '../../config/firebaseConfig';
 import { PublicUserInfo } from '../../types/User';
@@ -133,6 +131,15 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardP
 
         setMembers(members.filter(member => member.uid !== uid));
 
+        setCommitteeRequests(prevRequests => {
+            const updatedRequests = { ...prevRequests };
+            if (updatedRequests[selectedCommittee]) {
+                updatedRequests[selectedCommittee] = updatedRequests[selectedCommittee].filter(member => member.uid !== uid);
+            }
+            return updatedRequests;
+        });
+
+
         const sendNotificationToMember = httpsCallable(functions, 'sendNotificationCommitteeRequest');
         await sendNotificationToMember({
             uid: uid,
@@ -191,8 +198,8 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                     <ActivityIndicator size="large" />
                 )}
                 {!loading && committees.map((committee) => {
-                    const { name, color, logo, firebaseDocName } = committee;
-                    const { LogoComponent, height, width } = getLogoComponent(logo);
+                    const { name, color, firebaseDocName } = committee;
+                    const { LogoComponent, height, width } = getLogoComponent(committee.logo);
 
                     const requestCount = committeeRequests[firebaseDocName!]?.length ?? 0;
 

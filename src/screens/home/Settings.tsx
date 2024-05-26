@@ -5,12 +5,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { StatusBar } from 'expo-status-bar';
 import * as ImagePicker from "expo-image-picker";
-import { Octicons } from '@expo/vector-icons';
+import { Octicons, FontAwesome } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
-import { auth, functions } from '../../config/firebaseConfig';
+import { auth } from '../../config/firebaseConfig';
 import { sendPasswordResetEmail, updateProfile } from 'firebase/auth';
-import { httpsCallable } from 'firebase/functions';
-import { setPublicUserData, setPrivateUserData, getUser, getCommittees, submitFeedback, isUsernameUnique } from '../../api/firebaseUtils';
+import { setPublicUserData, setPrivateUserData, getUser, getCommittees, submitFeedback, isUsernameUnique, deleteAccount } from '../../api/firebaseUtils';
 import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/fileSelection';
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
@@ -21,11 +20,11 @@ import { MAJORS, classYears } from '../../types/User';
 import { Images } from '../../../assets';
 import DownloadIcon from '../../../assets/arrow-down-solid.svg';
 import UploadFileIcon from '../../../assets/file-arrow-up-solid-black.svg';
-import ProfileBadge from '../../components/ProfileBadge';
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../../components/SettingsComponents"
 import CustomDropDown from '../../components/CustomDropDown';
 import TwitterSvg from '../../components/TwitterSvg';
 import { Circle, Svg } from 'react-native-svg';
+import DismissibleModal from '../../components/DismissibleModal';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
@@ -711,8 +710,12 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
  * These changes will go through firebase where an email will be sent to the user. 
  */
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const { userInfo, setUserInfo, signOutUser } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const deleteConfirmationText = "DELETECONFIRM";
+
+    const [deleteText, setDeleteText] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
 
     return (
         <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
@@ -769,6 +772,68 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     darkMode={darkMode}
                 />
             }
+
+
+            <SettingsButton
+                mainText={"DELETE ACCOUNT"}
+                subText={"This action is irreversible"}
+                onPress={() => {
+                    setShowDeleteModal(true);
+                }}
+                darkMode={darkMode}
+            />
+
+
+            <DismissibleModal
+                visible={showDeleteModal}
+                setVisible={setShowDeleteModal}
+            >
+                <View
+                    className='flex opacity-100 bg-white rounded-md px-6 pt-6'
+                    style={{ maxWidth: 350 }}
+                >
+                    {/* Title */}
+                    <View className='flex-row items-center mb-4'>
+                        <FontAwesome name="user" color="black" size={30} />
+                        <Text className='text-2xl font-semibold ml-2'>Account Deletion</Text>
+                    </View>
+
+                    <Text className='text-xl font-semibold ml-2'>YOU WILL LOSE ALL YOUR POINTS IF YOU DELETE YOUR ACCOUNT</Text>
+                    <Text className='text-xl font-semibold ml-2 mt-4'>Please type "{deleteConfirmationText}" to confirm.</Text>
+
+
+                    <TextInput
+                        className="h-10 border-2 rounded-lg p-2 mt-5"
+                        onChangeText={setDeleteText}
+                        value={deleteText}
+                    />
+
+
+                    <View className="flex-row justify-between items-center my-6 mx-5">
+                        <TouchableOpacity
+                            onPress={async () => {
+                                Alert.alert("Account Deleted", "Your account has been successfully deleted.");
+                                setShowDeleteModal(false);
+                                await deleteAccount(auth.currentUser?.uid!);
+                                await AsyncStorage.removeItem('@user');
+                                setUserInfo(undefined);
+                            }}
+                            disabled={deleteText !== deleteConfirmationText}
+                            className={`${deleteText !== deleteConfirmationText ? "bg-gray-500" : "bg-red-700"} rounded-lg justify-center items-center px-4 py-1`}
+                        >
+                            <Text className='text-xl font-bold text-white px-2'>DELETE</Text>
+                        </TouchableOpacity>
+
+
+                        <TouchableOpacity
+                            onPress={async () => {
+                                setShowDeleteModal(false)
+                            }} >
+                            <Text className='text-xl font-bold px-4 py-1'>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </DismissibleModal>
         </ScrollView>
     );
 };
@@ -912,6 +977,13 @@ const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackPar
                 subText={`${Platform.OS} ${Platform.Version as string}`}
                 darkMode={darkMode}
             />
+
+            <TouchableOpacity
+                className='justify-center ml-5'
+                onPress={() => handleLinkPress("https://jasonisazn.github.io/")}
+            >
+                <Text className='text-2xl'>Privacy Policy</Text>
+            </TouchableOpacity>
         </ScrollView>
     );
 };
