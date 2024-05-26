@@ -1,5 +1,5 @@
 import Header from "@/app/components/Header";
-import { checkAuthAndRedirect } from "@/helpers/auth";
+import { checkAuthAndRedirect } from "@/app/helpers/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

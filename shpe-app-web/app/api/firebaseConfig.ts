@@ -1,5 +1,5 @@
 import { initializeApp, FirebaseApp, getApp, getApps } from 'firebase/app';
-import { getAuth} from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getFunctions } from 'firebase/functions';
 import { getStorage } from "firebase/storage";
@@ -14,15 +14,12 @@ const firebaseConfig = {
 };
 
 let app: FirebaseApp;
-// let auth: Auth;
 
 if (getApps().length === 0) {
     app = initializeApp(firebaseConfig);
-    // auth = initializeAuth(app);
 }
 else {
     app = getApp();
-    // auth = getAuth(app);
 }
 
 const auth = getAuth(app)

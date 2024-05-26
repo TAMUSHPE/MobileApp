@@ -1,6 +1,6 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { checkAuthAndRedirect } from "@/helpers/auth";
+import { checkAuthAndRedirect } from "@/app/helpers/auth";
 import Header from "@/app/components/Header";
 
 const Tools = () => {

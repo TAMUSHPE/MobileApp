@@ -1,8 +1,8 @@
 import { Committee } from "../types/Committees"
 import { PrivateUserInfo, PublicUserInfo } from "../types/User"
 import { collection, getDocs, getDoc, doc, query, where, orderBy } from 'firebase/firestore';
-import { db, auth } from "@/api/firebaseConfig";
-import { SHPEEvent, SHPEEventLog } from "@/types/Events";
+import { db, auth } from "@/app/api/firebaseConfig";
+import { SHPEEvent, SHPEEventLog } from "@/app/types/Events";
 
 export const getCommittees = async (): Promise<Committee[]> => {
     try {
@@ -133,7 +133,7 @@ export const getEvents = async (): Promise<SHPEEvent[]> => {
             id: doc.id,
             ...doc.data() as SHPEEvent
         }));
-        
+
         events.sort((a, b) => {
             const dateA = a.startTime ? a.startTime.toDate() : undefined;
             const dateB = b.startTime ? b.startTime.toDate() : undefined;

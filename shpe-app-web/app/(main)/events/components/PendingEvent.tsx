@@ -1,8 +1,8 @@
-import { auth } from '@/api/firebaseConfig';
-import { SHPEEvent } from '@/types/Events';
+import { auth } from '@/app/api/firebaseConfig';
+import { SHPEEvent } from '@/app/types/Events';
 import router from 'next/router';
 import { useEffect } from 'react';
-import { monthNames } from '@/helpers/timeUtils';
+import { monthNames } from '@/app/helpers/timeUtils';
 import { wrap } from 'module';
 
 interface PendingEventProps {

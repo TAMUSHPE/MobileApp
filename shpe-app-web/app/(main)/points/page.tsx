@@ -1,10 +1,10 @@
 'use client'
 
 import Header from "@/app/components/Header";
-import { checkAuthAndRedirect } from "@/helpers/auth";
-import { getEvents, getMembers } from "@/helpers/firebaseUtils";
-import { SHPEEvent } from "@/types/Events";
-import { PublicUserInfo } from "@/types/User";
+import { checkAuthAndRedirect } from "@/app/helpers/auth";
+import { getEvents, getMembers } from "@/app/helpers/firebaseUtils";
+import { SHPEEvent } from "@/app/types/Events";
+import { PublicUserInfo } from "@/app/types/User";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

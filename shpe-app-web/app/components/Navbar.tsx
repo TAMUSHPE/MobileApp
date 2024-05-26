@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from 'next/navigation';
-import { handleLogout } from "@/helpers/auth";
+import { handleLogout } from "@/app/helpers/auth";
 
 const Navbar = () => {
     const router = useRouter();

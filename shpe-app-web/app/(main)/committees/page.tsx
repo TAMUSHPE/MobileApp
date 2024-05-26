@@ -1,10 +1,10 @@
 'use client'
 import CommitteeCard from "../../components/CommitteeCard";
 import { useState, useEffect } from "react";
-import { checkAuthAndRedirect } from "@/helpers/auth";
+import { checkAuthAndRedirect } from "@/app/helpers/auth";
 import { useRouter } from "next/navigation";
-import { Committee } from "@/types/Committees";
-import { getPublicUserData, getCommittees } from "@/helpers/firebaseUtils";
+import { Committee } from "@/app/types/Committees";
+import { getPublicUserData, getCommittees } from "@/app/helpers/firebaseUtils";
 import Header from "../../components/Header";
 
 

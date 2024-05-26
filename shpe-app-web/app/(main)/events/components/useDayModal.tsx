@@ -1,4 +1,4 @@
-import { SHPEEvent } from '@/types/Events';
+import { SHPEEvent } from '@/app/types/Events';
 import { useState } from 'react';
 
 export const useDayModal = () => {
