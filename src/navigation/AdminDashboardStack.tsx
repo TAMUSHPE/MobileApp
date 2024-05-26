@@ -14,6 +14,7 @@ import PublicProfileScreen from "../screens/PublicProfile";
 import Feedback from "../screens/admin/Feedback";
 import ShirtConfirm from "../screens/admin/ShirtConfirm";
 import CommitteeConfirm from "../screens/admin/CommitteeConfirm";
+import LinkManager from "../screens/admin/LinkManager";
 
 const AdminDashboardStack = () => {
     const Stack = createNativeStackNavigator<AdminDashboardParams>();
@@ -25,6 +26,7 @@ const AdminDashboardStack = () => {
                 <Stack.Screen name="MOTMEditor" component={MOTMEditor} />
                 <Stack.Screen name="FeaturedSlideEditor" component={FeaturedSlideEditor} />
                 <Stack.Screen name="ResumeDownloader" component={ResumeDownloader} />
+                <Stack.Screen name="LinkManager" component={LinkManager} />
                 <Stack.Screen name="ResetOfficeHours" component={ResetOfficeHours} />
                 <Stack.Screen name="RestrictionsEditor" component={RestrictionsEditor} />
                 <Stack.Screen name="MemberSHPEConfirm" component={MemberSHPEConfirm} />

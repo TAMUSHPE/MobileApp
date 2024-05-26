@@ -78,6 +78,13 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         >
                             <Text className='text-white text-xl'>Resumes Download</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('LinkManager')}
+                            className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center'
+                        >
+                            <Text className='text-white text-xl'>Link Manger</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
 

@@ -112,6 +112,7 @@ export type AdminDashboardParams = {
     MOTMEditor: undefined;
     FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
+    LinkManager: undefined;
     ResetOfficeHours: undefined;
     RestrictionsEditor: undefined;
     Feedback: undefined;
