@@ -1,7 +1,7 @@
 import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers';
 
-/** Anything added to this document needs to be added to functions/src/types.ts **/
+/** Anything added to this document needs to be added to functions/src/types/events.ts **/
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop

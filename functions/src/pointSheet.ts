@@ -1,7 +1,9 @@
 import * as functions from 'firebase-functions';
-import { db } from "./firebaseConfig"
-import { RankChange } from "./types";
 import { AggregateField } from 'firebase-admin/firestore';
+import { db } from "./firebaseConfig"
+
+
+type RankChange = "increased" | "decreased" | "same";
 
 /** Determines rank change based on current and new ranks.
  *  - "increased" means that the overall rank *value* is lower than before
