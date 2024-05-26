@@ -44,7 +44,7 @@ const Points = () => {
 
   return (
     <div className="bg-white h-full">
-      <Header title="Event Management" iconPath="calendar-solid-gray.svg" />
+      <Header title="Points Management" iconPath="calendar-solid-gray.svg" />
 
       <div className="bg-white flex flex-col h-screen w-screen">
         {members.map((member) => (

@@ -29,6 +29,7 @@ export const handleLogin = async (router: AppRouterInstance) => {
     });
 }
 
+
 export const checkAuthAndRedirect = async (router: AppRouterInstance): Promise<void> => {
     if (!auth.currentUser) {
         router.push('/');
