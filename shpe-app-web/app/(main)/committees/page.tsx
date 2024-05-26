@@ -1,5 +1,5 @@
 'use client'
-import CommitteeCard from "../../components/CommitteeCard";
+import CommitteeCard from "./components/CommitteeCard";
 import { useState, useEffect } from "react";
 import { checkAuthAndRedirect } from "@/app/helpers/auth";
 import { useRouter } from "next/navigation";
