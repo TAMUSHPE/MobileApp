@@ -939,7 +939,7 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParam
     ];
 
     return (
-        <ScrollView className={`flex-1 px-4 py-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <ScrollView className={`flex-1 px-4 pt-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             {faqData.map((faq, index) => (
                 <TouchableOpacity
                     key={index}
@@ -963,6 +963,7 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParam
                     )}
                 </TouchableOpacity>
             ))}
+            <View className='h-40' />
         </ScrollView>
     );
 };
