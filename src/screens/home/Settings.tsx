@@ -25,6 +25,7 @@ import CustomDropDown from '../../components/CustomDropDown';
 import TwitterSvg from '../../components/TwitterSvg';
 import { Circle, Svg } from 'react-native-svg';
 import DismissibleModal from '../../components/DismissibleModal';
+import * as Clipboard from 'expo-clipboard';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
@@ -728,6 +729,7 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
             <SettingsButton
                 mainText={userInfo?.publicInfo?.isEmailPublic ? "Make Email Private" : "Make Email Public"}
+                subText={userInfo?.publicInfo?.isEmailPublic ? "Your email will no longer be visible" : "Your email will be visible to everyone"}
                 onPress={
                     async () => {
                         const updatedPublicData = {
@@ -751,10 +753,14 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 darkMode={darkMode}
             />
 
-            <SettingsListItem
+            <SettingsButton
                 mainText='Unique Identifier'
                 subText={auth.currentUser?.uid ?? "UID"}
                 darkMode={darkMode}
+                onPress={async () => {
+                    Clipboard.setStringAsync(auth.currentUser?.uid ?? "UID")
+                        .then(() => Alert.alert("Copied", "UID Copied to Clipboard"));
+                }}
             />
             <SettingsListItem
                 mainText='Account Creation Time'
@@ -778,6 +784,7 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 mainText={"DELETE ACCOUNT"}
                 subText={"This action is irreversible"}
                 onPress={() => {
+                    setDeleteText("");
                     setShowDeleteModal(true);
                 }}
                 darkMode={darkMode}
@@ -789,21 +796,23 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 setVisible={setShowDeleteModal}
             >
                 <View
-                    className='flex opacity-100 bg-white rounded-md px-6 pt-6'
+                    className={`flex opacity-100 rounded-md px-6 pt-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-primary-bg-light"}`}
                     style={{ maxWidth: 350 }}
                 >
                     {/* Title */}
                     <View className='flex-row items-center mb-4'>
-                        <FontAwesome name="user" color="black" size={30} />
-                        <Text className='text-2xl font-semibold ml-2'>Account Deletion</Text>
+                        <FontAwesome name="user" color={darkMode ? "white" : "black"} size={30} />
+                        <Text className={`text-2xl font-bold ml-2 ${darkMode ? "text-white" : "text-black"}`}>Account Deletion</Text>
                     </View>
 
-                    <Text className='text-xl font-semibold ml-2'>YOU WILL LOSE ALL YOUR POINTS IF YOU DELETE YOUR ACCOUNT</Text>
-                    <Text className='text-xl font-semibold ml-2 mt-4'>Please type "{deleteConfirmationText}" to confirm.</Text>
+                    <Text className={`text-xl font-semibold ml-2 text-[#ff0000]`}>YOU WILL LOSE ALL YOUR POINTS IF YOU DELETE YOUR ACCOUNT</Text>
+                    <Text className={`text-xl ml-2 mt-4 ${darkMode ? "text-neutral-100" : "text-black"}`}>Please type "{deleteConfirmationText}" to confirm.</Text>
 
 
                     <TextInput
-                        className="h-10 border-2 rounded-lg p-2 mt-5"
+                        className={`h-10 border-2 rounded-sm p-2 mt-5 ${darkMode ? "border-neutral-400 bg-neutral-800 text-white" : "border-neutral-800 bg-white text-black"}`}
+                        placeholder='Enter Prompt'
+                        placeholderTextColor={darkMode ? "#bbb" : ""}
                         onChangeText={setDeleteText}
                         value={deleteText}
                     />
@@ -819,9 +828,9 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                 setUserInfo(undefined);
                             }}
                             disabled={deleteText !== deleteConfirmationText}
-                            className={`${deleteText !== deleteConfirmationText ? "bg-gray-500" : "bg-red-700"} rounded-lg justify-center items-center px-4 py-1`}
+                            className={`${deleteText !== deleteConfirmationText ? "bg-neutral-400" : "bg-red-700"} rounded-lg justify-center items-center px-4 py-1`}
                         >
-                            <Text className='text-xl font-bold text-white px-2'>DELETE</Text>
+                            <Text className={`text-xl font-bold px-2 ${deleteText !== deleteConfirmationText ? "text-neutral-300" : "text-white"}`}>DELETE</Text>
                         </TouchableOpacity>
 
 
@@ -829,7 +838,7 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                             onPress={async () => {
                                 setShowDeleteModal(false)
                             }} >
-                            <Text className='text-xl font-bold px-4 py-1'>Cancel</Text>
+                            <Text className={`text-xl font-bold px-4 py-1 ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
