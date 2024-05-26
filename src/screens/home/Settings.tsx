@@ -874,14 +874,15 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStack
                     onChangeText={setFeedback}
                     value={feedback}
                     placeholder="Type your feedback here"
+                    placeholderTextColor={darkMode ? "#ddd" : "#000"}
                 />
             </View>
             <Pressable
                 onPress={handleFeedbackSubmit}
-                className={`mt-4 rounded-md w-[50%] py-2 items-center justify-center ${feedback.length === 0 ? 'bg-gray-300' : 'bg-pale-blue'}`}
+                className={`mt-4 rounded-md w-[50%] py-2 items-center justify-center ${feedback.length === 0 ? 'bg-neutral-400' : 'bg-pale-blue'}`}
                 disabled={feedback.length === 0}
             >
-                <Text className='text-white text-lg font-semibold'>Submit FeedBack</Text>
+                <Text className={` text-lg font-semibold ${feedback.length === 0 ? 'text-neutral-200' : 'text-white'}`}>Submit FeedBack</Text>
             </Pressable>
         </View>
     );
