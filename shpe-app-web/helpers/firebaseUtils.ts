@@ -126,13 +126,20 @@ export const getMembers = async (): Promise<(PublicUserInfo & { privateInfo?: Pr
 
 export const getEvents = async (): Promise<SHPEEvent[]> => {
     try {
-        const eventsRef = collection(db, 'events');
+        const eventsRef = collection(db, "events");
         const q = query(eventsRef);
         const querySnapshot = await getDocs(q);
-
         const events: SHPEEvent[] = querySnapshot.docs.map(doc => ({
+            id: doc.id,
             ...doc.data() as SHPEEvent
         }));
+        
+        events.sort((a, b) => {
+            const dateA = a.startTime ? a.startTime.toDate() : undefined;
+            const dateB = b.startTime ? b.startTime.toDate() : undefined;
+
+            return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
+        });
 
         return events;
     } catch (error) {
@@ -141,6 +148,18 @@ export const getEvents = async (): Promise<SHPEEvent[]> => {
     }
 };
 
+export const getEventLogs = async (eventId: string): Promise<SHPEEventLog[]> => {
+    try {
+        const eventLogsRef = collection(db, `events/${eventId}/logs`);
+        const querySnapshot = await getDocs(eventLogsRef);
 
+        const eventLogs: SHPEEventLog[] = querySnapshot.docs.map(doc => ({
+            ...doc.data() as SHPEEventLog
+        }));
 
-
+        return eventLogs;
+    } catch (error) {
+        console.error("Error fetching event logs:", error);
+        throw new Error("Unable to fetch event logs.");
+    }
+};
