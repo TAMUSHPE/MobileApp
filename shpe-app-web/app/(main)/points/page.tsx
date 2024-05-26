@@ -1,5 +1,4 @@
 'use client'
-
 import Header from "@/app/components/Header";
 import { checkAuthAndRedirect } from "@/app/helpers/auth";
 import { getEvents, getMembers } from "@/app/helpers/firebaseUtils";

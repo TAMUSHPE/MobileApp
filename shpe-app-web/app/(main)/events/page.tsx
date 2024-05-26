@@ -1,5 +1,4 @@
 'use client';
-
 import { useEffect, useRef, useState } from 'react';
 import Header from '../../components/Header';
 import PendingEvent from './components/PendingEvent';

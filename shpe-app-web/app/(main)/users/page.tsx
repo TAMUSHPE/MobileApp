@@ -1,3 +1,4 @@
+'use client'
 import Header from "@/app/components/Header";
 import { checkAuthAndRedirect } from "@/app/helpers/auth";
 import { useRouter } from "next/navigation";
