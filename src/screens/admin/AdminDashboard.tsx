@@ -111,15 +111,17 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                     <Text className='text-2xl font-semibold mb-3'>Developer Testing</Text>
                     <View className='flex-row flex-wrap '>
                         <TouchableOpacity
-                            onPress={() => {
-                                updateAllUserPoints()
-                                updateRanksOnCall()
-                                Alert.alert('Update All User Points', 'Update All User Points has been called')
+                            onPress={async () => {
+                                await updateAllUserPoints();
+                                await updateRanksOnCall();
+                                Alert.alert('Update All User Points', 'Update All User Points and Update Ranks have been successfully called');
+
                             }}
                             className='bg-black rounded-md py-4 px-2 items-center justify-center'
                         >
                             <Text className='text-white text-xl'>Update All User Points</Text>
                         </TouchableOpacity>
+
 
                         <TouchableOpacity
                             onPress={() => {
