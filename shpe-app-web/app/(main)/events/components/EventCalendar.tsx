@@ -1,9 +1,8 @@
 'use client';
-
-import { SHPEEvent } from '@/types/Events';
-import { format, subMonths, addMonths } from 'date-fns';
-import MonthView from './MonthView';
 import { useMemo, useState } from 'react';
+import { format, subMonths, addMonths } from 'date-fns';
+import { SHPEEvent } from '@/types/events';
+import MonthView from './MonthView';
 
 interface EventCalendarProps {
   events: SHPEEvent[];
@@ -48,17 +47,15 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events }) => {
           <div className="h-10 w-64">
             <button
               onClick={() => setIsMonthSelected(true)}
-              className={`${
-                isMonthSelected ? 'w-3/5 bg-[#500000] text-white' : 'w-2/5 bg-[#e8e7e7] text-[#A8A8A8]'
-              } transition-all duration-500 h-full font-semibold rounded-l-md`}
+              className={`${isMonthSelected ? 'w-3/5 bg-[#500000] text-white' : 'w-2/5 bg-[#e8e7e7] text-[#A8A8A8]'
+                } transition-all duration-500 h-full font-semibold rounded-l-md`}
             >
               Month
             </button>
             <button
               onClick={() => setIsMonthSelected(false)}
-              className={`${
-                !isMonthSelected ? 'w-3/5 bg-[#500000] text-white' : 'w-2/5 bg-[#e8e7e7] text-[#A8A8A8]'
-              } transition-all duration-500 h-full font-semibold rounded-r-md`}
+              className={`${!isMonthSelected ? 'w-3/5 bg-[#500000] text-white' : 'w-2/5 bg-[#e8e7e7] text-[#A8A8A8]'
+                } transition-all duration-500 h-full font-semibold rounded-r-md`}
             >
               Week
             </button>

@@ -1,15 +1,5 @@
-import { SHPEEvent } from '@/types/Events';
-import {
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  format,
-  getDay,
-  addDays,
-  subDays,
-  isToday,
-  isSameDay,
-} from 'date-fns';
+import { startOfMonth, endOfMonth, eachDayOfInterval, format, getDay, addDays, subDays, isToday, isSameDay } from 'date-fns';
+import { SHPEEvent } from '@/types/events';
 import { DayModal } from './DayModal';
 import { useDayModal } from './useDayModal';
 
@@ -50,9 +40,8 @@ const MonthView: React.FC<MonthViewProps> = ({ eventsByDate, focusDate, setFocus
       <div
         key={`${dayState}-${index}`}
         onClick={() => setFocusDate(day)}
-        className={`relative border-t-[3px] border-l-[3px] border-[#E0E0E0] ${
-          dayState != 'curr' && 'bg-gray-100 opacity-90'
-        }`}
+        className={`relative border-t-[3px] border-l-[3px] border-[#E0E0E0] ${dayState != 'curr' && 'bg-gray-100 opacity-90'
+          }`}
       >
         {/* Day of the week text */}
         {(dayState == 'prev' || (dayState == 'curr' && index + startingDayIndex < 7)) && (

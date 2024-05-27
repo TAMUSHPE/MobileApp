@@ -1,11 +1,11 @@
 'use client'
-import CommitteeCard from "../../components/CommitteeCard";
 import { useState, useEffect } from "react";
-import { checkAuthAndRedirect } from "@/helpers/auth";
 import { useRouter } from "next/navigation";
-import { Committee } from "@/types/Committees";
-import { getPublicUserData, getCommittees } from "@/helpers/firebaseUtils";
-import Header from "../../components/Header";
+import { getPublicUserData, getCommittees } from "@/api/firebaseUtils";
+import { checkAuthAndRedirect } from "@/helpers/auth";
+import { Committee } from "@/types/committees";
+import Header from "@/components/Header";
+import CommitteeCard from "./components/CommitteeCard";
 
 
 const Committees = () => {
@@ -19,14 +19,14 @@ const Committees = () => {
       const committees = await getCommittees();
 
       const updatedCommittees = await Promise.all(committees.map(async (committee) => {
-        if (committee.head?.uid) {
-          const userData = await getPublicUserData(committee.head.uid);
+        if (committee.head) {
+          const userData = await getPublicUserData(committee.head);
           return { ...committee, head: userData };
         }
         return committee;
       }));
 
-      setCommittees(updatedCommittees);
+      setCommittees(updatedCommittees as Committee[]);
       setLoading(false);
     }
 

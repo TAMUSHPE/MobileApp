@@ -1,7 +1,12 @@
 import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers/timeUtils';
 
-/** Anything added to this document needs to be added to functions/src/types.ts **/
+/** ===================================================================================
+ *  The content below must only be changed to match MobileApp/src/types/Events.ts
+ * 
+ *  You may manually add any imports above at the top of this file if needed
+ *  ===================================================================================
+ *  */
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop
@@ -76,6 +81,8 @@ export abstract class SHPEEvent {
         this.creator = null;
         this.nationalConventionEligible = null;
         this.notificationSent = true;
+        this.endTimeBuffer = null;
+        this.startTimeBuffer = null;
     }
 
     /**
@@ -393,3 +400,21 @@ export enum EventLogStatus {
     ALREADY_LOGGED,
     ERROR,
 }
+
+
+export const getStatusMessage = (status: EventLogStatus): string => {
+    const statusMessages = {
+        [EventLogStatus.SUCCESS]: "Successfully signed in/out.",
+        [EventLogStatus.EVENT_OVER]: "The event is already over.",
+        [EventLogStatus.EVENT_ONGOING]: "The event is ongoing.",
+        [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
+        [EventLogStatus.EVENT_NOT_FOUND]: "The event was not found.",
+        [EventLogStatus.ALREADY_LOGGED]: "You have already signed in/out.",
+        [EventLogStatus.ERROR]: "An internal error occurred. Please try again.",
+    };
+
+    return statusMessages[status] || "An unknown error occurred.";
+};
+
+
+

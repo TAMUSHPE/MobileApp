@@ -1,7 +1,8 @@
-import { useRouter } from "next/navigation";
+'use client'
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { checkAuthAndRedirect } from "@/helpers/auth";
-import Header from "@/app/components/Header";
+import Header from "@/components/Header";
 
 const Tools = () => {
   const router = useRouter();

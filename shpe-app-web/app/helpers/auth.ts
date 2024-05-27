@@ -1,4 +1,4 @@
-import { auth } from "@/api/firebaseConfig";
+import { auth } from "@/config/firebaseConfig";
 import { GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
