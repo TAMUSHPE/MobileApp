@@ -1,6 +1,6 @@
 import * as functions from 'firebase-functions';
-import archiver from 'archiver';
 import { bucket, db } from './firebaseConfig';
+import archiver from 'archiver';
 
 
 const generateSignedUrl = async (fileName: string) => {

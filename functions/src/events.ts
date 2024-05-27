@@ -1,8 +1,8 @@
 import * as functions from 'firebase-functions';
 import { db } from './firebaseConfig';
-import { SHPEEvent, SHPEEventLog } from './types'
 import { GeoPoint, Timestamp } from 'firebase-admin/firestore';
-import { MillisecondTimes } from './timeUtils';
+import { SHPEEvent, SHPEEventLog } from './types/events'
+import { MillisecondTimes } from './helpers/timeUtils';
 
 /**
  * Converts an angle in degrees to radians
