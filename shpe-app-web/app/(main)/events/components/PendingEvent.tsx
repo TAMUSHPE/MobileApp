@@ -1,5 +1,5 @@
-import { SHPEEvent } from '@mobile/types/Events';
-import { monthNames } from '@/app/helpers/timeUtils';
+import { SHPEEvent } from '@/types/events';
+import { monthNames } from '@/helpers/timeUtils';
 
 interface PendingEventProps {
   event: SHPEEvent | undefined;

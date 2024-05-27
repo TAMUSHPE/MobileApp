@@ -1,11 +1,11 @@
 'use client'
-import Header from "@/app/components/Header";
-import { checkAuthAndRedirect } from "@/app/helpers/auth";
-import { getEvents, getMembers } from "@/app/helpers/firebaseUtils";
-import { SHPEEvent } from "@mobile/types/Events";
-import { PublicUserInfo } from "@mobile/types/User";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { getEvents, getMembers } from "@/api/firebaseUtils";
+import { checkAuthAndRedirect } from "@/helpers/auth";
+import { SHPEEvent } from '@/types/events';
+import { PublicUserInfo } from "@/types/user";
+import Header from "@/components/Header";
 
 const Points = () => {
   const router = useRouter();

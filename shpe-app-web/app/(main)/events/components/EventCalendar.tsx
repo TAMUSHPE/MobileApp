@@ -1,9 +1,8 @@
 'use client';
-
-import { SHPEEvent } from '@mobile/types/Events';
-import { format, subMonths, addMonths } from 'date-fns';
-import MonthView from './MonthView';
 import { useMemo, useState } from 'react';
+import { format, subMonths, addMonths } from 'date-fns';
+import { SHPEEvent } from '@/types/events';
+import MonthView from './MonthView';
 
 interface EventCalendarProps {
   events: SHPEEvent[];

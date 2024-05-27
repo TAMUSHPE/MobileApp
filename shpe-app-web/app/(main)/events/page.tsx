@@ -1,10 +1,10 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import Header from '../../components/Header';
+import { getEvents, getEventLogs } from '@/api/firebaseUtils';
+import { SHPEEvent } from '@/types/events';
+import Header from '@/components/Header';
 import PendingEvent from './components/PendingEvent';
 import EventCalendar from './components/EventCalendar';
-import { getEvents, getEventLogs } from '@/app/helpers/firebaseUtils';
-import { SHPEEvent } from '@mobile/types/Events';
 
 const Page = () => {
   const [events, setEvents] = useState<SHPEEvent[]>([]);

@@ -1,15 +1,5 @@
-import { SHPEEvent } from '@mobile/types/Events';
-import {
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  format,
-  getDay,
-  addDays,
-  subDays,
-  isToday,
-  isSameDay,
-} from 'date-fns';
+import { startOfMonth, endOfMonth, eachDayOfInterval, format, getDay, addDays, subDays, isToday, isSameDay } from 'date-fns';
+import { SHPEEvent } from '@/types/events';
 import { DayModal } from './DayModal';
 import { useDayModal } from './useDayModal';
 

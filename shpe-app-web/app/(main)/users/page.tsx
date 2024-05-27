@@ -1,6 +1,6 @@
 'use client'
-import Header from "@/app/components/Header";
-import { checkAuthAndRedirect } from "@/app/helpers/auth";
+import Header from "@/components/Header";
+import { checkAuthAndRedirect } from "@/helpers/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 

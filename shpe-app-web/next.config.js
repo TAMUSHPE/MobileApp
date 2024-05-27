@@ -13,10 +13,10 @@ const nextConfig = {
     });
 
     // Add path alias
-    config.resolve.alias["@mobile"] = path.resolve(
-      __dirname,
-      "../../MobileApp/src"
-    );
+    config.resolve.alias = {
+      ...(config.resolve.alias || {}),
+      "@": path.resolve(__dirname, "app"),
+    };
 
     return config;
   },

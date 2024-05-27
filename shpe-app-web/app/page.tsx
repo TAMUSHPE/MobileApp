@@ -1,9 +1,9 @@
 'use client'
 
-import { auth } from "./api/firebaseConfig";
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { handleLogin } from '@/app/helpers/auth';
+import { auth } from "./config/firebaseConfig";
+import { handleLogin } from './helpers/auth';
 
 const SignIn = () => {
   const router = useRouter()
