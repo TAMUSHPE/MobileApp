@@ -1,8 +1,8 @@
 import * as functions from 'firebase-functions';
 import { db } from './firebaseConfig';
-import { SHPEEvent, SHPEEventLog } from './types'
 import { GeoPoint, Timestamp } from 'firebase-admin/firestore';
-import { MillisecondTimes } from './timeUtils';
+import { SHPEEvent, SHPEEventLog } from './types/events'
+import { MillisecondTimes } from './helpers/timeUtils';
 
 /**
  * Converts an angle in degrees to radians
@@ -33,7 +33,7 @@ const geographicDistance = (pos1: GeoPoint, pos2: GeoPoint): number => {
 
     const a = (Math.sin(deltaPhi / 2.0) ** 2) + Math.cos(phi1) * Math.cos(phi2) * (Math.sin(deltaLambda / 2.0) ** 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    
+
     return EARTH_RADIUS * c;
 }
 
@@ -41,6 +41,7 @@ const geographicDistance = (pos1: GeoPoint, pos2: GeoPoint): number => {
  * Handles a request from a user to sign into an event.
  */
 export const eventSignIn = functions.https.onCall(async (data, context) => {
+    const uid = data.uid || context.auth?.uid;
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
     } else if (typeof data !== "object" || typeof data.eventID !== "string" || typeof data.location !== "object") {
@@ -54,9 +55,9 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     }
     console.info(data.location);
     // Used to check if user has already signed into event
-    const eventLogDocRef = db.collection(`events/${data.eventID}/logs`).doc(context.auth.uid);
+    const eventLogDocRef = db.collection(`events/${data.eventID}/logs`).doc(uid);
     const eventLog: SHPEEventLog = (await eventLogDocRef.get()).data() ?? {
-        uid: context.auth.uid,
+        uid: uid,
         eventId: eventDocRef.id,
         creationTime: Timestamp.fromMillis(Date.now()),
         verified: true,
@@ -68,7 +69,7 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     else if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
         throw new functions.https.HttpsError("deadline-exceeded", "Event has already ended.");
     }
-    else if (event.startTime && (event.startTime.toMillis() - (event.endTimeBuffer ?? 0) > Date.now())) {
+    else if (event.startTime && (event.startTime.toMillis() - (event.startTimeBuffer ?? 0) > Date.now())) {
         throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
     }
     else if (event.geolocation && event.geofencingRadius) {
@@ -96,7 +97,7 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
 
     // Sets log in both event and user collection and ensures both happen by the end of the function. 
     await eventLogDocRef.set(eventLog, { merge: true });
-    await db.collection(`users/${context.auth.uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
+    await db.collection(`users/${uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
 
     return { success: true };
 });
@@ -106,6 +107,8 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
  * Handles a request from a user to sign out of an event.
  */
 export const eventSignOut = functions.https.onCall(async (data, context) => {
+    const uid = data.uid || context.auth?.uid;
+
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
     } else if (typeof data !== "object" || typeof data.eventID !== "string" || typeof data.location !== "object") {
@@ -119,9 +122,9 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     }
 
     // Used to check if user has already signed into event
-    const eventLogDocRef = db.collection(`events/${data.eventID}/logs`).doc(context.auth.uid);
+    const eventLogDocRef = db.collection(`events/${data.eventID}/logs`).doc(uid);
     const eventLog: SHPEEventLog = (await eventLogDocRef.get()).data() ?? {
-        uid: context.auth.uid,
+        uid: uid,
         eventId: eventDocRef.id,
         creationTime: Timestamp.fromMillis(Date.now()),
         verified: true,
@@ -133,7 +136,7 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     else if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
         throw new functions.https.HttpsError("deadline-exceeded", "Event has already ended.");
     }
-    else if (event.startTime && (event.startTime.toMillis() - (event.endTimeBuffer ?? 0) > Date.now())) {
+    else if (event.startTime && (event.startTime.toMillis() - (event.startTimeBuffer ?? 0) > Date.now())) {
         throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
     }
     else if (event.geolocation && event.geofencingRadius) {
@@ -174,7 +177,7 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
 
     // Sets log in both event and user collection and ensures both happen by the end of the function. 
     await eventLogDocRef.set(eventLog, { merge: true });
-    await db.collection(`users/${context.auth.uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
+    await db.collection(`users/${uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
 
     return { success: true };
 });

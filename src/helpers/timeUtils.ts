@@ -1,3 +1,5 @@
+/** Anything added to this document needs to be added to functions/src/types/timeUtils.ts **/
+
 /**
  * Set of constants which can be used to do math with milliseconds
  */

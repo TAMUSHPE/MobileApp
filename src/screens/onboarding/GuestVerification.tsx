@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, AppState, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, AppState, TouchableOpacity, Pressable, AppStateStatus } from 'react-native';
 import { User, onAuthStateChanged, reload, sendEmailVerification } from 'firebase/auth';
 import { Octicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -22,16 +22,14 @@ const GuestVerification = ({ navigation }: NativeStackScreenProps<AuthStackParam
 
     const resendVerificationEmail = async () => {
         if (auth.currentUser) {
-            try {
-                setResend(true);
-                await sendEmailVerification(auth.currentUser);
-            } catch (error) {
-            }
+            setResend(true);
+            await sendEmailVerification(auth.currentUser);
         }
     };
 
+    // Check email verification after a user return to the app
     useEffect(() => {
-        const subscription = AppState.addEventListener("change", (nextAppState) => {
+        const handleAppStateChange = (nextAppState: AppStateStatus) => {
             if (appState.match(/inactive|background/) && nextAppState === "active") {
                 console.log("App has come to the foreground!");
                 if (auth.currentUser) {
@@ -39,7 +37,9 @@ const GuestVerification = ({ navigation }: NativeStackScreenProps<AuthStackParam
                 }
             }
             setAppState(nextAppState);
-        });
+        };
+
+        const subscription = AppState.addEventListener("change", handleAppStateChange);
         setResend(false);
 
         return () => {
@@ -47,6 +47,8 @@ const GuestVerification = ({ navigation }: NativeStackScreenProps<AuthStackParam
         };
     }, [appState]);
 
+
+    // Check email verification on auth state changes
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -56,6 +58,19 @@ const GuestVerification = ({ navigation }: NativeStackScreenProps<AuthStackParam
 
         return () => unsubscribe();
     }, []);
+
+
+    // Check email verification on timer
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (auth.currentUser) {
+                checkVerification(auth.currentUser);
+            }
+        }, 5000); // Check every 5 seconds
+
+        return () => clearInterval(interval);
+    }, []);
+
 
     return (
         <SafeAreaView className='flex-1 bg-dark-navy py-10 px-8' edges={["top"]}>

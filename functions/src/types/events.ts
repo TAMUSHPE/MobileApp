@@ -1,11 +1,9 @@
-/** Anything added to this document needs to be added to src/types/Events.ts */
 import { Timestamp, GeoPoint } from 'firebase-admin/firestore';
-import { MillisecondTimes, getNextHourMillis } from './timeUtils';
+import { MillisecondTimes, getNextHourMillis } from '../helpers/timeUtils';
 
-/**
- * Determines whether a person has moved up, down, or not at all in the point leaderboard
- */
-export type RankChange = "increased" | "decreased" | "same";
+/** This is the server side representation of an event. 
+ *  This document should be changed to match MobileApp/src/types/Events.ts 
+ **/
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop
@@ -46,17 +44,20 @@ export abstract class SHPEEvent {
     public locationName?: string | null;
     /** Real location of event */
     public geolocation?: GeoPoint | null;
-    /** Allowed radius for being able to sign into an event */
+    /** Allowed radius in meters for being able to sign into an event */
     public geofencingRadius?: number | null;
     /** Attribute used specifically for workshops */
     public workshopType?: WorkshopType;
     /** Specifies which committee this event is associated with */
     public committee?: string | null;
     /** Specifies who created this event */
-    public creator?: PublicUserInfo | null;
+    public creator?: string | null;
+    /** Is the member eligible for national convention*/
     public nationalConventionEligible?: boolean | null;
-    /** Specifies if event should display on "General" tab of ishpe */
+    /** Specifies if event should display on "General" tab of ishpe, if it is club-wide */
     public general?: boolean | null;
+    /** A flag to indicate that the notification has been sent */
+    public notificationSent?: boolean | null;
 
 
     /**
@@ -71,11 +72,14 @@ export abstract class SHPEEvent {
         this.endTime = null;
         this.coverImageURI = null;
         this.committee = null;
-        this.general = null;
+        this.general = false;
         this.geolocation = null;
         this.geofencingRadius = null;
         this.creator = null;
         this.nationalConventionEligible = null;
+        this.notificationSent = true;
+        this.endTimeBuffer = null;
+        this.startTimeBuffer = null;
     }
 
     /**
@@ -120,6 +124,7 @@ export class GeneralMeeting extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public general: boolean;
+    public notificationSent: boolean | null;
 
 
     public constructor() {
@@ -135,6 +140,7 @@ export class GeneralMeeting extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = true;
+        this.notificationSent = false;
     }
 
 
@@ -153,7 +159,7 @@ export class CommitteeMeeting extends SHPEEvent {
     public signInPoints: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
-    public general: boolean | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -166,7 +172,7 @@ export class CommitteeMeeting extends SHPEEvent {
         this.signInPoints = 1;
         this.locationName = null;
         this.geolocation = null;
-        this.general = null;
+        this.general = false
     }
 }
 
@@ -203,6 +209,7 @@ export class StudyHours extends SHPEEvent {
         this.locationName = null;
         this.geolocation = null;
         this.general = true;
+        this.notificationSent = true;
     }
 }
 
@@ -222,7 +229,7 @@ export class Workshop extends SHPEEvent {
     public locationName: string | null;
     public geolocation: GeoPoint | null;
     public workshopType: WorkshopType;
-    public general: boolean | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -236,7 +243,7 @@ export class Workshop extends SHPEEvent {
         this.signInPoints = 3;
         this.locationName = null;
         this.geolocation = null;
-        this.general = null;
+        this.general = false
     }
 }
 
@@ -253,7 +260,7 @@ export class VolunteerEvent extends SHPEEvent {
     public pointsPerHour: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
-    public general: boolean | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -266,7 +273,7 @@ export class VolunteerEvent extends SHPEEvent {
         this.pointsPerHour = 2;
         this.locationName = null;
         this.geolocation = null;
-        this.general = null;
+        this.general = false
     }
 }
 
@@ -283,7 +290,7 @@ export class SocialEvent extends SHPEEvent {
     public signInPoints: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
-    public general: boolean | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -296,7 +303,7 @@ export class SocialEvent extends SHPEEvent {
         this.signInPoints = 1;
         this.locationName = null;
         this.geolocation = null;
-        this.general = null;
+        this.general = false
     }
 }
 
@@ -313,7 +320,7 @@ export class IntramuralEvent extends SHPEEvent {
     public signInPoints: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
-    public general: boolean | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -326,7 +333,7 @@ export class IntramuralEvent extends SHPEEvent {
         this.signInPoints = 1;
         this.locationName = null;
         this.geolocation = null;
-        this.general = null;
+        this.general = false
     }
 }
 
@@ -345,7 +352,7 @@ export class CustomEvent extends SHPEEvent {
     public pointsPerHour: number | null;
     public locationName: string | null;
     public geolocation: GeoPoint | null;
-    public general: boolean | null;
+    public general: boolean;
 
     public constructor() {
         super();
@@ -360,7 +367,7 @@ export class CustomEvent extends SHPEEvent {
         this.pointsPerHour = 0;
         this.locationName = null;
         this.geolocation = null;
-        this.general = null;
+        this.general = false
     }
 }
 
@@ -391,38 +398,17 @@ export enum EventLogStatus {
     ERROR,
 }
 
-export interface PublicUserInfo {
-    // Firestore parameters
-    uid?: string
-    email?: string;
-    displayName?: string;
-    photoURL?: string;
-    resumePublicURL?: string;
-    roles?: Roles;
-    name?: string;
-    bio?: string;
-    major?: string;
-    classYear?: string;
-    committees?: string[];
-    pointsRank?: number;
-    rankChange?: RankChange;
-    nationalExpiration?: Timestamp;
-    chapterExpiration?: Timestamp;
-    resumeVerified?: boolean;
-    interests?: string[];
-    points?: number;
-    pointsThisMonth?: number;
-    isStudent?: boolean;
-    isEmailPublic?: boolean;
-}
 
-export interface Roles {
-    reader?: boolean;
-    officer?: boolean;
-    admin?: boolean;
-    developer?: boolean;
-    representative?: boolean;
-    lead?: boolean;
-    secretary?: boolean;
-    customTitle?: string;
-}
+export const getStatusMessage = (status: EventLogStatus): string => {
+    const statusMessages = {
+        [EventLogStatus.SUCCESS]: "Successfully signed in/out.",
+        [EventLogStatus.EVENT_OVER]: "The event is already over.",
+        [EventLogStatus.EVENT_ONGOING]: "The event is ongoing.",
+        [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
+        [EventLogStatus.EVENT_NOT_FOUND]: "The event was not found.",
+        [EventLogStatus.ALREADY_LOGGED]: "You have already signed in/out.",
+        [EventLogStatus.ERROR]: "An internal error occurred. Please try again.",
+    };
+
+    return statusMessages[status] || "An unknown error occurred.";
+};

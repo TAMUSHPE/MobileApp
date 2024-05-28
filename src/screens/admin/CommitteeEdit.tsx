@@ -268,7 +268,7 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                 <View className='absolute w-full justify-center items-center'>
                     <Text className="text-2xl font-semibold" >Committee</Text>
                 </View>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
+                <TouchableOpacity onPress={() => navigation.goBack()} className='p-2'>
                     <Octicons name="chevron-left" size={30} color="black" />
                 </TouchableOpacity>
             </View>

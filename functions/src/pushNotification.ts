@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import { db } from './firebaseConfig';
 import { Expo, ExpoPushMessage } from 'expo-server-sdk';
-import { SHPEEvent } from './types';
+import { SHPEEvent } from './types/events';
 /**
  * Fetches the Expo push tokens of a member.
  *
