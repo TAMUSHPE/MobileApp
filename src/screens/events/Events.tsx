@@ -88,13 +88,15 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                 </View>
 
                 <View className='flex-1 flex-row mx-3'>
-                    <TouchableOpacity
-                        className='flex-1 flex-row items-center justify-center border border-pale-blue rounded-sm py-2 mx-2'
-                        onPress={() => navigation.navigate("QRCodeScanningScreen")}
-                    >
-                        <FontAwesome name="camera" size={24} color="#72A9BE" />
-                        <Text className='font-bold text-pale-blue text-lg ml-2'>QRCode Scan</Text>
-                    </TouchableOpacity>
+                    {!userInfo?.publicInfo?.isStudent && (
+                        <TouchableOpacity
+                            className='flex-1 flex-row items-center justify-center border border-pale-blue rounded-sm py-2 mx-2'
+                            onPress={() => navigation.navigate("QRCodeScanningScreen")}
+                        >
+                            <FontAwesome name="camera" size={24} color="#72A9BE" />
+                            <Text className='font-bold text-pale-blue text-lg ml-2'>QRCode Scan</Text>
+                        </TouchableOpacity>
+                    )}
 
                     {hasPrivileges &&
                         <TouchableOpacity
