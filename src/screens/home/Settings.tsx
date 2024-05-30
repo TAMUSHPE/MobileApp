@@ -439,7 +439,10 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                         <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Bio</Text>
                         <TextInput
                             className={`p-2 rounded-lg text-base ${darkMode ? "bg-secondary-bg-dark text-white" : "bg-secondary-bg-light text-black border border-black"}`}
-                            onChangeText={(text: string) => setBio(text)}
+                            onChangeText={(text: string) => {
+                                if (text.length <= 250)
+                                    setBio(text)
+                            }}
                             value={bio}
                             multiline
                             numberOfLines={8}

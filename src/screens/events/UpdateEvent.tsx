@@ -504,9 +504,11 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             value={description || ""}
                             placeholder='What is this event about?'
                             placeholderTextColor={darkMode ? "#DDD" : "#777"}
-                            onChangeText={(text) => {
-                                setDescription(text)
-                                setChangesMade(true);
+                            onChangeText={(text: string) => {
+                                if (text.length <= 250) {
+                                    setDescription(text)
+                                    setChangesMade(true);
+                                }
                             }}
                             numberOfLines={2}
                             keyboardType='ascii-capable'
