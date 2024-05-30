@@ -1,12 +1,15 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
-import { ref, uploadBytesResumable, UploadTask, UploadMetadata } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, DocumentSnapshot } from "firebase/firestore";
+import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject, getDownloadURL, uploadBytes } from "firebase/storage";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
 import { SHPEEvent, EventLogStatus, UserEventData } from "../types/Events";
 import * as Location from 'expo-location';
+import { deleteUser } from "firebase/auth";
+import { LinkData } from "../types/Links";
+import { getBlobFromURI } from "./fileSelection";
 
 /**
  * Obtains the public information of a user given their UID.
@@ -255,7 +258,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
         settings: {
             darkMode: false,
         },
-        expirationDate: oneWeekFromNow,
+        expirationDate: Timestamp.fromDate(oneWeekFromNow),
         email: auth.currentUser?.email ?? "",
     };
 
@@ -662,15 +665,24 @@ export const getAttendanceNumber = async (eventId: string): Promise<number> => {
  * @param eventID ID of event to sign into. This is the name of the event document in firestore
  * @returns Status representing the status of the cloud function
  */
-export const signInToEvent = async (eventID: string): Promise<EventLogStatus> => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    let location: null | { longitude: number, latitude: number } = null;
-    if (status == 'granted') {
-        const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
-        location = (new GeoPoint(latitude, longitude)).toJSON();
+export const signInToEvent = async (eventID: string, uid?: string): Promise<EventLogStatus> => {
+    const event = await getEvent(eventID);
+    if (!event) {
+        return EventLogStatus.EVENT_NOT_FOUND;
     }
+
+    let location: null | { longitude: number, latitude: number } = null;
+
+    if (event.geofencingRadius && event.geofencingRadius > 0) {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status == 'granted') {
+            const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
+            location = (new GeoPoint(latitude, longitude)).toJSON();
+        }
+    }
+
     return await httpsCallable(functions, "eventSignIn")
-        .call(null, { eventID, location })
+        .call(null, { eventID, location, uid })
         .then((result) => {
             if (typeof result.data == "object" && result.data && (result.data as any).success) {
                 return EventLogStatus.SUCCESS
@@ -701,15 +713,24 @@ export const signInToEvent = async (eventID: string): Promise<EventLogStatus> =>
  * @param eventID ID of event to sign into. This is the name of the event document in firestore
  * @returns Status representing the status of the cloud function
  */
-export const signOutOfEvent = async (eventID: string): Promise<EventLogStatus> => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    let location: null | { longitude: number, latitude: number } = null;
-    if (status == 'granted') {
-        const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
-        location = (new GeoPoint(latitude, longitude)).toJSON();
+export const signOutOfEvent = async (eventID: string, uid?: string): Promise<EventLogStatus> => {
+    const event = await getEvent(eventID);
+    if (!event) {
+        return EventLogStatus.EVENT_NOT_FOUND;
     }
+
+    let location: null | { longitude: number, latitude: number } = null;
+
+    if (event.geofencingRadius && event.geofencingRadius > 0) {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status == 'granted') {
+            const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
+            location = (new GeoPoint(latitude, longitude)).toJSON();
+        }
+    }
+
     return await httpsCallable(functions, "eventSignOut")
-        .call(null, { eventID, location })
+        .call(null, { eventID, location, uid })
         .then((result) => {
             if (typeof result.data == "object" && result.data && (result.data as any).success) {
                 return EventLogStatus.SUCCESS
@@ -817,6 +838,24 @@ export const setUserRoles = async (uid: string, roles: Roles): Promise<HttpsCall
             }, uid);
             return res;
         });
+};
+
+
+export const getUsers = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const querySnapshot = await getDocs(userRef);
+        const members: PublicUserInfo[] = querySnapshot.docs.map((doc) => ({
+            ...doc.data() as PublicUserInfo,
+            uid: doc.id,
+        }));
+
+        return members;
+
+    } catch (error) {
+        console.error("Error fetching members:", error);
+        throw new Error("Internal Server Error.");
+    }
 };
 
 export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => {
@@ -981,31 +1020,40 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
     return members;
 };
 
-export const getMembersToShirtVerify = async (): Promise<PublicUserInfo[]> => {
-    const shirtRef = collection(db, 'shirt-sizes');
-    const shirtQuery = query(shirtRef);
-    const shirtSnapshot = await getDocs(shirtQuery);
-    const shirtUserIds = shirtSnapshot.docs.map(doc => doc.id);
+export const getMembersToShirtVerify = async (): Promise<{ pickedUp: PublicUserInfo[], notPickedUp: PublicUserInfo[] }> => {
+    try {
+        const querySnapshot = await getDocs(collection(db, "shirt-sizes"));
+        const UIDs: string[] = [];
 
-    const members: PublicUserInfo[] = [];
-    for (const userId of shirtUserIds) {
-        const userDocRef = doc(db, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists() && !userDocSnap.data()?.shirtPickedUp) {
-            members.push({ uid: userId, ...userDocSnap.data() });
+        querySnapshot.forEach(doc => {
+            UIDs.push(doc.id);
+        });
+
+        const pickedUpMembers: PublicUserInfo[] = [];
+        const notPickedUpMembers: PublicUserInfo[] = [];
+
+        for (const uid of UIDs) {
+            const userData = await getPublicUserData(uid);
+            const shirtData = await getDoc(doc(db, "shirt-sizes", uid));
+            const shirtPickedUp = shirtData.data()?.shirtPickedUp;
+
+            if (userData) {
+                const memberData = { uid, ...userData };
+                if (shirtPickedUp) {
+                    pickedUpMembers.push(memberData);
+                } else {
+                    notPickedUpMembers.push(memberData);
+                }
+            }
         }
-    }
 
-    for (const userId of shirtUserIds) {
-        const userDocRef = doc(db, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists() && userDocSnap.data()?.shirtPickedUp) {
-            members.push({ uid: userId, ...userDocSnap.data() });
-        }
+        return { pickedUp: pickedUpMembers, notPickedUp: notPickedUpMembers };
+    } catch (error) {
+        console.error("Error fetching members for shirt verification:", error);
+        return { pickedUp: [], notPickedUp: [] };
     }
-
-    return members;
 };
+
 
 export const isUsernameUnique = async (username: string): Promise<boolean> => {
     const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');
@@ -1185,6 +1233,76 @@ export const getInterestsEvent = async (interests: string[]) => {
     }
 }
 
+const backupAndDeleteUserData = async (userId: string) => {
+    const userDocRef = doc(db, `users/${userId}`);
+    const backupUserDocRef = doc(db, `deleted-accounts/${userId}`);
+    const batch = writeBatch(db);
+
+    // Backup user data
+    const userData = await getDoc(userDocRef);
+    if (userData.exists()) {
+        batch.set(backupUserDocRef, userData.data());
+    }
+
+    // Backup and delete Private Info
+    const privateInfoDocRef = doc(db, `users/${userId}/private/privateInfo`);
+    const privateData = await getDoc(privateInfoDocRef);
+    if (privateData.exists()) {
+        const backupPrivateInfoDocRef = doc(db, `deleted-accounts/${userId}/private/privateInfo`);
+        batch.set(backupPrivateInfoDocRef, privateData.data());
+        batch.delete(privateInfoDocRef);
+    }
+
+    // Backup and delete Event Logs
+    const eventLogsCollectionRef = collection(db, `users/${userId}/event-logs`);
+    const eventLogs = await getDocs(eventLogsCollectionRef);
+    eventLogs.forEach((document) => {
+        const backupEventLogDocRef = doc(db, `deleted-accounts/${userId}/event-logs/${document.id}`);
+        batch.set(backupEventLogDocRef, document.data());
+        batch.delete(doc(db, `users/${userId}/event-logs/${document.id}`));
+    });
+
+    batch.delete(userDocRef);
+    await batch.commit();
+};
+
+const deleteUserStorageData = async (userId: string) => {
+    const userDocsRef = ref(storage, `user-docs/${userId}`);
+
+    try {
+        const listResults = await listAll(userDocsRef);
+        listResults.items.forEach(async (itemRef) => {
+            await deleteObject(itemRef);
+        });
+    } catch (error) {
+        console.log('Error deleting user storage data:', error);
+    }
+};
+
+const deleteUserAuthentication = async (userId: string) => {
+    try {
+        if (auth.currentUser) {
+            await deleteUser(auth.currentUser);
+        } else {
+            console.log('No user currently logged in or user not found.');
+        }
+    } catch (error) {
+        console.error('Error deleting user authentication:', error);
+    }
+};
+
+export const deleteAccount = async (userId: string) => {
+    try {
+        await backupAndDeleteUserData(userId);
+        await deleteUserStorageData(userId);
+        await deleteUserAuthentication(userId);
+
+        console.log('Successfully deleted account for user:', userId);
+    } catch (error) {
+        console.error('Error deleting account:', error);
+    }
+};
+
 export const queryUserEventLogs = async (uid: string): Promise<Array<UserEventData>> => {
     console.log(`users/${uid}/event-logs`);
     const userEventLogsCollectionRef = collection(db, `users/${uid}/event-logs`);
@@ -1205,3 +1323,48 @@ export const queryUserEventLogs = async (uid: string): Promise<Array<UserEventDa
 
     return events;
 }
+
+
+export const updateLink = async (linkData: LinkData) => {
+    const linkRef = doc(db, 'links', linkData.id);
+    let imageUrl = linkData.imageUrl || '';
+
+    // If there is an image to upload
+    if (linkData.imageUrl && linkData.imageUrl.startsWith('file://')) {
+        const imageRef = ref(storage, `links/${linkData.name}`);
+        const blob = await getBlobFromURI(linkData.imageUrl);
+
+        if (blob) {
+            await uploadBytes(imageRef, blob);
+            imageUrl = await getDownloadURL(imageRef);
+        }
+    }
+
+
+    const linkToSave: LinkData = {
+        id: linkData.id,
+        name: linkData.name,
+        url: linkData.url,
+        imageUrl: imageUrl,
+    };
+
+    await setDoc(linkRef, linkToSave, { merge: true });
+};
+
+
+export const fetchLink = async (linkID: string): Promise<LinkData | null> => {
+    try {
+        const linkRef = doc(db, 'links', linkID);
+        const linkDoc = await getDoc(linkRef);
+
+        if (linkDoc.exists()) {
+            return linkDoc.data() as LinkData;
+        } else {
+            console.log('No such document!');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching document:', error);
+        return null;
+    }
+};

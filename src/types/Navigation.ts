@@ -112,6 +112,7 @@ export type AdminDashboardParams = {
     MOTMEditor: undefined;
     FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
+    LinkManager: undefined;
     ResetOfficeHours: undefined;
     RestrictionsEditor: undefined;
     Feedback: undefined;
@@ -199,8 +200,6 @@ export type MemberCardProp = {
     userData?: PublicUserInfo;
     displayPoints?: Boolean;
     navigation?: NativeStackNavigationProp<any>
-    onShirtScreen?: boolean;
-    pickedUpShirt?: boolean;
 }
 
 export type IShpeProps = {

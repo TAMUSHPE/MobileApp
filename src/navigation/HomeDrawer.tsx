@@ -74,7 +74,7 @@ const HomeDrawerContent = (props: DrawerContentComponentProps) => {
                             <Text className='text-white text-xl break-words font-semibold'>{userInfo?.publicInfo?.displayName ?? "Name"}</Text>
                             {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
                         </View>
-                        <Text className='text-white text-sm break-words font-semibold'>{`${userInfo?.publicInfo?.points ?? 0} points`}</Text>
+                        <Text className='text-white text-sm break-words font-semibold'>{`${userInfo?.publicInfo?.points?.toFixed(2) ?? 0} points`}</Text>
                     </View>
                 </View>
             </View>

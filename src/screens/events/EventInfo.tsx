@@ -1,14 +1,14 @@
-import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Platform } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Platform, Modal } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useFocusEffect, useRoute } from '@react-navigation/core';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
-import { getEvent, getAttendanceNumber, isUserSignedIn, getPublicUserData } from '../../api/firebaseUtils';
+import { getEvent, getAttendanceNumber, isUserSignedIn, getPublicUserData, getUsers, signInToEvent, signOutOfEvent } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { formatEventDate, formatTime } from '../../helpers/timeUtils';
 import { EventProps, SHPEEventScreenRouteProp } from '../../types/Navigation'
-import { SHPEEvent } from '../../types/Events';
+import { SHPEEvent, getStatusMessage } from '../../types/Events';
 import { Images } from '../../../assets';
 import { StatusBar } from 'expo-status-bar';
 import CalendarIcon from '../../../assets/calandar_pale_blue.svg'
@@ -19,20 +19,42 @@ import { handleLinkPress } from '../../helpers/links';
 import MemberCard from '../../components/MemberCard';
 import { PublicUserInfo } from '../../types/User';
 import { reverseFormattedFirebaseName } from '../../types/Committees';
+import MembersList from '../../components/MembersList';
 
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<SHPEEventScreenRouteProp>();
     const { eventId } = route.params;
+    const { userInfo } = useContext(UserContext)!;
     const [event, setEvent] = useState<SHPEEvent>();
     const [creatorData, setCreatorData] = useState<PublicUserInfo | null>(null)
     const [userSignedIn, setUserSignedIn] = useState(false);
     const [attendance, setAttendance] = useState<number>(0);
-    const { userInfo } = useContext(UserContext)!;
+    const [allUserFetched, setAllUserFetched] = useState(false);
+    const [users, setUsers] = useState<PublicUserInfo[]>([]);
+    const [userModalVisible, setUserModalVisible] = useState(false);
+    const [userSignInOut, setUserSignInOut] = useState<string>();
+    const [loading, setLoading] = useState(false);
+    const [forceUpdate, setForceUpdate] = useState(0);
 
     const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, workshopType, committee, creator, nationalConventionEligible } = event || {};
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    const insets = useSafeAreaInsets();
+
+
+    const fetchAllUsers = async () => {
+        try {
+            const fetchedUsers = await getUsers();
+            setUsers(fetchedUsers);
+            setAllUserFetched(true);
+        } catch (error) {
+            console.error("An error occurred while fetching users: ", error);
+        }
+        setForceUpdate(prev => prev + 1);
+    };
+
 
     useFocusEffect(
         useCallback(() => {
@@ -223,7 +245,109 @@ const EventInfo = ({ navigation }: EventProps) => {
                         <MemberCard userData={creatorData} />
                     </View>
                 )}
+
+
+                {/* Admin Only - Sign in/out user */}
+                <View className=''>
+                    {(typeof event.signInPoints === 'number' && hasPrivileges) && (
+                        <TouchableOpacity
+                            className='bg-pale-blue p-2 rounded-md'
+                            onPress={() => {
+                                setUserSignInOut("signIn")
+                                setUserModalVisible(true)
+                                if (!allUserFetched) {
+                                    fetchAllUsers();
+                                }
+                            }}>
+                            <Text className='text-white'>
+                                Manually Sign In a user
+                            </Text>
+                        </TouchableOpacity>
+                    )}
+                </View>
+
+                {(typeof event.signOutPoints === 'number' && hasPrivileges) && (
+                    <TouchableOpacity
+                        onPress={() => {
+                            setUserSignInOut("signOut")
+                            setUserModalVisible(true)
+                            if (!allUserFetched) {
+                                fetchAllUsers();
+                            }
+                        }}
+                        className='bg-pale-blue p-2 rounded-md mt-4'
+                    >
+                        <Text className='text-white'>
+                            Manually Sign Out a user
+                        </Text>
+                    </TouchableOpacity>
+                )}
             </View>
+
+            <View className='pb-40' />
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={userModalVisible}
+                onRequestClose={() => {
+                    setUserModalVisible(false);
+                }}
+            >
+                <View
+                    style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+                    className='bg-white'
+                >
+
+                    <View className='flex-row items-center h-10 mb-4'>
+                        <View className='w-screen absolute'>
+                            <Text className="text-2xl font-bold justify-center text-center">Select a Member</Text>
+                        </View>
+
+                        <TouchableOpacity
+                            className='ml-6 px-4'
+                            onPress={() => setUserModalVisible(false)}
+                        >
+                            <Octicons name="x" size={26} color="black" />
+                        </TouchableOpacity>
+                    </View>
+
+                    {!allUserFetched && (
+                        <ActivityIndicator className="mb-2" size="small" />
+                    )}
+
+
+                    <View className="h-[100%] w-[100%] bg-white">
+                        <MembersList
+                            key={forceUpdate}
+                            handleCardPress={(uid) => {
+                                setLoading(true)
+                                console.log(uid)
+                                if (userSignInOut == "signIn") {
+                                    signInToEvent(eventId, uid).then((status) => {
+                                        setLoading(false)
+                                        alert(getStatusMessage(status))
+                                    })
+                                } else if (userSignInOut == "signOut") {
+                                    signOutOfEvent(eventId, uid).then((status) => {
+                                        setLoading(false)
+                                        alert(getStatusMessage(status))
+                                    })
+                                }
+                                setUserModalVisible(false)
+                            }}
+                            users={users}
+                        />
+                    </View>
+                </View>
+            </Modal>
+
+            {loading && (
+                <View className='absolute w-full h-full bg-[#00000055] items-center justify-center'>
+                    <ActivityIndicator size="large" color={"white"} />
+                </View>
+
+            )}
 
         </ScrollView>
     )
