@@ -195,12 +195,21 @@ export type MemberListProps = {
     navigation?: NativeStackNavigationProp<MembersStackParams>
 }
 
+interface SelectedPublicUserInfo extends PublicUserInfo {
+    selected?: boolean;
+}
 
 export type MemberCardProp = {
     handleCardPress?: (uid: string | void) => void;
     userData?: PublicUserInfo;
     displayPoints?: Boolean;
     navigation?: NativeStackNavigationProp<any>
+}
+
+
+export type MemberCardMultipleSelectProp = {
+    handleCardPress?: (uid: string | void) => void;
+    userData?: SelectedPublicUserInfo;
 }
 
 export type IShpeProps = {

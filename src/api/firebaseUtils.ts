@@ -1369,3 +1369,49 @@ export const fetchLink = async (linkID: string): Promise<LinkData | null> => {
         return null;
     }
 };
+
+export const getMembers = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const q = query(userRef);
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const members = await Promise.all(querySnapshot.docs.map(async (doc) => {
+            const publicInfo = doc.data();
+            const uid = doc.id;
+
+            return {
+                ...publicInfo,
+                uid,
+            };
+        }));
+
+        return members;
+
+    } catch (error) {
+        console.error("Error fetching members:", error);
+        throw new Error("Internal Server Error.");
+    }
+};
+
+export const fetchEventByName = async (eventName: string): Promise<SHPEEvent | null> => {
+    try {
+        const eventsRef = collection(db, 'events');
+        const q = query(eventsRef, where('name', '==', eventName), limit(1));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            const eventDoc = querySnapshot.docs[0];
+            return { id: eventDoc.id, ...eventDoc.data() } as SHPEEvent;
+        } else {
+            console.log(`Event with name "${eventName}" not found.`);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching event:', error);
+        return null;
+    }
+};
