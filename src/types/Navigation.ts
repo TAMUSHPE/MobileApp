@@ -199,8 +199,6 @@ export type MemberCardProp = {
     userData?: PublicUserInfo;
     displayPoints?: Boolean;
     navigation?: NativeStackNavigationProp<any>
-    onShirtScreen?: boolean;
-    pickedUpShirt?: boolean;
 }
 
 export type IShpeProps = {

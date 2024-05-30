@@ -13,20 +13,24 @@ import DismissibleModal from '../../components/DismissibleModal'
 import MembersList from '../../components/MembersList'
 
 const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
-    const [members, setMembers] = useState<PublicUserInfo[]>([]);
+    const [pickedUpMembers, setPickedUpMembers] = useState<PublicUserInfo[]>([]);
+    const [notPickedUpMembers, setNotPickedUpMembers] = useState<PublicUserInfo[]>([]);
     const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
     const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();
     const [selectedMemberDocuments, setSelectedMemberDocuments] = useState<shirtResponse | null>(null);
 
+    const [selectOption, setSelectOption] = useState<string>('pickedUp');
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [infoVisible, setInfoVisible] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [forceUpdate, setForceUpdate] = useState(0);
 
     const fetchMembers = async () => {
         setLoading(true);
         try {
-            const fetchedMembers = await getMembersToShirtVerify();
-            setMembers(fetchedMembers);
+            const { pickedUp, notPickedUp } = await getMembersToShirtVerify();
+            setPickedUpMembers(pickedUp);
+            setNotPickedUpMembers(notPickedUp);
         } catch (error) {
             console.error('Error fetching members:', error);
         } finally {
@@ -51,36 +55,55 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
     };
 
     useEffect(() => {
-        if (selectedMemberUID && members) {
-            const memberData = members.find(member => member.uid === selectedMemberUID);
+        if (selectedMemberUID) {
+            const combinedMembers = [...pickedUpMembers, ...notPickedUpMembers];
+            const memberData = combinedMembers.find(member => member.uid === selectedMemberUID);
             if (memberData) {
                 setSelectedMember(memberData);
             } else {
                 console.log('No data found for member with UID:', selectedMemberUID);
             }
-            fetchMemberDocuments(selectedMemberUID)
+            fetchMemberDocuments(selectedMemberUID);
         }
-    }, [selectedMemberUID, members]);
+    }, [selectedMemberUID, pickedUpMembers, notPickedUpMembers]);
 
     const handleCheck = async () => {
-        const userDocRef = doc(db, 'users', selectedMemberUID!);
-        await updateDoc(userDocRef, {
-            shirtPickedUp: true,
-        });
+        if (selectedMemberUID) {
+            const userDocRef = doc(db, 'shirt-sizes', selectedMemberUID);
+            await updateDoc(userDocRef, {
+                shirtPickedUp: true,
+            });
 
-        await fetchMembers();
+            setNotPickedUpMembers(prevMembers =>
+                prevMembers.filter(member => member.uid !== selectedMemberUID)
+            );
+            setPickedUpMembers(prevMembers =>
+                [...prevMembers, { ...selectedMember, shirtPickedUp: true } as PublicUserInfo]
+            );
+
+            setForceUpdate(forceUpdate + 1);
+        }
     };
-
 
     const handleUncheck = async () => {
-        const userDocRef = doc(db, 'users', selectedMemberUID!);
+        if (selectedMemberUID) {
+            const userDocRef = doc(db, 'shirt-sizes', selectedMemberUID);
 
-        await updateDoc(userDocRef, {
-            shirtPickedUp: false,
-        });
+            await updateDoc(userDocRef, {
+                shirtPickedUp: false,
+            });
 
-        await fetchMembers();
+            setPickedUpMembers(prevMembers =>
+                prevMembers.filter(member => member.uid !== selectedMemberUID)
+            );
+            setNotPickedUpMembers(prevMembers =>
+                [...prevMembers, { ...selectedMember, shirtPickedUp: false } as PublicUserInfo]
+            );
+
+            setForceUpdate(forceUpdate + 1);
+        }
     };
+
 
     return (
         <SafeAreaView className='flex-1' edges={["top"]}>
@@ -100,10 +123,27 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                 </View>
             </View>
 
+            <View className='flex-row mt-4'>
+                <TouchableOpacity
+                    className={`flex-row items-center justify-center border rounded-md py-2 px-4 mx-2 mb-2 ${selectOption === "pickedUp" ? 'bg-pale-blue' : 'border-pale-blue'}`}
+                    onPress={() => setSelectOption('pickedUp')}
+                >
+                    <Text className={`font-bold ${selectOption === "pickedUp" ? 'text-white' : 'text-pale-blue'}`}>pickedUp</Text>
+                </TouchableOpacity>
+
+
+                <TouchableOpacity
+                    className={`flex-row items-center justify-center border rounded-md py-2 px-4 mx-2 mb-2 ${selectOption === "notPickedUp" ? 'bg-pale-blue' : 'border-pale-blue'}`}
+                    onPress={() => setSelectOption('notPickedUp')}
+                >
+                    <Text className={`font-bold ${selectOption === "notPickedUp" ? 'text-white' : 'text-pale-blue'}`}>NotPickedUp</Text>
+                </TouchableOpacity>
+            </View>
+
             {loading && (
                 <ActivityIndicator size="large" className='mt-8' />
             )}
-            {(members && members.length === 0 && !loading) && (
+            {(selectOption === "notPickedUp" && notPickedUpMembers && notPickedUpMembers.length === 0 && !loading) && (
                 <View className='items-center justify-center'>
                     <View className='flex justify-center mt-4'>
                         <Text className='text-xl font-semibold'>No Users to Check Off</Text>
@@ -111,18 +151,40 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                 </View>
             )}
 
-            {members && members.length > 0 && (
+            {selectOption === "notPickedUp" && notPickedUpMembers && notPickedUpMembers.length > 0 && (
                 <View className='mt-9 flex-1'>
-                    <Text className='ml-6 text-xl font-semibold mb-5'>Select a user</Text>
                     <MembersList
+                        key={forceUpdate}
                         handleCardPress={(uid) => {
                             setSelectedMemberUID(uid)
                             setConfirmVisible(true)
                         }}
-                        users={members}
+                        users={notPickedUpMembers}
                     />
                 </View>
             )}
+
+            {(selectOption === "pickedUp" && pickedUpMembers && pickedUpMembers.length === 0 && !loading) && (
+                <View className='items-center justify-center'>
+                    <View className='flex justify-center mt-4'>
+                        <Text className='text-xl font-semibold'>No Users has picked up</Text>
+                    </View>
+                </View>
+            )}
+
+            {selectOption === "pickedUp" && pickedUpMembers && pickedUpMembers.length > 0 && (
+                <View className='mt-9 flex-1'>
+                    <MembersList
+                        key={forceUpdate}
+                        handleCardPress={(uid) => {
+                            setSelectedMemberUID(uid)
+                            setConfirmVisible(true)
+                        }}
+                        users={pickedUpMembers}
+                    />
+                </View>
+            )}
+
 
             <DismissibleModal
                 visible={confirmVisible}
@@ -136,38 +198,38 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParam
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <MemberCard userData={selectedMember} onShirtScreen = {true} pickedUpShirt={selectedMember?.shirtPickedUp}/>
+                    <MemberCard userData={selectedMember} />
 
-                        <View style={{ alignItems: 'center' }}>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' }}>
-                                <Text style={{ marginHorizontal: 0 }} className='text-xl font-semibold'>Shirt Size:</Text>
-                                <Text style={{ marginHorizontal: 5 }} className='text-xl font-semibold'>{selectedMemberDocuments?.shirtSize}</Text>
+                    <View style={{ alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around' }}>
+                            <Text style={{ marginHorizontal: 0 }} className='text-xl font-semibold'>Shirt Size:</Text>
+                            <Text style={{ marginHorizontal: 5 }} className='text-xl font-semibold'>{selectedMemberDocuments?.shirtSize}</Text>
 
-                                {selectedMember?.shirtPickedUp ? (
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            handleUncheck()
-                                            setConfirmVisible(false);
-                                        }}
-                                        style={{ marginHorizontal: 10 }}
-                                        className='py-3 rounded-lg items-center justify-center bg-[#ff0000] w-[47%]'
-                                    >
-                                        <Text className='text-lg font-semibold'>Uncheck</Text>
-                                    </TouchableOpacity>
-                                ) : (
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            handleCheck()
-                                            setConfirmVisible(false);
-                                        }}
-                                        style={{ marginHorizontal: 10 }}
-                                        className='py-3 rounded-lg items-center justify-center bg-[#00ff00] w-[47%]'
-                                    >
-                                        <Text className='text-lg font-semibold'>Check Off</Text>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
+                            {selectedMemberDocuments?.shirtPickedUp ? (
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        handleUncheck()
+                                        setConfirmVisible(false);
+                                    }}
+                                    style={{ marginHorizontal: 10 }}
+                                    className='py-3 rounded-lg items-center justify-center bg-[#ff0000] w-[47%]'
+                                >
+                                    <Text className='text-lg font-semibold'>Uncheck</Text>
+                                </TouchableOpacity>
+                            ) : (
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        handleCheck()
+                                        setConfirmVisible(false);
+                                    }}
+                                    style={{ marginHorizontal: 10 }}
+                                    className='py-3 rounded-lg items-center justify-center bg-[#00ff00] w-[47%]'
+                                >
+                                    <Text className='text-lg font-semibold'>Check Off</Text>
+                                </TouchableOpacity>
+                            )}
                         </View>
+                    </View>
 
                 </View>
             </DismissibleModal>

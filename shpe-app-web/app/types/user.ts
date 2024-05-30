@@ -52,7 +52,6 @@ export interface PublicUserInfo {
     interests?: string[];
     points?: number;
     pointsThisMonth?: number;
-    shirtPickedUp?: boolean;
     isStudent?: boolean;
     isEmailPublic?: boolean;
 };
