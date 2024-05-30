@@ -1,108 +1,82 @@
-import { View, Text, TouchableOpacity } from 'react-native'
-import React, { useCallback, useContext, useState } from 'react'
+import { View, TouchableOpacity, ActivityIndicator, Text } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { HomeDrawerParams, MembersScreenRouteProp } from '../../types/Navigation';
-import { Octicons, FontAwesome } from '@expo/vector-icons';
-import { getUpcomingEvents, getPastEvents, queryUserEventLogs } from '../../api/firebaseUtils';
-import { SHPEEvent } from '../../types/Events';
-import EventsList from '../../components/EventsList';
-import { useFocusEffect, useRoute } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Octicons } from '@expo/vector-icons';
+import { Timestamp } from 'firebase/firestore';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { queryUserEventLogs } from '../../api/firebaseUtils';
+import { UserEventData } from '../../types/Events';
+import { HomeDrawerParams } from '../../types/Navigation';
 
-
-const PersonalEventLog = ( {navigation}: NativeStackScreenProps<HomeDrawerParams> ) => {
-  const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
-  const [pastUserEventsData, setPastUserEventsData] =  useState<SHPEEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [initialFetch, setInitialFetch] = useState(false);
-  const [initialPastFetch, setInitialPastFetch] = useState(false);
+const PersonalEventLog = ({ navigation }: NativeStackScreenProps<HomeDrawerParams>) => {
   const userContext = useContext(UserContext);
   const { userInfo } = userContext!;
 
-  const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+  const [events, setEvents] = useState<UserEventData[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-        const fetchEvents = async () => {
-            try {
-                setIsLoading(true);
-
-                const upcomingEventsData = await getUpcomingEvents();
-                const pastEventsData = await getPastEvents(5);
-                const pastUserEventsData = await queryUserEventLogs(auth.currentUser?.uid!);
-
-                // Filter to separate current and upcoming events
-                // const currentTime = new Date();
-                // const currentEvents = upcomingEventsData.filter(event => {
-                //     const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
-                //     const endTime = event.endTime ? event.endTime.toDate() : new Date(0);
-                //     return startTime <= currentTime && endTime >= currentTime;
-                // });
-                // const trueUpcomingEvents = upcomingEventsData.filter(event => {
-                //     const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
-                //     return startTime > currentTime;
-                // });
-
-                // if (trueUpcomingEvents) {
-                //     setUpcomingEvents(trueUpcomingEvents);
-                // }
-
-                if (pastEventsData) {
-                    setPastEvents(pastEventsData);
-                }
-
-                if (pastUserEventsData) {
-                  setPastUserEventsData(pastUserEventsData);
-                }
-
-                // Assuming you have a state setter for current events
-                // setCurrentEvents(currentEvents);
-
-                setIsLoading(false);
-            } catch (error) {
-                console.error('An error occurred while fetching events:', error);
-                setIsLoading(false);
-            }
-        };
-
-        // Only fetch events if initial fetch has not been done or if user has privileges
-        // A user with privileges will need to see the event they just created/edited
-        if (!initialFetch || hasPrivileges) {
-            fetchEvents();
-            setInitialFetch(true);
+  useEffect(() => {
+    const fetchUserEventLogs = async () => {
+      if (auth.currentUser?.uid) {
+        try {
+          const data = await queryUserEventLogs(auth.currentUser?.uid);
+          setEvents(data);
+        } catch (error) {
+          console.error('Error fetching user event logs:', error);
+        } finally {
+          setIsLoading(false);
         }
-    }, [hasPrivileges, initialFetch])
-);
+      }
+    };
+
+    fetchUserEventLogs();
+  }, []);
+
+  if (isLoading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
 
   return (
     <View>
       <SafeAreaView edges={['top']} >
-      <View className='flex-row justify-between items-center mx-5 mt-1'>
+        <View className='flex-row justify-between items-center mx-5 mt-1'>
           <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              className="rounded-full w-10 h-10 justify-center items-center"
-              style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+            onPress={() => navigation.goBack()}
+            className="rounded-full w-10 h-10 justify-center items-center"
+            style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
           >
-          <Octicons name="chevron-left" size={30} color="white" />
+            <Octicons name="chevron-left" size={30} color="white" />
           </TouchableOpacity>
-      </View>
+        </View>
       </SafeAreaView>
+
       <View className='mx-5 mt-4'>
-        {(!isLoading && pastEvents.length != 0) &&
-          <>
-              <Text className='text-xl mb-2 font-bold text-center'>Personal Events Log</Text>
-              <EventsList
-                 events={pastUserEventsData}
-                 navigation={navigation}
-              />
-          </>
-        }
+        {events.map(({ eventData, eventLog }, index) => (
+          <View key={index} style={{ marginBottom: 20 }}>
+            <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{eventData?.name}</Text>
+            <Text>Start Time: {formatTimestamp(eventData?.startTime)}</Text>
+            <Text>End Time: {formatTimestamp(eventData?.endTime)}</Text>
+            <Text>Total Points Earned: {eventLog?.points}</Text>
+            <Text>Sign-In Time: {formatTimestamp(eventLog?.signInTime)}</Text>
+
+            {eventLog?.signOutTime && (
+              <Text>Sign-Out Time: {formatTimestamp(eventLog?.signOutTime)}</Text>
+            )}
+          </View>
+        ))}
       </View>
+
+
     </View>
-    
+
   )
 }
+
+const formatTimestamp = (timestamp: Timestamp | null | undefined) => {
+  return timestamp ? new Date(timestamp.toDate()).toLocaleString() : 'N/A';
+};
 
 export default PersonalEventLog

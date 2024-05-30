@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../context/UserContext';
 import { auth } from '../config/firebaseConfig';
-import { getCommittees, getPublicUserData, getUser, setUserRoles } from '../api/firebaseUtils';
+import { getCommittees, getPublicUserData, getUser, queryUserEventLogs, setUserRoles } from '../api/firebaseUtils';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
 import { handleLinkPress } from '../helpers/links';
 import { HomeDrawerParams, MembersScreenRouteProp } from '../types/Navigation';
@@ -19,6 +19,8 @@ import { Images } from '../../assets';
 import TwitterSvg from '../components/TwitterSvg';
 import ProfileBadge from '../components/ProfileBadge';
 import DismissibleModal from '../components/DismissibleModal';
+import { UserEventData } from '../types/Events';
+import { Timestamp } from 'firebase/firestore';
 
 
 
@@ -29,6 +31,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
     const [publicUserData, setPublicUserData] = useState<PublicUserInfo | undefined>();
     const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, isStudent, committees, pointsRank, isEmailPublic } = publicUserData || {};
     const [committeesData, setCommitteesData] = useState<Committee[]>([]);
+    const [events, setEvents] = useState<UserEventData[]>([]);
     const [modifiedRoles, setModifiedRoles] = useState<Roles | undefined>(undefined);
     const [isVerified, setIsVerified] = useState<boolean>(false);
     const isOfficer = roles ? roles.officer : false;
@@ -97,7 +100,20 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
             const response = await getCommittees();
             setCommitteesData(response);
         }
+
+        const fetchUserEventLogs = async () => {
+            if (auth.currentUser?.uid) {
+                try {
+                    const data = await queryUserEventLogs(auth.currentUser?.uid);
+                    setEvents(data);
+                } catch (error) {
+                    console.error('Error fetching user event logs:', error);
+                }
+            }
+        };
+
         fetchCommitteeData();
+        fetchUserEventLogs();
     }, [])
 
     useEffect(() => {
@@ -249,13 +265,6 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                                     >
                                         <Text className='text-white text-xl'>Edit Role</Text>
                                     </TouchableOpacity>
-                                    <TouchableOpacity
-                                        onPress={() => navigation.navigate("PersonalEventLogScreen")}
-                                        className="rounded-md px-3 py-2"
-                                        style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                                    >
-                                        <Text className='text-white text-xl'>Personal Event Logs</Text>
-                                    </TouchableOpacity>
                                 </View>
                             </View>
                         }
@@ -316,6 +325,28 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                         </View>
                     </View>
                 )}
+
+                <TouchableOpacity
+                    onPress={() => navigation.navigate("PersonalEventLogScreen")}
+                    className="rounded-md mt-8"
+                >
+                    <Text className='text-xl'>Personal Event Logs</Text>
+                </TouchableOpacity>
+
+
+                <View className='mt-4'>
+                    {events.map(({ eventData, eventLog }, index) => (
+                        <View key={index} style={{ marginBottom: 20 }}>
+                            <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{eventData?.name}</Text>
+                            <Text>Start Time: {formatTimestamp(eventData?.startTime)}</Text>
+                            <Text>End Time: {formatTimestamp(eventData?.endTime)}</Text>
+                            <Text>Total Points Earned: {eventLog?.points}</Text>
+
+                        </View>
+                    ))}
+                </View>
+
+                <View className='pb-20' />
             </View>
 
             {/* Role Modal */}
@@ -442,21 +473,12 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     {updatingRoles && <ActivityIndicator className='mb-4' size={30} />}
                 </View>
             </DismissibleModal>
-            <DismissibleModal
-                    visible={showEventsLogModal}
-                    setVisible={setEventsLogModal}
-                >
-                    <View
-                        className='flex opacity-100 bg-white rounded-md px-6 pt-2 pb-6'
-                        style={{ minWidth: 350 }}
-                    >
-                        <Text className='text-2xl text-center pb-2'>Sign In QR Code</Text>
-                    </View>
-
-                </DismissibleModal>
         </ScrollView>
     )
 }
 
+const formatTimestamp = (timestamp: Timestamp | null | undefined) => {
+    return timestamp ? new Date(timestamp.toDate()).toLocaleString() : 'N/A';
+};
 
 export default PublicProfileScreen;
