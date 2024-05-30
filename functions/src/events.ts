@@ -181,3 +181,46 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
 
     return { success: true };
 });
+
+
+export const addInstagramPoints = functions.https.onCall(async (data, context) => {
+    const uid = data.uid || context.auth?.uid;
+    if (!context.auth) {
+        throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
+    } else if (typeof data !== "object" || typeof data.eventID !== "string") {
+        throw new functions.https.HttpsError("invalid-argument", "Invalid data types passed into function");
+    }
+
+    const token = context.auth.token;
+    if (token.admin !== true && token.officer !== true && token.developer !== true) {
+        throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
+    }
+
+    const eventDocRef = db.collection("events").doc(data.eventID);
+    const event: SHPEEvent | undefined = (await eventDocRef.get()).data();
+    if (typeof event !== "object") {
+        throw new functions.https.HttpsError("not-found", `Event with id ${data.eventID} could not be found`);
+    }
+
+    const eventLogDocRef = db.collection(`events/${data.eventID}/logs`).doc(uid);
+    const eventLog: SHPEEventLog = (await eventLogDocRef.get()).data() ?? {
+        uid: uid,
+        eventId: eventDocRef.id,
+        creationTime: Timestamp.fromMillis(Date.now()),
+        verified: true,
+        points: 0,
+        instagramLogs: [],
+    };
+
+    eventLog.points = (eventLog.points ?? 0) + (event.signInPoints ?? 0);
+    if (!eventLog.instagramLogs) {
+        eventLog.instagramLogs = [];
+    }
+    eventLog.instagramLogs.push(Timestamp.fromMillis(Date.now()));
+
+    await eventLogDocRef.set(eventLog, { merge: true });
+    await db.collection(`users/${uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
+
+    return { success: true };
+});
+

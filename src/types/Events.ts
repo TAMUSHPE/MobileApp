@@ -105,8 +105,9 @@ export interface SHPEEventLog {
     eventId?: string; // Used when data is copied to user collection
     signInTime?: Timestamp;
     signOutTime?: Timestamp;
-    creationTime?: Timestamp
+    creationTime?: Timestamp;
     verified?: boolean;
+    instagramLogs?: Timestamp[]; // Used to log instagram points
 }
 
 /**

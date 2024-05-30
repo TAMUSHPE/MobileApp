@@ -107,6 +107,7 @@ export interface SHPEEventLog {
     signOutTime?: Timestamp;
     creationTime?: Timestamp
     verified?: boolean;
+    instagramLogs?: Timestamp[]; // Used to log instagram points
 }
 
 /**
