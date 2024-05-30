@@ -88,10 +88,7 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                                         </View>
                                         <View>
                                             <QRCode
-                                                getRef={(c) => {
-                                                    signInQRCodeRef.current = c;
-                                                    console.log('Sign In QRCode Ref:', c);
-                                                }}
+                                                getRef={(c) => { signInQRCodeRef.current = c; }}
                                                 size={60}
                                                 value={`tamu-shpe://event?id=${event.id}&mode=sign-in`}
                                             />
@@ -107,10 +104,7 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                                         </View>
                                         <View>
                                             <QRCode
-                                                getRef={(c) => {
-                                                    signOutQRCodeRef.current = c;
-                                                    console.log('Sign Out QRCode Ref:', c);
-                                                }}
+                                                getRef={(c) => { signOutQRCodeRef.current = c; }}
                                                 size={60}
                                                 value={`tamu-shpe://event?id=${event.id}&mode=sign-out`}
                                             />
@@ -127,10 +121,7 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                     <View className='flex opacity-100 bg-white rounded-md px-6 pt-2 pb-6' style={{ minWidth: 350 }}>
                         <Text className='text-2xl text-center pb-2'>Sign In QR Code</Text>
                         <QRCode
-                            getRef={(c) => {
-                                signInQRCodeRef.current = c;
-                                console.log('Sign In Modal QRCode Ref:', c);
-                            }}
+                            getRef={(c) => { signInQRCodeRef.current = c; }}
                             size={350}
                             value={`tamu-shpe://event?id=${event.id}&mode=sign-in`}
                         />
@@ -144,10 +135,7 @@ const QRCodeManager = ({ navigation }: QRCodeProps) => {
                     <View className='flex opacity-100 bg-white rounded-md px-6 pt-2 pb-6' style={{ minWidth: 350 }}>
                         <Text className='text-2xl text-center pb-2'>Sign Out QR Code</Text>
                         <QRCode
-                            getRef={(c) => {
-                                signOutQRCodeRef.current = c;
-                                console.log('Sign Out Modal QRCode Ref:', c);
-                            }}
+                            getRef={(c) => { signOutQRCodeRef.current = c; }}
                             size={350}
                             value={`tamu-shpe://event?id=${event.id}&mode=sign-out`}
                         />

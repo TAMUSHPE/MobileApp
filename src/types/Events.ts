@@ -1,7 +1,9 @@
 import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers';
 
-/** Anything added to this document needs to be added to functions/src/types/events.ts **/
+/** Anything added to this document needs to be added to functions/src/types/events.ts and to 
+ *  shpe-app-web/app/types/events.ts
+ *  **/
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop
@@ -393,6 +395,7 @@ export enum EventLogStatus {
     EVENT_NOT_STARTED,
     EVENT_NOT_FOUND,
     ALREADY_LOGGED,
+    NOT_A_STUDENT,
     ERROR,
 }
 
@@ -405,6 +408,7 @@ export const getStatusMessage = (status: EventLogStatus): string => {
         [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
         [EventLogStatus.EVENT_NOT_FOUND]: "The event was not found.",
         [EventLogStatus.ALREADY_LOGGED]: "You have already signed in/out.",
+        [EventLogStatus.NOT_A_STUDENT]: "Only student can sign in/out of events..",
         [EventLogStatus.ERROR]: "An internal error occurred. Please try again.",
     };
 

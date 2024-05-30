@@ -454,7 +454,11 @@ const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
                     <TextInput
                         className='w-full rounded-md text-lg px-2 py-1 bg-slate-300 h-32'
                         value={localCommitteeData?.description}
-                        onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, description: text })}
+                        onChangeText={(text) => {
+                            if (text.length <= 250) {
+                                setLocalCommitteeData({ ...localCommitteeData, description: text })
+                            }
+                        }}
                         placeholder="Add a description"
                         multiline={true}
                         style={{ textAlignVertical: 'top' }}

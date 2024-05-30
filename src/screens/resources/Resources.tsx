@@ -75,7 +75,13 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
     }) => (
         <TouchableOpacity
             className='flex-row bg-pale-blue w-[85%] h-24 rounded-3xl mb-8'
-            onPress={() => navigation.navigate(navigateTo)}
+            onPress={() => {
+                if (!userInfo?.publicInfo?.isStudent) {
+                    alert("You must be a student to access this resource.");
+                } else {
+                    navigation.navigate(navigateTo);
+                }
+            }}
         >
             <View className='w-[73%] flex-row items-end px-6 py-3'>
                 <Text className='text-white font-bold text-2xl'>{title}</Text>

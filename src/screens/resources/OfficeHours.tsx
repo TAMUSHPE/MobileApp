@@ -62,7 +62,13 @@ const OfficeHours = () => {
                 </View>
 
                 <TouchableOpacity
-                    onPress={() => setConfirmVisible(!confirmVisible)}
+                    onPress={() => {
+                        if (!userInfo?.publicInfo?.isStudent && officeCount > 0) {
+                            setConfirmVisible(!confirmVisible)
+                        } else {
+                            alert("You must be a student to knock on the wall.")
+                        }
+                    }}
                     className={`py-5 px-12 mt-10 rounded-2xl ${officeCount > 0 ? "bg-pale-blue" : "bg-[#F9F9F9]"}`}
                     activeOpacity={0.7}
                     disabled={officeCount === 0}
@@ -80,9 +86,9 @@ const OfficeHours = () => {
                     <View className='flex items-center w-[80%] space-y-8'>
                         <Text className="text-center text-lg font-bold">Are you sure you want to send a notification to officers?</Text>
                         <View className="flex-row">
-                            <TouchableOpacity 
-                                onPress={async () => { 
-                                    setConfirmVisible(false) 
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    setConfirmVisible(false)
                                 }}
                                 className="border-pale-blue border-2 rounded-xl mr-1"
                             >
