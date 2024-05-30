@@ -258,7 +258,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
         settings: {
             darkMode: false,
         },
-        expirationDate: oneWeekFromNow,
+        expirationDate: Timestamp.fromDate(oneWeekFromNow),
         email: auth.currentUser?.email ?? "",
     };
 

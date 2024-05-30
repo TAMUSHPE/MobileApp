@@ -62,7 +62,7 @@ export interface PrivateUserInfo {
     completedAccountSetup?: boolean;
     settings?: AppSettings;
     expoPushTokens?: string[];
-    expirationDate?: Date;
+    expirationDate?: Timestamp;
     resumeURL?: string;
     email?: string;
 };
