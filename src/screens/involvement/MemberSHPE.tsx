@@ -112,11 +112,12 @@ const MemberSHPE = () => {
         const today = new Date();
         let expirationYear = today.getFullYear();
 
-        if (today > new Date(expirationYear, 7, 20)) { // Note: JavaScript months are 0-indexed
+        if (today > new Date(expirationYear, 5, 1)) { // Note: JavaScript months are 0-indexed
             expirationYear += 1;
         }
 
-        const expirationDate = new Date(expirationYear, 7, 20); // August 20th of the following year
+        const expirationDate = new Date(expirationYear, 5, 1); // June 1st of the following year
+
         await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
             chapterUploadDate: Timestamp.fromDate(today),
             chapterExpiration: Timestamp.fromDate(expirationDate),
