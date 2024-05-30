@@ -393,6 +393,7 @@ export enum EventLogStatus {
     EVENT_NOT_STARTED,
     EVENT_NOT_FOUND,
     ALREADY_LOGGED,
+    NOT_A_STUDENT,
     ERROR,
 }
 
@@ -405,6 +406,7 @@ export const getStatusMessage = (status: EventLogStatus): string => {
         [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
         [EventLogStatus.EVENT_NOT_FOUND]: "The event was not found.",
         [EventLogStatus.ALREADY_LOGGED]: "You have already signed in/out.",
+        [EventLogStatus.NOT_A_STUDENT]: "Only student can sign in/out of events..",
         [EventLogStatus.ERROR]: "An internal error occurred. Please try again.",
     };
 
