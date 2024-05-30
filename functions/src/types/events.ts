@@ -399,6 +399,10 @@ export enum EventLogStatus {
     ERROR,
 }
 
+export type UserEventData = {
+    eventData?: SHPEEvent,
+    eventLog?: SHPEEventLog,
+}
 
 export const getStatusMessage = (status: EventLogStatus): string => {
     const statusMessages = {
