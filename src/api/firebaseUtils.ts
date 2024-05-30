@@ -5,7 +5,7 @@ import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
-import { SHPEEvent, EventLogStatus } from "../types/Events";
+import { SHPEEvent, EventLogStatus, UserEventData } from "../types/Events";
 import * as Location from 'expo-location';
 import { deleteUser } from "firebase/auth";
 import { LinkData } from "../types/Links";
@@ -1303,20 +1303,23 @@ export const deleteAccount = async (userId: string) => {
     }
 };
 
-const queryUserEventLogs = async (uid: string): Promise<Array<SHPEEvent>> => {
+export const queryUserEventLogs = async (uid: string, limitNum: number = 3): Promise<Array<UserEventData>> => {
     console.log(`users/${uid}/event-logs`);
     const userEventLogsCollectionRef = collection(db, `users/${uid}/event-logs`);
-    const eventLogSnapshot = await getDocs(userEventLogsCollectionRef);
+    const q = query(userEventLogsCollectionRef, orderBy('signInTime', 'desc'), limit(limitNum));
+    const eventLogSnapshot = await getDocs(q);
     const docPromises: Array<Promise<DocumentSnapshot>> = [];
-    const events: Array<SHPEEvent> = [];
+    const events: Array<UserEventData> = [];
 
-    eventLogSnapshot.forEach((document) => {
-        docPromises.push(getDoc(doc(db, "events", document.id)));
+    eventLogSnapshot.forEach((eventLog) => {
+        events.push({ eventLog: eventLog.data() });
+        docPromises.push(getDoc(doc(db, "events", eventLog.id)));
     });
 
     for (let index = 0; index < docPromises.length; index++) {
         const document = docPromises[index];
-        events.push((await document).data() as SHPEEvent);
+        const eventData = (await document).data() as SHPEEvent;
+        events[index].eventData = eventData;
     }
 
     return events;
