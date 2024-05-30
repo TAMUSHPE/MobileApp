@@ -1020,31 +1020,40 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
     return members;
 };
 
-export const getMembersToShirtVerify = async (): Promise<PublicUserInfo[]> => {
-    const shirtRef = collection(db, 'shirt-sizes');
-    const shirtQuery = query(shirtRef);
-    const shirtSnapshot = await getDocs(shirtQuery);
-    const shirtUserIds = shirtSnapshot.docs.map(doc => doc.id);
+export const getMembersToShirtVerify = async (): Promise<{ pickedUp: PublicUserInfo[], notPickedUp: PublicUserInfo[] }> => {
+    try {
+        const querySnapshot = await getDocs(collection(db, "shirt-sizes"));
+        const UIDs: string[] = [];
 
-    const members: PublicUserInfo[] = [];
-    for (const userId of shirtUserIds) {
-        const userDocRef = doc(db, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists() && !userDocSnap.data()?.shirtPickedUp) {
-            members.push({ uid: userId, ...userDocSnap.data() });
+        querySnapshot.forEach(doc => {
+            UIDs.push(doc.id);
+        });
+
+        const pickedUpMembers: PublicUserInfo[] = [];
+        const notPickedUpMembers: PublicUserInfo[] = [];
+
+        for (const uid of UIDs) {
+            const userData = await getPublicUserData(uid);
+            const shirtData = await getDoc(doc(db, "shirt-sizes", uid));
+            const shirtPickedUp = shirtData.data()?.shirtPickedUp;
+
+            if (userData) {
+                const memberData = { uid, ...userData };
+                if (shirtPickedUp) {
+                    pickedUpMembers.push(memberData);
+                } else {
+                    notPickedUpMembers.push(memberData);
+                }
+            }
         }
-    }
 
-    for (const userId of shirtUserIds) {
-        const userDocRef = doc(db, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists() && userDocSnap.data()?.shirtPickedUp) {
-            members.push({ uid: userId, ...userDocSnap.data() });
-        }
+        return { pickedUp: pickedUpMembers, notPickedUp: notPickedUpMembers };
+    } catch (error) {
+        console.error("Error fetching members for shirt verification:", error);
+        return { pickedUp: [], notPickedUp: [] };
     }
-
-    return members;
 };
+
 
 export const isUsernameUnique = async (username: string): Promise<boolean> => {
     const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');
