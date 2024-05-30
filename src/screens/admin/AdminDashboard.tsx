@@ -85,6 +85,13 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         >
                             <Text className='text-white text-xl'>Link Manger</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('InstagramPoints')}
+                            className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center mr-4'
+                        >
+                            <Text className='text-white text-xl'>Instagram Points</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
 

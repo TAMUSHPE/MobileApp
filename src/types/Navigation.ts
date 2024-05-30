@@ -124,6 +124,7 @@ export type AdminDashboardParams = {
     PublicProfile: {
         uid: string;
     }
+    InstagramPoints: undefined;
 }
 
 // Drawers
