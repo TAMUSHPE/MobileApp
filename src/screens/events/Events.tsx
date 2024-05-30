@@ -101,8 +101,8 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     </View>
                 </View>
 
-                <View className='flex-1 flex-row mx-3'>
-                    {!userInfo?.publicInfo?.isStudent && (
+                {/* <View className='flex-1 flex-row mx-3'>
+                    {userInfo?.publicInfo?.isStudent && (
                         <TouchableOpacity
                             className='flex-1 flex-row items-center justify-center border border-pale-blue rounded-sm py-2 mx-2'
                             onPress={() => navigation.navigate("QRCodeScanningScreen")}
@@ -111,7 +111,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                             <Text className='font-bold text-pale-blue text-lg ml-2'>QRCode Scan</Text>
                         </TouchableOpacity>
                     )}
-                </View>
+                </View> */}
 
                 {/* Filters */}
                 <ScrollView horizontal={true} className='mt-3' showsHorizontalScrollIndicator={false}>
