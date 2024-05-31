@@ -85,6 +85,14 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
             const functions = getFunctions();
             const addInstagramPoints = httpsCallable(functions, 'addInstagramPoints');
 
+            // Reset selected members to unselected
+            setMembers(prevMembers => prevMembers.map(member => ({
+                ...member,
+                selected: false
+            })));
+
+            setSearch('');
+
             const promises = selectedMembers.map(member => {
                 return addInstagramPoints({
                     uid: member.uid,
@@ -93,15 +101,9 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
             });
 
             await Promise.all(promises);
-            alert("Points added successfully!")
 
-            // Reset selected members to unselected
-            setMembers(prevMembers => prevMembers.map(member => ({
-                ...member,
-                selected: false
-            })));
-
-            setSearch('');
+            const memberNames = selectedMembers.map(member => member.name).join(', ');
+            alert(`We added ${event.signInPoints} points to the following members: ${memberNames}`);
         } catch (error) {
             console.error('Error updating points:', error);
         } finally {
@@ -173,7 +175,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
                     onPress={handleSubmit}
                 >
                     <Text className='text-white text-xl font-bold'>
-                        Add Points ({selectedCount} members selected)
+                        Adding {(event?.signInPoints)} Point to ({selectedCount} selected members)
                     </Text>
                 </TouchableOpacity>
             </View>
