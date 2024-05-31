@@ -24,7 +24,6 @@ const AdminDashboardStack = () => {
             <Stack.Group screenOptions={{ headerShown: false }} >
                 <Stack.Screen name="AdminDashboard" component={AdminDashboard} />
                 <Stack.Screen name="MOTMEditor" component={MOTMEditor} />
-                <Stack.Screen name="FeaturedSlideEditor" component={FeaturedSlideEditor} />
                 <Stack.Screen name="ResumeDownloader" component={ResumeDownloader} />
                 <Stack.Screen name="LinkManager" component={LinkManager} />
                 <Stack.Screen name="RestrictionsEditor" component={RestrictionsEditor} />

@@ -110,7 +110,6 @@ export type HomeStackParams = {
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
     MOTMEditor: undefined;
-    FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
     LinkManager: undefined;
     RestrictionsEditor: undefined;
