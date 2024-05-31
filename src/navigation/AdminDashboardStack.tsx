@@ -5,7 +5,6 @@ import { HomeStack } from "./HomeStack";
 import RestrictionsEditor from "../screens/admin/RestrictionsEditor";
 import AdminDashboard from "../screens/admin/AdminDashboard";
 import MOTMEditor from "../screens/admin/MOTMEditor";
-import FeaturedSlideEditor from "../screens/admin/FeaturedSlideEditor";
 import ResumeDownloader from "../screens/admin/ResumeDownloader";
 import MemberSHPEConfirm from "../screens/admin/MemberSHPEConfirm";
 import ResumeConfirm from "../screens/admin/ResumeConfirm";
