@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated, Switch } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -158,7 +158,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [showNamesModal, setShowNamesModal] = useState<boolean>(false);
     const [showBioModal, setShowBioModal] = useState<boolean>(false);
     const [showAcademicInfoModal, setShowAcademicInfoModal] = useState<boolean>(false);
-    const [showCommitteesModal, setShowCommitteesModal] = useState<boolean>(false);
     const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
@@ -253,13 +252,14 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const saveChanges = async () => {
         setLoading(true)
         // upload profile picture
-        uploadFile(
-            image!,
-            CommonMimeTypes.IMAGE_FILES,
-            `user-docs/${auth.currentUser?.uid}/user-resume-public`,
-            onProfilePictureUploadSuccess
-        );
-        // uploadResume();
+        if (image) {
+            await uploadFile(
+                image,
+                CommonMimeTypes.IMAGE_FILES,
+                `user-docs/${auth.currentUser?.uid}/user-profile-picture`,
+                onProfilePictureUploadSuccess
+            );
+        }
 
         /**
          * This is some very weird syntax and very javascript specific, so here's an explanation for what's going on:
@@ -445,6 +445,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                             multiline
                             numberOfLines={8}
                             placeholder='Write a short bio...'
+                            placeholderTextColor={darkMode ? "#ddd" : "#000"}
                         />
                     </KeyboardAvoidingView>
                 )}
@@ -479,7 +480,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                     dropDownClassName='top-20'
                                     textClassName='text-black'
                                     titleClassName='text-black'
-
+                                    darkMode={darkMode}
                                 />
                             </View>
                             <View className='absolute top-24 z-10 w-[80%]'>
@@ -497,6 +498,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                     disableSearch
                                     textClassName='text-black'
                                     titleClassName='text-black'
+                                    darkMode={darkMode}
                                 />
                             </View>
                         </View>
@@ -510,6 +512,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 visible={showResumeModal}
                 onCancel={() => setShowResumeModal(false)}
                 onDone={() => setShowResumeModal(false)}
+                darkMode={darkMode}
                 content={(
                     <View>
                         <View className='items-center'>
@@ -611,25 +614,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     onPress={() => setShowAcademicInfoModal(true)}
                 />
                 <SettingsSectionTitle text='SHPE Info' darkMode={darkMode} />
-                {/* <View className="max-w-11/12 shadow-sm shadow-slate-300 p-3 mx-3 my-3">
-                    <View className='flex-row items-center mb-6'>
-                        <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
-                    </View>
-                    <View className='flex-row flex-wrap'>
-                        {committees?.map((committeeDocName, index) => {
-                            const committeeData = committeesData.find(c => c.firebaseDocName === committeeDocName);
-                            return (
-                                <ProfileBadge
-                                    badgeClassName='p-2 max-w-2/5 rounded-md mr-4 mb-2'
-                                    textClassName='text-lg'
-                                    text={committeeData?.name || "Unknown Committee"}
-                                    badgeColor={committeeData?.color || ""}
-                                    key={index}
-                                />
-                            );
-                        })}
-                    </View>
-                </View> */}
                 <SettingsButton
                     mainText='Edit Resume'
                     darkMode={darkMode}
@@ -781,7 +765,8 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
 
             <SettingsButton
-                mainText={"DELETE ACCOUNT"}
+                mainText={"Delete Account"}
+                mainTextColor='#F11'
                 subText={"This action is irreversible"}
                 onPress={() => {
                     setDeleteText("");
@@ -812,7 +797,7 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     <TextInput
                         className={`h-10 border-2 rounded-sm p-2 mt-5 ${darkMode ? "border-neutral-400 bg-neutral-800 text-white" : "border-neutral-800 bg-white text-black"}`}
                         placeholder='Enter Prompt'
-                        placeholderTextColor={darkMode ? "#bbb" : ""}
+                        placeholderTextColor={darkMode ? "#bbb" : "#000"}
                         onChangeText={setDeleteText}
                         value={deleteText}
                     />
