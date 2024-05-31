@@ -16,7 +16,7 @@ const generateLinkIDs = (numberOfLinks: number): string[] => {
 const numberOfLinks = 7;
 
 
-const LinkManager = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const LinkEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const linkIDs = generateLinkIDs(numberOfLinks);
     const [links, setLinks] = useState<LinkData[]>(
         linkIDs.map(id => ({
@@ -148,4 +148,4 @@ const LinkManager = ({ navigation }: NativeStackScreenProps<AdminDashboardParams
     );
 };
 
-export default LinkManager;
+export default LinkEditor;

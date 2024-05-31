@@ -80,7 +80,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('LinkManager')}
+                            onPress={() => navigation.navigate('LinkEditor')}
                             className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center'
                         >
                             <Text className='text-white text-xl'>Link Manger</Text>
@@ -106,10 +106,10 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('Feedback')}
+                            onPress={() => navigation.navigate('FeedbackEditor')}
                             className='bg-pale-orange rounded-md py-4 px-2 items-center justify-center ml-2'
                         >
-                            <Text className='text-white text-xl'>Feedback</Text>
+                            <Text className='text-white text-xl'>Feedback Editor</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

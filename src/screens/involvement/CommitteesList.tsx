@@ -57,7 +57,7 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
                 {isSuperUser && (
                     <View className='flex items-center w-full'>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate("CommitteeEdit", { committee: undefined })}
+                            onPress={() => navigation.navigate("CommitteeEditor", { committee: undefined })}
                             className='flex-row w-[90%] h-28 rounded-xl bg-[#D3D3D3]'
                         >
                             <View className='flex-1 rounded-l-xl' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >

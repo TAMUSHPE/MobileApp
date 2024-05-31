@@ -68,7 +68,7 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPres
             </TouchableOpacity>
             {isSuperUser && (
                 <TouchableOpacity
-                    onPress={() => { navigation.navigate("CommitteeEdit", { committee }) }}
+                    onPress={() => { navigation.navigate("CommitteeEditor", { committee }) }}
                     className='absolute right-10 bg-pale-blue rounded-lg px-5 py-1 -top-3'
                 >
                     <Text className='text-lg text-white font-semibold'>Edit</Text>

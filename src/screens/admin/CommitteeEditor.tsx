@@ -4,14 +4,14 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Octicons, FontAwesome } from '@expo/vector-icons';
 import { deleteCommittee, getLeads, getPublicUserData, getRepresentatives, getTeamMembers, resetCommittee, setCommitteeData } from '../../api/firebaseUtils';
 import { Committee, committeeLogos, getLogoComponent } from '../../types/committees';
-import { CommitteeEditProps } from '../../types/navigation';
+import { CommitteeEditorProps } from '../../types/navigation';
 import { PublicUserInfo } from '../../types/user';
 import MembersList from '../../components/MembersList';
 import CustomColorPicker from '../../components/CustomColorPicker';
 import DismissibleModal from '../../components/DismissibleModal';
 import CommitteeTeamCard from '../involvement/CommitteeTeamCard';
 
-const CommitteeEdit = ({ navigation, route }: CommitteeEditProps) => {
+const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const committeeData = route?.params?.committee;
     const [localCommitteeData, setLocalCommitteeData] = useState<Committee>(committeeData || {
         leads: [],
@@ -778,4 +778,4 @@ interface TeamMembersState {
     head: PublicUserInfo | null | undefined;
 }
 
-export default CommitteeEdit
+export default CommitteeEditor

@@ -13,7 +13,7 @@ import ResumeIcon from '../../../assets/resume-icon.svg';
 import ExamIcon from '../../../assets/exam-icon.svg';
 import OfficeHours from './OfficeHours';
 import { UserContext } from '../../context/UserContext';
-import OfficeSignIn from '../admin/OfficeSignIn';
+import OfficeSignIn from './OfficeSignIn';
 import { LinkData } from '../../types/links';
 
 
