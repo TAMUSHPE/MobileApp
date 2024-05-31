@@ -1,6 +1,7 @@
-import { View, Text, TouchableOpacity, TextInput, FlatList, Animated, TouchableWithoutFeedback, Dimensions, LayoutChangeEvent, LayoutRectangle, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Animated, TouchableWithoutFeedback, Dimensions, LayoutChangeEvent, LayoutRectangle, ScrollView, Platform, Modal } from 'react-native';
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
+import DismissibleModal from './DismissibleModal';
 
 
 /**
@@ -19,6 +20,7 @@ import { Octicons } from '@expo/vector-icons';
  * @param {function} onSelect - The callback function to execute when an item is selected.
  * @param {string} searchKey - The key to be used for searching items.
  * @param {string} label - Default label to be shown when no item is selected.
+ * @param {boolean} darkMode - Defines whether to display the dropdown in darkmode colors.
  * @param {function} onToggle - Function to toggle the dropdown open/closed.
  * @param {boolean} isOpen - Boolean to control the visibility of the dropdown.
  * @param {Object} ref - Ref object for parent component to access child methods.
@@ -31,13 +33,14 @@ import { Octicons } from '@expo/vector-icons';
  * @param {string} [textClassName=""] - Additional class name for the text elements.
  * @returns {React.ReactElement} The CustomDropDownMenu component.
  */
-const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onToggle, label, title, selectedItemProp, disableSearch, displayType = "both", containerClassName = "", dropDownClassName = "", textClassName = "", titleClassName = "" }: {
+const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onToggle, label, darkMode, title, selectedItemProp, disableSearch, displayType = "both", containerClassName = "", dropDownClassName = "", textClassName = "", titleClassName = "" }: {
     data: Item[];
     onSelect: (item: Item) => void;
     searchKey: string;
     isOpen: boolean;
     onToggle: () => void;
     label: string;
+    darkMode?: boolean,
     title?: string;
     selectedItemProp?: SelectedItem | null;
     disableSearch?: boolean;
@@ -225,7 +228,9 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                     </TouchableOpacity>
                 )}
             </View>
-            {isOpen ? (
+
+            {/* Absolute Positioning of a ScrollView only works on iOS */}
+            {isOpen && Platform.OS == "ios" && (
                 <View className={"absolute top-14 self-center bg-white rounded-md h-72 w-[100%] border-gray-400 border px-1 " + dropDownClassName}>
                     {!disableSearch && (
                         <TextInput
@@ -239,14 +244,15 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                             className='w-[90%] h-12 self-center mt-6 pl-3 rounded-md border-gray-400 border'
                         />
                     )}
-
-                    <ScrollView className='mt-4'
+                    <ScrollView
+                        className='mt-4'
                         scrollEnabled={isFocused}
+                        nestedScrollEnabled
                     >
                         {filteredData.map((item, index) => (
                             <TouchableOpacity
                                 onPress={() => handleSelect(item)}
-                                className='w-[85%] self-center h-12 justify-center border-b border-b-gray-400'
+                                className={`w-[85%] self-center h-12 justify-center ${index != filteredData.length - 1 ? "border-b border-b-gray-400" : ""}`}
                                 key={index}
                             >
                                 <Text className='text-lg font-semibold'>
@@ -256,7 +262,48 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                         ))}
                     </ScrollView>
                 </View>
-            ) : null}
+            )}
+
+            {/* Android must use a modal instead of absolute positioning of a ScrollView */}
+            <DismissibleModal
+                visible={isOpen && Platform.OS == "android"}
+                setVisible={() => {
+                    onToggle()
+                    setIsFocused(true)
+                }}
+            >
+                <View className={"absolute top-14 self-center bg-white rounded-md h-72 w-[100%] border-gray-400 border px-1 " + dropDownClassName}>
+                    {!disableSearch && (
+                        <TextInput
+                            placeholder="Search.."
+                            value={search}
+                            ref={searchRef}
+                            onChangeText={txt => {
+                                onSearch(txt);
+                                setSearch(txt);
+                            }}
+                            className='w-[90%] h-12 self-center mt-6 pl-3 rounded-md border-gray-400 border'
+                        />
+                    )}
+                    <ScrollView
+                        className='mt-4'
+                        scrollEnabled={isFocused}
+                        nestedScrollEnabled
+                    >
+                        {filteredData.map((item, index) => (
+                            <TouchableOpacity
+                                onPress={() => handleSelect(item)}
+                                className={`w-[85%] self-center h-12 justify-center ${index != filteredData.length - 1 ? "border-b border-b-gray-400" : ""}`}
+                                key={index}
+                            >
+                                <Text className='text-lg font-semibold'>
+                                    {getItemDisplayText(item)}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </ScrollView>
+                </View>
+            </DismissibleModal>
         </View>
     );
 });
