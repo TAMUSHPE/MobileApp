@@ -3,12 +3,11 @@ import React, { useCallback, useContext, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { Octicons, FontAwesome } from '@expo/vector-icons';
+import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
 import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
 import { EventsStackParams } from '../../types/Navigation';
 import { EventType, SHPEEvent } from '../../types/Events';
-import CalendarICON from '../../../assets/calandar_pale_blue.svg'
 import EventsList from '../../components/EventsList';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
@@ -21,7 +20,6 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [isLoading, setIsLoading] = useState(true);
     const [pastEventModalVisible, setPastEventModalVisible] = useState(false);
     const [initialFetch, setInitialFetch] = useState(false);
-    // const [initialPastFetch, setInitialPastFetch] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState<EventType | null>(null);
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
@@ -39,11 +37,10 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const filteredEvents = (events: SHPEEvent[]) => {
         if (!selectedFilter) {
             // By default, hide committee meetings because they may increase clutter
-            return events.filter(event => event.eventType !== EventType.COMMITTEE_MEETING);
+            return events.filter(event => event.eventType !== EventType.COMMITTEE_MEETING && (event.hiddenEvent !== true));
         }
-        return events.filter(event => event.eventType === selectedFilter);
+        return events.filter(event => event.eventType === selectedFilter && (event.hiddenEvent !== true));
     };
-
     useFocusEffect(
         useCallback(() => {
             const fetchEvents = async () => {
@@ -257,7 +254,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 
                             {(!isLoading && allPastEvents.length != 0) &&
                                 <EventsList
-                                    events={allPastEvents}
+                                    events={filteredEvents(allPastEvents)}
                                     navigation={navigation}
                                     onEventClick={() => setPastEventModalVisible(false)}
                                 />
