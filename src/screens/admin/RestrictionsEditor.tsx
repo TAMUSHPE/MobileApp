@@ -2,10 +2,10 @@ import { View, Text, Image, TouchableOpacity, ScrollView, Modal } from 'react-na
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { AdminDashboardParams } from '../../types/Navigation';
+import { AdminDashboardParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MembersList from '../../components/MembersList';
-import { PublicUserInfo } from '../../types/User';
+import { PublicUserInfo } from '../../types/user';
 import { addToBlacklist, addToWatchlist, getBlacklist, getMembersExcludeOfficers, getWatchlist, removeFromBlacklist, removeFromWatchlist } from '../../api/firebaseUtils';
 import { Images } from '../../../assets';
 import DismissibleModal from '../../components/DismissibleModal';

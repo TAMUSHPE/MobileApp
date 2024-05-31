@@ -7,8 +7,8 @@ import { Timestamp } from 'firebase/firestore';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
 import { queryUserEventLogs } from '../../api/firebaseUtils';
-import { UserEventData } from '../../types/Events';
-import { HomeDrawerParams } from '../../types/Navigation';
+import { UserEventData } from '../../types/events';
+import { HomeDrawerParams } from '../../types/navigation';
 
 const PersonalEventLog = ({ navigation }: NativeStackScreenProps<HomeDrawerParams>) => {
   const userContext = useContext(UserContext);

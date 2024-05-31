@@ -7,7 +7,7 @@ import { deleteField, doc, updateDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
 import { handleLinkPress } from '../../helpers/links';
-import { ResumeProps } from '../../types/Navigation'
+import { ResumeProps } from '../../types/navigation'
 import TwitterSvg from '../../components/TwitterSvg';
 import { Images } from '../../../assets';
 import DismissibleModal from '../../components/DismissibleModal';

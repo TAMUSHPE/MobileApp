@@ -6,15 +6,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { handleLinkPress } from '../../helpers/links';
 import { fetchLink, getUser } from '../../api/firebaseUtils';
 import { auth } from '../../config/firebaseConfig';
-import { ResourcesStackParams } from '../../types/Navigation';
+import { ResourcesStackParams } from '../../types/navigation';
 import { Images } from '../../../assets';
 import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
 import ResumeIcon from '../../../assets/resume-icon.svg';
 import ExamIcon from '../../../assets/exam-icon.svg';
 import OfficeHours from './OfficeHours';
 import { UserContext } from '../../context/UserContext';
-import OfficeSignIn from '../admin/OfficeSignIn';
-import { LinkData } from '../../types/Links';
+import OfficeSignIn from './OfficeSignIn';
+import { LinkData } from '../../types/links';
 
 
 const linkIDs = ["1", "2", "3", "4", "5"]; // First 5 links are reserved for social media links

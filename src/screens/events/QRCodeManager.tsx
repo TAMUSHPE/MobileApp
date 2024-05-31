@@ -8,7 +8,7 @@ import { Octicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import DismissibleModal from '../../components/DismissibleModal';
-import { QRCodeScreenRouteProp, QRCodeProps } from '../../types/Navigation';
+import { QRCodeScreenRouteProp, QRCodeProps } from '../../types/navigation';
 
 type QRCodeRef = { toDataURL: (callback: (data: string) => void) => void };
 

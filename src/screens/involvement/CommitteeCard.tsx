@@ -2,9 +2,9 @@ import { View, Text, Image, TouchableOpacity } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '../../context/UserContext';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
-import { Committee, getLogoComponent } from "../../types/Committees";
+import { Committee, getLogoComponent } from "../../types/committees";
 import { Images } from "../../../assets"
-import { PublicUserInfo } from '../../types/User';
+import { PublicUserInfo } from '../../types/user';
 import { getPublicUserData } from '../../api/firebaseUtils';
 
 const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPress, navigation }) => {
@@ -68,7 +68,7 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPres
             </TouchableOpacity>
             {isSuperUser && (
                 <TouchableOpacity
-                    onPress={() => { navigation.navigate("CommitteeEdit", { committee }) }}
+                    onPress={() => { navigation.navigate("CommitteeEditor", { committee }) }}
                     className='absolute right-10 bg-pale-blue rounded-lg px-5 py-1 -top-3'
                 >
                     <Text className='text-lg text-white font-semibold'>Edit</Text>

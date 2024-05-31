@@ -6,8 +6,8 @@ import { Octicons } from '@expo/vector-icons';
 import { db } from '../../config/firebaseConfig'
 import { getMembersToShirtVerify } from '../../api/firebaseUtils'
 import { doc, getDoc, updateDoc } from 'firebase/firestore'
-import { PublicUserInfo } from '../../types/User'
-import { AdminDashboardParams } from '../../types/Navigation';
+import { PublicUserInfo } from '../../types/user'
+import { AdminDashboardParams } from '../../types/navigation';
 import MemberCard from '../../components/MemberCard'
 import DismissibleModal from '../../components/DismissibleModal'
 import MembersList from '../../components/MembersList'

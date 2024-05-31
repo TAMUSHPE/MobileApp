@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import manageNotificationPermissions from '../../helpers/pushNotification';
-import { HomeStackParams } from "../../types/Navigation"
+import { HomeStackParams } from "../../types/navigation"
 import MOTMCard from '../../components/MOTMCard';
 import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
 import Ishpe from './Ishpe';

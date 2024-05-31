@@ -2,14 +2,14 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from 'rea
 import React, { useCallback, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
-import { AdminDashboardParams } from '../../types/Navigation';
+import { AdminDashboardParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DismissibleModal from '../../components/DismissibleModal';
-import { Committee, getLogoComponent, reverseFormattedFirebaseName } from '../../types/Committees';
+import { Committee, getLogoComponent, reverseFormattedFirebaseName } from '../../types/committees';
 import { useFocusEffect } from '@react-navigation/core';
 import { collection, deleteDoc, doc, getDoc, getDocs, query, runTransaction, where } from 'firebase/firestore';
 import { db, functions } from '../../config/firebaseConfig';
-import { PublicUserInfo } from '../../types/User';
+import { PublicUserInfo } from '../../types/user';
 import MembersList from '../../components/MembersList';
 import MemberCard from '../../components/MemberCard';
 import { httpsCallable } from 'firebase/functions';

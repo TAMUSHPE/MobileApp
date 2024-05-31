@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { UserContext } from "../context/UserContext";
-import { MainStackParams } from '../types/Navigation';
+import { MainStackParams } from '../types/navigation';
 import HomeBottomTabs from "./HomeBottomTabs";
 import AdminDashboardStack from "./AdminDashboardStack";
 import EventVerification from "../screens/events/EventVerification";

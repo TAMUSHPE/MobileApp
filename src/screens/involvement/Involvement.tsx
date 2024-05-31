@@ -1,7 +1,7 @@
 import React, { useState, ReactElement } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { InvolvementScreenProps } from '../../types/Navigation';
+import { InvolvementScreenProps } from '../../types/navigation';
 import CommitteesList from './CommitteesList';
 import MemberSHPE from './MemberSHPE';
 

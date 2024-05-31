@@ -13,8 +13,8 @@ import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/f
 import { updateProfile } from 'firebase/auth';
 import { CommonMimeTypes, validateName } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
-import { MAJORS, classYears } from '../../types/User';
-import { ProfileSetupStackParams } from '../../types/Navigation';
+import { MAJORS, classYears } from '../../types/user';
+import { ProfileSetupStackParams } from '../../types/navigation';
 import { Images } from '../../../assets';
 import UploadFileIcon from '../../../assets/file-arrow-up-solid.svg';
 import DownloadIcon from '../../../assets/arrow-down-solid.svg';
@@ -26,7 +26,7 @@ import WorkshopIcon from '../../../assets/workshop.svg';
 import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
 import CustomDropDown from '../../components/CustomDropDown';
 import InteractButton from '../../components/InteractButton';
-import { EventType } from '../../types/Events';
+import { EventType } from '../../types/events';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 

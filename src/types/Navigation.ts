@@ -4,10 +4,10 @@ import { SetStateAction } from "react";
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from '@react-navigation/native';
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
-import { Test } from '../types/GoogleSheetsTypes';
-import { Committee } from "./Committees";
-import { PublicUserInfo, UserFilter } from "./User";
-import { SHPEEvent } from "./Events";
+import { Test } from './googleSheetsTypes';
+import { Committee } from "./committees";
+import { PublicUserInfo, UserFilter } from "./user";
+import { SHPEEvent } from "./events";
 
 // Stacks
 export type MainStackParams = {
@@ -78,7 +78,7 @@ export type InvolvementStackParams = {
     PublicProfile: {
         uid: string;
     };
-    CommitteeEdit: {
+    CommitteeEditor: {
         committee?: Committee;
     };
     EventInfo: undefined;
@@ -110,12 +110,10 @@ export type HomeStackParams = {
 export type AdminDashboardParams = {
     AdminDashboard: undefined;
     MOTMEditor: undefined;
-    FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
-    LinkManager: undefined;
-    ResetOfficeHours: undefined;
+    LinkEditor: undefined;
     RestrictionsEditor: undefined;
-    Feedback: undefined;
+    FeedbackEditor: undefined;
     MemberSHPEConfirm: undefined;
     CommitteeConfirm: undefined;
     ResumeConfirm: undefined;
@@ -239,9 +237,9 @@ export type QRCodeProps = {
     navigation: NativeStackNavigationProp<EventsStackParams>
 }
 
-export type CommitteeEditProps = {
-    route: RouteProp<InvolvementStackParams, 'CommitteeEdit'>;
-    navigation: NativeStackNavigationProp<InvolvementStackParams, 'CommitteeEdit'>;
+export type CommitteeEditorProps = {
+    route: RouteProp<InvolvementStackParams, 'CommitteeEditor'>;
+    navigation: NativeStackNavigationProp<InvolvementStackParams, 'CommitteeEditor'>;
 };
 
 
@@ -255,8 +253,8 @@ export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEve
 export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "EventInfo">;
 export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;
 export type QRCodeScreenRouteProp = RouteProp<EventsStackParams, "QRCode">;
-export type CommitteeEditRouteProp = RouteProp<InvolvementStackParams, 'CommitteeEdit'>;
-export type CommitteeEditNavigationProp = NativeStackNavigationProp<InvolvementStackParams, 'CommitteeEdit'>;
+export type CommitteeEditorRouteProp = RouteProp<InvolvementStackParams, 'CommitteeEditor'>;
+export type CommitteeEditorNavigationProp = NativeStackNavigationProp<InvolvementStackParams, 'CommitteeEditor'>;
 export type CommitteeScreenProps = NativeStackScreenProps<InvolvementStackParams, 'CommitteeScreen'>;
 export type CommitteesListProps = { navigation: NativeStackNavigationProp<InvolvementStackParams, 'InvolvementScreen'>; };
 export type InvolvementScreenProps = NativeStackScreenProps<InvolvementStackParams, 'InvolvementScreen'>;

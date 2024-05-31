@@ -12,7 +12,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import { darkMode } from '../../../tailwind.config';
 import DismissibleModal from '../../components/DismissibleModal';
 import { Pressable } from 'react-native';
-import { LinkData } from '../../types/Links';
+import { LinkData } from '../../types/links';
 import { fetchLink } from '../../api/firebaseUtils';
 
 const linkIDs = ["6", "7"]; // ids reserved for TAMU and SHPE National links

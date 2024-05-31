@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, ScrollView, Image, Platform } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
-import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation';
+import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
@@ -14,7 +14,7 @@ import ClockIcon from '../../../assets/clock-pale-blue.svg'
 import MapIcon from '../../../assets/map-pale-blue.svg'
 import MemberCard from '../../components/MemberCard';
 import { handleLinkPress } from '../../helpers/links';
-import { PublicUserInfo } from '../../types/User';
+import { PublicUserInfo } from '../../types/user';
 
 
 const FinalizeEvent = ({ navigation }: EventProps) => {

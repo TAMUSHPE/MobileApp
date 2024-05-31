@@ -1,10 +1,3 @@
-export enum PointsColumnVals {
-    FIRST_NAME = 0,
-    LAST_NAME = 1,
-    EMAIL = 2,
-    TOTAL_POINTS = 3,
-}
-
 export interface GoogleSheetsResponse {
     "version": string,
     "reqId": string,
@@ -36,6 +29,6 @@ export type Test = {
     typeNumber?: string;
     professor?: string;
     student?: string;
-    grade?: string; 
+    grade?: string;
     testURL?: string;
 }

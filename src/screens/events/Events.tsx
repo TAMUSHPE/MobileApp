@@ -6,8 +6,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
 import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
-import { EventsStackParams } from '../../types/Navigation';
-import { EventType, SHPEEvent } from '../../types/Events';
+import { EventsStackParams } from '../../types/navigation';
+import { EventType, SHPEEvent } from '../../types/events';
 import EventsList from '../../components/EventsList';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {

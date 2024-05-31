@@ -14,9 +14,9 @@ import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/f
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
 import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
-import { MainStackParams } from '../../types/Navigation';
-import { Committee } from '../../types/Committees';
-import { MAJORS, classYears } from '../../types/User';
+import { MainStackParams } from '../../types/navigation';
+import { Committee } from '../../types/committees';
+import { MAJORS, classYears } from '../../types/user';
 import { Images } from '../../../assets';
 import DownloadIcon from '../../../assets/arrow-down-solid.svg';
 import UploadFileIcon from '../../../assets/file-arrow-up-solid-black.svg';
@@ -482,7 +482,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                     selectedItemProp={{ iso: major, value: findMajorByIso(major!)! }}
                                     dropDownClassName={Platform.OS == "ios" ? "top-20" : undefined}
                                     darkMode={darkMode}
-                                    />
+                                />
                             </View>
                             <View className='absolute top-24 z-10 w-[80%]'>
                                 <CustomDropDown
@@ -533,7 +533,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                         cx="50"
                                         cy="50"
                                         r="45"
-                                        stroke={darkMode ? "#a3a3a3" :"#000000"}
+                                        stroke={darkMode ? "#a3a3a3" : "#000000"}
                                         strokeWidth="3"
                                         fill="transparent"
                                     />

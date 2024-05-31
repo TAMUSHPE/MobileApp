@@ -1,6 +1,6 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { HomeStackParams } from "../types/Navigation"
+import { HomeStackParams } from "../types/navigation"
 import PublicProfileScreen from "../screens/PublicProfile";
 import Home from "../screens/home/Home"
 import EventInfo from "../screens/events/EventInfo";

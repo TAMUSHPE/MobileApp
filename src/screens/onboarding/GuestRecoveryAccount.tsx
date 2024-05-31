@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Octicons } from '@expo/vector-icons';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import { AuthStackParams } from '../../types/Navigation';
+import { AuthStackParams } from '../../types/navigation';
 import { auth } from '../../config/firebaseConfig';
 import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
 import InteractButton from '../../components/InteractButton';

@@ -4,7 +4,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { httpsCallable, getFunctions } from 'firebase/functions';
-import { AdminDashboardParams } from '../../types/Navigation';
+import { AdminDashboardParams } from '../../types/navigation';
 
 const functions = getFunctions();
 
@@ -13,7 +13,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
     const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
     const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
     const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
-
+    const resetOfficeOnCall = httpsCallable(functions, 'resetOfficeOnCall');
 
     return (
         <View className='flex-1'>
@@ -80,7 +80,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('LinkManager')}
+                            onPress={() => navigation.navigate('LinkEditor')}
                             className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center'
                         >
                             <Text className='text-white text-xl'>Link Manger</Text>
@@ -106,10 +106,10 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('Feedback')}
+                            onPress={() => navigation.navigate('FeedbackEditor')}
                             className='bg-pale-orange rounded-md py-4 px-2 items-center justify-center ml-2'
                         >
-                            <Text className='text-white text-xl'>Feedback</Text>
+                            <Text className='text-white text-xl'>Feedback Editor</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -151,7 +151,10 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('ResetOfficeHours')}
+                            onPress={() => {
+                                resetOfficeOnCall();
+                                Alert.alert('Reset Office Hours', 'Reset Office Hours has been called');
+                            }}
                             className='bg-black rounded-md py-4 px-2 items-center justify-center'
                         >
                             <Text className='text-white text-xl'>Rest Office</Text>
