@@ -13,7 +13,7 @@ const DismissibleModal = ({ visible, setVisible, children }: {
             visible={visible}
             onRequestClose={() => setVisible(false)}
         >
-            <TouchableOpacity
+            <TouchableWithoutFeedback
                 onPress={() => setVisible(false)}
                 className="h-[100%] w-[100%]"
                 style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
@@ -23,7 +23,7 @@ const DismissibleModal = ({ visible, setVisible, children }: {
                         {children}
                     </TouchableWithoutFeedback>
                 </View>
-            </TouchableOpacity>
+            </TouchableWithoutFeedback>
         </Modal>
     );
 };
