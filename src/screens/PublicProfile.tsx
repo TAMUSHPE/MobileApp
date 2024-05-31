@@ -326,25 +326,28 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     </View>
                 )}
 
-                <TouchableOpacity
-                    onPress={() => navigation.navigate("PersonalEventLogScreen")}
-                    className="rounded-md mt-8"
-                >
-                    <Text className='text-xl'>Personal Event Logs</Text>
-                </TouchableOpacity>
+                {isCurrentUser && (
+                    <View>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("PersonalEventLogScreen")}
+                            className="rounded-md mt-8"
+                        >
+                            <Text className='text-xl'>Personal Event Logs</Text>
+                        </TouchableOpacity>
 
+                        <View className='mt-4'>
+                            {events.map(({ eventData, eventLog }, index) => (
+                                <View key={index} style={{ marginBottom: 20 }}>
+                                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{eventData?.name}</Text>
+                                    <Text>Start Time: {formatTimestamp(eventData?.startTime)}</Text>
+                                    <Text>End Time: {formatTimestamp(eventData?.endTime)}</Text>
+                                    <Text>Total Points Earned: {eventLog?.points}</Text>
 
-                <View className='mt-4'>
-                    {events.map(({ eventData, eventLog }, index) => (
-                        <View key={index} style={{ marginBottom: 20 }}>
-                            <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{eventData?.name}</Text>
-                            <Text>Start Time: {formatTimestamp(eventData?.startTime)}</Text>
-                            <Text>End Time: {formatTimestamp(eventData?.endTime)}</Text>
-                            <Text>Total Points Earned: {eventLog?.points}</Text>
-
+                                </View>
+                            ))}
                         </View>
-                    ))}
-                </View>
+                    </View>
+                )}
 
                 <View className='pb-20' />
             </View>
