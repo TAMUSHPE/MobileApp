@@ -1,4 +1,4 @@
-import { View, Text, TouchableHighlight, Switch, Modal } from 'react-native';
+import { View, Text, TouchableHighlight, Switch, Modal, StyleProp, TextStyle } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
@@ -20,7 +20,15 @@ const SettingsSectionTitle = ({ text, darkMode }: { text: string, darkMode?: boo
  * @param darkMode - Whether or not the button should display in dark mode. Will default to false
  * @param onPress  - Function that is called when button is pressed. Defaults to logging "Button Pressed"
  */
-const SettingsButton = ({ iconName, mainText, subText, darkMode, onPress }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string | null, subText?: string | null, darkMode?: boolean, onPress?: Function }) => {
+const SettingsButton = ({ iconName, mainText, mainTextColor, subText, darkMode, onPress }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string | null, mainTextColor?: string, subText?: string | null, darkMode?: boolean, onPress?: Function }) => {
+    const mainTextStyle: StyleProp<TextStyle> = {}
+    if(mainTextColor){
+        mainTextStyle.color = mainTextColor;
+    }
+    else{
+        mainTextStyle.color = darkMode ? "#FFF" : "#000";
+    }
+    
     return (
         <TouchableHighlight
             onPress={() => onPress ? onPress() : console.log(`${mainText} Button Pressed`)}
@@ -30,7 +38,7 @@ const SettingsButton = ({ iconName, mainText, subText, darkMode, onPress }: { ic
             <View className='flex-row my-2 items-center'>
                 {iconName && <MaterialCommunityIcons name={iconName} size={46} color={darkMode ? "white" : "black"} />}
                 <View className="ml-3 flex-col">
-                    <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>{mainText ?? "Default Text"}</Text>
+                    <Text className={`text-2xl`} style={mainTextStyle}>{mainText ?? "Default Text"}</Text>
                     {subText && <Text className={`text-lg ${darkMode ? "text-[#BBB]" : "text-[#444]"}`}>{subText}</Text>}
                 </View>
             </View>
