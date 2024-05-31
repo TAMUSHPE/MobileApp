@@ -31,6 +31,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const [notificationSent, setNotificationSent] = useState<boolean | undefined>(event.notificationSent ?? undefined);
     const [startTimeBuffer, setStartTimeBuffer] = useState<number | undefined>(event.startTimeBuffer ?? undefined);
     const [endTimeBuffer, setEndTimeBuffer] = useState<number | undefined>(event.endTimeBuffer ?? undefined);
+    const [hiddenEvent, setHiddenEvent] = useState<boolean | undefined>(event.hiddenEvent ?? undefined);
 
     const eventTypeNotification = ["Study Hours", "Workshop", "Volunteer Event", "Social Event", "Intramural Event"]
 
@@ -50,6 +51,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
             setOpenDropdown(dropdownKey);
         }
     };
+
     return (
         <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />
@@ -242,6 +244,20 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 )}
                             </View>
                         )}
+
+
+                        <Text className={`mt-7 text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Hidden Event</Text>
+                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>All Hidden event will not be display in events screent</Text>
+                        <View className="flex flex-row items-center justify-between py-2">
+                            <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Hide Event</Text>
+                            <Switch
+                                trackColor={{ false: "#999796", true: "#001F5B" }}
+                                thumbColor={hiddenEvent ? "#72A9BE" : "#f4f3f4"}
+                                ios_backgroundColor="#999796"
+                                onValueChange={() => setHiddenEvent(previousState => !previousState)}
+                                value={hiddenEvent}
+                            />
+                        </View>
                     </KeyboardAvoidingView>
 
                     <View className='-z-20 mt-10'>
@@ -277,6 +293,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                     notificationSent,
                                     startTimeBuffer,
                                     endTimeBuffer,
+                                    hiddenEvent,
                                 });
                                 navigation.navigate("setLocationEventDetails", { event: event });
                             }

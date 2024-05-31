@@ -58,6 +58,8 @@ export abstract class SHPEEvent {
     public general?: boolean | null;
     /** A flag to indicate that the notification has been sent */
     public notificationSent?: boolean | null;
+    /** Hide event from Events Screen */
+    public hiddenEvent?: boolean | null;
 
 
     /**
@@ -80,6 +82,7 @@ export abstract class SHPEEvent {
         this.notificationSent = true;
         this.endTimeBuffer = null;
         this.startTimeBuffer = null;
+        this.hiddenEvent = false;
     }
 
     /**
