@@ -3,12 +3,12 @@ import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteO
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateTamuEmail } from "../helpers/validation";
-import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
-import { Committee } from "../types/Committees";
-import { SHPEEvent, EventLogStatus, UserEventData } from "../types/Events";
+import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/user";
+import { Committee } from "../types/committees";
+import { SHPEEvent, EventLogStatus, UserEventData } from "../types/events";
 import * as Location from 'expo-location';
 import { deleteUser } from "firebase/auth";
-import { LinkData } from "../types/Links";
+import { LinkData } from "../types/links";
 import { getBlobFromURI } from "./fileSelection";
 
 /**

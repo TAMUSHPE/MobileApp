@@ -2,7 +2,7 @@ import { View, Text, Button, StyleSheet, TouchableHighlight, TouchableOpacity, A
 import React, { useEffect, useState } from 'react';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MainStackParams } from '../../types/Navigation';
+import { MainStackParams } from '../../types/navigation';
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 

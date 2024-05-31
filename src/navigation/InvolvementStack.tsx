@@ -1,6 +1,6 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { InvolvementStackParams } from '../types/Navigation';
+import { InvolvementStackParams } from '../types/navigation';
 import InvolvementScreen from "../screens/involvement/Involvement";
 import CommitteeScreen from "../screens/involvement/Committee";
 import PublicProfileScreen from "../screens/PublicProfile";

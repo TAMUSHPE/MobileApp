@@ -5,7 +5,7 @@ import PointsLeaderboard from "../screens/resources/PointsLeaderboard";
 import TestBank from "../screens/resources/TestBank";
 import ResumeBank from "../screens/resources/ResumeBank";
 import PublicProfileScreen from "../screens/PublicProfile";
-import { ResourcesStackParams } from '../types/Navigation';
+import { ResourcesStackParams } from '../types/navigation';
 
 const ResourcesStack = () => {
     const Stack = createNativeStackNavigator<ResourcesStackParams>();

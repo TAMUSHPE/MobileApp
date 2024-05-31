@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, ScrollView, TextInput, Alert, TouchableHi
 import React, { useContext, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
-import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation';
+import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation';
 import { useRoute } from '@react-navigation/core';
 import { Timestamp } from 'firebase/firestore';
 import InteractButton from '../../components/InteractButton';

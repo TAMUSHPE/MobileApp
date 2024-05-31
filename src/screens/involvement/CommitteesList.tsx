@@ -6,8 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext'
 import { auth } from '../../config/firebaseConfig';
 import { getCommittees, getUser } from '../../api/firebaseUtils'
-import { CommitteesListProps } from '../../types/Navigation'
-import { Committee } from "../../types/Committees"
+import { CommitteesListProps } from '../../types/navigation'
+import { Committee } from "../../types/committees"
 import CommitteeCard from './CommitteeCard'
 
 const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {

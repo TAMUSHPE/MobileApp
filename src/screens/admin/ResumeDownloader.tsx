@@ -9,7 +9,7 @@ import { db } from '../../config/firebaseConfig';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { handleLinkPress } from '../../helpers/links';
-import { AdminDashboardParams } from '../../types/Navigation';
+import { AdminDashboardParams } from '../../types/navigation';
 
 interface ResumeDownloadInfo {
     url: string;

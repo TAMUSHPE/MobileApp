@@ -1,8 +1,8 @@
 import { View, Text, ActivityIndicator, Image, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { Timestamp } from 'firebase/firestore';
-import { Committee, getLogoComponent } from '../types/Committees';
-import { SHPEEvent } from '../types/Events';
+import { Committee, getLogoComponent } from '../types/committees';
+import { SHPEEvent } from '../types/events';
 import { Images } from '../../assets';
 import { monthNames } from '../helpers/timeUtils';
 

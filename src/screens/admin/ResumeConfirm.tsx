@@ -8,8 +8,8 @@ import { getMembersToResumeVerify } from '../../api/firebaseUtils'
 import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firestore'
 import { httpsCallable } from 'firebase/functions'
 import { handleLinkPress } from '../../helpers/links'
-import { PublicUserInfo } from '../../types/User'
-import { AdminDashboardParams } from '../../types/Navigation';
+import { PublicUserInfo } from '../../types/user'
+import { AdminDashboardParams } from '../../types/navigation';
 import MemberCard from '../../components/MemberCard'
 import DismissibleModal from '../../components/DismissibleModal'
 import MembersList from '../../components/MembersList'

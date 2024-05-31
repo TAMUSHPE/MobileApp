@@ -10,7 +10,7 @@
 
 import React, { useEffect, useState, createContext, ReactNode } from 'react'
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { User } from "../types/User"
+import { User } from "../types/user"
 import { removeExpoPushToken } from '../helpers/pushNotification';
 import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';

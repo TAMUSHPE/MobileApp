@@ -8,7 +8,7 @@ import { db, storage } from '../../config/firebaseConfig';
 import { getBlobFromURI, selectImage, uploadFile } from '../../api/fileSelection';
 import { deleteObject, ref } from "firebase/storage";
 import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
-import { AdminDashboardParams } from '../../types/Navigation';
+import { AdminDashboardParams } from '../../types/navigation';
 import { Slide } from '../../types/slides';
 import { CommonMimeTypes } from '../../helpers/validation';
 import FeaturedSlider from '../../components/FeaturedSlider';

@@ -1,9 +1,9 @@
 import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal, ActivityIndicator, Alert, Switch } from 'react-native'
 import React, { useContext, useEffect, useRef, useState } from 'react'
-import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
+import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation'
 import { useRoute } from '@react-navigation/core';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CommitteeMeeting, EventType, GeneralMeeting, IntramuralEvent, CustomEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop, WorkshopType } from '../../types/Events';
+import { CommitteeMeeting, EventType, GeneralMeeting, IntramuralEvent, CustomEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop, WorkshopType } from '../../types/events';
 import { destroyEvent, getCommittees, setEvent } from '../../api/firebaseUtils';
 import { Octicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -14,7 +14,7 @@ import { MillisecondTimes, formatDate, formatTime } from '../../helpers/timeUtil
 import { StatusBar } from 'expo-status-bar';
 import DismissibleModal from '../../components/DismissibleModal';
 import * as ImagePicker from "expo-image-picker";
-import { Committee } from '../../types/Committees';
+import { Committee } from '../../types/committees';
 import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
 import LocationPicker from '../../components/LocationPicker';
 import { getBlobFromURI, selectImage, uploadFile } from '../../api/fileSelection';

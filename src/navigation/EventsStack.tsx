@@ -1,7 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Events from "../screens/events/Events";
-import { EventsStackParams } from '../types/Navigation';
+import { EventsStackParams } from '../types/navigation';
 import CreateEvent from "../screens/events/CreateEvent";
 import UpdateEvent from "../screens/events/UpdateEvent";
 import EventInfo from "../screens/events/EventInfo";

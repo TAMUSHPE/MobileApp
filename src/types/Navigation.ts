@@ -4,10 +4,10 @@ import { SetStateAction } from "react";
 import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from '@react-navigation/native';
 import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
-import { Test } from '../types/GoogleSheetsTypes';
-import { Committee } from "./Committees";
-import { PublicUserInfo, UserFilter } from "./User";
-import { SHPEEvent } from "./Events";
+import { Test } from './googleSheetsTypes';
+import { Committee } from "./committees";
+import { PublicUserInfo, UserFilter } from "./user";
+import { SHPEEvent } from "./events";
 
 // Stacks
 export type MainStackParams = {

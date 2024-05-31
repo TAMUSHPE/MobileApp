@@ -1,6 +1,6 @@
 import { signInAnonymously } from "firebase/auth";
 import { db, auth, storage } from "../../config/firebaseConfig";
-import { PrivateUserInfo, PublicUserInfo } from "../../types/User";
+import { PrivateUserInfo, PublicUserInfo } from "../../types/user";
 import { randomUint8Array, randomStr, randomStrRange } from "../../helpers/unitTestUtils"
 import * as firebaseUtils from "../firebaseUtils";
 import { deleteDoc, doc } from "firebase/firestore";

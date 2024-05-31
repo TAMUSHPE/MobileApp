@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { TestBankProps } from '../../types/Navigation'
+import { TestBankProps } from '../../types/navigation'
 import { SubjectCode, subjectIconMapping } from '../../types/testBank';
 import { handleLinkPress } from '../../helpers/links';
 

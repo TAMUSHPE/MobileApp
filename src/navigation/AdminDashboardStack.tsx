@@ -1,6 +1,6 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { AdminDashboardParams } from '../types/Navigation';
+import { AdminDashboardParams } from '../types/navigation';
 import { HomeStack } from "./HomeStack";
 import RestrictionsEditor from "../screens/admin/RestrictionsEditor";
 import AdminDashboard from "../screens/admin/AdminDashboard";

@@ -12,14 +12,14 @@ import { auth } from '../config/firebaseConfig';
 import { getCommittees, getPublicUserData, getUser, queryUserEventLogs, setUserRoles } from '../api/firebaseUtils';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
 import { handleLinkPress } from '../helpers/links';
-import { HomeDrawerParams, MembersScreenRouteProp } from '../types/Navigation';
-import { PublicUserInfo, Roles } from '../types/User';
-import { Committee } from '../types/Committees';
+import { HomeDrawerParams, MembersScreenRouteProp } from '../types/navigation';
+import { PublicUserInfo, Roles } from '../types/user';
+import { Committee } from '../types/committees';
 import { Images } from '../../assets';
 import TwitterSvg from '../components/TwitterSvg';
 import ProfileBadge from '../components/ProfileBadge';
 import DismissibleModal from '../components/DismissibleModal';
-import { UserEventData } from '../types/Events';
+import { UserEventData } from '../types/events';
 import { Timestamp } from 'firebase/firestore';
 
 

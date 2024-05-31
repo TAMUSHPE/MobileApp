@@ -7,8 +7,8 @@ import { auth } from "../../config/firebaseConfig";
 import { getEvent, getAttendanceNumber, isUserSignedIn, getPublicUserData, getUsers, signInToEvent, signOutOfEvent } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { formatEventDate, formatTime } from '../../helpers/timeUtils';
-import { EventProps, SHPEEventScreenRouteProp } from '../../types/Navigation'
-import { SHPEEvent, getStatusMessage } from '../../types/Events';
+import { EventProps, SHPEEventScreenRouteProp } from '../../types/navigation'
+import { SHPEEvent, getStatusMessage } from '../../types/events';
 import { Images } from '../../../assets';
 import { StatusBar } from 'expo-status-bar';
 import CalendarIcon from '../../../assets/calandar_pale_blue.svg'
@@ -17,8 +17,8 @@ import MapIcon from '../../../assets/map-pale-blue.svg'
 import TargetIcon from '../../../assets/target-pale-blue.svg'
 import { handleLinkPress } from '../../helpers/links';
 import MemberCard from '../../components/MemberCard';
-import { PublicUserInfo } from '../../types/User';
-import { reverseFormattedFirebaseName } from '../../types/Committees';
+import { PublicUserInfo } from '../../types/user';
+import { reverseFormattedFirebaseName } from '../../types/committees';
 import MembersList from '../../components/MembersList';
 
 const EventInfo = ({ navigation }: EventProps) => {

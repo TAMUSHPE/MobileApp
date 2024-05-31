@@ -3,9 +3,9 @@ import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
 import { deleteCommittee, getLeads, getPublicUserData, getRepresentatives, getTeamMembers, resetCommittee, setCommitteeData } from '../../api/firebaseUtils';
-import { Committee, committeeLogos, getLogoComponent } from '../../types/Committees';
-import { CommitteeEditProps } from '../../types/Navigation';
-import { PublicUserInfo } from '../../types/User';
+import { Committee, committeeLogos, getLogoComponent } from '../../types/committees';
+import { CommitteeEditProps } from '../../types/navigation';
+import { PublicUserInfo } from '../../types/user';
 import MembersList from '../../components/MembersList';
 import CustomColorPicker from '../../components/CustomColorPicker';
 import DismissibleModal from '../../components/DismissibleModal';

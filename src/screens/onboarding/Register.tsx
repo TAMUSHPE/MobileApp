@@ -11,7 +11,7 @@ import { getUser, initializeCurrentUserData } from '../../api/firebaseUtils';
 import { isUsernameUnique } from '../../api/firebaseUtils';
 import { createUserWithEmailAndPassword, UserCredential, updateProfile, sendEmailVerification } from "firebase/auth";
 import { evaluatePasswordStrength, validateUsername, validateEmail, validatePassword, validateTamuEmail } from '../../helpers/validation';
-import { AuthStackParams } from '../../types/Navigation';
+import { AuthStackParams } from '../../types/navigation';
 import { Images } from "../../../assets";
 import InteractButton from '../../components/InteractButton';
 import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';

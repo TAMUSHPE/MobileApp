@@ -12,7 +12,7 @@ import { validateTamuEmail } from "../../helpers/validation";
 import { signInWithCredential, GoogleAuthProvider, signOut } from "firebase/auth";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { initializeCurrentUserData } from "../../api/firebaseUtils";
-import { AuthStackParams } from "../../types/Navigation";
+import { AuthStackParams } from "../../types/navigation";
 import { Images } from "../../../assets";
 import InteractButton from "../../components/InteractButton";
 

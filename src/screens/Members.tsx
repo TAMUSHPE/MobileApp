@@ -1,9 +1,9 @@
 import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, NativeScrollEvent } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
-import { MembersStackParams } from '../types/Navigation'
+import { MembersStackParams } from '../types/navigation'
 import MemberCard from '../components/MemberCard'
-import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../types/User';
+import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../types/user';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getOfficers, getUserForMemberList } from '../api/firebaseUtils';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';

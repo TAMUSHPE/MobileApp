@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, TextInput } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
-import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation'
+import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation'
 import { useRoute } from '@react-navigation/core';
 import { UserContext } from '../../context/UserContext';
 import { StatusBar } from 'expo-status-bar';
