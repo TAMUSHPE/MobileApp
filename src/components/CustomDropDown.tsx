@@ -290,7 +290,7 @@ const DropDown = ({ darkMode, disableSearch, search, searchRef, dropDownClassNam
     getItemDisplayText: (item: Item) => string,
 }) => {
     return (
-        <View className={`self-center rounded-md max-h-[60%] w-[90%] px-1 ${darkMode ? "bg-secondary-bg-dark" : "bg-white border border-gray-400"} ` + dropDownClassName}>
+        <View className={`self-center rounded-md px-1 ${Platform.OS == "ios" ? "absolute h-72 w-[100%] top-14" : "max-h-[60%] w-[90%]"} ${darkMode ? "bg-secondary-bg-dark" : "bg-white border border-gray-400"} ` + dropDownClassName}>
             {!disableSearch && (
                 <TextInput
                     placeholder="Search.."
