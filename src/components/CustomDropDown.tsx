@@ -51,10 +51,10 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
     titleClassName?: string;
     textboxClassName?: string;
 }, ref) => {
-    const [search, setSearch] = useState('');
-    const [filteredData, setFilteredData] = useState(data);
+    const [search, setSearch] = useState<string>('');
+    const [filteredData, setFilteredData] = useState<Item[]>(data);
     const [selectedItem, setSelectedItem] = useState<SelectedItem | null>(null)
-    const [isFocused, setIsFocused] = useState(false);
+    const [isFocused, setIsFocused] = useState<boolean>(false);
     const searchRef = useRef<TextInput>(null);
     const moveTitle = useRef(new Animated.Value(0)).current;
     const [componentLayout, setComponentLayout] = useState<LayoutRectangle | null>(null);
@@ -202,19 +202,19 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                     </TouchableWithoutFeedback>
                 )}
                 {title && (
-                    <Animated.Text className={"w-[100%] ml-3 items-center self-center border-gray-400 font-semibold text-lg text-white " + titleClassName} style={{ transform: [{ translateY: yVal }] }}>
+                    <Animated.Text className={`w-[100%] ml-3 items-center self-center border-gray-400 font-semibold text-lg ${darkMode ? "text-white" : "text-black"} ` + titleClassName} style={{ transform: [{ translateY: yVal }] }}>
                         {title}
                     </Animated.Text>
                 )}
                 <TouchableOpacity
-                    className='flex-row justify-between items-center self-center bg-white rounded-md w-[100%] h-12 px-3 border-gray-400 border'
+                    className={`flex-row justify-between items-center self-center rounded-md w-[100%] h-12 px-3 border ${darkMode ? "bg-neutral-800 border-neutral-600" : "bg-white border-gray-400"}`}
                     activeOpacity={1}
                     onPress={() => {
                         onToggle()
                         setIsFocused(true)
                     }}>
 
-                    <Text className={'font-bold text-gray-400 text-xl ' + textClassName}>
+                    <Text className={`font-bold text-lg ${darkMode ? "text-gray-200" : "text-gray-400"}` + textClassName}>
                         {getDisplayText()}
                     </Text>
                 </TouchableOpacity>
@@ -231,37 +231,19 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
 
             {/* Absolute Positioning of a ScrollView only works on iOS */}
             {isOpen && Platform.OS == "ios" && (
-                <View className={"absolute top-14 self-center bg-white rounded-md h-72 w-[100%] border-gray-400 border px-1 " + dropDownClassName}>
-                    {!disableSearch && (
-                        <TextInput
-                            placeholder="Search.."
-                            value={search}
-                            ref={searchRef}
-                            onChangeText={txt => {
-                                onSearch(txt);
-                                setSearch(txt);
-                            }}
-                            className='w-[90%] h-12 self-center mt-6 pl-3 rounded-md border-gray-400 border'
-                        />
-                    )}
-                    <ScrollView
-                        className='mt-4'
-                        scrollEnabled={isFocused}
-                        nestedScrollEnabled
-                    >
-                        {filteredData.map((item, index) => (
-                            <TouchableOpacity
-                                onPress={() => handleSelect(item)}
-                                className={`w-[85%] self-center h-12 justify-center ${index != filteredData.length - 1 ? "border-b border-b-gray-400" : ""}`}
-                                key={index}
-                            >
-                                <Text className='text-lg font-semibold'>
-                                    {getItemDisplayText(item)}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                </View>
+                <DropDown
+                    darkMode={darkMode}
+                    disableSearch={disableSearch}
+                    search={search}
+                    dropDownClassName={dropDownClassName}
+                    isFocused={isFocused}
+                    filteredData={filteredData}
+                    onSearch={onSearch}
+                    handleSelect={handleSelect}
+                    getItemDisplayText={getItemDisplayText}
+                    searchRef={searchRef}
+                    setSearch={setSearch}
+                />
             )}
 
             {/* Android must use a modal instead of absolute positioning of a ScrollView */}
@@ -272,41 +254,76 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                     setIsFocused(true)
                 }}
             >
-                <View className={"absolute top-14 self-center bg-white rounded-md h-72 w-[100%] border-gray-400 border px-1 " + dropDownClassName}>
-                    {!disableSearch && (
-                        <TextInput
-                            placeholder="Search.."
-                            value={search}
-                            ref={searchRef}
-                            onChangeText={txt => {
-                                onSearch(txt);
-                                setSearch(txt);
-                            }}
-                            className='w-[90%] h-12 self-center mt-6 pl-3 rounded-md border-gray-400 border'
-                        />
-                    )}
-                    <ScrollView
-                        className='mt-4'
-                        scrollEnabled={isFocused}
-                        nestedScrollEnabled
-                    >
-                        {filteredData.map((item, index) => (
-                            <TouchableOpacity
-                                onPress={() => handleSelect(item)}
-                                className={`w-[85%] self-center h-12 justify-center ${index != filteredData.length - 1 ? "border-b border-b-gray-400" : ""}`}
-                                key={index}
-                            >
-                                <Text className='text-lg font-semibold'>
-                                    {getItemDisplayText(item)}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                </View>
+                <DropDown
+                    darkMode={darkMode}
+                    disableSearch={disableSearch}
+                    search={search}
+                    dropDownClassName={dropDownClassName}
+                    isFocused={isFocused}
+                    filteredData={filteredData}
+                    onSearch={onSearch}
+                    handleSelect={handleSelect}
+                    getItemDisplayText={getItemDisplayText}
+                    searchRef={searchRef}
+                    setSearch={setSearch}
+                />
             </DismissibleModal>
         </View>
     );
 });
+
+/**
+ * This component is used in both the iOS and Android dropdown, but in different contexts. 
+ * This is a separate component to make it so there is consistancy between both platforms.
+ */
+const DropDown = ({ darkMode, disableSearch, search, searchRef, dropDownClassName, isFocused, filteredData, onSearch, setSearch, handleSelect, getItemDisplayText }: {
+    darkMode: boolean | undefined,
+    disableSearch: boolean | undefined,
+    search: string,
+    isFocused: boolean,
+    dropDownClassName: string,
+    filteredData: Item[],
+    searchRef: React.RefObject<TextInput>,
+    onSearch: (str: string) => void,
+    setSearch: (str: string) => void,
+    handleSelect: (item: Item) => void,
+    getItemDisplayText: (item: Item) => string,
+}) => {
+    return (
+        <View className={`self-center rounded-md max-h-[60%] w-[90%] px-1 ${darkMode ? "bg-secondary-bg-dark" : "bg-white border border-gray-400"} ` + dropDownClassName}>
+            {!disableSearch && (
+                <TextInput
+                    placeholder="Search.."
+                    value={search}
+                    ref={searchRef}
+                    onChangeText={txt => {
+                        onSearch(txt);
+                        setSearch(txt);
+                    }}
+                    className={`w-[90%] h-12 self-center mt-6 pl-3 rounded-md border ${darkMode ? "border-neutral-700 bg-neutral-800 text-white" : "border-neutral-800 bg-white text-black"}`}
+                    placeholderTextColor={darkMode ? "#c2c2c2" : "#000"}
+                />
+            )}
+            <ScrollView
+                className='mt-4'
+                scrollEnabled={isFocused}
+                nestedScrollEnabled
+            >
+                {filteredData.map((item, index) => (
+                    <TouchableOpacity
+                        onPress={() => handleSelect(item)}
+                        className={`w-[85%] self-center min-h-12 py-2 justify-center ${index != filteredData.length - 1 ? "border-b border-b-gray-400" : ""}`}
+                        key={index}
+                    >
+                        <Text className={`text-lg ${darkMode ? "text-neutral-300" : "text-black font-semibold"}`}>
+                            {getItemDisplayText(item)}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </ScrollView>
+        </View>
+    );
+}
 
 interface Item {
     [key: string]: any;

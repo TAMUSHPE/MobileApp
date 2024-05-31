@@ -473,15 +473,13 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                     onSelect={(item) => setMajor(item.iso)}
                                     searchKey="major"
                                     label="Select major"
-                                    isOpen={openDropdown === 'major'}
-                                    onToggle={() => toggleDropdown('major')}
-                                    title={'Major'}
+                                    isOpen={openDropdown === "major"}
+                                    onToggle={() => toggleDropdown("major")}
+                                    title={"Major"}
                                     selectedItemProp={{ iso: major, value: findMajorByIso(major!)! }}
-                                    dropDownClassName='top-20'
-                                    textClassName='text-black'
-                                    titleClassName='text-black'
+                                    dropDownClassName={Platform.OS == "ios" ? "top-20" : undefined}
                                     darkMode={darkMode}
-                                />
+                                    />
                             </View>
                             <View className='absolute top-24 z-10 w-[80%]'>
                                 <CustomDropDown
@@ -494,10 +492,8 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                     title={"Class Year"}
                                     selectedItemProp={{ iso: classYear }}
                                     displayType='iso'
-                                    dropDownClassName='top-20'
+                                    dropDownClassName={Platform.OS == "ios" ? "top-20" : undefined}
                                     disableSearch
-                                    textClassName='text-black'
-                                    titleClassName='text-black'
                                     darkMode={darkMode}
                                 />
                             </View>
@@ -534,8 +530,8 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                         cx="50"
                                         cy="50"
                                         r="45"
-                                        stroke="#ffffff"
-                                        strokeWidth="4"
+                                        stroke={darkMode ? "#a3a3a3" :"#000000"}
+                                        strokeWidth="3"
                                         fill="transparent"
                                     />
                                 </Svg>
@@ -615,7 +611,8 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 />
                 <SettingsSectionTitle text='SHPE Info' darkMode={darkMode} />
                 <SettingsButton
-                    mainText='Edit Resume'
+                    mainText='Resume'
+                    subText='Keep your resume updated!'
                     darkMode={darkMode}
                     onPress={() => setShowResumeModal(true)}
                 />
