@@ -85,6 +85,13 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         >
                             <Text className='text-white text-xl'>Link Manger</Text>
                         </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate('InstagramPoints')}
+                            className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center mr-4'
+                        >
+                            <Text className='text-white text-xl'>Instagram Points</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
 
@@ -113,13 +120,23 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         <TouchableOpacity
                             onPress={async () => {
                                 await updateAllUserPoints();
-                                await updateRanksOnCall();
-                                Alert.alert('Update All User Points', 'Update All User Points and Update Ranks have been successfully called');
+                                Alert.alert('Update All User Points', 'Update All User Points have been successfully called');
 
                             }}
                             className='bg-black rounded-md py-4 px-2 items-center justify-center'
                         >
                             <Text className='text-white text-xl'>Update All User Points</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={async () => {
+                                await updateRanksOnCall();
+                                Alert.alert('Update Ranks', 'Update All Ranks have been successfully called');
+
+                            }}
+                            className='bg-black rounded-md py-4 px-2 items-center justify-center'
+                        >
+                            <Text className='text-white text-xl'>Update User Rank</Text>
                         </TouchableOpacity>
 
 
