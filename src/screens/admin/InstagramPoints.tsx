@@ -93,6 +93,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
             });
 
             await Promise.all(promises);
+            alert("Points added successfully!")
 
             // Reset selected members to unselected
             setMembers(prevMembers => prevMembers.map(member => ({
@@ -146,6 +147,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
                 </View>
 
                 <View className='px-4'>
+                    {loading && <ActivityIndicator size="large" />}
                     {/* Members List */}
                     {!loading && filteredMembers?.map((userData, index) => {
                         if (!userData.name) {
@@ -159,6 +161,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
                             />
                         );
                     })}
+
                 </View>
 
                 <View className='pb-24' />
