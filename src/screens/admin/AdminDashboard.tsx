@@ -13,7 +13,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
     const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
     const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
     const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
-
+    const resetOfficeOnCall = httpsCallable(functions, 'resetOfficeOnCall');
 
     return (
         <View className='flex-1'>
@@ -151,7 +151,10 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('ResetOfficeHours')}
+                            onPress={() => {
+                                resetOfficeOnCall();
+                                Alert.alert('Reset Office Hours', 'Reset Office Hours has been called');
+                            }}
                             className='bg-black rounded-md py-4 px-2 items-center justify-center'
                         >
                             <Text className='text-white text-xl'>Rest Office</Text>

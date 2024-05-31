@@ -113,7 +113,6 @@ export type AdminDashboardParams = {
     FeaturedSlideEditor: undefined;
     ResumeDownloader: undefined;
     LinkManager: undefined;
-    ResetOfficeHours: undefined;
     RestrictionsEditor: undefined;
     Feedback: undefined;
     MemberSHPEConfirm: undefined;
