@@ -1,14 +1,14 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { MemberCardProp } from '../types/Navigation'
+import { MemberCardMultipleSelectProp, MemberCardProp } from '../types/Navigation'
 import { Images } from '../../assets'
 import TwitterSvg from './TwitterSvg'
 import { getBadgeColor, isMemberVerified } from '../helpers/membership'
 
-const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation, displayPoints }) => {
+const MemberCardMultipleSelect: React.FC<MemberCardMultipleSelectProp> = ({ userData, handleCardPress }) => {
     if (!userData) { return }
 
-    const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration, pointsThisMonth } = userData
+    const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration, selected } = userData
     const isOfficer = roles ? roles.officer : false;
 
     const [isVerified, setIsVerified] = useState<boolean>(false);
@@ -20,13 +20,19 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
         }
     }, [nationalExpiration, chapterExpiration])
 
+
     return (
         <TouchableOpacity
             className='mb-8'
             onPress={() => handleCardPress && handleCardPress(uid!)}
-            activeOpacity={!!handleCardPress && 1 || 0.6}
+            activeOpacity={0.6}
         >
             <View className="flex-row">
+                <View className='flex-row items-center py-1 justify-center'>
+                    <View className={`w-7 h-7 mr-3 rounded-md border-2 border-pale-blue ${selected && 'bg-pale-blue'}`} />
+                </View>
+
+
                 <Image
                     className="flex w-12 h-12 rounded-full"
                     defaultSource={Images.DEFAULT_USER_PICTURE}
@@ -39,9 +45,6 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
                             {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
                         </View>
                         <Text className='text-md text-grey'>{displayName}</Text>
-                        {displayPoints && pointsThisMonth?.valueOf && (
-                            <Text>{parseFloat(pointsThisMonth.toFixed(3))} pts</Text>
-                        )}
                     </View>
                 </View>
             </View>
@@ -49,4 +52,4 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
     )
 }
 
-export default MemberCard
+export default MemberCardMultipleSelect

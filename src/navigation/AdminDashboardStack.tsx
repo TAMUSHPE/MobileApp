@@ -15,6 +15,7 @@ import Feedback from "../screens/admin/Feedback";
 import ShirtConfirm from "../screens/admin/ShirtConfirm";
 import CommitteeConfirm from "../screens/admin/CommitteeConfirm";
 import LinkManager from "../screens/admin/LinkManager";
+import InstagramPoints from "../screens/admin/InstagramPoints";
 
 const AdminDashboardStack = () => {
     const Stack = createNativeStackNavigator<AdminDashboardParams>();
@@ -36,6 +37,7 @@ const AdminDashboardStack = () => {
                 <Stack.Screen name="Home" component={HomeStack} />
                 <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
                 <Stack.Screen name="Feedback" component={Feedback} />
+                <Stack.Screen name="InstagramPoints" component={InstagramPoints} />
             </Stack.Group>
         </Stack.Navigator>
     );

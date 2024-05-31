@@ -6,6 +6,6 @@ export { resetOfficeOnCall } from "./officeReset";
 export { zipResume } from "./resume";
 export { updateUserRole } from "./roles";
 export { checkUsernameUniqueness } from "./checkUsername";
-export { eventSignIn, eventSignOut } from "./events";
+export { eventSignIn, eventSignOut, addInstagramPoints } from "./events";
 export { isUserInBlacklist } from "./restriction";
 export { calculateMOTM } from "./points";

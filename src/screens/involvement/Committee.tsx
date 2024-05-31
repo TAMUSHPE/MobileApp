@@ -1,8 +1,10 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { collection, deleteDoc, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext';
 import { getCommitteeEvents, getPublicUserData, setPublicUserData } from '../../api/firebaseUtils';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
@@ -10,14 +12,12 @@ import { handleLinkPress } from '../../helpers/links';
 import { CommitteeScreenProps } from '../../types/Navigation';
 import { getLogoComponent } from '../../types/Committees';
 import { SHPEEvent } from '../../types/Events';
-import CommitteeTeamCard from './CommitteeTeamCard';
-import DismissibleModal from '../../components/DismissibleModal';
-import EventsList from '../../components/EventsList';
 import { PublicUserInfo } from '../../types/User';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import DismissibleModal from '../../components/DismissibleModal';
 import { auth, db } from '../../config/firebaseConfig';
-import { collection, deleteDoc, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
+import EventsList from '../../components/EventsList';
 import MembersList from '../../components/MembersList';
+import CommitteeTeamCard from './CommitteeTeamCard';
 
 const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
@@ -256,6 +256,11 @@ const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
                         <TouchableOpacity
                             className={`px-4 py-[2px] rounded-lg items-center mt-2 mx-2 ${isInCommittee ? "bg-[#FF4545]" : isRequesting ? "bg-gray-400" : "bg-[#AEF359]"}`}
                             onPress={() => {
+                                if (!userInfo?.publicInfo?.isStudent) {
+                                    alert("You must be a student to join a committee.")
+                                    return;
+                                }
+
                                 if (isRequesting) {
                                     removeCommitteeRequest();
                                     setIsRequesting(false)

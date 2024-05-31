@@ -108,8 +108,9 @@ export interface SHPEEventLog {
     eventId?: string; // Used when data is copied to user collection
     signInTime?: Timestamp;
     signOutTime?: Timestamp;
-    creationTime?: Timestamp
+    creationTime?: Timestamp;
     verified?: boolean;
+    instagramLogs?: Timestamp[]; // Used to log instagram points
 }
 
 /**
@@ -398,9 +399,14 @@ export enum EventLogStatus {
     EVENT_NOT_STARTED,
     EVENT_NOT_FOUND,
     ALREADY_LOGGED,
+    NOT_A_STUDENT,
     ERROR,
 }
 
+export type UserEventData = {
+    eventData?: SHPEEvent,
+    eventLog?: SHPEEventLog,
+}
 
 export const getStatusMessage = (status: EventLogStatus): string => {
     const statusMessages = {
@@ -410,11 +416,10 @@ export const getStatusMessage = (status: EventLogStatus): string => {
         [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
         [EventLogStatus.EVENT_NOT_FOUND]: "The event was not found.",
         [EventLogStatus.ALREADY_LOGGED]: "You have already signed in/out.",
+        [EventLogStatus.NOT_A_STUDENT]: "Only student can sign in/out of events..",
         [EventLogStatus.ERROR]: "An internal error occurred. Please try again.",
     };
 
     return statusMessages[status] || "An unknown error occurred.";
 };
-
-
 

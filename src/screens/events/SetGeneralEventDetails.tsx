@@ -413,7 +413,10 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             value={description}
                             placeholder='What is this event about?'
                             placeholderTextColor={darkMode ? "#DDD" : "#777"}
-                            onChangeText={(text) => setDescription(text)}
+                            onChangeText={(text: string) => {
+                                if (text.length <= 250)
+                                    setDescription(text)
+                            }}
                             numberOfLines={2}
                             keyboardType='ascii-capable'
                             autoCapitalize='sentences'

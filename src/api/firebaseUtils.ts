@@ -5,7 +5,7 @@ import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/User";
 import { Committee } from "../types/Committees";
-import { SHPEEvent, EventLogStatus } from "../types/Events";
+import { SHPEEvent, EventLogStatus, UserEventData } from "../types/Events";
 import * as Location from 'expo-location';
 import { deleteUser } from "firebase/auth";
 import { LinkData } from "../types/Links";
@@ -258,7 +258,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
         settings: {
             darkMode: false,
         },
-        expirationDate: oneWeekFromNow,
+        expirationDate: Timestamp.fromDate(oneWeekFromNow),
         email: auth.currentUser?.email ?? "",
     };
 
@@ -1020,31 +1020,40 @@ export const getMembersToResumeVerify = async (): Promise<PublicUserInfo[]> => {
     return members;
 };
 
-export const getMembersToShirtVerify = async (): Promise<PublicUserInfo[]> => {
-    const shirtRef = collection(db, 'shirt-sizes');
-    const shirtQuery = query(shirtRef);
-    const shirtSnapshot = await getDocs(shirtQuery);
-    const shirtUserIds = shirtSnapshot.docs.map(doc => doc.id);
+export const getMembersToShirtVerify = async (): Promise<{ pickedUp: PublicUserInfo[], notPickedUp: PublicUserInfo[] }> => {
+    try {
+        const querySnapshot = await getDocs(collection(db, "shirt-sizes"));
+        const UIDs: string[] = [];
 
-    const members: PublicUserInfo[] = [];
-    for (const userId of shirtUserIds) {
-        const userDocRef = doc(db, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists() && !userDocSnap.data()?.shirtPickedUp) {
-            members.push({ uid: userId, ...userDocSnap.data() });
+        querySnapshot.forEach(doc => {
+            UIDs.push(doc.id);
+        });
+
+        const pickedUpMembers: PublicUserInfo[] = [];
+        const notPickedUpMembers: PublicUserInfo[] = [];
+
+        for (const uid of UIDs) {
+            const userData = await getPublicUserData(uid);
+            const shirtData = await getDoc(doc(db, "shirt-sizes", uid));
+            const shirtPickedUp = shirtData.data()?.shirtPickedUp;
+
+            if (userData) {
+                const memberData = { uid, ...userData };
+                if (shirtPickedUp) {
+                    pickedUpMembers.push(memberData);
+                } else {
+                    notPickedUpMembers.push(memberData);
+                }
+            }
         }
-    }
 
-    for (const userId of shirtUserIds) {
-        const userDocRef = doc(db, 'users', userId);
-        const userDocSnap = await getDoc(userDocRef);
-        if (userDocSnap.exists() && userDocSnap.data()?.shirtPickedUp) {
-            members.push({ uid: userId, ...userDocSnap.data() });
-        }
+        return { pickedUp: pickedUpMembers, notPickedUp: notPickedUpMembers };
+    } catch (error) {
+        console.error("Error fetching members for shirt verification:", error);
+        return { pickedUp: [], notPickedUp: [] };
     }
-
-    return members;
 };
+
 
 export const isUsernameUnique = async (username: string): Promise<boolean> => {
     const checkUsernameUniqueness = httpsCallable<{ username: string }, { unique: boolean }>(functions, 'checkUsernameUniqueness');
@@ -1294,20 +1303,23 @@ export const deleteAccount = async (userId: string) => {
     }
 };
 
-const queryUserEventLogs = async (uid: string): Promise<Array<SHPEEvent>> => {
+export const queryUserEventLogs = async (uid: string, limitNum: number = 3): Promise<Array<UserEventData>> => {
     console.log(`users/${uid}/event-logs`);
     const userEventLogsCollectionRef = collection(db, `users/${uid}/event-logs`);
-    const eventLogSnapshot = await getDocs(userEventLogsCollectionRef);
+    const q = query(userEventLogsCollectionRef, orderBy('signInTime', 'desc'), limit(limitNum));
+    const eventLogSnapshot = await getDocs(q);
     const docPromises: Array<Promise<DocumentSnapshot>> = [];
-    const events: Array<SHPEEvent> = [];
+    const events: Array<UserEventData> = [];
 
-    eventLogSnapshot.forEach((document) => {
-        docPromises.push(getDoc(doc(db, "events", document.id)));
+    eventLogSnapshot.forEach((eventLog) => {
+        events.push({ eventLog: eventLog.data() });
+        docPromises.push(getDoc(doc(db, "events", eventLog.id)));
     });
 
     for (let index = 0; index < docPromises.length; index++) {
         const document = docPromises[index];
-        events.push((await document).data() as SHPEEvent);
+        const eventData = (await document).data() as SHPEEvent;
+        events[index].eventData = eventData;
     }
 
     return events;
@@ -1354,6 +1366,52 @@ export const fetchLink = async (linkID: string): Promise<LinkData | null> => {
         }
     } catch (error) {
         console.error('Error fetching document:', error);
+        return null;
+    }
+};
+
+export const getMembers = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const q = query(userRef);
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const members = await Promise.all(querySnapshot.docs.map(async (doc) => {
+            const publicInfo = doc.data();
+            const uid = doc.id;
+
+            return {
+                ...publicInfo,
+                uid,
+            };
+        }));
+
+        return members;
+
+    } catch (error) {
+        console.error("Error fetching members:", error);
+        throw new Error("Internal Server Error.");
+    }
+};
+
+export const fetchEventByName = async (eventName: string): Promise<SHPEEvent | null> => {
+    try {
+        const eventsRef = collection(db, 'events');
+        const q = query(eventsRef, where('name', '==', eventName), limit(1));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+            const eventDoc = querySnapshot.docs[0];
+            return { id: eventDoc.id, ...eventDoc.data() } as SHPEEvent;
+        } else {
+            console.log(`Event with name "${eventName}" not found.`);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching event:', error);
         return null;
     }
 };

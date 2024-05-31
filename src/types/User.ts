@@ -1,4 +1,8 @@
 import { Timestamp, FieldValue } from 'firebase/firestore';
+
+/** Anything added to this document needs to be added to shpe-app-web/app/types/user.ts **/
+
+
 /**
  * This interface represents the roles a user has. These values will only determine what the app looks like and **not** firebase read/write/edit/delete permissions.
  */
@@ -41,7 +45,6 @@ export interface PublicUserInfo {
     interests?: string[];
     points?: number;
     pointsThisMonth?: number;
-    shirtPickedUp?: boolean;
     isStudent?: boolean;
     isEmailPublic?: boolean;
 };
@@ -62,7 +65,7 @@ export interface PrivateUserInfo {
     completedAccountSetup?: boolean;
     settings?: AppSettings;
     expoPushTokens?: string[];
-    expirationDate?: Date;
+    expirationDate?: Timestamp;
     resumeURL?: string;
     email?: string;
 };

@@ -1,5 +1,5 @@
 import { View, Text } from 'react-native'
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useRoute } from '@react-navigation/core';
 import { EventVerificationProps, EventVerificationScreenRouteProp } from '../../types/Navigation'
 import { getEvent, signInToEvent, signOutOfEvent } from '../../api/firebaseUtils';
@@ -9,15 +9,23 @@ import { EventLogStatus, getStatusMessage } from '../../types/Events';
 import { ActivityIndicator } from "react-native";
 import * as Haptics from 'expo-haptics';
 import { StatusBar } from 'expo-status-bar';
+import { UserContext } from '../../context/UserContext';
 
 const EventVerification = ({ navigation }: EventVerificationProps) => {
     const route = useRoute<EventVerificationScreenRouteProp>();
     const { id, mode } = route.params;
+    const { userInfo } = useContext(UserContext)!;
     const [logStatus, setLogStatus] = useState<EventLogStatus | undefined>();
     const [loading, setLoading] = useState<boolean>(true);
     const [checkingLocation, setCheckingLocation] = useState<boolean>(false);
 
     useEffect(() => {
+        if (!userInfo?.publicInfo?.isStudent) {
+            setLogStatus(EventLogStatus.NOT_A_STUDENT);
+            setLoading(false);
+            return;
+        }
+
         switch (mode) {
             case 'sign-in':
                 signInToEvent(id).then((status) => {
@@ -95,6 +103,11 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
                 bgColor: "bg-dark-navy"
             },
             [EventLogStatus.EVENT_NOT_FOUND]: {
+                animation: require("../../../assets/red_x_animation.json"),
+                haptic: Haptics.NotificationFeedbackType.Error,
+                bgColor: "bg-dark-navy"
+            },
+            [EventLogStatus.NOT_A_STUDENT]: {
                 animation: require("../../../assets/red_x_animation.json"),
                 haptic: Haptics.NotificationFeedbackType.Error,
                 bgColor: "bg-dark-navy"

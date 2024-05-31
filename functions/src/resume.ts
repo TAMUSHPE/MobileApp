@@ -38,8 +38,27 @@ export const zipResume = functions.https.onRequest(async (req, res) => {
         prefix: 'user-docs/',
     });
 
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
     for (const file of files) {
         if (file.name.endsWith('/user-resume') && file.metadata.contentType === 'application/pdf') {
+            const [fileMetadata] = await file.getMetadata();
+            const timeCreated = fileMetadata.timeCreated;
+
+
+            if (!timeCreated) {
+                console.log(`Skipping file ${file.name} due to missing creation time.`);
+                continue;
+            }
+
+            const creationTime = new Date(timeCreated);
+
+            if (creationTime < oneYearAgo) {
+                console.log(`Skipping file ${file.name} as it is older than one year.`);
+                continue;
+            }
+
             const userId = file.name.split('/')[1];
 
             try {
