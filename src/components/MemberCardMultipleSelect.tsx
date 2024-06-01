@@ -1,6 +1,6 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { MemberCardMultipleSelectProp, MemberCardProp } from '../types/Navigation'
+import { MemberCardMultipleSelectProp, MemberCardProp } from '../types/navigation'
 import { Images } from '../../assets'
 import TwitterSvg from './TwitterSvg'
 import { getBadgeColor, isMemberVerified } from '../helpers/membership'

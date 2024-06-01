@@ -3,7 +3,7 @@ import React, { useContext, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { UserContext } from '../../context/UserContext';
-import { AuthStackParams } from "../../types/Navigation";
+import { AuthStackParams } from "../../types/navigation";
 import { Images } from "../../../assets";
 import InteractButton from "../../components/InteractButton";
 

@@ -1,9 +1,9 @@
 import { View, Text, TouchableOpacity, Image, ScrollView, Alert, Platform } from 'react-native'
 import React, { useContext, useState } from 'react'
-import { CommitteeMeeting, CustomEvent, EventType, GeneralMeeting, IntramuralEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop } from '../../types/Events'
+import { CommitteeMeeting, CustomEvent, EventType, GeneralMeeting, IntramuralEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop } from '../../types/events'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { EventsStackParams } from '../../types/Navigation';
+import { EventsStackParams } from '../../types/navigation';
 import { Octicons } from '@expo/vector-icons';
 import CommitteeMeetingIcon from '../../../assets/committee_meeting.svg';
 import GeneralMeetingIcon from '../../../assets/general_meeting.svg';

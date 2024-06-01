@@ -12,14 +12,14 @@ import { auth } from '../config/firebaseConfig';
 import { getCommittees, getPublicUserData, getUser, queryUserEventLogs, setUserRoles } from '../api/firebaseUtils';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
 import { handleLinkPress } from '../helpers/links';
-import { HomeDrawerParams, MembersScreenRouteProp } from '../types/Navigation';
-import { PublicUserInfo, Roles } from '../types/User';
-import { Committee } from '../types/Committees';
+import { HomeDrawerParams, MembersScreenRouteProp } from '../types/navigation';
+import { PublicUserInfo, Roles } from '../types/user';
+import { Committee } from '../types/committees';
 import { Images } from '../../assets';
 import TwitterSvg from '../components/TwitterSvg';
 import ProfileBadge from '../components/ProfileBadge';
 import DismissibleModal from '../components/DismissibleModal';
-import { UserEventData } from '../types/Events';
+import { UserEventData } from '../types/events';
 import { Timestamp } from 'firebase/firestore';
 
 
@@ -326,25 +326,28 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                     </View>
                 )}
 
-                <TouchableOpacity
-                    onPress={() => navigation.navigate("PersonalEventLogScreen")}
-                    className="rounded-md mt-8"
-                >
-                    <Text className='text-xl'>Personal Event Logs</Text>
-                </TouchableOpacity>
+                {isCurrentUser && (
+                    <View>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("PersonalEventLogScreen")}
+                            className="rounded-md mt-8"
+                        >
+                            <Text className='text-xl'>Personal Event Logs</Text>
+                        </TouchableOpacity>
 
+                        <View className='mt-4'>
+                            {events.map(({ eventData, eventLog }, index) => (
+                                <View key={index} style={{ marginBottom: 20 }}>
+                                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{eventData?.name}</Text>
+                                    <Text>Start Time: {formatTimestamp(eventData?.startTime)}</Text>
+                                    <Text>End Time: {formatTimestamp(eventData?.endTime)}</Text>
+                                    <Text>Total Points Earned: {eventLog?.points}</Text>
 
-                <View className='mt-4'>
-                    {events.map(({ eventData, eventLog }, index) => (
-                        <View key={index} style={{ marginBottom: 20 }}>
-                            <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{eventData?.name}</Text>
-                            <Text>Start Time: {formatTimestamp(eventData?.startTime)}</Text>
-                            <Text>End Time: {formatTimestamp(eventData?.endTime)}</Text>
-                            <Text>Total Points Earned: {eventLog?.points}</Text>
-
+                                </View>
+                            ))}
                         </View>
-                    ))}
-                </View>
+                    </View>
+                )}
 
                 <View className='pb-20' />
             </View>

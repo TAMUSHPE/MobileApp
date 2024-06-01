@@ -9,7 +9,7 @@ import { getBlobFromURI, selectFile, uploadFile } from '../../api/fileSelection'
 import { deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 import { CommonMimeTypes } from '../../helpers/validation'
 import { handleLinkPress } from '../../helpers/links';
-import { PublicUserInfo } from '../../types/User';
+import { PublicUserInfo } from '../../types/user';
 import AddFileIcon from '../../../assets/file-circle-plus-solid.svg'
 import DismissibleModal from '../../components/DismissibleModal';
 

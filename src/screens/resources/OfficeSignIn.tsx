@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import { auth } from '../../config/firebaseConfig';
 import { serverTimestamp } from 'firebase/firestore';
-import { OfficerStatus } from '../../types/User';
+import { OfficerStatus } from '../../types/user';
 import DismissibleModal from '../../components/DismissibleModal';
 import { addOfficeHourLog, decrementOfficeCount, fetchOfficerStatus, incrementOfficeCount, updateOfficerStatus } from '../../api/firebaseUtils';
 

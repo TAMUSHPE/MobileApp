@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
-import { AuthStackParams } from '../../types/Navigation';
+import { AuthStackParams } from '../../types/navigation';
 
 const GuestVerification = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [appState, setAppState] = useState(AppState.currentState);

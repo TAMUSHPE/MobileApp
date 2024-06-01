@@ -1,8 +1,8 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native'
 import React, { useCallback, useState } from 'react'
-import { MemberCardProp } from '../types/Navigation'
+import { MemberCardProp } from '../types/navigation'
 import { Images } from '../../assets'
-import { PublicUserInfo } from '../types/User'
+import { PublicUserInfo } from '../types/user'
 import { getMOTM } from '../api/firebaseUtils'
 import { useFocusEffect } from '@react-navigation/core'
 

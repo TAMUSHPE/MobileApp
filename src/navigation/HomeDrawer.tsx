@@ -7,7 +7,7 @@ import { useNavigationState } from '@react-navigation/native';
 import { UserContext } from '../context/UserContext';
 import { auth } from '../config/firebaseConfig';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
-import { HomeDrawerParams } from '../types/Navigation';
+import { HomeDrawerParams } from '../types/navigation';
 import { Images } from '../../assets';
 import TwitterSvg from '../components/TwitterSvg';
 import PublicProfileScreen from "../screens/PublicProfile";

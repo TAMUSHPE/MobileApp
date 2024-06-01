@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated, Switch } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,9 +14,9 @@ import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/f
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
 import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
-import { MainStackParams } from '../../types/Navigation';
-import { Committee } from '../../types/Committees';
-import { MAJORS, classYears } from '../../types/User';
+import { MainStackParams } from '../../types/navigation';
+import { Committee } from '../../types/committees';
+import { MAJORS, classYears } from '../../types/user';
 import { Images } from '../../../assets';
 import DownloadIcon from '../../../assets/arrow-down-solid.svg';
 import UploadFileIcon from '../../../assets/file-arrow-up-solid-black.svg';
@@ -25,6 +25,7 @@ import CustomDropDown from '../../components/CustomDropDown';
 import TwitterSvg from '../../components/TwitterSvg';
 import { Circle, Svg } from 'react-native-svg';
 import DismissibleModal from '../../components/DismissibleModal';
+import * as Clipboard from 'expo-clipboard';
 
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
@@ -157,7 +158,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const [showNamesModal, setShowNamesModal] = useState<boolean>(false);
     const [showBioModal, setShowBioModal] = useState<boolean>(false);
     const [showAcademicInfoModal, setShowAcademicInfoModal] = useState<boolean>(false);
-    const [showCommitteesModal, setShowCommitteesModal] = useState<boolean>(false);
     const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
@@ -252,13 +252,14 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
     const saveChanges = async () => {
         setLoading(true)
         // upload profile picture
-        uploadFile(
-            image!,
-            CommonMimeTypes.IMAGE_FILES,
-            `user-docs/${auth.currentUser?.uid}/user-resume-public`,
-            onProfilePictureUploadSuccess
-        );
-        // uploadResume();
+        if (image) {
+            await uploadFile(
+                image,
+                CommonMimeTypes.IMAGE_FILES,
+                `user-docs/${auth.currentUser?.uid}/user-profile-picture`,
+                onProfilePictureUploadSuccess
+            );
+        }
 
         /**
          * This is some very weird syntax and very javascript specific, so here's an explanation for what's going on:
@@ -447,6 +448,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                             multiline
                             numberOfLines={8}
                             placeholder='Write a short bio...'
+                            placeholderTextColor={darkMode ? "#ddd" : "#000"}
                         />
                     </KeyboardAvoidingView>
                 )}
@@ -474,14 +476,12 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                     onSelect={(item) => setMajor(item.iso)}
                                     searchKey="major"
                                     label="Select major"
-                                    isOpen={openDropdown === 'major'}
-                                    onToggle={() => toggleDropdown('major')}
-                                    title={'Major'}
+                                    isOpen={openDropdown === "major"}
+                                    onToggle={() => toggleDropdown("major")}
+                                    title={"Major"}
                                     selectedItemProp={{ iso: major, value: findMajorByIso(major!)! }}
-                                    dropDownClassName='top-20'
-                                    textClassName='text-black'
-                                    titleClassName='text-black'
-
+                                    dropDownClassName={Platform.OS == "ios" ? "top-20" : undefined}
+                                    darkMode={darkMode}
                                 />
                             </View>
                             <View className='absolute top-24 z-10 w-[80%]'>
@@ -495,10 +495,9 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                     title={"Class Year"}
                                     selectedItemProp={{ iso: classYear }}
                                     displayType='iso'
-                                    dropDownClassName='top-20'
+                                    dropDownClassName={Platform.OS == "ios" ? "top-20" : undefined}
                                     disableSearch
-                                    textClassName='text-black'
-                                    titleClassName='text-black'
+                                    darkMode={darkMode}
                                 />
                             </View>
                         </View>
@@ -512,6 +511,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 visible={showResumeModal}
                 onCancel={() => setShowResumeModal(false)}
                 onDone={() => setShowResumeModal(false)}
+                darkMode={darkMode}
                 content={(
                     <View>
                         <View className='items-center'>
@@ -533,8 +533,8 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                         cx="50"
                                         cy="50"
                                         r="45"
-                                        stroke="#ffffff"
-                                        strokeWidth="4"
+                                        stroke={darkMode ? "#a3a3a3" : "#000000"}
+                                        strokeWidth="3"
                                         fill="transparent"
                                     />
                                 </Svg>
@@ -613,27 +613,9 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                     onPress={() => setShowAcademicInfoModal(true)}
                 />
                 <SettingsSectionTitle text='SHPE Info' darkMode={darkMode} />
-                {/* <View className="max-w-11/12 shadow-sm shadow-slate-300 p-3 mx-3 my-3">
-                    <View className='flex-row items-center mb-6'>
-                        <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
-                    </View>
-                    <View className='flex-row flex-wrap'>
-                        {committees?.map((committeeDocName, index) => {
-                            const committeeData = committeesData.find(c => c.firebaseDocName === committeeDocName);
-                            return (
-                                <ProfileBadge
-                                    badgeClassName='p-2 max-w-2/5 rounded-md mr-4 mb-2'
-                                    textClassName='text-lg'
-                                    text={committeeData?.name || "Unknown Committee"}
-                                    badgeColor={committeeData?.color || ""}
-                                    key={index}
-                                />
-                            );
-                        })}
-                    </View>
-                </View> */}
                 <SettingsButton
-                    mainText='Edit Resume'
+                    mainText='Resume'
+                    subText='Keep your resume updated!'
                     darkMode={darkMode}
                     onPress={() => setShowResumeModal(true)}
                 />
@@ -731,6 +713,7 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
             <SettingsButton
                 mainText={userInfo?.publicInfo?.isEmailPublic ? "Make Email Private" : "Make Email Public"}
+                subText={userInfo?.publicInfo?.isEmailPublic ? "Your email will no longer be visible" : "Your email will be visible to everyone"}
                 onPress={
                     async () => {
                         const updatedPublicData = {
@@ -754,10 +737,14 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 darkMode={darkMode}
             />
 
-            <SettingsListItem
+            <SettingsButton
                 mainText='Unique Identifier'
                 subText={auth.currentUser?.uid ?? "UID"}
                 darkMode={darkMode}
+                onPress={async () => {
+                    Clipboard.setStringAsync(auth.currentUser?.uid ?? "UID")
+                        .then(() => Alert.alert("Copied", "UID Copied to Clipboard"));
+                }}
             />
             <SettingsListItem
                 mainText='Account Creation Time'
@@ -778,9 +765,11 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
 
 
             <SettingsButton
-                mainText={"DELETE ACCOUNT"}
+                mainText={"Delete Account"}
+                mainTextColor='#F11'
                 subText={"This action is irreversible"}
                 onPress={() => {
+                    setDeleteText("");
                     setShowDeleteModal(true);
                 }}
                 darkMode={darkMode}
@@ -792,21 +781,23 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                 setVisible={setShowDeleteModal}
             >
                 <View
-                    className='flex opacity-100 bg-white rounded-md px-6 pt-6'
+                    className={`flex opacity-100 rounded-md px-6 pt-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-primary-bg-light"}`}
                     style={{ maxWidth: 350 }}
                 >
                     {/* Title */}
                     <View className='flex-row items-center mb-4'>
-                        <FontAwesome name="user" color="black" size={30} />
-                        <Text className='text-2xl font-semibold ml-2'>Account Deletion</Text>
+                        <FontAwesome name="user" color={darkMode ? "white" : "black"} size={30} />
+                        <Text className={`text-2xl font-bold ml-2 ${darkMode ? "text-white" : "text-black"}`}>Account Deletion</Text>
                     </View>
 
-                    <Text className='text-xl font-semibold ml-2'>YOU WILL LOSE ALL YOUR POINTS IF YOU DELETE YOUR ACCOUNT</Text>
-                    <Text className='text-xl font-semibold ml-2 mt-4'>Please type "{deleteConfirmationText}" to confirm.</Text>
+                    <Text className={`text-xl font-semibold ml-2 text-[#ff0000]`}>YOU WILL LOSE ALL YOUR POINTS IF YOU DELETE YOUR ACCOUNT</Text>
+                    <Text className={`text-xl ml-2 mt-4 ${darkMode ? "text-neutral-100" : "text-black"}`}>Please type "{deleteConfirmationText}" to confirm.</Text>
 
 
                     <TextInput
-                        className="h-10 border-2 rounded-lg p-2 mt-5"
+                        className={`h-10 border-2 rounded-sm p-2 mt-5 ${darkMode ? "border-neutral-400 bg-neutral-800 text-white" : "border-neutral-800 bg-white text-black"}`}
+                        placeholder='Enter Prompt'
+                        placeholderTextColor={darkMode ? "#bbb" : "#000"}
                         onChangeText={setDeleteText}
                         value={deleteText}
                     />
@@ -822,9 +813,9 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                                 setUserInfo(undefined);
                             }}
                             disabled={deleteText !== deleteConfirmationText}
-                            className={`${deleteText !== deleteConfirmationText ? "bg-gray-500" : "bg-red-700"} rounded-lg justify-center items-center px-4 py-1`}
+                            className={`${deleteText !== deleteConfirmationText ? "bg-neutral-400" : "bg-red-700"} rounded-lg justify-center items-center px-4 py-1`}
                         >
-                            <Text className='text-xl font-bold text-white px-2'>DELETE</Text>
+                            <Text className={`text-xl font-bold px-2 ${deleteText !== deleteConfirmationText ? "text-neutral-300" : "text-white"}`}>DELETE</Text>
                         </TouchableOpacity>
 
 
@@ -832,7 +823,7 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackP
                             onPress={async () => {
                                 setShowDeleteModal(false)
                             }} >
-                            <Text className='text-xl font-bold px-4 py-1'>Cancel</Text>
+                            <Text className={`text-xl font-bold px-4 py-1 ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -868,14 +859,15 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStack
                     onChangeText={setFeedback}
                     value={feedback}
                     placeholder="Type your feedback here"
+                    placeholderTextColor={darkMode ? "#ddd" : "#000"}
                 />
             </View>
             <Pressable
                 onPress={handleFeedbackSubmit}
-                className={`mt-4 rounded-md w-[50%] py-2 items-center justify-center ${feedback.length === 0 ? 'bg-gray-300' : 'bg-pale-blue'}`}
+                className={`mt-4 rounded-md w-[50%] py-2 items-center justify-center ${feedback.length === 0 ? 'bg-neutral-400' : 'bg-pale-blue'}`}
                 disabled={feedback.length === 0}
             >
-                <Text className='text-white text-lg font-semibold'>Submit FeedBack</Text>
+                <Text className={` text-lg font-semibold ${feedback.length === 0 ? 'text-neutral-200' : 'text-white'}`}>Submit FeedBack</Text>
             </Pressable>
         </View>
     );
@@ -932,7 +924,7 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParam
     ];
 
     return (
-        <ScrollView className={`flex-1 px-4 py-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <ScrollView className={`flex-1 px-4 pt-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             {faqData.map((faq, index) => (
                 <TouchableOpacity
                     key={index}
@@ -956,6 +948,7 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParam
                     )}
                 </TouchableOpacity>
             ))}
+            <View className='h-40' />
         </ScrollView>
     );
 };
@@ -980,13 +973,11 @@ const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackPar
                 subText={`${Platform.OS} ${Platform.Version as string}`}
                 darkMode={darkMode}
             />
-
-            <TouchableOpacity
-                className='justify-center ml-5'
+            <SettingsButton
+                mainText='Privacy Policy'
+                darkMode={darkMode}
                 onPress={() => handleLinkPress("https://jasonisazn.github.io/")}
-            >
-                <Text className='text-2xl'>Privacy Policy</Text>
-            </TouchableOpacity>
+            />
         </ScrollView>
     );
 };

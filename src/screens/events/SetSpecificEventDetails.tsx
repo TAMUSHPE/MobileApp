@@ -1,14 +1,14 @@
 import { View, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Switch, ScrollView } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
-import { EventProps, UpdateEventScreenRouteProp } from '../../types/Navigation';
+import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation';
 import { useRoute } from '@react-navigation/core';
 import { UserContext } from '../../context/UserContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import InteractButton from '../../components/InteractButton';
-import { WorkshopType } from '../../types/Events';
+import { WorkshopType } from '../../types/events';
 import { StatusBar } from 'expo-status-bar';
-import { Committee } from '../../types/Committees';
+import { Committee } from '../../types/committees';
 import { getCommittees } from '../../api/firebaseUtils';
 import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
 

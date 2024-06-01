@@ -5,8 +5,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { fetchUsersWithPublicResumes } from '../../api/firebaseUtils'
-import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../../types/User'
-import { ResourcesStackParams } from '../../types/Navigation'
+import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../../types/user'
+import { ResourcesStackParams } from '../../types/navigation'
 import TwitterSvg from '../../components/TwitterSvg'
 import DismissibleModal from '../../components/DismissibleModal';
 import ResumeSubmit from './ResumeSubmit'

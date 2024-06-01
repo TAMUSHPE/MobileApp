@@ -3,11 +3,11 @@ import React, { useEffect, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AdminDashboardParams } from '../../types/Navigation';
+import { AdminDashboardParams } from '../../types/navigation';
 import { fetchEventByName, getMembers } from '../../api/firebaseUtils';
-import { PublicUserInfo } from '../../types/User';
+import { PublicUserInfo } from '../../types/user';
 import MemberCardMultipleSelect from '../../components/MemberCardMultipleSelect';
-import { SHPEEvent } from '../../types/Events';
+import { SHPEEvent } from '../../types/events';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 
 

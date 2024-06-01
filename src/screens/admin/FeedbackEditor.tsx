@@ -1,14 +1,13 @@
-// FeedbackScreen.js
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import { getAllFeedback, removeFeedback } from '../../api/firebaseUtils';
-import { PublicUserInfo } from '../../types/User';
+import { PublicUserInfo } from '../../types/user';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { AdminDashboardParams } from '../../types/Navigation';
+import { AdminDashboardParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-const FeedbackScreen = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const FeedbackEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
     const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
 
     useEffect(() => {
@@ -72,4 +71,4 @@ interface Feedback {
     user: PublicUserInfo
 }
 
-export default FeedbackScreen;
+export default FeedbackEditor;

@@ -1,11 +1,11 @@
 import { View, Text } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react';
 import { useRoute } from '@react-navigation/core';
-import { EventVerificationProps, EventVerificationScreenRouteProp } from '../../types/Navigation'
+import { EventVerificationProps, EventVerificationScreenRouteProp } from '../../types/navigation'
 import { getEvent, signInToEvent, signOutOfEvent } from '../../api/firebaseUtils';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LottieView from "lottie-react-native";
-import { EventLogStatus, getStatusMessage } from '../../types/Events';
+import { EventLogStatus, getStatusMessage } from '../../types/events';
 import { ActivityIndicator } from "react-native";
 import * as Haptics from 'expo-haptics';
 import { StatusBar } from 'expo-status-bar';

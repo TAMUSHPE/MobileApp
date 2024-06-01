@@ -10,7 +10,7 @@ import { auth } from "../../config/firebaseConfig";
 import { initializeCurrentUserData } from "../../api/firebaseUtils";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { getFunctions, httpsCallable } from 'firebase/functions';
-import { AuthStackParams } from "../../types/Navigation";
+import { AuthStackParams } from "../../types/navigation";
 import { Images } from "../../../assets";
 import TextInputWithFloatingTitle from "../../components/TextInputWithFloatingTitle";
 import InteractButton from "../../components/InteractButton";

@@ -6,8 +6,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { auth, db } from "../../config/firebaseConfig"
 import { getPublicUserData } from '../../api/firebaseUtils'
-import { RankChange, PublicUserInfo } from '../../types/User';
-import { ResourcesStackParams } from '../../types/Navigation';
+import { RankChange, PublicUserInfo } from '../../types/user';
+import { ResourcesStackParams } from '../../types/navigation';
 import { Images } from '../../../assets';
 import DismissibleModal from '../../components/DismissibleModal';
 import RankCard from './RankCard';

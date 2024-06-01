@@ -1,11 +1,11 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Events from "../screens/events/Events";
-import { EventsStackParams } from '../types/Navigation';
+import { EventsStackParams } from '../types/navigation';
 import CreateEvent from "../screens/events/CreateEvent";
 import UpdateEvent from "../screens/events/UpdateEvent";
 import EventInfo from "../screens/events/EventInfo";
-import QRCodeManager from "../screens/admin/QRCodeManager";
+import QRCodeManager from "../screens/events/QRCodeManager";
 import SetGeneralEventDetails from "../screens/events/SetGeneralEventDetails";
 import SetSpecificEventDetails from "../screens/events/SetSpecificEventDetails";
 import FinalizeEvent from "../screens/events/FinalizeEvent";

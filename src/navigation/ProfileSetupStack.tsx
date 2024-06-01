@@ -1,6 +1,6 @@
 import React from "react";
 import { createStackNavigator } from '@react-navigation/stack';
-import { ProfileSetupStackParams } from "../types/Navigation";
+import { ProfileSetupStackParams } from "../types/navigation";
 import { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupResume, SetupInterests } from "../screens/onboarding/ProfileSetup";
 import LoginScreen from "../screens/onboarding/Login";
 

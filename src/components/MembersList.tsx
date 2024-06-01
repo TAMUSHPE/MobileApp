@@ -1,9 +1,9 @@
 import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
-import { MemberListProps } from '../types/Navigation'
+import { MemberListProps } from '../types/navigation'
 import MemberCard from './MemberCard'
-import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../types/User';
+import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../types/user';
 import CustomDropDownMenu, { CustomDropDownMethods } from './CustomDropDown';
 
 const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, navigation }) => {
