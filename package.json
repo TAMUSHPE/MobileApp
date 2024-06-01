@@ -97,7 +97,7 @@
     "react-native-svg-transformer": "^1.2.0",
     "sharp-cli": "^4.1.1",
     "tailwindcss": "^3.3.2",
-    "ts-node": "^10.9.1",
+    "ts-node": "^10.9.2",
     "typescript": "~5.3.3"
   },
   "private": true
