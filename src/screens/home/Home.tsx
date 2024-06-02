@@ -59,6 +59,13 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             >
                 <Text>MemberSHPE Screen</Text>
             </TouchableOpacity>
+
+            <TouchableOpacity
+                className='bg-pale-blue p-2 rounded-md m-2'
+                onPress={() => navigation.navigate("Members")}
+            >
+                <Text>Member</Text>
+            </TouchableOpacity>
             <Ishpe navigation={navigation} />
 
             {/* <FeaturedSlider route={route} /> */}

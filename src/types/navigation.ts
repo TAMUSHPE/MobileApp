@@ -9,16 +9,14 @@ import { Committee } from "./committees";
 import { PublicUserInfo, UserFilter } from "./user";
 import { SHPEEvent } from "./events";
 
-// Stacks
+
 export type MainStackParams = {
     HomeBottomTabs: undefined;
-    QRCodeScanningScreen: undefined;
     EventVerificationScreen: {
         id: string;
         mode: "sign-in" | "sign-out";
     };
-    PublicProfile: { uid: string; };
-    Members: MembersProps;
+
 };
 
 export type AuthStackParams = {
@@ -102,6 +100,7 @@ export type HomeStackParams = {
     Home: undefined;
     PublicProfile: { uid: string; };
     MemberSHPE: undefined;
+    Members: undefined;
 
     // Admin Dashboard Screens
     AdminDashboard: undefined;

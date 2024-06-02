@@ -18,6 +18,7 @@ import InstagramPoints from "../screens/admin/InstagramPoints";
 import UpdateEvent from "../screens/events/UpdateEvent";
 import QRCodeManager from "../screens/events/QRCodeManager";
 import MemberSHPE from "../screens/Committees/MemberSHPE";
+import Members from "../screens/Members";
 
 const HomeStack = () => {
     const Stack = createNativeStackNavigator<HomeStackParams>();
@@ -26,6 +27,8 @@ const HomeStack = () => {
             <Stack.Screen name="Home" component={Home} />
             <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
             <Stack.Screen name="MemberSHPE" component={MemberSHPE} />
+            <Stack.Screen name="Members" component={Members} />
+
 
             {/* Event Screens */}
             <Stack.Screen name="UpdateEvent" component={UpdateEvent} />

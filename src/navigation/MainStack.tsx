@@ -17,22 +17,12 @@ const MainStack = () => {
     return (
         <Stack.Navigator initialRouteName="HomeBottomTabs">
             {/* Main components */}
-            <Stack.Group
-                screenOptions={{
-                    headerShown: false
-                }}
-            >
-                <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} options={{ title: "" }} />
+            <Stack.Group screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} />
             </Stack.Group>
 
 
             <Stack.Screen name="EventVerificationScreen" component={EventVerification} options={{ headerShown: false }} />
-            <Stack.Screen name="PublicProfile" component={PublicProfileScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="QRCodeScanningScreen" component={QRCodeScanningScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="Members" component={Members} options={{ headerShown: false }} />
-
-            {/* Settings Screens */}
-
         </Stack.Navigator>
     );
 };

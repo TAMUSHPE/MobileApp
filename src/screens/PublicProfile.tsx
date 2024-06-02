@@ -214,13 +214,18 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<PublicProfil
 
                 <SafeAreaView edges={['top']} >
                     <View className='flex-row justify-between items-center mx-5 mt-1'>
-                        <TouchableOpacity
-                            onPress={() => navigation.goBack()}
-                            className="rounded-full w-10 h-10 justify-center items-center"
-                            style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                        >
-                            <Octicons name="chevron-left" size={30} color="white" />
-                        </TouchableOpacity>
+                        {!isCurrentUser ?
+                            <TouchableOpacity
+                                onPress={() => navigation.goBack()}
+                                className="rounded-full w-10 h-10 justify-center items-center"
+                                style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                            >
+                                <Octicons name="chevron-left" size={30} color="white" />
+                            </TouchableOpacity>
+                            :
+                            <View />
+                        }
+
                         <View className='flex-col relative items-center'>
                             {isCurrentUser &&
                                 <TouchableOpacity
