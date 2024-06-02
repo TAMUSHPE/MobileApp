@@ -1,9 +1,9 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { MemberCardMultipleSelectProp, MemberCardProp } from '../types/navigation'
 import { Images } from '../../assets'
 import TwitterSvg from './TwitterSvg'
 import { getBadgeColor, isMemberVerified } from '../helpers/membership'
+import { PublicUserInfo } from '../types/user'
 
 const MemberCardMultipleSelect: React.FC<MemberCardMultipleSelectProp> = ({ userData, handleCardPress }) => {
     if (!userData) { return }
@@ -50,6 +50,15 @@ const MemberCardMultipleSelect: React.FC<MemberCardMultipleSelectProp> = ({ user
             </View>
         </TouchableOpacity>
     )
+}
+
+interface SelectedPublicUserInfo extends PublicUserInfo {
+    selected?: boolean;
+}
+
+export type MemberCardMultipleSelectProp = {
+    handleCardPress?: (uid: string | void) => void;
+    userData?: SelectedPublicUserInfo;
 }
 
 export default MemberCardMultipleSelect

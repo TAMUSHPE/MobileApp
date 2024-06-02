@@ -6,14 +6,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext'
 import { auth } from '../../config/firebaseConfig';
 import { getCommittees, getUser } from '../../api/firebaseUtils'
-import { CommitteesListProps } from '../../types/navigation'
 import { Committee } from "../../types/committees"
 import CommitteeCard from './CommitteeCard'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Images } from '../../../assets';
+import { CommitteesStackParams } from '../../types/navigation';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 
-const Committees: React.FC<CommitteesListProps> = ({ navigation }) => {
+const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams>) => {
     const [committees, setCommittees] = useState<Committee[]>([]);
     const [loading, setLoading] = useState(true);
     const { userInfo, setUserInfo } = useContext(UserContext)!;

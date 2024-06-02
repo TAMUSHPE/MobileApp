@@ -3,7 +3,7 @@ import { View, Text, Image } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Octicons } from '@expo/vector-icons';
 import { PublicProfileStack } from './PublicProfileStack';
-import { InvolvementStack } from './CommitteesStack';
+import { CommitteesStack } from './CommitteesStack';
 import { ResourcesStack } from './ResourcesStack';
 import { EventsStack } from './EventsStack';
 import { HomeStack } from './HomeStack';
@@ -67,7 +67,7 @@ const HomeBottomTabs = () => {
                 <BottomTabs.Screen name="Home" component={HomeStack} />
                 <BottomTabs.Screen name="ResourcesStack" component={ResourcesStack} />
                 <BottomTabs.Screen name="Events" component={EventsStack} />
-                <BottomTabs.Screen name="Committees" component={InvolvementStack} />
+                <BottomTabs.Screen name="Committees" component={CommitteesStack} />
                 <BottomTabs.Screen name="Profile" component={PublicProfileStack} />
             </BottomTabs.Navigator >
         </View>

@@ -7,10 +7,12 @@ import { deleteField, doc, updateDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
 import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
 import { handleLinkPress } from '../../helpers/links';
-import { ResumeProps } from '../../types/navigation'
+import { ResourcesStackParams } from '../../types/navigation'
 import TwitterSvg from '../../components/TwitterSvg';
 import { Images } from '../../../assets';
 import DismissibleModal from '../../components/DismissibleModal';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { PublicUserInfo } from '../../types/user';
 
 const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ resumeData, navigation, onResumeRemoved }) => {
     // Data related to user's resume
@@ -138,5 +140,12 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
         </View>
     )
 }
+
+
+export type ResumeProps = {
+    resumeData: PublicUserInfo
+    navigation: NativeStackNavigationProp<ResourcesStackParams>
+}
+
 
 export default ResumeCard

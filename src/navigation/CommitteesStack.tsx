@@ -6,18 +6,26 @@ import PublicProfileScreen from "../screens/PublicProfile";
 import CommitteeEditor from "../screens/admin/CommitteeEditor";
 import EventInfo from "../screens/events/EventInfo";
 import CommitteesScreen from "../screens/Committees/Committees";
+import UpdateEvent from "../screens/events/UpdateEvent";
+import QRCodeManager from "../screens/events/QRCodeManager";
 
-const InvolvementStack = () => {
+const CommitteesStack = () => {
     const Stack = createNativeStackNavigator<CommitteesStackParams>();
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="CommitteesScreen" component={CommitteesScreen} />
             <Stack.Screen name="CommitteeScreen" component={CommitteeScreen} />
-            <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
             <Stack.Screen name="CommitteeEditor" component={CommitteeEditor} />
+
+
+            {/* Event Screens */}
+            <Stack.Screen name="UpdateEvent" component={UpdateEvent} />
             <Stack.Screen name="EventInfo" component={EventInfo} />
+            <Stack.Screen name="QRCode" component={QRCodeManager} />
+
+            <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
         </Stack.Navigator>
     );
 }
 
-export { InvolvementStack }
+export { CommitteesStack }

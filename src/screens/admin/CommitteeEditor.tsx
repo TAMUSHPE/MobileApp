@@ -4,12 +4,14 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Octicons, FontAwesome } from '@expo/vector-icons';
 import { deleteCommittee, getLeads, getPublicUserData, getRepresentatives, getTeamMembers, resetCommittee, setCommitteeData } from '../../api/firebaseUtils';
 import { Committee, committeeLogos, getLogoComponent } from '../../types/committees';
-import { CommitteeEditorProps } from '../../types/navigation';
 import { PublicUserInfo } from '../../types/user';
 import MembersList from '../../components/MembersList';
 import CustomColorPicker from '../../components/CustomColorPicker';
 import DismissibleModal from '../../components/DismissibleModal';
 import CommitteeTeamCard from '../Committees/CommitteeTeamCard';
+import { CommitteesStackParams } from '../../types/navigation';
+import { RouteProp } from '@react-navigation/core';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const committeeData = route?.params?.committee;
@@ -777,5 +779,11 @@ interface TeamMembersState {
     representatives: (PublicUserInfo | undefined)[];
     head: PublicUserInfo | null | undefined;
 }
+
+export type CommitteeEditorProps = {
+    route: RouteProp<CommitteesStackParams, 'CommitteeEditor'>;
+    navigation: NativeStackNavigationProp<CommitteesStackParams, 'CommitteeEditor'>;
+};
+
 
 export default CommitteeEditor

@@ -10,6 +10,9 @@ import SetGeneralEventDetails from "../screens/events/SetGeneralEventDetails";
 import SetSpecificEventDetails from "../screens/events/SetSpecificEventDetails";
 import FinalizeEvent from "../screens/events/FinalizeEvent";
 import SetLocationEventDetails from "../screens/events/SetLocationEventDetails";
+import QRCodeScanningScreen from "../screens/events/QRCodeScanningScreen";
+import EventVerification from "../screens/events/EventVerification";
+import PublicProfileScreen from "../screens/PublicProfile";
 
 const EventsStack = () => {
     const Stack = createNativeStackNavigator<EventsStackParams>();
@@ -19,6 +22,7 @@ const EventsStack = () => {
             <Stack.Screen name="UpdateEvent" component={UpdateEvent} />
             <Stack.Screen name="EventInfo" component={EventInfo} />
             <Stack.Screen name="QRCode" component={QRCodeManager} />
+            <Stack.Screen name="QRCodeScanningScreen" component={QRCodeScanningScreen} />
 
             {/* Event Creation Screens */}
             <Stack.Group>
@@ -27,7 +31,10 @@ const EventsStack = () => {
                 <Stack.Screen name="SetSpecificEventDetails" component={SetSpecificEventDetails} />
                 <Stack.Screen name="setLocationEventDetails" component={SetLocationEventDetails} />
                 <Stack.Screen name="FinalizeEvent" component={FinalizeEvent} />
+                <Stack.Screen name="EventVerificationScreen" component={EventVerification} />
             </Stack.Group>
+
+            <Stack.Screen name="PublicProfile" component={PublicProfileScreen}></Stack.Screen>
         </Stack.Navigator>
     );
 };

@@ -1,6 +1,6 @@
 import { View, Text, Alert, ActivityIndicator, Button } from 'react-native';
 import React, { useState, useRef } from 'react';
-import { useRoute } from '@react-navigation/core';
+import { RouteProp, useRoute } from '@react-navigation/core';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TouchableOpacity, GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -8,12 +8,18 @@ import { Octicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import DismissibleModal from '../../components/DismissibleModal';
-import { QRCodeScreenRouteProp, QRCodeProps } from '../../types/navigation';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { EventsStackParams } from '../../types/navigation';
+
+export type QRCodeScreenRouteProp = {
+    route: RouteProp<EventsStackParams, 'QRCode'>;
+    navigation: NativeStackNavigationProp<EventsStackParams, 'QRCode'>;
+};
+
 
 type QRCodeRef = { toDataURL: (callback: (data: string) => void) => void };
 
-const QRCodeManager = ({ navigation }: QRCodeProps) => {
-    const route = useRoute<QRCodeScreenRouteProp>();
+const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) => {
     const { event } = route.params;
     const [loading, setLoading] = useState<boolean>(false);
 

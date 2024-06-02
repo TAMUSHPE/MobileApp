@@ -25,10 +25,8 @@ const HomeStack = () => {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="Home" component={Home} />
-            <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
             <Stack.Screen name="MemberSHPE" component={MemberSHPE} />
             <Stack.Screen name="Members" component={Members} />
-
 
             {/* Event Screens */}
             <Stack.Screen name="UpdateEvent" component={UpdateEvent} />
@@ -49,6 +47,8 @@ const HomeStack = () => {
                 <Stack.Screen name="FeedbackEditor" component={FeedbackEditor} />
                 <Stack.Screen name="InstagramPoints" component={InstagramPoints} />
             </Stack.Group>
+
+            <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
         </Stack.Navigator>
     );
 };

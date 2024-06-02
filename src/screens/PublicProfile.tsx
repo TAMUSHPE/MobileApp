@@ -1,7 +1,7 @@
 import { View, Text, ActivityIndicator, Image, Alert, TouchableOpacity, Pressable, TextInput, ScrollView, RefreshControl } from 'react-native';
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/core';
+import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RouteProp, useFocusEffect } from '@react-navigation/core';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
@@ -12,7 +12,7 @@ import { auth } from '../config/firebaseConfig';
 import { getCommittees, getPublicUserData, getUser, queryUserEventLogs, setUserRoles } from '../api/firebaseUtils';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
 import { handleLinkPress } from '../helpers/links';
-import { MembersScreenRouteProp, PublicProfileStackParams } from '../types/navigation';
+import { PublicProfileStackParams } from '../types/navigation';
 import { PublicUserInfo, Roles } from '../types/user';
 import { Committee } from '../types/committees';
 import { Images } from '../../assets';
@@ -22,11 +22,13 @@ import DismissibleModal from '../components/DismissibleModal';
 import { UserEventData } from '../types/events';
 import { Timestamp } from 'firebase/firestore';
 
+export type PublicProfileScreenProps = {
+    route: RouteProp<PublicProfileStackParams, 'PublicProfile'>;
+    navigation: NativeStackNavigationProp<PublicProfileStackParams, 'PublicProfile'>;
+};
 
-
-const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<PublicProfileStackParams>) => {
+const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, navigation }) => {
     // Data related to public profile user
-    const route = useRoute<MembersScreenRouteProp>();
     const { uid } = route.params;
     const [publicUserData, setPublicUserData] = useState<PublicUserInfo | undefined>();
     const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, isStudent, committees, pointsRank, isEmailPublic } = publicUserData || {};
