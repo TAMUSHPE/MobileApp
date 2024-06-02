@@ -14,6 +14,7 @@ import DismissibleModal from '../../components/DismissibleModal';
 import { Pressable } from 'react-native';
 import { LinkData } from '../../types/links';
 import { fetchLink } from '../../api/firebaseUtils';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const linkIDs = ["6", "7"]; // ids reserved for TAMU and SHPE National links
 
@@ -155,7 +156,7 @@ const MemberSHPE = () => {
     return (
         <ScrollView>
             {/* Not Verified Member */}
-            <View className='border-b pb-4'>
+            <SafeAreaView className='border-b pb-4' edges={['top']}>
                 {!isVerified && (
                     <View className='mt-5'>
                         <View className='px-8'>
@@ -216,7 +217,7 @@ const MemberSHPE = () => {
                         </View>
                     </View>
                 )}
-            </View>
+            </SafeAreaView>
 
             {/* TAMU Chapter Instructions */}
             <View className='mx-6 mt-8 bg-white shadow-md shadow-slate-300 px-4 py-3 rounded-lg border-4 border-maroon'>

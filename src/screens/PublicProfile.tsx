@@ -12,7 +12,7 @@ import { auth } from '../config/firebaseConfig';
 import { getCommittees, getPublicUserData, getUser, queryUserEventLogs, setUserRoles } from '../api/firebaseUtils';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
 import { handleLinkPress } from '../helpers/links';
-import { HomeDrawerParams, MembersScreenRouteProp } from '../types/navigation';
+import { MembersScreenRouteProp, PublicProfileStackParams } from '../types/navigation';
 import { PublicUserInfo, Roles } from '../types/user';
 import { Committee } from '../types/committees';
 import { Images } from '../../assets';
@@ -24,7 +24,7 @@ import { Timestamp } from 'firebase/firestore';
 
 
 
-const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerParams>) => {
+const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<PublicProfileStackParams>) => {
     // Data related to public profile user
     const route = useRoute<MembersScreenRouteProp>();
     const { uid } = route.params;
@@ -224,7 +224,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
                         <View className='flex-col relative items-center'>
                             {isCurrentUser &&
                                 <TouchableOpacity
-                                    onPress={() => navigation.navigate("ProfileSettingsScreen")}
+                                    onPress={() => navigation.navigate("SettingsScreen")}
                                     className="rounded-md px-3 py-2"
                                     style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
                                 >
@@ -307,7 +307,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
 
                 {committees && committees.length > 0 && (
                     <View>
-                        <Text className='text-2xl italic mt-5'>Involvement</Text>
+                        <Text className='text-2xl italic mt-5'>Committees</Text>
                         <View className='flex-row flex-wrap mt-2'>
                             {committees?.map((committeeName, index) => {
                                 const committeeData = committeesData.find(c => c.firebaseDocName === committeeName);

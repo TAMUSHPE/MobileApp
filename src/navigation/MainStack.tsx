@@ -3,11 +3,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { UserContext } from "../context/UserContext";
 import { MainStackParams } from '../types/navigation';
 import HomeBottomTabs from "./HomeBottomTabs";
-import AdminDashboardStack from "./AdminDashboardStack";
 import EventVerification from "../screens/events/EventVerification";
 import { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen, FAQSettingsScreen, FeedBackSettingsScreen } from "../screens/home/Settings";
 import PublicProfileScreen from "../screens/PublicProfile";
 import QRCodeScanningScreen from "../screens/events/QRCodeScanningScreen";
+import Members from "../screens/Members";
 
 const MainStack = () => {
     const Stack = createNativeStackNavigator<MainStackParams>();
@@ -23,32 +23,15 @@ const MainStack = () => {
                 }}
             >
                 <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} options={{ title: "" }} />
-                <Stack.Screen name="AdminDashboardStack" component={AdminDashboardStack} options={{ title: "" }} />
             </Stack.Group>
 
-            {/* Settings Screens */}
-            <Stack.Group
-                screenOptions={{
-                    headerShown: true,
-                    headerStyle: {
-                        backgroundColor: darkMode ? "#2a2a2a" : "#FFF",
-                    },
-                    headerTintColor: darkMode ? "#F2F2F2" : "#000",
-
-                }}
-            >
-                <Stack.Screen name="SettingsScreen" component={SettingsScreen} options={{ title: "Settings" }} />
-                <Stack.Screen name="ProfileSettingsScreen" component={ProfileSettingsScreen} options={{ title: "Profile Settings" }} />
-                <Stack.Screen name="DisplaySettingsScreen" component={DisplaySettingsScreen} options={{ title: "Display Settings" }} />
-                <Stack.Screen name="FeedbackSettingsScreen" component={FeedBackSettingsScreen} options={{ title: "Feedback" }} />
-                <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} options={{ title: "Account Settings/Info" }} />
-                <Stack.Screen name="AboutSettingsScreen" component={AboutSettingsScreen} options={{ title: "About" }} />
-                <Stack.Screen name="FAQSettingsScreen" component={FAQSettingsScreen} options={{ title: "FAQ" }} />
-            </Stack.Group>
 
             <Stack.Screen name="EventVerificationScreen" component={EventVerification} options={{ headerShown: false }} />
             <Stack.Screen name="PublicProfile" component={PublicProfileScreen} options={{ headerShown: false }} />
             <Stack.Screen name="QRCodeScanningScreen" component={QRCodeScanningScreen} options={{ headerShown: false }} />
+            <Stack.Screen name="Members" component={Members} options={{ headerShown: false }} />
+
+            {/* Settings Screens */}
 
         </Stack.Navigator>
     );

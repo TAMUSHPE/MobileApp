@@ -9,7 +9,7 @@ import { PublicUserInfo } from '../../types/user';
 import MembersList from '../../components/MembersList';
 import CustomColorPicker from '../../components/CustomColorPicker';
 import DismissibleModal from '../../components/DismissibleModal';
-import CommitteeTeamCard from '../involvement/CommitteeTeamCard';
+import CommitteeTeamCard from '../Committees/CommitteeTeamCard';
 
 const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const committeeData = route?.params?.committee;

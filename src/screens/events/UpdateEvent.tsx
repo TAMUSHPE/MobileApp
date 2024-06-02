@@ -258,7 +258,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     <SafeAreaView edges={['top']}>
                         <View className='flex-row  mx-5 mt-1'>
                             <TouchableOpacity
-                                onPress={() => navigation.navigate("EventsScreen")}
+                                onPress={() => navigation.goBack()}
                                 className="rounded-full w-10 h-10 justify-center items-center"
                                 style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
                             >

@@ -14,7 +14,7 @@ import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/f
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
 import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
-import { MainStackParams } from '../../types/navigation';
+import { MainStackParams, PublicProfileStackParams } from '../../types/navigation';
 import { Committee } from '../../types/committees';
 import { MAJORS, classYears } from '../../types/user';
 import { Images } from '../../../assets';
@@ -30,8 +30,8 @@ import * as Clipboard from 'expo-clipboard';
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
  */
-const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
-    const { userInfo } = useContext(UserContext)!;
+const SettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProfileStackParams>) => {
+    const { userInfo, signOutUser } = useContext(UserContext)!;
 
     const { name, roles, photoURL, chapterExpiration, nationalExpiration } = userInfo?.publicInfo ?? {};
     const isOfficer = roles ? roles.officer : false;
@@ -114,6 +114,12 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>)
                 subText='Information about the app'
                 darkMode={darkMode}
                 onPress={() => navigation.navigate("AboutSettingsScreen")}
+            />
+
+            <SettingsButton
+                mainText='Sign out'
+                darkMode={darkMode}
+                onPress={() => signOutUser(true)}
             />
         </ScrollView>
     )

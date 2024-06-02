@@ -11,24 +11,14 @@ import { SHPEEvent } from "./events";
 
 // Stacks
 export type MainStackParams = {
-    HomeDrawer: HomeDrawerParams;
     HomeBottomTabs: undefined;
-    AdminDashboardStack: undefined;
-    SettingsScreen: undefined;
-    ProfileSettingsScreen: undefined;
-    DisplaySettingsScreen: undefined;
-    AccountSettingsScreen: undefined;
-    FeedbackSettingsScreen: undefined;
-    FAQSettingsScreen: undefined;
-    AboutSettingsScreen: undefined;
     QRCodeScanningScreen: undefined;
     EventVerificationScreen: {
         id: string;
         mode: "sign-in" | "sign-out";
     };
-    PublicProfile: {
-        uid: string;
-    };
+    PublicProfile: { uid: string; };
+    Members: MembersProps;
 };
 
 export type AuthStackParams = {
@@ -42,11 +32,20 @@ export type AuthStackParams = {
     GuestRecoveryAccount: undefined;
 };
 
-export type MembersStackParams = {
-    MembersScreen: undefined;
-    PublicProfile: {
-        uid: string;
-    }
+export type PublicProfileStackParams = {
+    PublicProfile: { uid: string; }
+    SettingsScreen: undefined;
+    PersonalEventLogScreen: undefined;
+
+    // Settings Screens
+    ProfileSettingsScreen: undefined;
+    DisplaySettingsScreen: undefined;
+    AccountSettingsScreen: undefined;
+    FeedbackSettingsScreen: undefined;
+    FAQSettingsScreen: undefined;
+    AboutSettingsScreen: undefined;
+
+
 };
 
 export type ProfileSetupStackParams = {
@@ -70,8 +69,8 @@ export type ResourcesStackParams = {
 }
 
 
-export type InvolvementStackParams = {
-    InvolvementScreen: undefined;
+export type CommitteesStackParams = {
+    CommitteesScreen: undefined;
     CommitteeScreen: {
         committee: Committee;
     };
@@ -101,13 +100,10 @@ export type EventsStackParams = {
 
 export type HomeStackParams = {
     Home: undefined;
-    PublicProfile: {
-        uid: string;
-    }
-    EventInfo: { eventId: string };
-}
+    PublicProfile: { uid: string; };
+    MemberSHPE: undefined;
 
-export type AdminDashboardParams = {
+    // Admin Dashboard Screens
     AdminDashboard: undefined;
     MOTMEditor: undefined;
     ResumeDownloader: undefined;
@@ -118,26 +114,14 @@ export type AdminDashboardParams = {
     CommitteeConfirm: undefined;
     ResumeConfirm: undefined;
     ShirtConfirm: undefined;
-    Home: undefined;
-    PublicProfile: {
-        uid: string;
-    }
     InstagramPoints: undefined;
+
+    // Event Screens
+    EventInfo: { eventId: string };
+    UpdateEvent: { event: SHPEEvent };
+    QRCode: { event: SHPEEvent };
+
 }
-
-// Drawers
-export type HomeDrawerParams = {
-    HomeStack: HomeStackParams;
-    Logout: undefined;
-    AdminDashboardStack: undefined;
-    PublicProfile: {
-        uid: string;
-    }
-
-    ProfileSettingsScreen: undefined;
-    PersonalEventLogScreen: undefined;
-};
-
 
 // Bottom Tabs
 export type HomeBottomTabParams = {
@@ -172,7 +156,7 @@ export type TestBankProps = {
 export type MembersProps = {
     userData?: PublicUserInfo
     handleCardPress?: (uid: string) => string | void;
-    navigation?: NativeStackNavigationProp<MembersStackParams>
+    navigation?: NativeStackNavigationProp<MainStackParams>
     officersList?: PublicUserInfo[]
     membersList?: PublicUserInfo[]
     loadMoreUsers?: () => void;
@@ -190,7 +174,7 @@ export type MembersProps = {
 export type MemberListProps = {
     handleCardPress: (uid: string) => string | void;
     users: PublicUserInfo[];
-    navigation?: NativeStackNavigationProp<MembersStackParams>
+    navigation?: NativeStackNavigationProp<MainStackParams>
 }
 
 interface SelectedPublicUserInfo extends PublicUserInfo {
@@ -222,7 +206,7 @@ export type EventProps = {
 
 export type CommitteeTeamCardProps = {
     userData: PublicUserInfo;
-    navigation?: NativeStackNavigationProp<InvolvementStackParams>
+    navigation?: NativeStackNavigationProp<CommitteesStackParams>
 }
 
 
@@ -238,23 +222,23 @@ export type QRCodeProps = {
 }
 
 export type CommitteeEditorProps = {
-    route: RouteProp<InvolvementStackParams, 'CommitteeEditor'>;
-    navigation: NativeStackNavigationProp<InvolvementStackParams, 'CommitteeEditor'>;
+    route: RouteProp<CommitteesStackParams, 'CommitteeEditor'>;
+    navigation: NativeStackNavigationProp<CommitteesStackParams, 'CommitteeEditor'>;
 };
 
 
-export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScreen">;
+export type SettingsProps = NativeStackScreenProps<PublicProfileStackParams, "SettingsScreen">;
 
 // routes prop for screens
-export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
-export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
-export type CommitteeScreenRouteProp = RouteProp<InvolvementStackParams, "CommitteeScreen">;
+export type SettingsScreenRouteProp = RouteProp<PublicProfileStackParams, "SettingsScreen">;
+export type MembersScreenRouteProp = RouteProp<PublicProfileStackParams, "PublicProfile">;
+export type CommitteeScreenRouteProp = RouteProp<CommitteesStackParams, "CommitteeScreen">;
 export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;
 export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "EventInfo">;
 export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;
 export type QRCodeScreenRouteProp = RouteProp<EventsStackParams, "QRCode">;
-export type CommitteeEditorRouteProp = RouteProp<InvolvementStackParams, 'CommitteeEditor'>;
-export type CommitteeEditorNavigationProp = NativeStackNavigationProp<InvolvementStackParams, 'CommitteeEditor'>;
-export type CommitteeScreenProps = NativeStackScreenProps<InvolvementStackParams, 'CommitteeScreen'>;
-export type CommitteesListProps = { navigation: NativeStackNavigationProp<InvolvementStackParams, 'InvolvementScreen'>; };
-export type InvolvementScreenProps = NativeStackScreenProps<InvolvementStackParams, 'InvolvementScreen'>;
+export type CommitteeEditorRouteProp = RouteProp<CommitteesStackParams, 'CommitteeEditor'>;
+export type CommitteeEditorNavigationProp = NativeStackNavigationProp<CommitteesStackParams, 'CommitteeEditor'>;
+export type CommitteeScreenProps = NativeStackScreenProps<CommitteesStackParams, 'CommitteeScreen'>;
+export type CommitteesListProps = { navigation: NativeStackNavigationProp<CommitteesStackParams, 'CommitteesScreen'>; };
+export type CommitteesScreenScreenProps = NativeStackScreenProps<CommitteesStackParams, 'CommitteesScreen'>;

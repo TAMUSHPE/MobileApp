@@ -21,7 +21,7 @@ import { PublicUserInfo } from '../../types/user';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 import MembersList from '../../components/MembersList';
 
-const EventInfo = ({ navigation }: EventProps) => {
+const EventInfo = ({ navigation }: any) => {
     const route = useRoute<SHPEEventScreenRouteProp>();
     const { eventId } = route.params;
     const { userInfo } = useContext(UserContext)!;
