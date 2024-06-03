@@ -80,7 +80,7 @@ const TestCard: React.FC<TestBankProps> = ({ testData }) => {
     )
 }
 
-export type TestBankProps = {
+type TestBankProps = {
     testData: Test;
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }

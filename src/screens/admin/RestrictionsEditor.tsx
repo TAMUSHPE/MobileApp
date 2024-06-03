@@ -2,7 +2,7 @@ import { View, Text, Image, TouchableOpacity, ScrollView, Modal } from 'react-na
 import React, { useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { AdminDashboardParams } from '../../types/navigation';
+import { HomeStackParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MembersList from '../../components/MembersList';
 import { PublicUserInfo } from '../../types/user';
@@ -12,7 +12,7 @@ import DismissibleModal from '../../components/DismissibleModal';
 
 
 
-const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const [members, setMembers] = useState<PublicUserInfo[]>([])
     const [watchList, setWatchList] = useState<PublicUserInfo[]>([])
     const [blackList, setBlackList] = useState<PublicUserInfo[]>([])

@@ -22,7 +22,7 @@ import { CommitteesStackParams } from '../../types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 
-const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
+const Committee: React.FC<CommitteeScreenRouteProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
 
     const { name, color, logo, description, memberApplicationLink, representativeApplicationLink, leadApplicationLink, firebaseDocName, isOpen, memberCount } = initialCommittee;
@@ -449,7 +449,7 @@ interface TeamMembersState {
     head: PublicUserInfo | null | undefined;
 }
 
-export type CommitteeScreenProps = {
+type CommitteeScreenRouteProps = {
     route: RouteProp<CommitteesStackParams, 'CommitteeScreen'>;
     navigation: NativeStackNavigationProp<CommitteesStackParams, 'CommitteeScreen'>;
 };

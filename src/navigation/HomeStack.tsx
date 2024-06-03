@@ -17,7 +17,7 @@ import FeedbackEditor from "../screens/admin/FeedbackEditor";
 import InstagramPoints from "../screens/admin/InstagramPoints";
 import UpdateEvent from "../screens/events/UpdateEvent";
 import QRCodeManager from "../screens/events/QRCodeManager";
-import MemberSHPE from "../screens/Committees/MemberSHPE";
+import MemberSHPE from "../screens/home/MemberSHPE";
 import Members from "../screens/Members";
 
 const HomeStack = () => {

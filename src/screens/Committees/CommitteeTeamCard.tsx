@@ -55,7 +55,7 @@ const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigat
     )
 }
 
-export type CommitteeTeamCardProps = {
+type CommitteeTeamCardProps = {
     userData: PublicUserInfo;
     navigation?: NativeStackNavigationProp<CommitteesStackParams>
 }

@@ -407,7 +407,7 @@ const formatWeekRange = (startDate: Date) => {
 
 type SHPEEventWithCommitteeData = SHPEEvent & { committeeData?: Committee };
 
-export type IShpeProps = {
+type IShpeProps = {
     navigation?: NativeStackNavigationProp<HomeStackParams>
 }
 

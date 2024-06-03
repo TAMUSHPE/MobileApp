@@ -354,7 +354,7 @@ const EventInfo: React.FC<EventScreenRouteProp> = ({ route, navigation }) => {
     )
 }
 
-export type EventScreenRouteProp = {
+type EventScreenRouteProp = {
     route: RouteProp<EventsStackParams, 'EventInfo'>;
     navigation: NativeStackNavigationProp<EventsStackParams, 'EventInfo'>;
 };

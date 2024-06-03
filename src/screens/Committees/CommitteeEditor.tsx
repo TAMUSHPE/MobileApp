@@ -8,7 +8,7 @@ import { PublicUserInfo } from '../../types/user';
 import MembersList from '../../components/MembersList';
 import CustomColorPicker from '../../components/CustomColorPicker';
 import DismissibleModal from '../../components/DismissibleModal';
-import CommitteeTeamCard from '../Committees/CommitteeTeamCard';
+import CommitteeTeamCard from './CommitteeTeamCard';
 import { CommitteesStackParams } from '../../types/navigation';
 import { RouteProp } from '@react-navigation/core';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -780,7 +780,7 @@ interface TeamMembersState {
     head: PublicUserInfo | null | undefined;
 }
 
-export type CommitteeEditorProps = {
+type CommitteeEditorProps = {
     route: RouteProp<CommitteesStackParams, 'CommitteeEditor'>;
     navigation: NativeStackNavigationProp<CommitteesStackParams, 'CommitteeEditor'>;
 };

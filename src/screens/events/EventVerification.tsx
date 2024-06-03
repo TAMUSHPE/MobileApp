@@ -157,7 +157,7 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
 };
 
 
-export type EventVerificationScreenRouteProp = {
+type EventVerificationScreenRouteProp = {
     route: RouteProp<MainStackParams, 'EventVerificationScreen'>;
     navigation: NativeStackNavigationProp<MainStackParams, 'EventVerificationScreen'>;
 };

@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CommitteesStackParams } from '../types/navigation';
 import CommitteeScreen from "../screens/Committees/Committee";
 import PublicProfileScreen from "../screens/PublicProfile";
-import CommitteeEditor from "../screens/admin/CommitteeEditor";
+import CommitteeEditor from "../screens/Committees/CommitteeEditor";
 import EventInfo from "../screens/events/EventInfo";
 import CommitteesScreen from "../screens/Committees/Committees";
 import UpdateEvent from "../screens/events/UpdateEvent";

@@ -142,7 +142,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
 }
 
 
-export type ResumeProps = {
+type ResumeProps = {
     resumeData: PublicUserInfo
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }

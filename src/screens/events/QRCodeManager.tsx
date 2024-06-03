@@ -11,14 +11,6 @@ import DismissibleModal from '../../components/DismissibleModal';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { EventsStackParams } from '../../types/navigation';
 
-export type QRCodeScreenRouteProp = {
-    route: RouteProp<EventsStackParams, 'QRCode'>;
-    navigation: NativeStackNavigationProp<EventsStackParams, 'QRCode'>;
-};
-
-
-type QRCodeRef = { toDataURL: (callback: (data: string) => void) => void };
-
 const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) => {
     const { event } = route.params;
     const [loading, setLoading] = useState<boolean>(false);
@@ -154,5 +146,13 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
         </GestureHandlerRootView>
     );
 };
+
+type QRCodeScreenRouteProp = {
+    route: RouteProp<EventsStackParams, 'QRCode'>;
+    navigation: NativeStackNavigationProp<EventsStackParams, 'QRCode'>;
+};
+
+
+type QRCodeRef = { toDataURL: (callback: (data: string) => void) => void };
 
 export default QRCodeManager;
