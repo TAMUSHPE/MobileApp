@@ -70,7 +70,7 @@ const FlickrPhotoGallery = () => {
                 }
                 return nextIndex;
             });
-        }, 3000); // Change slide every 3 seconds
+        }, 7000); // Change slide every 7 seconds
     };
 
     const onScrollEnd = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
