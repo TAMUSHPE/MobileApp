@@ -1,11 +1,11 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CommitteesStackParams } from '../types/navigation';
-import CommitteeScreen from "../screens/Committees/Committee";
-import PublicProfileScreen from "../screens/PublicProfile";
-import CommitteeEditor from "../screens/Committees/CommitteeEditor";
+import CommitteeScreen from "../screens/committees/Committee";
+import PublicProfileScreen from "../screens/UserProfile/PublicProfile";
+import CommitteeEditor from "../screens/committees/CommitteeEditor";
 import EventInfo from "../screens/events/EventInfo";
-import CommitteesScreen from "../screens/Committees/Committees";
+import CommitteesScreen from "../screens/committees/Committees";
 import UpdateEvent from "../screens/events/UpdateEvent";
 import QRCodeManager from "../screens/events/QRCodeManager";
 

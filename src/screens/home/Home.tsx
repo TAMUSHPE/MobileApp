@@ -10,6 +10,8 @@ import Ishpe from './Ishpe';
 import { Images } from '../../../assets';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserContext } from '../../context/UserContext';
+import OfficeHours from './OfficeHours';
+import OfficeSignIn from './OfficeSignIn';
 
 /**
  * Renders the home screen of the application.
@@ -67,10 +69,10 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 <Text>Member</Text>
             </TouchableOpacity>
             <Ishpe navigation={navigation} />
-
-            {/* <FeaturedSlider route={route} /> */}
-
             <MOTMCard navigation={navigation} />
+
+            <OfficeHours />
+            {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}
 
             <View className="mb-8" />
         </ScrollView>

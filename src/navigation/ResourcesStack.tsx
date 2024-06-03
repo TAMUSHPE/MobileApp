@@ -4,7 +4,7 @@ import Resources from "../screens/resources/Resources";
 import PointsLeaderboard from "../screens/resources/PointsLeaderboard";
 import TestBank from "../screens/resources/TestBank";
 import ResumeBank from "../screens/resources/ResumeBank";
-import PublicProfileScreen from "../screens/PublicProfile";
+import PublicProfileScreen from "../screens/UserProfile/PublicProfile";
 import { ResourcesStackParams } from '../types/navigation';
 
 const ResourcesStack = () => {

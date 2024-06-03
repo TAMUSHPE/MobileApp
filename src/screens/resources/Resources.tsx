@@ -11,14 +11,10 @@ import { Images } from '../../../assets';
 import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
 import ResumeIcon from '../../../assets/resume-icon.svg';
 import ExamIcon from '../../../assets/exam-icon.svg';
-import OfficeHours from './OfficeHours';
 import { UserContext } from '../../context/UserContext';
-import OfficeSignIn from './OfficeSignIn';
 import { LinkData } from '../../types/links';
 
-
 const linkIDs = ["1", "2", "3", "4", "5"]; // First 5 links are reserved for social media links
-
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
@@ -124,8 +120,6 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                     ))}
                 </View>
 
-                {userInfo?.publicInfo?.roles?.officer && <OfficeSignIn />}
-
                 {/* Resources */}
                 <View className='flex-col mt-12 items-center'>
                     <ResourceButton
@@ -145,7 +139,7 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                     />
                 </View>
 
-                <OfficeHours />
+
 
                 <View className='mb-12' />
             </ScrollView>

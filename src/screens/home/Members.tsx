@@ -1,14 +1,14 @@
 import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, NativeScrollEvent } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
-import MemberCard from '../components/MemberCard'
-import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../types/user';
+import MemberCard from '../../components/MemberCard'
+import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../../types/user';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { getOfficers, getUserForMemberList } from '../api/firebaseUtils';
+import { getOfficers, getUserForMemberList } from '../../api/firebaseUtils';
 import { DocumentData, QueryDocumentSnapshot } from 'firebase/firestore';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import CustomDropDownMenu, { CustomDropDownMethods } from '../components/CustomDropDown';
-import { HomeStackParams } from '../types/navigation';
+import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
+import { HomeStackParams } from '../../types/navigation';
 
 const Members = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const [showFilterMenu, setShowFilterMenu] = useState(false);

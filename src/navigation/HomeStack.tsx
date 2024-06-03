@@ -1,7 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeStackParams } from "../types/navigation"
-import PublicProfileScreen from "../screens/PublicProfile";
+import PublicProfileScreen from "../screens/UserProfile/PublicProfile";
 import Home from "../screens/home/Home"
 import EventInfo from "../screens/events/EventInfo";
 import AdminDashboard from "../screens/admin/AdminDashboard";
@@ -18,12 +18,12 @@ import InstagramPoints from "../screens/admin/InstagramPoints";
 import UpdateEvent from "../screens/events/UpdateEvent";
 import QRCodeManager from "../screens/events/QRCodeManager";
 import MemberSHPE from "../screens/home/MemberSHPE";
-import Members from "../screens/Members";
+import Members from "../screens/home/Members";
 
 const HomeStack = () => {
     const Stack = createNativeStackNavigator<HomeStackParams>();
     return (
-        <Stack.Navigator>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
 
             <Stack.Group screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Home" component={Home} />
