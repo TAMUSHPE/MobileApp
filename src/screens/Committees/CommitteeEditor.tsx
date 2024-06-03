@@ -6,7 +6,6 @@ import { deleteCommittee, getLeads, getPublicUserData, getRepresentatives, getTe
 import { Committee, committeeLogos, getLogoComponent } from '../../types/committees';
 import { PublicUserInfo } from '../../types/user';
 import MembersList from '../../components/MembersList';
-import CustomColorPicker from '../../components/CustomColorPicker';
 import DismissibleModal from '../../components/DismissibleModal';
 import CommitteeTeamCard from './CommitteeTeamCard';
 import { CommitteesStackParams } from '../../types/navigation';
@@ -358,11 +357,6 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                             />
                         </View>
 
-                        {selectedLogoData && (
-                            <View className='z-50 flex-1'>
-                                <CustomColorPicker onColorChosen={handleColorChosen} initialColor={localCommitteeData.color} />
-                            </View>
-                        )}
                     </View>
                 </View>
 
