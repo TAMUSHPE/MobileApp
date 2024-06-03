@@ -23,15 +23,20 @@ import Members from "../screens/Members";
 const HomeStack = () => {
     const Stack = createNativeStackNavigator<HomeStackParams>();
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Home" component={Home} />
-            <Stack.Screen name="MemberSHPE" component={MemberSHPE} />
-            <Stack.Screen name="Members" component={Members} />
+        <Stack.Navigator>
+
+            <Stack.Group screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="Home" component={Home} />
+                <Stack.Screen name="MemberSHPE" component={MemberSHPE} />
+                <Stack.Screen name="Members" component={Members} />
+            </Stack.Group>
 
             {/* Event Screens */}
-            <Stack.Screen name="UpdateEvent" component={UpdateEvent} />
-            <Stack.Screen name="EventInfo" component={EventInfo} />
-            <Stack.Screen name="QRCode" component={QRCodeManager} />
+            <Stack.Group screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="UpdateEvent" component={UpdateEvent} />
+                <Stack.Screen name="EventInfo" component={EventInfo} />
+                <Stack.Screen name="QRCode" component={QRCodeManager} />
+            </Stack.Group>
 
             {/* Admin Dashboard Screens */}
             <Stack.Group screenOptions={{ headerShown: false }} >

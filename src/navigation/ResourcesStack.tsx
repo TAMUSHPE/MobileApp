@@ -15,6 +15,7 @@ const ResourcesStack = () => {
             <Stack.Screen name="PointsLeaderboard" component={PointsLeaderboard} />
             <Stack.Screen name="TestBank" component={TestBank} />
             <Stack.Screen name="ResumeBank" component={ResumeBank} />
+
             <Stack.Screen name="PublicProfile" component={PublicProfileScreen} />
         </Stack.Navigator>
     );

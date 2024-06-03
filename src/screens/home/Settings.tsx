@@ -14,7 +14,7 @@ import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/f
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
 import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
-import { PublicProfileStackParams } from '../../types/navigation';
+import { UserProfileStackParams } from '../../types/navigation';
 import { Committee } from '../../types/committees';
 import { MAJORS, classYears } from '../../types/user';
 import { Images } from '../../../assets';
@@ -30,7 +30,7 @@ import * as Clipboard from 'expo-clipboard';
 /**
  * Settings entrance screen which has a search function and paths to every other settings screen
  */
-const SettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProfileStackParams>) => {
+const SettingsScreen = ({ navigation }: NativeStackScreenProps<UserProfileStackParams>) => {
     const { userInfo, signOutUser } = useContext(UserContext)!;
 
     const { name, roles, photoURL, chapterExpiration, nationalExpiration } = userInfo?.publicInfo ?? {};
@@ -130,7 +130,7 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProfileStac
  * Screen where a user can edit a majority of their public info. This includes thing like their profile picture, name, display name, committees, etc...
  * These changes are synced in firebase.
  */
-const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProfileStackParams>) => {
+const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<UserProfileStackParams>) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [loading, setLoading] = useState<boolean>(false);
     const [image, setImage] = useState<Blob | null>(null);
@@ -641,7 +641,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProf
  * Screen where user can modify how to the app looks. 
  * These changes are synced in firebase.
  */
-const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProfileStackParams>) => {
+const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<UserProfileStackParams>) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [loading, setLoading] = useState<boolean>(false);
     const [darkModeToggled, setDarkModeToggled] = useState<boolean>(userInfo?.private?.privateInfo?.settings?.darkMode ?? false);
@@ -700,7 +700,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProf
  * Screen where user can both view information about their account and request a change of their email and/or password.
  * These changes will go through firebase where an email will be sent to the user. 
  */
-const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProfileStackParams>) => {
+const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<UserProfileStackParams>) => {
     const { userInfo, setUserInfo, signOutUser } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const deleteConfirmationText = "DELETECONFIRM";
@@ -838,7 +838,7 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProf
     );
 };
 
-const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProfileStackParams>) => {
+const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<UserProfileStackParams>) => {
     const [feedback, setFeedback] = useState('');
     const { userInfo } = useContext(UserContext)!;
 
@@ -879,7 +879,7 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<PublicPro
     );
 };
 
-const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProfileStackParams>) => {
+const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<UserProfileStackParams>) => {
     const [activeQuestion, setActiveQuestion] = useState<number | null>(null);
     const { userInfo } = useContext(UserContext)!;
 
@@ -961,7 +961,7 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProfileS
 /**
  * This screen contains information about the app and info that may be useful to developers.
  */
-const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<PublicProfileStackParams>) => {
+const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<UserProfileStackParams>) => {
     const pkg: any = require("../../../package.json");
     const { userInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;

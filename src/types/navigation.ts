@@ -75,7 +75,6 @@ export type EventsStackParams = {
     UpdateEvent: { event: SHPEEvent };
     EventInfo: { eventId: string };
     QRCode: { event: SHPEEvent };
-    QRCodeScanningScreen: undefined;
 
     // Events related to event creation
     CreateEvent: undefined;
@@ -98,10 +97,11 @@ export type CommitteesStackParams = {
     UpdateEvent: { event: SHPEEvent };
     QRCode: { event: SHPEEvent };
 
+
     PublicProfile: { uid: string; };
 }
 
-export type PublicProfileStackParams = {
+export type UserProfileStackParams = {
     PublicProfile: { uid: string; }
     PersonalEventLogScreen: undefined;
 

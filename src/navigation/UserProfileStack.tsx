@@ -3,12 +3,12 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import PublicProfileScreen from "../screens/PublicProfile";
 import { AboutSettingsScreen, AccountSettingsScreen, DisplaySettingsScreen, FAQSettingsScreen, FeedBackSettingsScreen, ProfileSettingsScreen, SettingsScreen } from "../screens/home/Settings";
 import { UserContext } from "../context/UserContext";
-import { PublicProfileStackParams } from "../types/navigation";
+import { UserProfileStackParams } from "../types/navigation";
 import { auth } from "../config/firebaseConfig";
 import PersonalEventLog from "../screens/events/PersonalEventLog";
 
-const PublicProfileStack = () => {
-    const Stack = createNativeStackNavigator<PublicProfileStackParams>();
+const UserProfileStack = () => {
+    const Stack = createNativeStackNavigator<UserProfileStackParams>();
     const { userInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
@@ -40,4 +40,4 @@ const PublicProfileStack = () => {
     );
 };
 
-export { PublicProfileStack };
+export { UserProfileStack };

@@ -12,7 +12,7 @@ import { auth } from '../config/firebaseConfig';
 import { getCommittees, getPublicUserData, getUser, queryUserEventLogs, setUserRoles } from '../api/firebaseUtils';
 import { getBadgeColor, isMemberVerified } from '../helpers/membership';
 import { handleLinkPress } from '../helpers/links';
-import { PublicProfileStackParams } from '../types/navigation';
+import { UserProfileStackParams } from '../types/navigation';
 import { PublicUserInfo, Roles } from '../types/user';
 import { Committee } from '../types/committees';
 import { Images } from '../../assets';
@@ -23,8 +23,8 @@ import { UserEventData } from '../types/events';
 import { Timestamp } from 'firebase/firestore';
 
 export type PublicProfileScreenProps = {
-    route: RouteProp<PublicProfileStackParams, 'PublicProfile'>;
-    navigation: NativeStackNavigationProp<PublicProfileStackParams, 'PublicProfile'>;
+    route: RouteProp<UserProfileStackParams, 'PublicProfile'>;
+    navigation: NativeStackNavigationProp<UserProfileStackParams, 'PublicProfile'>;
 };
 
 const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, navigation }) => {
