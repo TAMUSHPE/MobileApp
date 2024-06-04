@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AdminDashboardParams } from '../../types/navigation';
+import { HomeStackParams } from '../../types/navigation';
 import { fetchEventByName, getMembers } from '../../api/firebaseUtils';
 import { PublicUserInfo } from '../../types/user';
 import MemberCardMultipleSelect from '../../components/MemberCardMultipleSelect';
@@ -17,7 +17,7 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
  * The date should be set to the end of the school year. 
  */
 
-const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const [members, setMembers] = useState<SelectedPublicUserInfo[]>([])
     const [event, setEvent] = useState<SHPEEvent | null>(null)
     const [search, setSearch] = useState<string>("")

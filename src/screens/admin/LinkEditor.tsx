@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Image, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AdminDashboardParams } from '../../types/navigation';
+import { HomeStackParams } from '../../types/navigation';
 import { Octicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { updateLink, fetchLink } from '../../api/firebaseUtils';
@@ -16,7 +16,7 @@ const generateLinkIDs = (numberOfLinks: number): string[] => {
 const numberOfLinks = 7;
 
 
-const LinkEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const linkIDs = generateLinkIDs(numberOfLinks);
     const [links, setLinks] = useState<LinkData[]>(
         linkIDs.map(id => ({

@@ -4,10 +4,10 @@ import { getAllFeedback, removeFeedback } from '../../api/firebaseUtils';
 import { PublicUserInfo } from '../../types/user';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { AdminDashboardParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { HomeStackParams } from '../../types/navigation';
 
-const FeedbackEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const FeedbackEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
 
     useEffect(() => {

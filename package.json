@@ -75,7 +75,6 @@
     "react-native-svg": "15.2.0",
     "react-native-view-shot": "3.8.0",
     "react-test-renderer": "18.2.0",
-    "reanimated-color-picker": "^2.4.1",
     "ts-jest": "^29.1.1"
   },
   "devDependencies": {

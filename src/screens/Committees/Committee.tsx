@@ -9,7 +9,6 @@ import { UserContext } from '../../context/UserContext';
 import { getCommitteeEvents, getPublicUserData, setPublicUserData } from '../../api/firebaseUtils';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
 import { handleLinkPress } from '../../helpers/links';
-import { CommitteeScreenProps } from '../../types/navigation';
 import { getLogoComponent } from '../../types/committees';
 import { SHPEEvent } from '../../types/events';
 import { PublicUserInfo } from '../../types/user';
@@ -18,8 +17,12 @@ import { auth, db } from '../../config/firebaseConfig';
 import EventsList from '../../components/EventsList';
 import MembersList from '../../components/MembersList';
 import CommitteeTeamCard from './CommitteeTeamCard';
+import { RouteProp } from '@react-navigation/core';
+import { CommitteesStackParams } from '../../types/navigation';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-const Committee: React.FC<CommitteeScreenProps> = ({ route, navigation }) => {
+
+const Committee: React.FC<CommitteeScreenRouteProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
 
     const { name, color, logo, description, memberApplicationLink, representativeApplicationLink, leadApplicationLink, firebaseDocName, isOpen, memberCount } = initialCommittee;
@@ -446,5 +449,9 @@ interface TeamMembersState {
     head: PublicUserInfo | null | undefined;
 }
 
+type CommitteeScreenRouteProps = {
+    route: RouteProp<CommitteesStackParams, 'CommitteeScreen'>;
+    navigation: NativeStackNavigationProp<CommitteesStackParams, 'CommitteeScreen'>;
+};
 
 export default Committee

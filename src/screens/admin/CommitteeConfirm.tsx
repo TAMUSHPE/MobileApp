@@ -2,7 +2,6 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from 'rea
 import React, { useCallback, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
-import { AdminDashboardParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DismissibleModal from '../../components/DismissibleModal';
 import { Committee, getLogoComponent, reverseFormattedFirebaseName } from '../../types/committees';
@@ -14,8 +13,9 @@ import MembersList from '../../components/MembersList';
 import MemberCard from '../../components/MemberCard';
 import { httpsCallable } from 'firebase/functions';
 import { calculateHexLuminosity } from '../../helpers';
+import { HomeStackParams } from '../../types/navigation';
 
-const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const [committees, setCommittees] = useState<Committee[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCommittee, setSelectedCommittee] = useState<string | undefined>();

@@ -1,32 +1,34 @@
 import { View, Text, ActivityIndicator, Image, Alert, TouchableOpacity, Pressable, TextInput, ScrollView, RefreshControl } from 'react-native';
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/core';
+import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RouteProp, useFocusEffect } from '@react-navigation/core';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { UserContext } from '../context/UserContext';
-import { auth } from '../config/firebaseConfig';
-import { getCommittees, getPublicUserData, getUser, queryUserEventLogs, setUserRoles } from '../api/firebaseUtils';
-import { getBadgeColor, isMemberVerified } from '../helpers/membership';
-import { handleLinkPress } from '../helpers/links';
-import { HomeDrawerParams, MembersScreenRouteProp } from '../types/navigation';
-import { PublicUserInfo, Roles } from '../types/user';
-import { Committee } from '../types/committees';
-import { Images } from '../../assets';
-import TwitterSvg from '../components/TwitterSvg';
-import ProfileBadge from '../components/ProfileBadge';
-import DismissibleModal from '../components/DismissibleModal';
-import { UserEventData } from '../types/events';
+import { UserContext } from '../../context/UserContext';
+import { auth } from '../../config/firebaseConfig';
+import { getCommittees, getPublicUserData, getUser, queryUserEventLogs, setUserRoles } from '../../api/firebaseUtils';
+import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
+import { handleLinkPress } from '../../helpers/links';
+import { UserProfileStackParams } from '../../types/navigation';
+import { PublicUserInfo, Roles } from '../../types/user';
+import { Committee } from '../../types/committees';
+import { Images } from '../../../assets';
+import TwitterSvg from '../../components/TwitterSvg';
+import ProfileBadge from '../../components/ProfileBadge';
+import DismissibleModal from '../../components/DismissibleModal';
+import { UserEventData } from '../../types/events';
 import { Timestamp } from 'firebase/firestore';
 
+export type PublicProfileScreenProps = {
+    route: RouteProp<UserProfileStackParams, 'PublicProfile'>;
+    navigation: NativeStackNavigationProp<UserProfileStackParams, 'PublicProfile'>;
+};
 
-
-const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerParams>) => {
+const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, navigation }) => {
     // Data related to public profile user
-    const route = useRoute<MembersScreenRouteProp>();
     const { uid } = route.params;
     const [publicUserData, setPublicUserData] = useState<PublicUserInfo | undefined>();
     const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, isStudent, committees, pointsRank, isEmailPublic } = publicUserData || {};
@@ -214,17 +216,22 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
 
                 <SafeAreaView edges={['top']} >
                     <View className='flex-row justify-between items-center mx-5 mt-1'>
-                        <TouchableOpacity
-                            onPress={() => navigation.goBack()}
-                            className="rounded-full w-10 h-10 justify-center items-center"
-                            style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                        >
-                            <Octicons name="chevron-left" size={30} color="white" />
-                        </TouchableOpacity>
+                        {!isCurrentUser ?
+                            <TouchableOpacity
+                                onPress={() => navigation.goBack()}
+                                className="rounded-full w-10 h-10 justify-center items-center"
+                                style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                            >
+                                <Octicons name="chevron-left" size={30} color="white" />
+                            </TouchableOpacity>
+                            :
+                            <View />
+                        }
+
                         <View className='flex-col relative items-center'>
                             {isCurrentUser &&
                                 <TouchableOpacity
-                                    onPress={() => navigation.navigate("ProfileSettingsScreen")}
+                                    onPress={() => navigation.navigate("SettingsScreen")}
                                     className="rounded-md px-3 py-2"
                                     style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
                                 >
@@ -307,7 +314,7 @@ const PublicProfileScreen = ({ navigation }: NativeStackScreenProps<HomeDrawerPa
 
                 {committees && committees.length > 0 && (
                     <View>
-                        <Text className='text-2xl italic mt-5'>Involvement</Text>
+                        <Text className='text-2xl italic mt-5'>Committees</Text>
                         <View className='flex-row flex-wrap mt-2'>
                             {committees?.map((committeeName, index) => {
                                 const committeeData = committeesData.find(c => c.firebaseDocName === committeeName);

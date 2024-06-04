@@ -11,14 +11,14 @@ import { httpsCallable } from 'firebase/functions'
 import { handleLinkPress } from '../../helpers/links'
 import { formatExpirationDate } from '../../helpers/membership';
 import { PublicUserInfo } from '../../types/user'
-import { AdminDashboardParams } from '../../types/navigation';
+import { HomeStackParams } from '../../types/navigation';
 import MemberCard from '../../components/MemberCard'
 import DismissibleModal from '../../components/DismissibleModal'
 import MembersList from '../../components/MembersList'
 import { UserContext } from '../../context/UserContext';
 import { formatDate } from '../../helpers/timeUtils';
 
-const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const { userInfo } = useContext(UserContext)!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 

@@ -1,7 +1,7 @@
 import { View, Text } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react';
-import { useRoute } from '@react-navigation/core';
-import { EventVerificationProps, EventVerificationScreenRouteProp } from '../../types/navigation'
+import { RouteProp, useRoute } from '@react-navigation/core';
+import { MainStackParams } from '../../types/navigation'
 import { getEvent, signInToEvent, signOutOfEvent } from '../../api/firebaseUtils';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import LottieView from "lottie-react-native";
@@ -10,9 +10,9 @@ import { ActivityIndicator } from "react-native";
 import * as Haptics from 'expo-haptics';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-const EventVerification = ({ navigation }: EventVerificationProps) => {
-    const route = useRoute<EventVerificationScreenRouteProp>();
+const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, navigation }) => {
     const { id, mode } = route.params;
     const { userInfo } = useContext(UserContext)!;
     const [logStatus, setLogStatus] = useState<EventLogStatus | undefined>();
@@ -155,5 +155,12 @@ const EventVerification = ({ navigation }: EventVerificationProps) => {
         </SafeAreaView>
     );
 };
+
+
+type EventVerificationScreenRouteProp = {
+    route: RouteProp<MainStackParams, 'EventVerificationScreen'>;
+    navigation: NativeStackNavigationProp<MainStackParams, 'EventVerificationScreen'>;
+};
+
 
 export default EventVerification;

@@ -1,4 +1,4 @@
-import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator, Image } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useFocusEffect } from '@react-navigation/core'
 import { Octicons } from '@expo/vector-icons';
@@ -6,11 +6,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext'
 import { auth } from '../../config/firebaseConfig';
 import { getCommittees, getUser } from '../../api/firebaseUtils'
-import { CommitteesListProps } from '../../types/navigation'
 import { Committee } from "../../types/committees"
 import CommitteeCard from './CommitteeCard'
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Images } from '../../../assets';
+import { CommitteesStackParams } from '../../types/navigation';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
+
+const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams>) => {
     const [committees, setCommittees] = useState<Committee[]>([]);
     const [loading, setLoading] = useState(true);
     const { userInfo, setUserInfo } = useContext(UserContext)!;
@@ -53,6 +57,19 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
 
     return (
         <ScrollView className='pt-4'>
+
+            <SafeAreaView className='flex-1 bg-white' edges={["top"]}>
+                {/* Header */}
+                <View className='flex-row px-5 pb-4'>
+                    <View className='flex-1 justify-center items-start'>
+                        <Image
+                            className="h-10 w-52"
+                            source={Images.LOGO_LIGHT}
+                        />
+                    </View>
+                </View>
+            </SafeAreaView>
+
             <View>
                 {isSuperUser && (
                     <View className='flex items-center w-full'>
@@ -94,6 +111,4 @@ const CommitteesList: React.FC<CommitteesListProps> = ({ navigation }) => {
     )
 }
 
-
-
-export default CommitteesList
+export default Committees;

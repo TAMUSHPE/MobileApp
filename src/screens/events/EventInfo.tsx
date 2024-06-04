@@ -1,13 +1,12 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Platform, Modal } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { useFocusEffect, useRoute } from '@react-navigation/core';
+import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
 import { getEvent, getAttendanceNumber, isUserSignedIn, getPublicUserData, getUsers, signInToEvent, signOutOfEvent } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { formatEventDate, formatTime } from '../../helpers/timeUtils';
-import { EventProps, SHPEEventScreenRouteProp } from '../../types/navigation'
 import { SHPEEvent, getStatusMessage } from '../../types/events';
 import { Images } from '../../../assets';
 import { StatusBar } from 'expo-status-bar';
@@ -20,10 +19,12 @@ import MemberCard from '../../components/MemberCard';
 import { PublicUserInfo } from '../../types/user';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 import MembersList from '../../components/MembersList';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { EventsStackParams } from '../../types/navigation';
 
-const EventInfo = ({ navigation }: EventProps) => {
-    const route = useRoute<SHPEEventScreenRouteProp>();
-    const { eventId } = route.params;
+
+const EventInfo: React.FC<EventScreenRouteProp> = ({ route, navigation }) => {
+    const { eventId } = route.params
     const { userInfo } = useContext(UserContext)!;
     const [event, setEvent] = useState<SHPEEvent>();
     const [creatorData, setCreatorData] = useState<PublicUserInfo | null>(null)
@@ -352,4 +353,11 @@ const EventInfo = ({ navigation }: EventProps) => {
         </ScrollView>
     )
 }
+
+type EventScreenRouteProp = {
+    route: RouteProp<EventsStackParams, 'EventInfo'>;
+    navigation: NativeStackNavigationProp<EventsStackParams, 'EventInfo'>;
+};
+
+
 export default EventInfo

@@ -4,11 +4,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { httpsCallable, getFunctions } from 'firebase/functions';
-import { AdminDashboardParams } from '../../types/navigation';
+import { HomeStackParams } from '../../types/navigation';
 
 const functions = getFunctions();
 
-const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const AdminDashboard = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
     const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
     const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');

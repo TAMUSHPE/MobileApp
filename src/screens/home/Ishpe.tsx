@@ -3,17 +3,17 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/core';
-import { auth } from "../../config/firebaseConfig";
 import { UserContext } from '../../context/UserContext';
 import { getCommitteeEvents, getCommittees, getInterestsEvent, getUpcomingEvents, setPublicUserData } from '../../api/firebaseUtils';
 import { monthNames, MillisecondTimes } from '../../helpers/timeUtils';
 import { EventType, SHPEEvent } from '../../types/events';
 import { Committee } from '../../types/committees';
-import { IShpeProps } from '../../types/navigation';
 import SHPELogo from '../../../assets/SHPE_black.svg';
 import EventsList from '../../components/EventsList';
 import DismissibleModal from '../../components/DismissibleModal';
 import ProfileBadge from '../../components/ProfileBadge';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { HomeStackParams } from '../../types/navigation';
 
 const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
@@ -406,5 +406,9 @@ const formatWeekRange = (startDate: Date) => {
 };
 
 type SHPEEventWithCommitteeData = SHPEEvent & { committeeData?: Committee };
+
+type IShpeProps = {
+    navigation?: NativeStackNavigationProp<HomeStackParams>
+}
 
 export default Ishpe;

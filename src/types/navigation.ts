@@ -1,35 +1,9 @@
 
-import { ImageSourcePropType } from "react-native";
-import { SetStateAction } from "react";
-import { NativeStackScreenProps, NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from '@react-navigation/native';
-import { DocumentData, QueryDocumentSnapshot } from "firebase/firestore";
-import { Test } from './googleSheetsTypes';
 import { Committee } from "./committees";
-import { PublicUserInfo, UserFilter } from "./user";
+import { PublicUserInfo } from "./user";
 import { SHPEEvent } from "./events";
-
-// Stacks
-export type MainStackParams = {
-    HomeDrawer: HomeDrawerParams;
-    HomeBottomTabs: undefined;
-    AdminDashboardStack: undefined;
-    SettingsScreen: undefined;
-    ProfileSettingsScreen: undefined;
-    DisplaySettingsScreen: undefined;
-    AccountSettingsScreen: undefined;
-    FeedbackSettingsScreen: undefined;
-    FAQSettingsScreen: undefined;
-    AboutSettingsScreen: undefined;
-    QRCodeScanningScreen: undefined;
-    EventVerificationScreen: {
-        id: string;
-        mode: "sign-in" | "sign-out";
-    };
-    PublicProfile: {
-        uid: string;
-    };
-};
 
 export type AuthStackParams = {
     LoginScreen: undefined;
@@ -42,13 +16,6 @@ export type AuthStackParams = {
     GuestRecoveryAccount: undefined;
 };
 
-export type MembersStackParams = {
-    MembersScreen: undefined;
-    PublicProfile: {
-        uid: string;
-    }
-};
-
 export type ProfileSetupStackParams = {
     LoginScreen: undefined;
     SetupNameAndBio: undefined;
@@ -59,55 +26,26 @@ export type ProfileSetupStackParams = {
     MainStack: undefined;
 }
 
-export type ResourcesStackParams = {
-    Resources: undefined;
-    PointsLeaderboard: undefined;
-    TestBank: undefined;
-    ResumeBank: undefined;
-    PublicProfile: {
-        uid: string;
+export type MainStackParams = {
+    HomeBottomTabs: undefined;
+    EventVerificationScreen: {
+        id: string;
+        mode: "sign-in" | "sign-out";
     };
-}
-
-
-export type InvolvementStackParams = {
-    InvolvementScreen: undefined;
-    CommitteeScreen: {
-        committee: Committee;
-    };
-    PublicProfile: {
-        uid: string;
-    };
-    CommitteeEditor: {
-        committee?: Committee;
-    };
-    EventInfo: undefined;
-}
-
-export type EventsStackParams = {
-    EventsScreen: undefined;
-    UpdateEvent: { event: SHPEEvent };
-    EventInfo: { eventId: string };
-    QRCode: { event: SHPEEvent };
     QRCodeScanningScreen: undefined;
-
-    // Events related to event creation
-    CreateEvent: undefined;
-    SetGeneralEventDetails: { event: SHPEEvent };
-    SetSpecificEventDetails: { event: SHPEEvent };
-    setLocationEventDetails: { event: SHPEEvent };
-    FinalizeEvent: { event: SHPEEvent };
-}
+};
 
 export type HomeStackParams = {
     Home: undefined;
-    PublicProfile: {
-        uid: string;
-    }
-    EventInfo: { eventId: string };
-}
+    Members: undefined;
+    MemberSHPE: undefined;
 
-export type AdminDashboardParams = {
+    // Event Screens
+    EventInfo: { eventId: string };
+    UpdateEvent: { event: SHPEEvent };
+    QRCode: { event: SHPEEvent };
+
+    // Admin Dashboard Screens
     AdminDashboard: undefined;
     MOTMEditor: undefined;
     ResumeDownloader: undefined;
@@ -118,85 +56,68 @@ export type AdminDashboardParams = {
     CommitteeConfirm: undefined;
     ResumeConfirm: undefined;
     ShirtConfirm: undefined;
-    Home: undefined;
-    PublicProfile: {
-        uid: string;
-    }
     InstagramPoints: undefined;
+
+    PublicProfile: { uid: string; };
 }
 
-// Drawers
-export type HomeDrawerParams = {
-    HomeStack: HomeStackParams;
-    Logout: undefined;
-    AdminDashboardStack: undefined;
-    PublicProfile: {
-        uid: string;
-    }
+export type ResourcesStackParams = {
+    Resources: undefined;
+    PointsLeaderboard: undefined;
+    TestBank: undefined;
+    ResumeBank: undefined;
 
-    ProfileSettingsScreen: undefined;
+    PublicProfile: { uid: string; };
+}
+
+export type EventsStackParams = {
+    EventsScreen: undefined;
+    UpdateEvent: { event: SHPEEvent };
+    EventInfo: { eventId: string };
+    QRCode: { event: SHPEEvent };
+
+    // Events related to event creation
+    CreateEvent: undefined;
+    SetGeneralEventDetails: { event: SHPEEvent };
+    SetSpecificEventDetails: { event: SHPEEvent };
+    setLocationEventDetails: { event: SHPEEvent };
+    FinalizeEvent: { event: SHPEEvent };
+    EventVerificationScreen: { id: string; mode: "sign-in" | "sign-out"; };
+
+    PublicProfile: { uid: string; };
+}
+
+export type CommitteesStackParams = {
+    CommitteesScreen: undefined;
+    CommitteeScreen: { committee: Committee; };
+    CommitteeEditor: { committee?: Committee; };
+
+    // Event Screens
+    EventInfo: { eventId: string };
+    UpdateEvent: { event: SHPEEvent };
+    QRCode: { event: SHPEEvent };
+
+
+    PublicProfile: { uid: string; };
+}
+
+export type UserProfileStackParams = {
+    PublicProfile: { uid: string; }
     PersonalEventLogScreen: undefined;
+
+    // Settings Screens
+    SettingsScreen: undefined;
+    ProfileSettingsScreen: undefined;
+    DisplaySettingsScreen: undefined;
+    AccountSettingsScreen: undefined;
+    FeedbackSettingsScreen: undefined;
+    FAQSettingsScreen: undefined;
+    AboutSettingsScreen: undefined;
 };
 
 
-// Bottom Tabs
-export type HomeBottomTabParams = {
-    Home: undefined;
-};
 
-export type ResourcesProps = {
-    items: {
-        title: string;
-        screen: keyof ResourcesStackParams;
-        image: ImageSourcePropType;
-        "bg-color": string;
-        "text-color": string;
-    },
-    navigation: NativeStackNavigationProp<ResourcesStackParams>
-}
-
-export type PointsProps = {
-    userData: PublicUserInfo
-    navigation: NativeStackNavigationProp<ResourcesStackParams>
-}
-
-export type ResumeProps = {
-    resumeData: PublicUserInfo
-    navigation: NativeStackNavigationProp<ResourcesStackParams>
-}
-export type TestBankProps = {
-    testData: Test;
-    navigation: NativeStackNavigationProp<ResourcesStackParams>
-}
-
-export type MembersProps = {
-    userData?: PublicUserInfo
-    handleCardPress?: (uid: string) => string | void;
-    navigation?: NativeStackNavigationProp<MembersStackParams>
-    officersList?: PublicUserInfo[]
-    membersList?: PublicUserInfo[]
-    loadMoreUsers?: () => void;
-    hasMoreUser?: boolean;
-    setFilter?: React.Dispatch<SetStateAction<UserFilter>>;
-    filter?: UserFilter;
-    setLastUserSnapshot?: React.Dispatch<SetStateAction<QueryDocumentSnapshot<DocumentData> | null>>;
-    canSearch?: boolean;
-    numLimit?: number | null;
-    setNumLimit?: React.Dispatch<SetStateAction<number | null>>;
-    loading?: boolean;
-    DEFAULT_NUM_LIMIT?: number | null;
-}
-
-export type MemberListProps = {
-    handleCardPress: (uid: string) => string | void;
-    users: PublicUserInfo[];
-    navigation?: NativeStackNavigationProp<MembersStackParams>
-}
-
-interface SelectedPublicUserInfo extends PublicUserInfo {
-    selected?: boolean;
-}
-
+// Component Props
 export type MemberCardProp = {
     handleCardPress?: (uid: string | void) => void;
     userData?: PublicUserInfo;
@@ -204,57 +125,10 @@ export type MemberCardProp = {
     navigation?: NativeStackNavigationProp<any>
 }
 
-
-export type MemberCardMultipleSelectProp = {
-    handleCardPress?: (uid: string | void) => void;
-    userData?: SelectedPublicUserInfo;
-}
-
-export type IShpeProps = {
-    navigation?: NativeStackNavigationProp<HomeStackParams>
-}
-
 export type EventProps = {
     event?: SHPEEvent;
     navigation: NativeStackNavigationProp<EventsStackParams>
 }
 
-
-export type CommitteeTeamCardProps = {
-    userData: PublicUserInfo;
-    navigation?: NativeStackNavigationProp<InvolvementStackParams>
-}
-
-
-export type EventVerificationProps = {
-    id?: string;
-    mode?: "sign-in" | "sign-out";
-    navigation?: NativeStackNavigationProp<MainStackParams>;
-}
-
-export type QRCodeProps = {
-    event?: SHPEEvent;
-    navigation: NativeStackNavigationProp<EventsStackParams>
-}
-
-export type CommitteeEditorProps = {
-    route: RouteProp<InvolvementStackParams, 'CommitteeEditor'>;
-    navigation: NativeStackNavigationProp<InvolvementStackParams, 'CommitteeEditor'>;
-};
-
-
-export type SettingsProps = NativeStackScreenProps<MainStackParams, "SettingsScreen">;
-
-// routes prop for screens
-export type SettingsScreenRouteProp = RouteProp<MainStackParams, "SettingsScreen">;
-export type MembersScreenRouteProp = RouteProp<MembersStackParams, "PublicProfile">;
-export type CommitteeScreenRouteProp = RouteProp<InvolvementStackParams, "CommitteeScreen">;
+// Screen Props
 export type UpdateEventScreenRouteProp = RouteProp<EventsStackParams, "UpdateEvent">;
-export type SHPEEventScreenRouteProp = RouteProp<EventsStackParams, "EventInfo">;
-export type EventVerificationScreenRouteProp = RouteProp<MainStackParams, "EventVerificationScreen">;
-export type QRCodeScreenRouteProp = RouteProp<EventsStackParams, "QRCode">;
-export type CommitteeEditorRouteProp = RouteProp<InvolvementStackParams, 'CommitteeEditor'>;
-export type CommitteeEditorNavigationProp = NativeStackNavigationProp<InvolvementStackParams, 'CommitteeEditor'>;
-export type CommitteeScreenProps = NativeStackScreenProps<InvolvementStackParams, 'CommitteeScreen'>;
-export type CommitteesListProps = { navigation: NativeStackNavigationProp<InvolvementStackParams, 'InvolvementScreen'>; };
-export type InvolvementScreenProps = NativeStackScreenProps<InvolvementStackParams, 'InvolvementScreen'>;

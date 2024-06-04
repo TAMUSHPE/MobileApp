@@ -1,9 +1,11 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { StatusBar } from 'expo-status-bar';
-import { TestBankProps } from '../../types/navigation'
+import { ResourcesStackParams } from '../../types/navigation'
 import { SubjectCode, subjectIconMapping } from '../../types/testBank';
 import { handleLinkPress } from '../../helpers/links';
+import { Test } from '../../types/googleSheetsTypes';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 
 const TestCard: React.FC<TestBankProps> = ({ testData }) => {
@@ -78,6 +80,10 @@ const TestCard: React.FC<TestBankProps> = ({ testData }) => {
     )
 }
 
+type TestBankProps = {
+    testData: Test;
+    navigation: NativeStackNavigationProp<ResourcesStackParams>
+}
 
 
 export default TestCard

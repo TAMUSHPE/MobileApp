@@ -2,8 +2,9 @@ import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { Images } from '../../../assets';
-import { PointsProps } from '../../types/navigation'
-import { RankChange } from '../../types/user';
+import { PublicUserInfo, RankChange } from '../../types/user';
+import { ResourcesStackParams } from '../../types/navigation';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 /**
  * The RankCard component displays a user's rank information.
@@ -55,6 +56,11 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
             </View>
         </TouchableOpacity>
     )
+}
+
+export type PointsProps = {
+    userData: PublicUserInfo
+    navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
 
 export default RankCard

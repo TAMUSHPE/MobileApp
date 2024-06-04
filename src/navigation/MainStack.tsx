@@ -2,56 +2,103 @@ import React, { useContext } from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { UserContext } from "../context/UserContext";
 import { MainStackParams } from '../types/navigation';
-import HomeBottomTabs from "./HomeBottomTabs";
-import AdminDashboardStack from "./AdminDashboardStack";
 import EventVerification from "../screens/events/EventVerification";
-import { SettingsScreen, ProfileSettingsScreen, DisplaySettingsScreen, AccountSettingsScreen, AboutSettingsScreen, FAQSettingsScreen, FeedBackSettingsScreen } from "../screens/home/Settings";
-import PublicProfileScreen from "../screens/PublicProfile";
 import QRCodeScanningScreen from "../screens/events/QRCodeScanningScreen";
+import { HomeStack } from "./HomeStack";
+import { ResourcesStack } from "./ResourcesStack";
+import { EventsStack } from "./EventsStack";
+import { CommitteesStack } from "./CommitteesStack";
+import { UserProfileStack } from "./UserProfileStack";
+import { Octicons } from '@expo/vector-icons';
+import { Image, Text, View } from "react-native";
+import { auth } from "../config/firebaseConfig";
+import { Images } from "../../assets";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+
 
 const MainStack = () => {
     const Stack = createNativeStackNavigator<MainStackParams>();
-    const { userInfo } = useContext(UserContext)!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
         <Stack.Navigator initialRouteName="HomeBottomTabs">
             {/* Main components */}
-            <Stack.Group
-                screenOptions={{
-                    headerShown: false
-                }}
-            >
-                <Stack.Screen name="HomeBottomTabs" component={HomeBottomTabs} options={{ title: "" }} />
-                <Stack.Screen name="AdminDashboardStack" component={AdminDashboardStack} options={{ title: "" }} />
-            </Stack.Group>
-
-            {/* Settings Screens */}
-            <Stack.Group
-                screenOptions={{
-                    headerShown: true,
-                    headerStyle: {
-                        backgroundColor: darkMode ? "#2a2a2a" : "#FFF",
-                    },
-                    headerTintColor: darkMode ? "#F2F2F2" : "#000",
-
-                }}
-            >
-                <Stack.Screen name="SettingsScreen" component={SettingsScreen} options={{ title: "Settings" }} />
-                <Stack.Screen name="ProfileSettingsScreen" component={ProfileSettingsScreen} options={{ title: "Profile Settings" }} />
-                <Stack.Screen name="DisplaySettingsScreen" component={DisplaySettingsScreen} options={{ title: "Display Settings" }} />
-                <Stack.Screen name="FeedbackSettingsScreen" component={FeedBackSettingsScreen} options={{ title: "Feedback" }} />
-                <Stack.Screen name="AccountSettingsScreen" component={AccountSettingsScreen} options={{ title: "Account Settings/Info" }} />
-                <Stack.Screen name="AboutSettingsScreen" component={AboutSettingsScreen} options={{ title: "About" }} />
-                <Stack.Screen name="FAQSettingsScreen" component={FAQSettingsScreen} options={{ title: "FAQ" }} />
-            </Stack.Group>
+            <Stack.Screen name="HomeBottomTabs" options={{ headerShown: false }} component={HomeBottomTabs} />
 
             <Stack.Screen name="EventVerificationScreen" component={EventVerification} options={{ headerShown: false }} />
-            <Stack.Screen name="PublicProfile" component={PublicProfileScreen} options={{ headerShown: false }} />
             <Stack.Screen name="QRCodeScanningScreen" component={QRCodeScanningScreen} options={{ headerShown: false }} />
-
         </Stack.Navigator>
     );
 };
+
+const HomeBottomTabs = () => {
+    const BottomTabs = createBottomTabNavigator();
+
+    const TAB_ICON_CONFIG: Record<TabName, OcticonIconName> = {
+        Home: 'home',
+        ResourcesStack: 'rows',
+        Events: "calendar",
+        Committees: 'stack',
+        Profile: 'person',
+    };
+
+    const activeIconColor = 'black';
+    const inactiveIconColor = 'black';
+    const iconSize = 28;
+
+    const generateTabIcon = (routeName: TabName, focused: boolean): JSX.Element => {
+        if (routeName == 'Profile') {
+            return (
+                <View className='flex-col items-center justify-center'>
+                    <Image
+                        source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
+                        style={{ width: 32, height: 32, borderRadius: 16 }}
+                        className={`${focused ? 'border-2 border-black' : 'border-2 border-transparent'}`}
+                    />
+                </View>
+            );
+        }
+
+        const iconName = TAB_ICON_CONFIG[routeName] || 'x-circle';
+        const iconColor = focused ? activeIconColor : inactiveIconColor;
+        let tabName: string = routeName;
+        if (tabName === 'ResourcesStack') {
+            tabName = 'Resources';
+        }
+        return (
+            <View className='flex-col items-center justify-center pt-2'>
+                <Octicons name={iconName} size={iconSize} color={iconColor} />
+                <Text className='text-black'>{focused ? tabName : ""}</Text>
+            </View>
+        );
+    };
+
+
+    return (
+        <View
+            className='flex-1 bg-offwhite'>
+            <BottomTabs.Navigator
+                screenOptions={({ route }) => ({
+                    tabBarIcon: ({ focused }) => generateTabIcon(route.name as TabName, focused),
+                    headerShown: false,
+                    tabBarActiveTintColor: 'maroon',
+                    tabBarInactiveTintColor: 'black',
+                    tabBarShowLabel: false,
+                })}
+            >
+                <BottomTabs.Screen name="Home" component={HomeStack} />
+                <BottomTabs.Screen name="ResourcesStack" component={ResourcesStack} />
+                <BottomTabs.Screen name="Events" component={EventsStack} />
+                <BottomTabs.Screen name="Committees" component={CommitteesStack} />
+                <BottomTabs.Screen name="Profile" component={UserProfileStack} />
+            </BottomTabs.Navigator >
+        </View>
+    );
+};
+
+
+
+type OcticonIconName = React.ComponentProps<typeof Octicons>['name'];
+type TabName = 'Home' | 'ResourcesStack' | 'Committees' | 'Profile' | 'Events';
+
 
 export { MainStack };

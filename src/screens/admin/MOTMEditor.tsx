@@ -5,7 +5,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Octicons } from '@expo/vector-icons';
 import { getMOTM, getMembersExcludeOfficers, setMOTM } from '../../api/firebaseUtils';
 import { httpsCallable, getFunctions } from 'firebase/functions';
-import { AdminDashboardParams } from '../../types/navigation';
+import { HomeStackParams } from '../../types/navigation';
 import { PublicUserInfo } from '../../types/user';
 import MembersList from '../../components/MembersList';
 import DismissibleModal from '../../components/DismissibleModal';
@@ -17,7 +17,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const functions = getFunctions();
 
-const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const [members, setMembers] = useState<PublicUserInfo[]>([])
     const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
     const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();

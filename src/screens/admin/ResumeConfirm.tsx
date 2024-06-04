@@ -9,12 +9,12 @@ import { deleteDoc, deleteField, doc, getDoc, updateDoc } from 'firebase/firesto
 import { httpsCallable } from 'firebase/functions'
 import { handleLinkPress } from '../../helpers/links'
 import { PublicUserInfo } from '../../types/user'
-import { AdminDashboardParams } from '../../types/navigation';
+import { HomeStackParams } from '../../types/navigation';
 import MemberCard from '../../components/MemberCard'
 import DismissibleModal from '../../components/DismissibleModal'
 import MembersList from '../../components/MembersList'
 
-const ResumeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const ResumeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
     const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
     const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();

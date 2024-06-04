@@ -8,9 +8,9 @@ import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
 import { queryUserEventLogs } from '../../api/firebaseUtils';
 import { UserEventData } from '../../types/events';
-import { HomeDrawerParams } from '../../types/navigation';
+import { UserProfileStackParams } from '../../types/navigation';
 
-const PersonalEventLog = ({ navigation }: NativeStackScreenProps<HomeDrawerParams>) => {
+const PersonalEventLog = ({ navigation }: NativeStackScreenProps<UserProfileStackParams>) => {
   const userContext = useContext(UserContext);
   const { userInfo } = userContext!;
 

@@ -9,14 +9,9 @@ import { db } from '../../config/firebaseConfig';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { handleLinkPress } from '../../helpers/links';
-import { AdminDashboardParams } from '../../types/navigation';
+import { HomeStackParams } from '../../types/navigation';
 
-interface ResumeDownloadInfo {
-    url: string;
-    createdAt: Date;
-    expiresAt: Date;
-}
-const ResumeDownloader = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const ResumeDownloader = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const [isGenerated, setIsGenerated] = useState(false);
     const [loadingShare, setLoadingShare] = useState<boolean>(false);
     const [resumeDownloadInfo, setResumeDownloadInfo] = useState<ResumeDownloadInfo>();
@@ -165,5 +160,10 @@ const ResumeDownloader = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     );
 }
 
+interface ResumeDownloadInfo {
+    url: string;
+    createdAt: Date;
+    expiresAt: Date;
+}
 
 export default ResumeDownloader;

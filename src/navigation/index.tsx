@@ -5,22 +5,21 @@ import { Timestamp } from 'firebase/firestore';
 import { UserContext } from '../context/UserContext';
 import { AuthStack } from './AuthStack';
 import { MainStack } from './MainStack';
-import Splash from '../screens/Splash';
 import { Images } from '../../assets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setPrivateUserData } from '../api/firebaseUtils';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { auth } from '../config/firebaseConfig';
+
 /**
  * Renders the root navigator for the application.
- * It determines whether to show the splash screen, authentication stack, or main stack
+ * It determines whether to show the authentication stack or main stack
  * based on the user's authentication status and profile setup.
  *
  * @returns  The rendered root navigator.
  */
 const RootNavigator = () => {
     const { userInfo, setUserInfo, userLoading, signOutUser } = useContext(UserContext)!;
-    const [splashLoading, setSplashLoading] = useState<boolean>(true);
 
     /**
      * OLD IMPLEMENTATION - checkDataExpiration that is originally created to update a user data if it is expired
@@ -102,11 +101,6 @@ const RootNavigator = () => {
 
         handleBannedUser();
     }, [auth.currentUser?.uid])
-
-
-    if (splashLoading) {
-        return <Splash setIsLoading={setSplashLoading} />;
-    }
 
     if (userLoading) {
         return <RenderUserLoading />;

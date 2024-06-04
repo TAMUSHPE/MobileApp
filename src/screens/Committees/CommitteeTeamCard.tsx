@@ -1,9 +1,11 @@
 import { Image, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { CommitteeTeamCardProps } from '../../types/navigation'
+import { CommitteesStackParams } from '../../types/navigation'
 import { getBadgeColor, isMemberVerified } from '../../helpers/membership'
 import { Images } from '../../../assets'
 import TwitterSvg from '../../components/TwitterSvg'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { PublicUserInfo } from '../../types/user'
 
 const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigation }) => {
     if (!userData || Object.keys(userData).length === 0) {
@@ -51,6 +53,11 @@ const CommitteeTeamCard: React.FC<CommitteeTeamCardProps> = ({ userData, navigat
             </View>
         </TouchableOpacity>
     )
+}
+
+type CommitteeTeamCardProps = {
+    userData: PublicUserInfo;
+    navigation?: NativeStackNavigationProp<CommitteesStackParams>
 }
 
 export default CommitteeTeamCard
