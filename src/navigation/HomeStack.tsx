@@ -1,7 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { HomeStackParams } from "../types/navigation"
-import PublicProfileScreen from "../screens/UserProfile/PublicProfile";
+import PublicProfileScreen from "../screens/userProfile/PublicProfile";
 import Home from "../screens/home/Home"
 import EventInfo from "../screens/events/EventInfo";
 import AdminDashboard from "../screens/admin/AdminDashboard";

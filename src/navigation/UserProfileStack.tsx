@@ -1,11 +1,11 @@
 import React, { useContext } from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import PublicProfileScreen from "../screens/UserProfile/PublicProfile";
-import { AboutSettingsScreen, AccountSettingsScreen, DisplaySettingsScreen, FAQSettingsScreen, FeedBackSettingsScreen, ProfileSettingsScreen, SettingsScreen } from "../screens/UserProfile/Settings";
+import PublicProfileScreen from "../screens/userProfile/PublicProfile";
+import { AboutSettingsScreen, AccountSettingsScreen, DisplaySettingsScreen, FAQSettingsScreen, FeedBackSettingsScreen, ProfileSettingsScreen, SettingsScreen } from "../screens/userProfile/Settings";
 import { UserContext } from "../context/UserContext";
 import { UserProfileStackParams } from "../types/navigation";
 import { auth } from "../config/firebaseConfig";
-import PersonalEventLog from "../screens/UserProfile/PersonalEventLog";
+import PersonalEventLog from "../screens/userProfile/PersonalEventLog";
 
 const UserProfileStack = () => {
     const Stack = createNativeStackNavigator<UserProfileStackParams>();

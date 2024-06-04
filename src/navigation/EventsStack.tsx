@@ -11,7 +11,7 @@ import SetSpecificEventDetails from "../screens/events/SetSpecificEventDetails";
 import FinalizeEvent from "../screens/events/FinalizeEvent";
 import SetLocationEventDetails from "../screens/events/SetLocationEventDetails";
 import EventVerification from "../screens/events/EventVerification";
-import PublicProfileScreen from "../screens/UserProfile/PublicProfile";
+import PublicProfileScreen from "../screens/userProfile/PublicProfile";
 
 const EventsStack = () => {
     const Stack = createNativeStackNavigator<EventsStackParams>();

@@ -2,7 +2,7 @@ import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CommitteesStackParams } from '../types/navigation';
 import CommitteeScreen from "../screens/committees/Committee";
-import PublicProfileScreen from "../screens/UserProfile/PublicProfile";
+import PublicProfileScreen from "../screens/userProfile/PublicProfile";
 import CommitteeEditor from "../screens/committees/CommitteeEditor";
 import EventInfo from "../screens/events/EventInfo";
 import CommitteesScreen from "../screens/committees/Committees";
