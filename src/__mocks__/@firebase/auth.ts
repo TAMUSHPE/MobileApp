@@ -1,5 +1,14 @@
 import { FirebaseApp, initializeApp } from "firebase/app";
-import { Auth, AuthProvider, AuthSettings, CompleteFn, Config, EmulatorConfig, ErrorFn, IdTokenResult, NextOrObserver, Persistence, PopupRedirectResolver, Unsubscribe, User, UserCredential, UserInfo, UserMetadata } from "firebase/auth";
+import { Auth, AuthProvider, AuthSettings, CompleteFn, Config, Dependencies, EmulatorConfig, ErrorFn, IdTokenResult, NextOrObserver, Persistence, PopupRedirectResolver, Unsubscribe, User, UserCredential, UserInfo, UserMetadata } from "firebase/auth";
+
+const firebaseConfig = {
+    apiKey: process.env.GOOGLE_API_KEY,
+    authDomain: "tamushpemobileapp.firebaseapp.com",
+    projectId: "tamushpemobileapp",
+    storageBucket: "tamushpemobileapp.appspot.com",
+    messagingSenderId: "600060629240",
+    appId: "1:600060629240:web:1e97e43973746bcc266b0d"
+};
 
 /**
  * Barebones implementation of Auth to work with unit tests.
@@ -66,10 +75,9 @@ class MockAuth implements Auth {
         this.settings = {
             appVerificationDisabledForTesting: true
         };
-
-        this.app = initializeApp();
+        
+        this.app = initializeApp(firebaseConfig);
     }
-
 }
 
 /**
@@ -154,21 +162,21 @@ class MockAdminUser extends MockUser {
     }
 }
 
-function initializeAuth(app?: FirebaseApp): Auth {
+const initializeAuth = jest.fn((app?: FirebaseApp, deps?: Dependencies | undefined): Auth => {
     const auth = new MockAuth();
     if (app) {
         auth.app = app;
     }
     return auth;
-}
+});
 
-function getAuth(app?: FirebaseApp): Auth {
+const getAuth = jest.fn((app?: FirebaseApp): Auth => {
     return initializeAuth(app);
-}
+});
 
-function connectAuthEmulator(auth: Auth, url: string, options?: { disableWarnings: boolean; }): void { }
+const connectAuthEmulator = jest.fn((auth: Auth, url: string, options?: { disableWarnings: boolean; }): void => { });
 
-async function signIn(auth: Auth): Promise<UserCredential> {
+const signIn = jest.fn(async (auth: Auth): Promise<UserCredential> => {
     const user = new MockUser();
 
     auth.updateCurrentUser(user);
@@ -178,17 +186,15 @@ async function signIn(auth: Auth): Promise<UserCredential> {
         providerId: null,
         operationType: "signIn"
     }
-}
+});
 
-async function signInWithPopup(auth: Auth, provider: AuthProvider, resolver?: PopupRedirectResolver | undefined): Promise<UserCredential> {
+const signInWithPopup = jest.fn((auth: Auth, provider: AuthProvider, resolver?: PopupRedirectResolver | undefined): Promise<UserCredential> => {
     return signIn(auth);
-}
+});
 
-async function signInAnonymously(auth: Auth) {
-    return signIn(auth);
-}
+const signInAnonymously = jest.fn(signIn);
 
-async function deleteUser(user: User): Promise<void> { }
+const deleteUser = jest.fn(async (user: User): Promise<void> => { });
 
 export {
     getAuth,
