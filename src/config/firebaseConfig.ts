@@ -40,20 +40,17 @@ const functions = getFunctions(app);
 
 if (process.env.FIREBASE_EMULATOR_ADDRESS !== undefined) {
     const address = process.env.FIREBASE_EMULATOR_ADDRESS;
+    console.debug("Connecting to firebase emulators.");
     if(process.env.FIREBASE_AUTH_PORT !== undefined){
-        console.debug(`Connecting auth to http://${address}:${process.env.FIREBASE_AUTH_PORT}`);
         connectAuthEmulator(auth, `http://${address}:${process.env.FIREBASE_AUTH_PORT}`);
     }
     if(process.env.FIREBASE_FIRESTORE_PORT !== undefined){
-        console.debug(`Connecting to firestore at http://${address}:${process.env.FIREBASE_FIRESTORE_PORT}`);
         connectFirestoreEmulator(db, address, Number(process.env.FIREBASE_FIRESTORE_PORT));
     }
     if(process.env.FIREBASE_CLOUD_FUNCTIONS_PORT !== undefined){
-        console.debug(`Connecting to cloud functions at http://${address}:${process.env.FIREBASE_CLOUD_FUNCTIONS_PORT}`);
         connectFunctionsEmulator(functions, address, Number(process.env.FIREBASE_CLOUD_FUNCTIONS_PORT));
     }
     if(process.env.FIREBASE_STORAGE_PORT !== undefined){
-        console.debug(`Connecting to cloud functions at http://${address}:${process.env.FIREBASE_STORAGE_PORT}`);
         connectStorageEmulator(storage, address, Number(process.env.FIREBASE_STORAGE_PORT));
     }
 }
