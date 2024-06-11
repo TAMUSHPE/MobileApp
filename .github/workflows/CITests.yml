@@ -39,7 +39,6 @@ jobs:
           run: | 
             yarn install
             npm install -g firebase-tools
-            npm ci
             
           
         - name: Run tests
