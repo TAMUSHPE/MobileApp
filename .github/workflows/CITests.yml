@@ -28,20 +28,19 @@ jobs:
             FLICKER_USER_ID: ${{ secrets.FLICKER_USER_ID }}
             FLICKER_API_KEY: ${{ secrets.FLICKER_API_KEY }}
             GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
-          run: echo "Environment variables set"
-          
-        - name: Install dependencies
-          run: yarn install
-          
-        - name: Run tests
-          env:
-            GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-            FLICKER_USER_ID: ${{ secrets.FLICKER_USER_ID }}
-            FLICKER_API_KEY: ${{ secrets.FLICKER_API_KEY }}
-            GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
             FIREBASE_EMULATOR_ADDRESS: 127.0.0.1
             FIREBASE_AUTH_PORT: 9099
             FIREBASE_FIRESTORE_PORT: 8080
             FIREBASE_CLOUD_FUNCTIONS_PORT: 5001
             FIREBASE_STORAGE_PORT: 9199
-          run: yarn test
+          run: echo "Environment variables set"
+          
+        - name: Install dependencies
+          run: | 
+            yarn install
+            npm install -g firebase-tools
+            npm ci
+            
+          
+        - name: Run tests
+          run: firebase emulators:exec \"yarn test\""
