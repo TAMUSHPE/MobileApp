@@ -154,17 +154,19 @@ class MockAdminUser extends MockUser {
     }
 }
 
-function getAuth(app?: FirebaseApp): Auth {
-    return new MockAuth();
-}
-
 function initializeAuth(app?: FirebaseApp): Auth {
-    return new MockAuth();
+    const auth = new MockAuth();
+    if (app) {
+        auth.app = app;
+    }
+    return auth;
 }
 
-function connectAuthEmulator(auth: Auth, url: string, options?: { disableWarnings: boolean; }): void {
-
+function getAuth(app?: FirebaseApp): Auth {
+    return initializeAuth(app);
 }
+
+function connectAuthEmulator(auth: Auth, url: string, options?: { disableWarnings: boolean; }): void { }
 
 async function signIn(auth: Auth): Promise<UserCredential> {
     const user = new MockUser();
