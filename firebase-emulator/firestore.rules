@@ -1,0 +1,104 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  	function isAdmin(request){
+    	return request.auth.token.admin == true;
+    }
+    
+    function isOfficer(request){
+    	return request.auth.token.officer == true;
+    }
+    
+    function isDeveloper(request){
+    	return request.auth.token.developer == true;
+    }
+    
+    function isSuperUser(request){
+    	return isAdmin(request) || isOfficer(request) || isDeveloper(request);
+    }
+  
+    match /events/{document=**} {
+      allow read: if true
+      allow create, write, delete, update: if request.auth.uid != null && isSuperUser(request);
+    }
+    
+    match /users/{userId} {
+    	match /private/{document=**}{
+      	allow read, write, create, update, delete: if request.auth.uid != null && request.auth.uid == userId;
+      }
+      match /event-logs/{document=**}{
+      	allow read: if request.auth.uid != null;
+        allow write: if request.auth.uid != null && isSuperUser(request);
+      }
+      allow read: if request.auth.uid != null;
+      allow create, write, update, delete: if request.auth.uid != null && (request.auth.uid == userId || isSuperUser(request));
+    }
+    
+    match /deleted-accounts/{userId}/{document=**} {
+    	allow read, write, create, update, delete: if request.auth.uid != null && request.auth.uid == userId;
+    }
+    
+    
+    match /office-hours {
+    	match /officer-log/{document=**} {
+      	allow read, write, create, update, delete: if request.auth.uid != null && isSuperUser(request);
+      }
+      match /member-log/{document=**} {
+      	allow read, write, create, update, delete: if request.auth.uid != null
+      }
+      match /officer-count {
+        allow read: if request.auth.uid != null;
+        allow write, create, update, delete: if request.auth.uid != null && isSuperUser(request);
+      }
+      match /officers-status/officers/{document=**} {
+      	allow read, create, write, update, delete: if request.auth.uid != null && isSuperUser(request);
+      }
+    }
+    
+    match /committees/{document=**} {
+  		allow read: if request.auth.uid != null;
+      allow write,create,update,delete: if request.auth.uid != null && isSuperUser(request);
+		}
+    
+    match /member-of-the-month/{document=**} {
+      allow read: if request.auth.uid != null;
+      allow write,create,update,delete: if request.auth.uid != null && isSuperUser(request);
+    }
+    
+    match /restrictions/{document=**}{
+    	allow read: if request.auth.uid != null;
+    	allow write, create, update, delete: if request.auth.uid != null && isSuperUser(request);
+    }
+    
+    match /resumes/{document=**} {
+      allow read, write,create,update,delete: if request.auth.uid != null && isSuperUser(request);
+    }
+    
+    match /links/{document=**} {
+    	allow read: if request.auth.uid != null;
+      allow write,create,update,delete: if request.auth.uid != null && isSuperUser(request);
+    }
+    
+    match /feedback/{document=**} {
+    	allow read,write: if request.auth.uid != null
+    	allow create,update,delete: if request.auth.uid != null;
+    }
+    
+    match /memberSHPE/{userId} {
+    	allow read,write,create,update,delete: if request.auth.uid != null && (request.auth.uid == userId || isSuperUser(request));
+    }
+    
+    match /shirt-sizes/{userId} {
+    	allow read,write,create,update,delete: if request.auth.uid != null && (request.auth.uid == userId || isSuperUser(request));
+    }
+    
+    match /resumeVerification/{userId} {
+    	allow read,write,create,update,delete: if request.auth.uid != null && (request.auth.uid == userId || isSuperUser(request));
+    }
+    
+    match /committeeVerification/{committee}/requests/{userId} {
+    	allow read,write,create,update,delete: if request.auth.uid != null && (request.auth.uid == userId || isSuperUser(request));
+    }
+  }
+}
