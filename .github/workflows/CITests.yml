@@ -42,4 +42,4 @@ jobs:
             
           
         - name: Run tests
-          run: firebase emulators:exec \"yarn test\""
+          run: firebase emulators:exec \"yarn test\"
