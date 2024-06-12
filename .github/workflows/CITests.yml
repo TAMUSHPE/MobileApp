@@ -13,6 +13,7 @@ jobs:
         strategy:
             matrix:
                 node-version: [ 18.x ]
+                java-version: [ 21.x ]
 
         steps:
         - uses: actions/checkout@v3
@@ -21,6 +22,11 @@ jobs:
           uses: actions/setup-node@v3
           with:
             node-version: ${{ matrix.node-version }}
+
+        - name: Use Java ${{ matrix.java-version }}
+          uses: actions/setup-java@v1.3.0
+          with:
+            java-version: ${{ matrix.java-version }}
             
         - name: Set Environment Variables
           env:
@@ -35,11 +41,16 @@ jobs:
             FIREBASE_STORAGE_PORT: 9199
           run: echo "Environment variables set"
           
-        - name: Install dependencies
+        - name: Install Dependencies
           run: | 
             yarn install
-            npm install -g firebase-tools
+            yarn global add firebase-tools
             
-          
-        - name: Run tests
-          run: firebase emulators:exec \"yarn test\"
+        - name: Build Cloud Functions
+          working-directory: ./functions
+          run: |
+            npm install
+            npm run build
+
+        - name: Run Tests
+          run: firebase emulators:exec 'yarn test'
