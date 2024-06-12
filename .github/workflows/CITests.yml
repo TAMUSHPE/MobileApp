@@ -2,7 +2,7 @@ name: Node CI Tests
 
 on:
     push:
-        branches: [ "main", "firebase-emulator" ]
+        branches: [ "main" ]
     pull_request:
         branches: [ "main", "dev" ]
 
