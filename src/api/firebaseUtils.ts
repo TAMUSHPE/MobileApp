@@ -89,8 +89,11 @@ export const getPrivateUserData = async (uid: string = ""): Promise<PrivateUserI
  * @param data - The data to be stored as private data. Any pre-existing fields in Firestore will not be removed.
  */
 export const setPrivateUserData = async (data: PrivateUserInfo) => {
+    if (!auth.currentUser?.uid) {
+        throw new Error("Authentication Error", { cause: "Current user uid is undefined" });
+    }
+
     await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), data, { merge: true })
-        .catch(err => console.error(err));
 };
 
 
