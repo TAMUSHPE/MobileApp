@@ -158,7 +158,7 @@ type FetchMembersOptions = {
     filter: UserFilter,
 };
 
-export const getUserForMemberList = async (options: FetchMembersOptions) => {
+export const getUserForMemberList = async (options: FetchMembersOptions): Promise<{ members: QueryDocumentSnapshot<DocumentData, DocumentData>[]; lastSnapshot: QueryDocumentSnapshot<DocumentData, DocumentData>; hasMoreUser: boolean; } | { members: never[]; lastSnapshot: null; hasMoreUser: boolean; }> => {
     const {
         lastUserSnapshot,
         numLimit = null,
