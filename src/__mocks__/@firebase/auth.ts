@@ -50,11 +50,8 @@ class MockAuth implements Auth {
         this.languageCode = "en";
     }
 
-    signOut(): Promise<void> {
-        return new Promise((resolve) => {
-            this.currentUser = null;
-            resolve()
-        });
+    async signOut(): Promise<void> {
+        this.currentUser = null;
     }
 
     constructor() {
@@ -75,7 +72,7 @@ class MockAuth implements Auth {
         this.settings = {
             appVerificationDisabledForTesting: true
         };
-        
+
         this.app = initializeApp(firebaseConfig);
     }
 }
@@ -196,11 +193,16 @@ const signInAnonymously = jest.fn(signIn);
 
 const deleteUser = jest.fn(async (user: User): Promise<void> => { });
 
+const signOut = jest.fn(async (auth: Auth): Promise<void> => {
+    auth.signOut();
+});
+
 export {
     getAuth,
     initializeAuth,
     signInWithPopup,
     signInAnonymously,
+    signOut,
     connectAuthEmulator,
     deleteUser
 };
