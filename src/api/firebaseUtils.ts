@@ -350,7 +350,8 @@ export const getCommittee = async (firebaseDocName: string): Promise<Committee |
 
 
 export const setCommitteeData = async (committeeData: Committee) => {
-    if (committeeData.head && (await getPublicUserData(committeeData.head)) === undefined) {
+    const headDocRef = doc(db, "users", committeeData.head ?? "");
+    if (committeeData.head && !(await getDoc(headDocRef)).exists()) {
         throw new Error("Bad Head UID", { cause: `Invalid head UID: ${committeeData.head}. This user likely does not exist.` });
     }
 

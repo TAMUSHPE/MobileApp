@@ -1,5 +1,5 @@
 import { signInAnonymously, signOut } from "firebase/auth";
-import { deleteCommittee, getCommittee, getPrivateUserData, getPublicUserData, getUser, getUserByEmail, getUserForMemberList, initializeCurrentUserData, setCommitteeData, setPrivateUserData, setPublicUserData } from "../firebaseUtils";
+import { deleteCommittee, getCommittee, getPrivateUserData, getPublicUserData, getUser, getUserByEmail, getUserForMemberList, initializeCurrentUserData, resetCommittee, setCommitteeData, setPrivateUserData, setPublicUserData } from "../firebaseUtils";
 import { auth, db, storage } from "../../config/firebaseConfig";
 import { PrivateUserInfo, PublicUserInfo, User } from "../../types/user";
 import { validateTamuEmail } from "../../helpers";
@@ -41,9 +41,13 @@ describe("User Info", () => {
         const user = await initializeCurrentUserData();
         expect(user).toBeDefined();
 
+        // Initializing again should not modify user
+        expect((await initializeCurrentUserData())).toMatchObject(user);
+
         const userData = await getUser(auth.currentUser?.uid!);
         expect(userData).toBeDefined();
         expect(user).toMatchObject<User>(userData!);
+
 
         expect(auth.currentUser?.uid).toBeDefined();
         expect(auth.currentUser?.email).toBeDefined();
@@ -130,13 +134,42 @@ describe("Committee Info", () => {
             head: "TESTUSER1",
             firebaseDocName: "DELETINGCOMMITTEE",
             name: "Bad Committee",
+            memberApplicationLink: "https://www.test.asdf/notreal",
+            leadApplicationLink: "https://coolwebsite.co.uk"
         }
 
         await setCommitteeData(committeeData);
         expect((await getCommittee(committeeData.firebaseDocName!))).not.toBeNull();
 
-        await deleteCommittee(committeeData.name!);
-        expect((await getCommittee(committeeData.name!))).toBeNull();
+        await deleteCommittee(committeeData.firebaseDocName!);
+        expect((await getCommittee(committeeData.firebaseDocName!))).toBeNull();
+    });
+
+    test("Can be reset", async () => {
+        const committeeData: Committee = {
+            head: "TESTUSER2",
+            firebaseDocName: "RESETTINGCOMMITTEE",
+            name: "Resetting Committee",
+            memberCount: 2,
+        }
+
+        // Check that users.json has not been changed
+        let committeeMemberInfo = await getPublicUserData("TESTUSER1");
+        expect(typeof committeeMemberInfo?.committees).toBe("object");
+        expect(committeeMemberInfo?.committees!).toContain("QUERYINGCOMMITTEE");
+        expect(committeeMemberInfo?.committees!).toContain(committeeData.firebaseDocName);
+
+        await setCommitteeData(committeeData);
+        await resetCommittee(committeeData.firebaseDocName!);
+
+        const obtainedCommitteeData = await getCommittee(committeeData.firebaseDocName!);
+        expect(obtainedCommitteeData?.memberCount).toBe(0);
+
+        // Expect user to be removed from reset committee and stay in other committees
+        committeeMemberInfo = await getPublicUserData("TESTUSER1");
+        expect(typeof committeeMemberInfo?.committees).toBe("object");
+        expect(committeeMemberInfo?.committees!).toContain("QUERYINGCOMMITTEE");
+        expect(committeeMemberInfo?.committees!).not.toContain(committeeData.firebaseDocName);
     });
 
 });
