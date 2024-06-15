@@ -112,6 +112,11 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
                 haptic: Haptics.NotificationFeedbackType.Error,
                 bgColor: "bg-dark-navy"
             },
+            [EventLogStatus.OUT_OF_RANGE]: {
+                animation: require("../../../assets/red_x_animation.json"),
+                haptic: Haptics.NotificationFeedbackType.Error,
+                bgColor: "bg-dark-navy"
+            },
             // Default case for missing EventLogStatus.EVENT_ONGOING
             [EventLogStatus.EVENT_ONGOING]: {
                 animation: require("../../../assets/red_x_animation.json"),

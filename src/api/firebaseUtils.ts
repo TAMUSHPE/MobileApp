@@ -701,6 +701,8 @@ export const signInToEvent = async (eventID: string, uid?: string): Promise<Even
                     return EventLogStatus.EVENT_NOT_FOUND;
                 case 'functions/deadline-exceeded':
                     return EventLogStatus.EVENT_OVER;
+                case 'functions/out-of-range':
+                    return EventLogStatus.OUT_OF_RANGE;
                 default:
                     console.error(err);
                     return EventLogStatus.ERROR;
@@ -747,6 +749,8 @@ export const signOutOfEvent = async (eventID: string, uid?: string): Promise<Eve
                     return EventLogStatus.EVENT_NOT_FOUND;
                 case 'functions/deadline-exceeded':
                     return EventLogStatus.EVENT_OVER;
+                case 'functions/out-of-range':
+                    return EventLogStatus.OUT_OF_RANGE;
                 default:
                     console.error(err);
                     return EventLogStatus.ERROR;
