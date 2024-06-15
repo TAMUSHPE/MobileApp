@@ -2,6 +2,7 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import React, { useContext, useEffect } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
+import { Octicons } from '@expo/vector-icons';
 import manageNotificationPermissions from '../../helpers/pushNotification';
 import { HomeStackParams } from "../../types/navigation"
 import MOTMCard from '../../components/MOTMCard';
@@ -33,13 +34,19 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             <StatusBar style='dark' />
             {/* Header */}
             <SafeAreaView className='flex-1 bg-white' edges={["top"]}>
-                <View className='flex-row px-5 pb-4'>
+                <View className='flex-row px-6 pb-4 mt-2 items-center'>
                     <View className='flex-1 justify-center items-start'>
                         <Image
                             className="h-10 w-52"
                             source={Images.LOGO_LIGHT}
                         />
                     </View>
+                    <TouchableOpacity
+                        className='px-2 py-2'
+                        onPress={() => navigation.navigate("SettingsScreen")}
+                    >
+                        <Octicons name="gear" size={24} color="black" />
+                    </TouchableOpacity>
                 </View>
             </SafeAreaView>
 

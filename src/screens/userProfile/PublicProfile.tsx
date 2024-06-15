@@ -231,7 +231,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                         <View className='flex-col relative items-center'>
                             {isCurrentUser &&
                                 <TouchableOpacity
-                                    onPress={() => navigation.navigate("SettingsScreen")}
+                                    onPress={() => navigation.navigate("ProfileSettingsScreen")}
                                     className="rounded-md px-3 py-2"
                                     style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
                                 >
