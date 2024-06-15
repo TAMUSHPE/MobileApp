@@ -103,7 +103,10 @@ class MockUser implements User {
             signInProvider: null,
             signInSecondFactor: null,
             token: this.refreshToken,
-            claims: {}
+            claims: {
+                admin: true,
+                officer: true,
+            }
         }
     }
 
@@ -139,7 +142,7 @@ class MockUser implements User {
         this.phoneNumber = null;
         this.photoURL = null;
         this.providerId = "TEST";
-        this.uid = "ABCD1234";
+        this.uid = "CurrentUser";
     }
 }
 
