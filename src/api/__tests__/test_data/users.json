@@ -1,0 +1,98 @@
+[
+    {
+        "publicInfo": {
+            "uid": "TESTUSER1",
+            "classYear": "2025",
+            "major": "CPSC",
+            "roles": {
+                "admin": true,
+                "secretary": false
+            }
+        },
+        "private": {
+            "privateInfo": {
+                "settings": {
+                    "darkMode": false
+                }
+            },
+            "moderationData": {}
+        }
+    },
+    {
+        "publicInfo": {
+            "uid": "TESTUSER2",
+            "classYear": "2025",
+            "major": "CSCE",
+            "roles": {
+                "reader": true,
+                "officer": false,
+                "admin": false,
+                "developer": false,
+                "lead": false,
+                "representative": false
+            }
+        },
+        "private": {
+            "privateInfo": {
+                "settings": {
+                    "darkMode": false
+                }
+            },
+            "moderationData": {}
+        }
+    },
+    {
+        "publicInfo": {
+            "uid": "TESTUSER3",
+            "classYear": "2025",
+            "major": "CSCE",
+            "roles": {
+                "admin": true,
+                "secretary": false
+            }
+        },
+        "private": {
+            "privateInfo": {
+                "settings": {
+                    "darkMode": false
+                }
+            },
+            "moderationData": {}
+        }
+    },
+    {
+        "publicInfo": {
+            "uid": "TESTUSER4",
+            "classYear": "2025",
+            "major": "CSCE",
+            "roles": {
+                "admin": true,
+                "secretary": false,
+                "officer": true
+            }
+        },
+        "private": {
+            "privateInfo": {
+                "settings": {
+                    "darkMode": false
+                }
+            },
+            "moderationData": {}
+        }
+    },
+    {
+        "publicInfo": {
+            "uid": "MALFORMEDUSER",
+            "classYear": null,
+            "major": 5,
+            "tomato": "sauce"
+        },
+        "private": {
+            "privateInfo": {
+                "settings": {
+                    "bananas": 80
+                }
+            }
+        }
+    }
+]
