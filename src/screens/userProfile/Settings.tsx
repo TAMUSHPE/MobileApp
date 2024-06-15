@@ -55,30 +55,6 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>)
         >
             <StatusBar style={darkMode ? "light" : "dark"} />
 
-            {/* <View className='flex-1 w-full px-4 mt-10 mb-4'>
-                <TouchableOpacity
-                    onPress={() => navigation.navigate("ProfileSettingsScreen")}
-                >
-                    <View className="flex-row">
-                        <Image
-                            className="flex w-16 h-16 rounded-full"
-                            defaultSource={Images.DEFAULT_USER_PICTURE}
-                            source={photoURL ? { uri: photoURL as string } : Images.DEFAULT_USER_PICTURE}
-                        />
-                        <View className='ml-3 my-1'>
-                            <View>
-                                <View className="flex-row items-center">
-                                    <Text className={`font-semibold text-2xl ${darkMode && "text-white"}`}>{name}</Text>
-                                    {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
-
-                                </View>
-                                <Text className={`text-md text-grey font-semibold ${darkMode && "text-white"}`}>Edit Profile</Text>
-                            </View>
-                        </View>
-                    </View>
-                </TouchableOpacity>
-            </View> */}
-
             <SettingsButton
                 iconName='brightness-6'
                 mainText='Display'
