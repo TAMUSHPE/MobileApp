@@ -42,16 +42,24 @@ const Ishpe: React.FC<IShpeProps> = ({ navigation }) => {
                 getInterestsEvent(userInterests) as Promise<SHPEEventWithCommitteeData[]>
             ]);
 
-            // Merge and sort events by start date in ascending order
-            const mergedEvents = [...ishpeResponse, ...interestResponse];
+            const eventIdSet = new Set<string>();
+
+            const mergedEvents = [...ishpeResponse, ...interestResponse].filter(event => {
+                if (event.id && eventIdSet.has(event.id)) {
+                    return false;
+                } else if (event.id) {
+                    eventIdSet.add(event.id);
+                    return true;
+                } else {
+                    return false;
+                }
+            });
             mergedEvents.sort((a, b) => (a.startTime?.toDate().getTime() || 0) - (b.startTime?.toDate().getTime() || 0));
 
             setIshpeEvents(mergedEvents);
 
-            // Fetch generalEvents and filter out ishpeEvents and interestEvents
             const generalResponse = await getUpcomingEvents();
-            const filteredGeneralEvents = generalResponse.filter(generalEvent => generalEvent.general === true);
-            setGeneralEvents(filteredGeneralEvents);
+            setGeneralEvents(generalResponse);
 
         } catch (error) {
             console.error("Error retrieving events:", error);
