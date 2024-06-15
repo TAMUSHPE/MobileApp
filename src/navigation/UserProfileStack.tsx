@@ -6,6 +6,7 @@ import { UserContext } from "../context/UserContext";
 import { UserProfileStackParams } from "../types/navigation";
 import { auth } from "../config/firebaseConfig";
 import PersonalEventLog from "../screens/userProfile/PersonalEventLog";
+import MemberSHPE from "../screens/home/MemberSHPE";
 
 const UserProfileStack = () => {
     const Stack = createNativeStackNavigator<UserProfileStackParams>();
@@ -16,6 +17,7 @@ const UserProfileStack = () => {
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="PublicProfile" component={PublicProfileScreen} initialParams={{ uid: auth.currentUser?.uid }} />
             <Stack.Screen name="PersonalEventLogScreen" component={PersonalEventLog} />
+            <Stack.Screen name="MemberSHPE" component={MemberSHPE} />
 
             <Stack.Group
                 screenOptions={{
@@ -28,7 +30,7 @@ const UserProfileStack = () => {
             >
                 <Stack.Screen name="ProfileSettingsScreen" component={ProfileSettingsScreen} options={{ title: "Profile Settings" }} />
             </Stack.Group>
-        </Stack.Navigator >
+        </Stack.Navigator>
     );
 };
 

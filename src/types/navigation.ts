@@ -114,6 +114,7 @@ export type UserProfileStackParams = {
     PublicProfile: { uid: string; }
     PersonalEventLogScreen: undefined;
     ProfileSettingsScreen: undefined;
+    MemberSHPE: undefined;
 };
 
 
