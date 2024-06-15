@@ -10,7 +10,8 @@
             },
             "committees": [
                 "QUERYINGCOMMITTEE",
-                "RESETTINGCOMMITTEE"
+                "RESETTINGCOMMITTEE",
+                "DELETINGCOMMITTEE"
             ]
         },
         "private": {
