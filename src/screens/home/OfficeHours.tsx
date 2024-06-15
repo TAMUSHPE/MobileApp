@@ -63,7 +63,7 @@ const OfficeHours = () => {
 
                 <TouchableOpacity
                     onPress={() => {
-                        if (!userInfo?.publicInfo?.isStudent && officeCount > 0) {
+                        if (userInfo?.publicInfo?.isStudent && officeCount > 0) {
                             setConfirmVisible(!confirmVisible)
                         } else {
                             alert("You must be a student to knock on the wall.")
