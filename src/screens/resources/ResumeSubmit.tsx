@@ -4,8 +4,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext'
 import { auth, db } from '../../config/firebaseConfig'
-import { setPublicUserData } from '../../api/firebaseUtils'
-import { getBlobFromURI, selectFile, uploadFile } from '../../api/fileSelection'
+import { setPublicUserData, uploadFile } from '../../api/firebaseUtils'
+import { getBlobFromURI, selectFile } from '../../api/fileSelection'
 import { deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 import { CommonMimeTypes } from '../../helpers/validation'
 import { handleLinkPress } from '../../helpers/links';

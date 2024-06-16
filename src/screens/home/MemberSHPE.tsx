@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, Tex
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { UserContext } from '../../context/UserContext';
 import { auth, db } from '../../config/firebaseConfig';
-import { getBlobFromURI, selectFile, uploadFile } from '../../api/fileSelection';
+import { getBlobFromURI, selectFile } from '../../api/fileSelection';
 import { Timestamp, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { CommonMimeTypes } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
@@ -13,7 +13,7 @@ import { darkMode } from '../../../tailwind.config';
 import DismissibleModal from '../../components/DismissibleModal';
 import { Pressable } from 'react-native';
 import { LinkData } from '../../types/links';
-import { fetchLink } from '../../api/firebaseUtils';
+import { fetchLink, uploadFile } from '../../api/firebaseUtils';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const linkIDs = ["6", "7"]; // ids reserved for TAMU and SHPE National links

@@ -2,7 +2,7 @@ import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject, getDownloadURL, uploadBytes } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
-import { validateTamuEmail } from "../helpers/validation";
+import { validateFileBlob, validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/user";
 import { Committee } from "../types/committees";
 import { SHPEEvent, EventLogStatus, UserEventData } from "../types/events";
@@ -314,6 +314,65 @@ export const uploadFileToFirebase = (file: Uint8Array | ArrayBuffer | Blob, path
 };
 
 
+export const uploadFile = async (
+    blob: Blob,
+    validMimeTypes: string[] = [],
+    storagePath: string,
+    onSuccess: ((url: string) => Promise<void>) | null = null,
+    onProgress: ((progress: number) => void) | null = null,
+    setLoading: ((load: boolean) => void) | null = null
+) => {
+    if (validMimeTypes.length > 0 && !validateFileBlob(blob, validMimeTypes, true)) {
+        if (setLoading !== null) {
+            setLoading(false);
+        }
+        return;
+    }
+
+    const uploadTask = uploadFileToFirebase(blob, storagePath);
+
+    uploadTask.on("state_changed",
+        (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            if (onProgress !== null) {
+                onProgress(progress);
+            }
+            console.log(`Upload is ${progress}% done`);
+        },
+        (error) => {
+            if (setLoading !== null) {
+                setLoading(false);
+            }
+            switch (error.code) {
+                case "storage/unauthorized":
+                    alert("File could not be uploaded due to user permissions.");
+                    break;
+                case "storage/canceled":
+                    alert("File upload cancelled");
+                    break;
+                default:
+                    alert("An unknown error has occurred");
+                    break;
+            }
+        },
+        async () => {
+            try {
+                const URL = await getDownloadURL(uploadTask.snapshot.ref);
+                if (onSuccess !== null) {
+                    await onSuccess(URL);
+                }
+            } catch (error) {
+                console.error("Error in uploadFile:", error);
+            } finally {
+                if (setLoading !== null) {
+                    setLoading(false);
+                }
+            }
+        }
+    );
+};
+
+
 export const getCommittees = async (): Promise<Committee[]> => {
     try {
         const committeeCollectionRef = collection(db, 'committees');
@@ -546,26 +605,16 @@ export const getEvent = async (eventID: string): Promise<null | SHPEEvent> => {
     }
 }
 
-type SHPEEventWithCommitteeData = SHPEEvent & { committeeData?: Committee | undefined };
-
-
 export const getUpcomingEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
     const q = query(eventsRef, where("endTime", ">", currentTime));
     const querySnapshot = await getDocs(q);
-    const events: SHPEEventWithCommitteeData[] = [];
+    const events: SHPEEvent[] = [];
 
     for (const doc of querySnapshot.docs) {
         const eventData = doc.data();
-        let committeeData: Committee | undefined;
-
-        if (eventData.committee) {
-            committeeData = await getCommittee(eventData.committee) || undefined;
-        }
-
-
-        events.push({ id: doc.id, ...eventData, committeeData: committeeData });
+        events.push({ id: doc.id, ...eventData });
     }
 
     events.sort((a, b) => {
@@ -590,17 +639,11 @@ export const getPastEvents = async (numLimit?: number) => {
     }
 
     const querySnapshot = await getDocs(q);
-    const events: SHPEEventWithCommitteeData[] = [];
+    const events: SHPEEvent[] = [];
 
     for (const doc of querySnapshot.docs) {
         const eventData = doc.data();
-        let committeeData: Committee | undefined;
-
-        if (eventData.committee) {
-            committeeData = await getCommittee(eventData.committee) || undefined;
-        }
-
-        events.push({ id: doc.id, ...eventData, committeeData });
+        events.push({ id: doc.id, ...eventData });
     }
 
     // Events are already ordered by endTime due to the query, no need to sort again

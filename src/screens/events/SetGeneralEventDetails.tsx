@@ -10,12 +10,13 @@ import { UserContext } from '../../context/UserContext';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { CommonMimeTypes, MillisecondTimes, validateFileBlob } from '../../helpers';
 import { formatDate, formatTime } from '../../helpers/timeUtils';
-import { getBlobFromURI, selectImage, uploadFile } from '../../api/fileSelection';
+import { getBlobFromURI, selectImage } from '../../api/fileSelection';
 import * as ImagePicker from "expo-image-picker";
 import { auth } from '../../config/firebaseConfig';
 import { UploadTask } from 'firebase/storage';
 import ProgressBar from '../../components/ProgressBar';
 import { StatusBar } from 'expo-status-bar';
+import { uploadFile } from '../../api/firebaseUtils';
 
 const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
