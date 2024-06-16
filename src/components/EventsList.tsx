@@ -1,10 +1,11 @@
 import { View, Text, ActivityIndicator, Image, TouchableOpacity } from 'react-native'
-import React from 'react'
+import React, { useContext } from 'react'
 import { Timestamp } from 'firebase/firestore';
 import { Committee, getLogoComponent } from '../types/committees';
 import { SHPEEvent } from '../types/events';
 import { Images } from '../../assets';
 import { monthNames } from '../helpers/timeUtils';
+import { UserContext } from '../context/UserContext';
 
 const EventsList = ({ events, navigation, isLoading, showImage = true, onEventClick }: {
     events: SHPEEventWithCommitteeData[],
@@ -13,6 +14,12 @@ const EventsList = ({ events, navigation, isLoading, showImage = true, onEventCl
     showImage?: boolean
     onEventClick?: () => void
 }) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+
     if (isLoading) {
         return (
             <View className="flex-row justify-center items-center pb-8">
@@ -91,6 +98,15 @@ const EventsList = ({ events, navigation, isLoading, showImage = true, onEventCl
                                 <Text className="semibold text-md">{formatStartTime(event?.startTime!)}</Text>
                             </View>
                         </View>
+
+                        {hasPrivileges && (
+                            <TouchableOpacity
+                                onPress={() => { navigation.navigate("QRCode", { event: event }) }}
+                                className='bg-gray-600 absolute right-0 top-0 p-2'
+                            >
+                                <Text className='text-white'>QRCode</Text>
+                            </TouchableOpacity>
+                        )}
                     </TouchableOpacity>
                 );
             })}
