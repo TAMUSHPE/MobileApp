@@ -550,20 +550,7 @@ export const isUserInBlacklist = async (uid: string): Promise<boolean> => {
     }
 };
 
-/**
- * Creates a new SHPE event document in firestore
- * @param event Object with event details
- * @returns Document name in firestore. Null if error occurred
- */
-export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
-    try {
-        const docRef = await addDoc(collection(db, "events"), { ...event });
-        return docRef.id;
-    } catch (error) {
-        console.error("Error adding document: ", error);
-        return null;
-    }
-};
+
 
 /**
  * Updates a given event
@@ -604,52 +591,6 @@ export const getEvent = async (eventID: string): Promise<null | SHPEEvent> => {
         return null;
     }
 }
-
-export const getUpcomingEvents = async () => {
-    const currentTime = new Date();
-    const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endTime", ">", currentTime));
-    const querySnapshot = await getDocs(q);
-    const events: SHPEEvent[] = [];
-
-    for (const doc of querySnapshot.docs) {
-        const eventData = doc.data();
-        events.push({ id: doc.id, ...eventData });
-    }
-
-    events.sort((a, b) => {
-        const dateA = a.startTime ? a.startTime.toDate() : undefined;
-        const dateB = b.startTime ? b.startTime.toDate() : undefined;
-
-        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
-    });
-
-    return events;
-};
-
-export const getPastEvents = async (numLimit?: number) => {
-    const currentTime = new Date();
-    const eventsRef = collection(db, "events");
-    let q;
-
-    if (numLimit !== undefined) {
-        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"), limit(numLimit));
-    } else {
-        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"));
-    }
-
-    const querySnapshot = await getDocs(q);
-    const events: SHPEEvent[] = [];
-
-    for (const doc of querySnapshot.docs) {
-        const eventData = doc.data();
-        events.push({ id: doc.id, ...eventData });
-    }
-
-    // Events are already ordered by endTime due to the query, no need to sort again
-    return events;
-};
-
 
 export const destroyEvent = async (eventID: string) => {
     try {
@@ -1471,6 +1412,71 @@ export const fetchEventByName = async (eventName: string): Promise<SHPEEvent | n
         }
     } catch (error) {
         console.error('Error fetching event:', error);
+        return null;
+    }
+};
+
+
+// ============================================================================
+// Event Utilities
+// ============================================================================
+
+export const getUpcomingEvents = async () => {
+    const currentTime = new Date();
+    const eventsRef = collection(db, "events");
+    const q = query(eventsRef, where("endTime", ">", currentTime));
+    const querySnapshot = await getDocs(q);
+    const events: SHPEEvent[] = [];
+
+    for (const doc of querySnapshot.docs) {
+        const eventData = doc.data();
+        events.push({ id: doc.id, ...eventData });
+    }
+
+    events.sort((a, b) => {
+        const dateA = a.startTime ? a.startTime.toDate() : undefined;
+        const dateB = b.startTime ? b.startTime.toDate() : undefined;
+
+        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
+    });
+
+    return events;
+};
+
+export const getPastEvents = async (numLimit?: number) => {
+    const currentTime = new Date();
+    const eventsRef = collection(db, "events");
+    let q;
+
+    if (numLimit !== undefined) {
+        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"), limit(numLimit));
+    } else {
+        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const events: SHPEEvent[] = [];
+
+    for (const doc of querySnapshot.docs) {
+        const eventData = doc.data();
+        events.push({ id: doc.id, ...eventData });
+    }
+
+    // Events are already ordered by endTime due to the query, no need to sort again
+    return events;
+};
+
+/**
+ * Creates a new SHPE event document in firestore
+ * @param event Object with event details
+ * @returns Document name in firestore. Null if error occurred
+ */
+export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
+    try {
+        const docRef = await addDoc(collection(db, "events"), { ...event });
+        return docRef.id;
+    } catch (error) {
+        console.error("Error adding document: ", error);
         return null;
     }
 };
