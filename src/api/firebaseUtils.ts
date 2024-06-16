@@ -89,8 +89,11 @@ export const getPrivateUserData = async (uid: string = ""): Promise<PrivateUserI
  * @param data - The data to be stored as private data. Any pre-existing fields in Firestore will not be removed.
  */
 export const setPrivateUserData = async (data: PrivateUserInfo) => {
+    if (!auth.currentUser?.uid) {
+        throw new Error("Authentication Error", { cause: "Current user uid is undefined" });
+    }
+
     await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), data, { merge: true })
-        .catch(err => console.error(err));
 };
 
 
@@ -155,7 +158,7 @@ type FetchMembersOptions = {
     filter: UserFilter,
 };
 
-export const getUserForMemberList = async (options: FetchMembersOptions) => {
+export const getUserForMemberList = async (options: FetchMembersOptions): Promise<{ members: QueryDocumentSnapshot<DocumentData, DocumentData>[] | never[]; lastSnapshot: QueryDocumentSnapshot<DocumentData, DocumentData> | null; hasMoreUser: boolean; }> => {
     const {
         lastUserSnapshot,
         numLimit = null,
@@ -347,6 +350,15 @@ export const getCommittee = async (firebaseDocName: string): Promise<Committee |
 
 
 export const setCommitteeData = async (committeeData: Committee) => {
+    const headDocRef = doc(db, "users", committeeData.head ?? "");
+    if (committeeData.head && !(await getDoc(headDocRef)).exists()) {
+        throw new Error("Bad Head UID", { cause: `Invalid head UID: ${committeeData.head}. This user likely does not exist.` });
+    }
+
+    if (!committeeData.firebaseDocName) {
+        throw new Error("Bad Document Name", { cause: `Invalid firebaseDocName passed: '${committeeData.firebaseDocName}'. Name is falsy` });
+    }
+
     try {
         await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
             name: committeeData.name || "",

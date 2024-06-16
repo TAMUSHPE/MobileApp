@@ -1,0 +1,389 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "event-logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "creationTime",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "points",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "event-logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "signInTime",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "points",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "event-logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "verified",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "creationTime",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "points",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "event-logs",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "verified",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "points",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "committee",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "endDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "committee",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "endTime",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "eventType",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "endTime",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "notificationGroup",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "endDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "notificationGroup",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "endDate",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "notificationSent",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "startTime",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "office-hour-log",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "uid",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "timestamp",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "classYear",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "major",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "classYear",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "major",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "points",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "classYear",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "classYear",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "points",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "major",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "major",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "points",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "roles.lead",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "pointsThisMonth",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "name",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "points",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "pointsThisMonth",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "pointsThisMonth",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "roles.representative",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "pointsThisMonth",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "users",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "roles.officer",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "tamuEmail",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "name",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
