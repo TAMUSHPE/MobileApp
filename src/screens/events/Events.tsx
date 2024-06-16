@@ -114,26 +114,6 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                 {/* Filters */}
                 <ScrollView bounces={false} horizontal={true} className='pt-3 pb-2' showsHorizontalScrollIndicator={false}>
                     <View className='flex-row px-4 space-x-3'>
-                        {selectedFilter && (
-                            <TouchableOpacity
-                                className='h-8 w-8 items-center justify-center border border-red-1 rounded-full  bg-offwhite'
-                                style={{
-                                    shadowColor: "#000",
-                                    shadowOffset: {
-                                        width: 0,
-                                        height: 2,
-                                    },
-                                    shadowOpacity: 0.25,
-                                    shadowRadius: 3.84,
-
-                                    elevation: 5,
-                                }}
-                                onPress={() => setSelectedFilter(null)}
-                            >
-                                <Octicons name="x" size={16} color="#FF0000" />
-                            </TouchableOpacity>
-                        )}
-
                         <TouchableOpacity
                             className={`flex-row items-center justify-center rounded-md py-2 px-4 bg-offwhite ${selectedFilter === "myEvents" && 'bg-primary-blue border-primary-blue'}`}
                             style={{
