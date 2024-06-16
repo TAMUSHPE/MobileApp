@@ -58,6 +58,15 @@ export type HomeStackParams = {
     ShirtConfirm: undefined;
     InstagramPoints: undefined;
 
+    // Settings Screens
+    SettingsScreen: undefined;
+    ProfileSettingsScreen: undefined;
+    DisplaySettingsScreen: undefined;
+    AccountSettingsScreen: undefined;
+    FeedbackSettingsScreen: undefined;
+    FAQSettingsScreen: undefined;
+    AboutSettingsScreen: undefined;
+
     PublicProfile: { uid: string; };
 }
 
@@ -104,15 +113,8 @@ export type CommitteesStackParams = {
 export type UserProfileStackParams = {
     PublicProfile: { uid: string; }
     PersonalEventLogScreen: undefined;
-
-    // Settings Screens
-    SettingsScreen: undefined;
     ProfileSettingsScreen: undefined;
-    DisplaySettingsScreen: undefined;
-    AccountSettingsScreen: undefined;
-    FeedbackSettingsScreen: undefined;
-    FAQSettingsScreen: undefined;
-    AboutSettingsScreen: undefined;
+    MemberSHPE: undefined;
 };
 
 

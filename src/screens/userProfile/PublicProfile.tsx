@@ -231,7 +231,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                         <View className='flex-col relative items-center'>
                             {isCurrentUser &&
                                 <TouchableOpacity
-                                    onPress={() => navigation.navigate("SettingsScreen")}
+                                    onPress={() => navigation.navigate("ProfileSettingsScreen")}
                                     className="rounded-md px-3 py-2"
                                     style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
                                 >
@@ -251,8 +251,6 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                         <View className="flex-col justify-center mt-2">
                             <View className="relative flex-row items-center">
                                 <Text className="text-white text-3xl font-semibold">{name ?? "Name"}</Text>
-                                {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
-
                             </View>
                         </View>
                         <View className='items-center justify-center'>
@@ -271,6 +269,19 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                                         style={{ backgroundColor: 'rgba(0,0,0,0.3)', marginRight: 10 }}
                                     >
                                         <Text className='text-white text-xl'>Edit Role</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        }
+                        {(isVerified && isCurrentUser) &&
+                            <View className='flex items-center justify-center'>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <TouchableOpacity
+                                        onPress={() => navigation.navigate("MemberSHPE")}
+                                        className="rounded-md px-3 py-2"
+                                        style={{ backgroundColor: 'rgba(0,0,0,0.3)', marginRight: 10 }}
+                                    >
+                                        <Text className='text-white text-xl'>MemberSHPE</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
