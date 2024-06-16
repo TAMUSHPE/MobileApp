@@ -34,11 +34,11 @@ const HomeBottomTabs = () => {
     const BottomTabs = createBottomTabNavigator();
 
     const TAB_ICON_CONFIG: Record<TabName, OcticonIconName> = {
-        Home: 'home',
-        ResourcesStack: 'rows',
-        Events: "calendar",
-        Committees: 'stack',
-        Profile: 'person',
+        HomeTab: 'home',
+        ResourcesTab: 'rows',
+        EventsTab: "calendar",
+        CommitteesTab: 'stack',
+        ProfileTab: 'person',
     };
 
     const activeIconColor = 'black';
@@ -46,7 +46,7 @@ const HomeBottomTabs = () => {
     const iconSize = 28;
 
     const generateTabIcon = (routeName: TabName, focused: boolean): JSX.Element => {
-        if (routeName == 'Profile') {
+        if (routeName == 'ProfileTab') {
             return (
                 <View className='flex-col items-center justify-center'>
                     <Image
@@ -60,10 +60,7 @@ const HomeBottomTabs = () => {
 
         const iconName = TAB_ICON_CONFIG[routeName] || 'x-circle';
         const iconColor = focused ? activeIconColor : inactiveIconColor;
-        let tabName: string = routeName;
-        if (tabName === 'ResourcesStack') {
-            tabName = 'Resources';
-        }
+        let tabName: string = routeName.replace('Tab', '');
         return (
             <View className='flex-col items-center justify-center pt-2'>
                 <Octicons name={iconName} size={iconSize} color={iconColor} />
@@ -72,10 +69,8 @@ const HomeBottomTabs = () => {
         );
     };
 
-
     return (
-        <View
-            className='flex-1 bg-offwhite'>
+        <View className='flex-1 bg-offwhite'>
             <BottomTabs.Navigator
                 screenOptions={({ route }) => ({
                     tabBarIcon: ({ focused }) => generateTabIcon(route.name as TabName, focused),
@@ -85,20 +80,17 @@ const HomeBottomTabs = () => {
                     tabBarShowLabel: false,
                 })}
             >
-                <BottomTabs.Screen name="Home" component={HomeStack} />
-                <BottomTabs.Screen name="ResourcesStack" component={ResourcesStack} />
-                <BottomTabs.Screen name="Events" component={EventsStack} />
-                <BottomTabs.Screen name="Committees" component={CommitteesStack} />
-                <BottomTabs.Screen name="Profile" component={UserProfileStack} />
+                <BottomTabs.Screen name="HomeTab" component={HomeStack} />
+                <BottomTabs.Screen name="ResourcesTab" component={ResourcesStack} />
+                <BottomTabs.Screen name="EventsTab" component={EventsStack} />
+                <BottomTabs.Screen name="CommitteesTab" component={CommitteesStack} />
+                <BottomTabs.Screen name="ProfileTab" component={UserProfileStack} />
             </BottomTabs.Navigator >
         </View>
     );
 };
 
-
-
 type OcticonIconName = React.ComponentProps<typeof Octicons>['name'];
-type TabName = 'Home' | 'ResourcesStack' | 'Committees' | 'Profile' | 'Events';
-
+type TabName = 'HomeTab' | 'ResourcesTab' | 'CommitteesTab' | 'ProfileTab' | 'EventsTab';
 
 export { MainStack };
