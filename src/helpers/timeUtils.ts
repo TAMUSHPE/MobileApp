@@ -22,6 +22,7 @@ export const getNextHourMillis = (): number => {
     return currentTime + MillisecondTimes.HOUR - (currentTime % MillisecondTimes.HOUR);
 }
 
+const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 export const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 /**
@@ -30,12 +31,12 @@ export const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug
  * @returns Formatted date string
  */
 export const formatDate = (date: Date): string => {
+    const dayOfWeek = dayNames[date.getDay()];
     const day = date.getDate();
     const month = monthNames[date.getMonth()];
-    const year = date.getFullYear();
 
-    return `${month} ${day}, ${year}`;
-}
+    return `${dayOfWeek}, ${month} ${day}`;
+};
 
 /**
  * Constructs a readable string that represents the time of day of a given `Date` object
@@ -46,7 +47,7 @@ export const formatTime = (date: Date): string => {
     const hour = date.getHours();
     const minute = date.getMinutes();
 
-    return `${hour % 12 == 0 ? 12 : hour % 12}:${minute.toString().padStart(2, '0')} ${hour > 11 ? "PM" : "AM"}`
+    return `${hour % 12 == 0 ? 12 : hour % 12}:${minute.toString().padStart(2, '0')}${hour > 11 ? "pm" : "am"}`
 }
 
 /**

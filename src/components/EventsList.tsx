@@ -8,7 +8,7 @@ import { monthNames } from '../helpers/timeUtils';
 import { UserContext } from '../context/UserContext';
 
 const EventsList = ({ events, navigation, isLoading, showImage = true, onEventClick }: {
-    events: SHPEEventWithCommitteeData[],
+    events: SHPEEvent[],
     navigation?: any
     , isLoading?: boolean,
     showImage?: boolean
@@ -16,7 +16,6 @@ const EventsList = ({ events, navigation, isLoading, showImage = true, onEventCl
 }) => {
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
-
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
@@ -30,14 +29,7 @@ const EventsList = ({ events, navigation, isLoading, showImage = true, onEventCl
 
     return (
         <View>
-            {events?.map((event: SHPEEventWithCommitteeData, index) => {
-                let LogoComponent, height, width, logo, color;
-
-                if (event.committeeData) {
-                    ({ logo, color } = event.committeeData);
-                    ({ LogoComponent, height, width } = getLogoComponent(logo));
-                }
-
+            {events?.map((event: SHPEEvent, index) => {
                 return (
                     <TouchableOpacity
                         key={index}
@@ -49,42 +41,25 @@ const EventsList = ({ events, navigation, isLoading, showImage = true, onEventCl
                             }
                         }}
                     >
-                        {/* If Committee is associated with event, then show Committee Logo */}
-                        {LogoComponent && (
-                            <View className='flex-row'>
-                                <View className='w-2 h-full mr-2' style={{ backgroundColor: event?.committeeData?.color }} />
-                                {showImage && (
-                                    <View className="rounded-lg h-28" style={{ backgroundColor: color, minWidth: 87 }}>
-                                        <View className='rounded-lg' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
-                                            <View className='items-center justify-center h-full'>
-                                                <LogoComponent width={height! / 1.2} height={width! / 1.2} />
-                                            </View>
-                                        </View>
-                                    </View>
-                                )}
-                            </View>
-                        )}
 
-                        {/* Display Cover Image if no committee is associated */}
-                        {!LogoComponent && (
-                            <View className='flex-row'>
-                                <View className='w-2 h-full mr-2 bg-maroon' />
-                                {showImage && (
-                                    <View className="rounded-lg h-28 bg-maroon" style={{ minWidth: 87 }}>
-                                        <View className='rounded-lg' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
-                                            <View className='h-full items-center justify-center'>
-                                                <Image
-                                                    className="flex h-full w-full rounded-lg"
-                                                    resizeMode='cover'
-                                                    defaultSource={Images.EVENT}
-                                                    source={event?.coverImageURI ? { uri: event.coverImageURI } : Images.EVENT}
-                                                />
-                                            </View>
+                        <View className='flex-row'>
+                            <View className='w-2 h-full mr-2 bg-maroon' />
+                            {showImage && (
+                                <View className="rounded-lg h-28 bg-maroon" style={{ minWidth: 87 }}>
+                                    <View className='rounded-lg' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
+                                        <View className='h-full items-center justify-center'>
+                                            <Image
+                                                className="flex h-full w-full rounded-lg"
+                                                resizeMode='cover'
+                                                defaultSource={Images.SHPE_NAVY}
+                                                source={event?.coverImageURI ? { uri: event.coverImageURI } : Images.SHPE_NAVY}
+                                            />
                                         </View>
                                     </View>
-                                )}
-                            </View>
-                        )}
+                                </View>
+                            )}
+                        </View>
+
 
                         {/* Event Details */}
                         <View>
@@ -138,9 +113,5 @@ const formatStartTime = (firestoreTimestamp: Timestamp) => {
 
     return `${formattedHours}:${formattedMinutes} ${amPm}`;
 }
-
-
-type SHPEEventWithCommitteeData = SHPEEvent & { committeeData?: Committee };
-
 
 export default EventsList
