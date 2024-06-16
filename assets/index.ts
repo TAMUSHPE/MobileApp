@@ -1,4 +1,4 @@
-export const Images =  {
+export const Images = {
     LOGO_LIGHT: require("./logo_light.png"),
     DEFAULT_USER_PICTURE: require("./default_user_picture.png"),
     UPLOAD_ARROW: require("./upload_arrow.png"),
@@ -15,11 +15,14 @@ export const Images =  {
     GENEVA: require("./geneva.png"),
     INSTAGRAM: require("./Instagram-Logo.png"),
     FLICKER: require("./flicker.png"),
-    SHPE_LOGO_VERT:require("./SHPE_Logo_Vert.png"),
+    SHPE_LOGO_VERT: require("./SHPE_Logo_Vert.png"),
     COMMITTEE_1: require("./committee_1.png"),
     COMMITTEE_2: require("./committee_2.png"),
     COMMITTEE_3: require("./committee_3.png"),
     COMMITTEE_4: require("./committee_4.png"),
     COMMITTEE: require("./committee.png"),
     EVENT: require("./event.png"),
+    SHPE_NAVY: require("./SHPE_NAVY.png"),
+    SHPE_NAVY_HORIZ: require("./SHPE_NAVY_Horizontal.png"),
+    SHPE_NAVY_HEADER: require("./SHPE_NAVY_Header.png"),
 };

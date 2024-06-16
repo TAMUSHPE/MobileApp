@@ -132,7 +132,7 @@ const EventInfo: React.FC<EventScreenRouteProp> = ({ route, navigation }) => {
                 <Image
                     className="flex w-full h-full absolute"
                     defaultSource={Images.DEFAULT_USER_PICTURE}
-                    source={coverImageURI ? { uri: coverImageURI } : Images.EVENT}
+                    source={coverImageURI ? { uri: coverImageURI } : Images.SHPE_NAVY}
                     style={{
                         width: "100%",
                         height: "auto",

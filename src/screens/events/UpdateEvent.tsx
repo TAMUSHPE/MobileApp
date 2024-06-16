@@ -239,8 +239,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 >
                     <Image
                         className="flex w-full h-full absolute"
-                        defaultSource={Images.DEFAULT_USER_PICTURE}
-                        source={localCoverImageURI ? { uri: localCoverImageURI } : Images.EVENT}
+                        defaultSource={Images.SHPE_NAVY}
+                        source={localCoverImageURI ? { uri: localCoverImageURI } : Images.SHPE_NAVY}
                         style={{
                             width: "100%",
                             height: "auto",
