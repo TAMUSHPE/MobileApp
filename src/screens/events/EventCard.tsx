@@ -1,10 +1,10 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native'
 import React, { useContext } from 'react'
-import { SHPEEvent } from '../../types/events'
-import { Images } from '../../../assets'
-import { formatDate } from '../../helpers/timeUtils'
-import { UserContext } from '../../context/UserContext'
 import { FontAwesome6 } from '@expo/vector-icons';
+import { UserContext } from '../../context/UserContext'
+import { formatDate } from '../../helpers/timeUtils'
+import { Images } from '../../../assets'
+import { SHPEEvent } from '../../types/events'
 
 const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any }) => {
     const userContext = useContext(UserContext);

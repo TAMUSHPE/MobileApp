@@ -1,10 +1,8 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image } from 'react-native'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Ionicons } from '@expo/vector-icons';
-import { Octicons } from '@expo/vector-icons';
-import { FontAwesome6 } from '@expo/vector-icons';
+import { Ionicons, Octicons, FontAwesome6 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { UserContext } from '../../context/UserContext';
 import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
@@ -24,7 +22,6 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [selectedFilter, setSelectedFilter] = useState<ExtendedEventType | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
-    const [initialFetch, setInitialFetch] = useState(false);
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
@@ -34,9 +31,9 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 
             const upcomingEventsData = await getUpcomingEvents();
             const pastEventsData = await getPastEvents(3, null);
+
             const currentTime = new Date();
             const today = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate());
-
             const todayEvents = upcomingEventsData.filter(event => {
                 const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
                 return startTime >= today && startTime < new Date(today.getTime() + 24 * 60 * 60 * 1000);
@@ -101,6 +98,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     return (
         <SafeAreaView edges={["top"]} className='h-full bg-white'>
             <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Header */}
                 <View className='flex-row px-4'>
                     <Text className="text-4xl font-bold">Events</Text>
 
@@ -284,6 +282,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                         })}
                                     </View>
                                 )}
+
                                 <TouchableOpacity onPress={() => navigation.navigate("PastEvents")}>
                                     <Text className='text-xl text-primary-blue mt-8 underline'>View all past events</Text>
                                 </TouchableOpacity>
