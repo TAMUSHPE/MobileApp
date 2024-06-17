@@ -9,12 +9,13 @@ import { SHPEEvent } from '../../types/events'
 const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any }) => {
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
     return (
         <TouchableOpacity
-            className='h-20 rounded-md flex-row bg-offwhite'
+            className={`h-20 rounded-md flex-row ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
             style={{
                 shadowColor: "#000",
                 shadowOffset: {
@@ -36,11 +37,11 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
             />
 
             <View className='flex-1 px-4 justify-center' >
-                <Text className='text-xl font-bold text-black'>{truncateStringWithEllipsis(event.name!)}</Text>
+                <Text className={`text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(event.name!)}</Text>
                 {event.locationName ? (
-                    <Text className='text-md font-semibold text-black'>{truncateStringWithEllipsis(event.locationName)}</Text>
+                    <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(event.locationName)}</Text>
                 ) : null}
-                <Text className='text-md font-semibold text-black'>{formatDate(event.startTime?.toDate()!)}</Text>
+                <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>{formatDate(event.startTime?.toDate()!)}</Text>
             </View>
 
             {hasPrivileges && (

@@ -15,6 +15,7 @@ import EventCard from './EventCard';
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     const [todayEvents, setTodayEvents] = useState<SHPEEvent[]>([]);
     const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
@@ -96,11 +97,11 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     };
 
     return (
-        <SafeAreaView edges={["top"]} className='h-full bg-white'>
+        <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Header */}
                 <View className='flex-row px-4'>
-                    <Text className="text-4xl font-bold">Events</Text>
+                    <Text className={`text-4xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Events</Text>
 
                     {(!isLoading && hasPrivileges) && (
                         <TouchableOpacity
@@ -127,7 +128,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                 <ScrollView bounces={false} horizontal={true} className='pt-3 pb-2' showsHorizontalScrollIndicator={false}>
                     <View className='flex-row px-4 space-x-3'>
                         <TouchableOpacity
-                            className={`flex-row items-center justify-center rounded-md py-2 px-4 bg-offwhite ${selectedFilter === "myEvents" && 'bg-primary-blue border-primary-blue'}`}
+                            className={`flex-row items-center justify-center rounded-md py-2 px-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${selectedFilter === "myEvents" && 'bg-primary-blue border-primary-blue'}`}
                             style={{
                                 shadowColor: "#000",
                                 shadowOffset: {
@@ -141,11 +142,11 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                             }}
                             onPress={() => handleFilterSelect("myEvents")}
                         >
-                            <Text className={`font-bold ${selectedFilter === "myEvents" ? 'text-white' : 'text-black'}`}>My Events</Text>
+                            <Text className={`font-bold ${selectedFilter === "myEvents" ? 'text-white' : `${darkMode ? "text-white" : "text-black"}`}`}>My Events</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            className={`flex-row items-center justify-center rounded-md py-2 px-4 bg-offwhite ${selectedFilter === "clubWide" && 'bg-primary-blue border-primary-blue'}`}
+                            className={`flex-row items-center justify-center rounded-md py-2 px-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${selectedFilter === "clubWide" && 'bg-primary-blue border-primary-blue'}`}
                             style={{
                                 shadowColor: "#000",
                                 shadowOffset: {
@@ -159,13 +160,13 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                             }}
                             onPress={() => handleFilterSelect("clubWide")}
                         >
-                            <Text className={`font-bold ${selectedFilter === "clubWide" ? 'text-white' : 'text-black'}`}>Club Wide</Text>
+                            <Text className={`font-bold ${selectedFilter === "clubWide" ? 'text-white' : `${darkMode ? "text-white" : "text-black"}`}`}>Club Wide</Text>
                         </TouchableOpacity>
 
                         {Object.values(EventType).map((type) => (
                             <TouchableOpacity
                                 key={type}
-                                className={`flex-row items-center justify-center rounded-md py-2 px-4 bg-offwhite ${selectedFilter === type && 'bg-primary-blue border-primary-blue'}`}
+                                className={`flex-row items-center justify-center rounded-md py-2 px-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${selectedFilter === type && 'bg-primary-blue border-primary-blue'}`}
                                 style={{
                                     shadowColor: "#000",
                                     shadowOffset: {
@@ -179,7 +180,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                 }}
                                 onPress={() => handleFilterSelect(type)}
                             >
-                                <Text className={`font-bold ${selectedFilter === type ? 'text-white' : 'text-black'}`}>{type}</Text>
+                                <Text className={`font-bold ${selectedFilter === type ? 'text-white' : `${darkMode ? "text-white" : "text-black"}`}`}>{type}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -196,14 +197,14 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     <View className='px-4'>
                         {filteredEvents(todayEvents).length === 0 && filteredEvents(upcomingEvents).length === 0 && filteredEvents(pastEvents).length === 0 ? (
                             <View className='mt-10 justify-center items-center'>
-                                <Text className='text-lg font-bold'>No Events</Text>
+                                <Text className={`text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>No Events</Text>
                             </View>
                         ) : (
                             <View>
                                 {/* Today's Events */}
                                 {filteredEvents(todayEvents).length !== 0 && (
                                     <View className='mt-8'>
-                                        <Text className='mb-3 text-2xl font-bold'>Today's Events</Text>
+                                        <Text className={`mb-3 text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Today's Events</Text>
                                         {filteredEvents(todayEvents)?.map((event: SHPEEvent, index) => {
                                             return (
                                                 <TouchableOpacity
@@ -258,7 +259,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                 {/* Upcoming Events */}
                                 {filteredEvents(upcomingEvents).length !== 0 && (
                                     <View className='mt-8'>
-                                        <Text className='mb-3 text-2xl font-bold'>Upcoming Events</Text>
+                                        <Text className={`mb-3 text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Upcoming Events</Text>
                                         {filteredEvents(upcomingEvents)?.map((event: SHPEEvent, index) => {
                                             return (
                                                 <View key={event.id} className={`${index > 0 && "mt-8"}`}>
@@ -272,7 +273,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                 {/* Past Events */}
                                 {filteredEvents(pastEvents).length !== 0 && (
                                     <View className='mt-8'>
-                                        <Text className='mb-3 text-2xl font-bold'>Past Events</Text>
+                                        <Text className={`mb-3 text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Past Events</Text>
                                         {filteredEvents(pastEvents)?.map((event: SHPEEvent, index) => {
                                             return (
                                                 <View key={index} className={`${index > 0 && "mt-8"}`}>

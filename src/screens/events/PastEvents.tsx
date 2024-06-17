@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, TouchableOpacity, NativeSyntheticEvent, NativeScrollEvent, ActivityIndicator } from 'react-native'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -7,8 +7,13 @@ import { EventsStackParams } from '../../types/navigation';
 import { SHPEEvent } from '../../types/events';
 import { getPastEvents } from '../../api/firebaseUtils';
 import EventCard from './EventCard';
+import { UserContext } from '../../context/UserContext';
 
 const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
     const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [endOfData, setEndOfData] = useState<boolean>(false);
@@ -46,7 +51,7 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
     }, [loading, endOfData, setPastEvents]);
 
     return (
-        <SafeAreaView edges={["top"]} className='h-full bg-white'>
+        <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 onScroll={handleScroll}
@@ -54,10 +59,10 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
             >
                 <View className='flex-row items-center'>
                     <View className='absolute w-full justify-center items-center'>
-                        <Text className="text-3xl font-bold">Past Events</Text>
+                        <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Past Events</Text>
                     </View>
                     <TouchableOpacity onPress={() => navigation.goBack()} className='py-1 px-4'>
-                        <Octicons name="chevron-left" size={30} color={"black"} />
+                        <Octicons name="chevron-left" size={30} color={darkMode ? "black" : "white"} />
                     </TouchableOpacity>
                 </View>
 
