@@ -1,8 +1,8 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image } from 'react-native'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { Octicons } from '@expo/vector-icons';
 import { FontAwesome6 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -27,6 +27,39 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [initialFetch, setInitialFetch] = useState(false);
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+
+    const fetchEvents = async () => {
+        try {
+            setIsLoading(true);
+
+            const upcomingEventsData = await getUpcomingEvents();
+            const pastEventsData = await getPastEvents(3, null);
+            const currentTime = new Date();
+            const today = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate());
+
+            const todayEvents = upcomingEventsData.filter(event => {
+                const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
+                return startTime >= today && startTime < new Date(today.getTime() + 24 * 60 * 60 * 1000);
+            });
+            const upcomingEvents = upcomingEventsData.filter(event => {
+                const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
+                return startTime >= new Date(today.getTime() + 24 * 60 * 60 * 1000);
+            });
+
+            setTodayEvents(todayEvents);
+            setUpcomingEvents(upcomingEvents);
+            setPastEvents(pastEventsData.events);
+
+            setIsLoading(false);
+        } catch (error) {
+            console.error('An error occurred while fetching events:', error);
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchEvents();
+    }, [])
 
     const handleFilterSelect = (filter: ExtendedEventType) => {
         if (selectedFilter === filter) {
@@ -65,50 +98,31 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
         return events.filter(event => event.eventType === selectedFilter && !event.hiddenEvent);
     };
 
-    useFocusEffect(
-        useCallback(() => {
-            const fetchEvents = async () => {
-                try {
-                    setIsLoading(true);
-
-                    const upcomingEventsData = await getUpcomingEvents();
-                    const pastEventsData = await getPastEvents(3, null);
-                    const currentTime = new Date();
-                    const today = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate());
-
-                    const todayEvents = upcomingEventsData.filter(event => {
-                        const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
-                        return startTime >= today && startTime < new Date(today.getTime() + 24 * 60 * 60 * 1000);
-                    });
-                    const upcomingEvents = upcomingEventsData.filter(event => {
-                        const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
-                        return startTime >= new Date(today.getTime() + 24 * 60 * 60 * 1000);
-                    });
-
-                    setTodayEvents(todayEvents);
-                    setUpcomingEvents(upcomingEvents);
-                    setPastEvents(pastEventsData.events);
-
-                    setIsLoading(false);
-                } catch (error) {
-                    console.error('An error occurred while fetching events:', error);
-                    setIsLoading(false);
-                }
-            };
-
-            // Fetch events if user has privileges or if initial fetch has not been done
-            if (!initialFetch || hasPrivileges) {
-                fetchEvents();
-                setInitialFetch(true);
-            }
-        }, [hasPrivileges, initialFetch])
-    );
-
     return (
         <SafeAreaView edges={["top"]} className='h-full bg-white'>
             <ScrollView showsVerticalScrollIndicator={false}>
-                <View className='px-4'>
+                <View className='flex-row px-4'>
                     <Text className="text-4xl font-bold">Events</Text>
+
+                    {(!isLoading && hasPrivileges) && (
+                        <TouchableOpacity
+                            className='bg-primary-blue rounded-full h-10 w-10 shadow-lg justify-center items-center ml-4'
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+
+                                elevation: 5,
+                            }}
+                            onPress={() => fetchEvents()}
+                        >
+                            <Ionicons name="refresh" size={24} color="white" />
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 {/* Filters */}
@@ -197,6 +211,17 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                                 <TouchableOpacity
                                                     key={event.id}
                                                     className={`h-32 rounded-md ${index > 0 && "mt-8"}`}
+                                                    style={{
+                                                        shadowColor: "#000",
+                                                        shadowOffset: {
+                                                            width: 0,
+                                                            height: 2,
+                                                        },
+                                                        shadowOpacity: 0.25,
+                                                        shadowRadius: 3.84,
+
+                                                        elevation: 5,
+                                                    }}
                                                     onPress={() => { navigation.navigate("EventInfo", { eventId: event.id! }) }}
                                                 >
                                                     <Image
