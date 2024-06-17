@@ -14,6 +14,7 @@ import InteractButton from '../../components/InteractButton';
 const SetLocationEventDetails = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
     const { event } = route.params;
+
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
@@ -23,22 +24,26 @@ const SetLocationEventDetails = ({ navigation }: EventProps) => {
     const [geofencingRadius, setGeofencingRadius] = useState<number | undefined>(event.geofencingRadius ?? undefined);
 
     return (
-        <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+        <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />
             {/* Header */}
-            <View className='flex-row items-center h-10'>
-                <View className='w-screen absolute'>
-                    <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>{event.eventType} Info</Text>
+            <View className='flex-row items-center'>
+                <View className='absolute w-full justify-center items-center'>
+                    <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Location Details</Text>
                 </View>
-                <TouchableOpacity className='px-6' onPress={() => navigation.goBack()} >
+                <TouchableOpacity onPress={() => navigation.goBack()} className='py-1 px-4'>
                     <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                 </TouchableOpacity>
             </View>
 
-            <View className='px-5'>
-                <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Location Name</Text>
+            {/* Event Name */}
+            <View className='mt-3 mx-4 pb-6'>
+                <Text className={`mb-1 text-base font-semibold ${darkMode ? "text-white" : "text-black"}`}>
+                    Location Name<Text className='text-[#f00]'>*</Text>
+                </Text>
+
                 <TextInput
-                    className={`text-lg p-2 rounded mb-4 ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                    className={`text-lg p-2 rounded border border-1 border-black ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
                     value={locationName}
                     placeholder='Ex. Zach 420'
                     placeholderTextColor={darkMode ? "#DDD" : "#777"}
@@ -57,11 +62,12 @@ const SetLocationEventDetails = ({ navigation }: EventProps) => {
                 }}
             />
 
-            <View className='absolute bottom-24 right-0 mr-2 w-32'>
+
+            <View className='w-full absolute bottom-0 mb-24'>
                 <InteractButton
-                    buttonClassName='bg-pale-blue rounded-xl py-1'
-                    textClassName='text-center text-white text-lg font-bold'
-                    label='Finalize Event'
+                    buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
+                    textClassName='text-center text-white text-2xl font-bold'
+                    label='Preview Event'
                     onPress={() => {
                         if (event.copyFromObject) {
                             event.copyFromObject({

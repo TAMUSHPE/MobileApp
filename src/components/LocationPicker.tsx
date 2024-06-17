@@ -71,9 +71,9 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords }:
                 )}
             </MapView>
 
-            {/* Search Box for to search using Google Places */}
-            <View className="absolute z-10 p-3 w-full top-11">
-                <View className='w-full'>
+            <View className="absolute z-10 p-3 w-full top-0 ">
+                <View className='w-full flex-row items-center justify-center'>
+                    {/* Search Box for to search using Google Places */}
                     <GooglePlacesAutocomplete
                         placeholder="Search"
                         query={{
@@ -103,11 +103,8 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords }:
                         onFail={(error) => console.error(error)}
                     />
 
-                </View>
-
-                <View className='flex-row'>
                     <TouchableOpacity
-                        className='h-12 w-12 items-center justify-center bg-pale-blue rounded-md'
+                        className='h-12 w-12 items-center justify-center ml-4 bg-primary-blue rounded-md'
                         onPress={async () => {
                             if (userLocation?.coords.latitude && userLocation?.coords.longitude) {
                                 setDraggableMarkerCoord({
@@ -129,43 +126,54 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords }:
                         }} >
                         <Octicons name="location" size={26} color="white" />
                     </TouchableOpacity>
+                </View>
+
+                <View>
+                    {!geofencingEnabled && (
+                        <View className='flex-row items-center justify-between mt-4 w-full px-4 bg-secondary-bg-light h-12 rounded-lg'
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+
+                                elevation: 5,
+                            }}
+                        >
+                            <Text className='flex-1 text-xl font-semibold'>Area Restriction</Text>
+                            <TouchableOpacity onPress={() => {
+                                setGeofencingEnabled(true);
+                                setRadius(initialRadius);
+                            }}>
+                                <Text className='text-lg text-primary-blue font-semibold '>Enable</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+
                     {geofencingEnabled && (
-                        <View className='flex-1 ml-2 bg-white rounded-md px-4 pt-1'>
+                        <View className='flex-1 bg-secondary-bg-light rounded-md px-4 pt-1 mt-4 flex-row items-center'>
                             <View className='flex-1'>
                                 <Slider
-                                    minimumValue={40}
+                                    minimumValue={0}
                                     maximumValue={200}
                                     value={radius}
                                     onValueChange={(value) => {
-                                        setInitialRadius(value);
                                         setRadius(value)
+                                        if (value === 0) {
+                                            setRadius(undefined);
+                                            setGeofencingEnabled(false);
+                                        }
                                     }}
-                                    minimumTrackTintColor="#72A9BE"
+                                    minimumTrackTintColor="#1870B8"
                                 />
+
                             </View>
+                            <Text className='text-lg ml-3'>{radius?.toFixed(0)}m</Text>
                         </View>
                     )}
-                </View>
-
-            </View>
-
-            {/* Radius Adjustment Slider */}
-            <View className="absolute top-0 w-full px-6 pb-2 bg-white">
-                <View className='flex-row items-center'>
-                    <Text className='text-gray-500 text-lg'>Area Restriction</Text>
-                    <Switch
-                        className='ml-2'
-                        trackColor={{ false: "#767577", true: "#72A9BE" }}
-                        value={geofencingEnabled}
-                        onValueChange={(value) => {
-                            setGeofencingEnabled(value)
-                            if (value) {
-                                setRadius(initialRadius);
-                            } else {
-                                setRadius(undefined);
-                            }
-                        }}
-                    />
                 </View>
             </View>
         </View>

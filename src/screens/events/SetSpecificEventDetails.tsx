@@ -306,7 +306,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                             </View>
                         </View>
 
-                        <View className='w-full mt-8 -z-10 '>
+                        <View className='w-full mt-12 -z-10 '>
                             <TouchableOpacity className='mb-3 items-center'
                                 onPress={() => setAdvanceOptionsModal(true)}
                             >
@@ -341,7 +341,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 }}
                             />
                             <View className='mb-3 items-center'>
-                                <Text className='text-red-1 text-lg font-medium'>Specific details can not be changed later* </Text>
+                                <Text className='text-red-1 text-md font-medium'>Specific details can not be changed later* </Text>
                             </View>
                         </View>
                     </View>
@@ -415,61 +415,72 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                             />
                         </View>
 
-                        <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
-                            style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 3.84,
+                        <View>
+                            <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
+                                style={{
+                                    shadowColor: "#000",
+                                    shadowOffset: {
+                                        width: 0,
+                                        height: 2,
+                                    },
+                                    shadowOpacity: 0.25,
+                                    shadowRadius: 3.84,
 
-                                elevation: 5,
-                            }}
-                        >
-                            <Text className='flex-1 text-xl font-semibold'>Start Buffer (mins)</Text>
-                            <View className='flex-row flex-wrap w-[60%]'>
-                                <CustomDropDownMenu
-                                    data={TIMES}
-                                    onSelect={(item) => setStartTimeBuffer(Number(item.iso) * 60000)} // Convert Minute to Milliseconds
-                                    searchKey="time"
-                                    label="Select Time"
-                                    isOpen={openDropdown === 'startTimeBuffer'}
-                                    onToggle={() => toggleDropdown('startTimeBuffer')}
-                                    displayType='iso'
-                                    disableSearch
-                                    selectedItemProp={startTimeBuffer ? { value: ((startTimeBuffer / 60000).toFixed(0)).toString(), iso: ((startTimeBuffer / 60000).toFixed(0)).toString() } : null}
-                                />
+                                    elevation: 5,
+                                }}
+                            >
+                                <Text className='flex-1 text-xl font-semibold'>Start Buffer (mins)</Text>
+                                <View className='flex-row flex-wrap w-[60%]'>
+                                    <CustomDropDownMenu
+                                        data={TIMES}
+                                        onSelect={(item) => setStartTimeBuffer(Number(item.iso) * 60000)} // Convert Minute to Milliseconds
+                                        searchKey="time"
+                                        label="Select Time"
+                                        isOpen={openDropdown === 'startTimeBuffer'}
+                                        onToggle={() => toggleDropdown('startTimeBuffer')}
+                                        displayType='iso'
+                                        disableSearch
+                                        selectedItemProp={startTimeBuffer ? { value: ((startTimeBuffer / 60000).toFixed(0)).toString(), iso: ((startTimeBuffer / 60000).toFixed(0)).toString() } : null}
+                                    />
+                                </View>
+                            </View>
+                            <View className='mt-1 w-full justify-center items-center -z-10'>
+                                <Text className='text-center'>Allow to scan QRCode <Text className='text-primary-blue font-semibold'>{startTimeBuffer && ((startTimeBuffer / 60000).toFixed(0)).toString()} mins </Text>before event starts</Text>
                             </View>
                         </View>
 
-                        <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg -z-10'
-                            style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 3.84,
+                        <View className='-z-10'>
+                            <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
+                                style={{
+                                    shadowColor: "#000",
+                                    shadowOffset: {
+                                        width: 0,
+                                        height: 2,
+                                    },
+                                    shadowOpacity: 0.25,
+                                    shadowRadius: 3.84,
 
-                                elevation: 5,
-                            }}
-                        >
-                            <Text className='flex-1 text-xl font-semibold'>End Buffer (mins)</Text>
-                            <View className='flex-row flex-wrap w-[60%]'>
-                                <CustomDropDownMenu
-                                    data={TIMES}
-                                    onSelect={(item) => setEndTimeBuffer(Number(item.iso) * 60000)} // Convert Minute to Milliseconds
-                                    searchKey="time"
-                                    label="Select Time"
-                                    isOpen={openDropdown === 'endTimeBuffer'}
-                                    onToggle={() => toggleDropdown('endTimeBuffer')}
-                                    displayType='iso'
-                                    disableSearch
-                                    selectedItemProp={startTimeBuffer ? { value: ((startTimeBuffer / 60000).toFixed(0)).toString(), iso: ((startTimeBuffer / 60000).toFixed(0)).toString() } : null}
-                                />
+                                    elevation: 5,
+                                }}
+                            >
+                                <Text className='flex-1 text-xl font-semibold'>End Buffer (mins)</Text>
+                                <View className='flex-row flex-wrap w-[60%]'>
+                                    <CustomDropDownMenu
+                                        data={TIMES}
+                                        onSelect={(item) => setEndTimeBuffer(Number(item.iso) * 60000)} // Convert Minute to Milliseconds
+                                        searchKey="time"
+                                        label="Select Time"
+                                        isOpen={openDropdown === 'endTimeBuffer'}
+                                        onToggle={() => toggleDropdown('endTimeBuffer')}
+                                        displayType='iso'
+                                        disableSearch
+                                        selectedItemProp={endTimeBuffer ? { value: ((endTimeBuffer / 60000).toFixed(0)).toString(), iso: ((endTimeBuffer / 60000).toFixed(0)).toString() } : null}
+                                    />
+                                </View>
+                            </View>
+
+                            <View className='mt-1 w-full justify-center items-center -z-20'>
+                                <Text className='text-center'>Allow to scan QRCode <Text className='text-primary-blue font-semibold'>{endTimeBuffer && ((endTimeBuffer / 60000).toFixed(0)).toString()} mins </Text>after event ends</Text>
                             </View>
                         </View>
                     </View>
