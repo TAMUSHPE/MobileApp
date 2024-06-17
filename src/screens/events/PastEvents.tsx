@@ -8,6 +8,7 @@ import { SHPEEvent } from '../../types/events';
 import { getPastEvents } from '../../api/firebaseUtils';
 import EventCard from './EventCard';
 import { UserContext } from '../../context/UserContext';
+import { StatusBar } from 'expo-status-bar';
 
 const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const userContext = useContext(UserContext);
@@ -52,6 +53,7 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
 
     return (
         <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 onScroll={handleScroll}

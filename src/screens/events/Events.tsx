@@ -11,6 +11,7 @@ import { EventType, SHPEEvent } from '../../types/events';
 import { Images } from '../../../assets';
 import { formatTime } from '../../helpers/timeUtils';
 import EventCard from './EventCard';
+import { StatusBar } from 'expo-status-bar';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const userContext = useContext(UserContext);
@@ -98,6 +99,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 
     return (
         <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Header */}
                 <View className='flex-row px-4'>
