@@ -1,12 +1,11 @@
 import { View, Text, TouchableOpacity, TextInput } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation'
 import { useRoute } from '@react-navigation/core';
 import { UserContext } from '../../context/UserContext';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { GooglePlaceDetail } from 'react-native-google-places-autocomplete';
 import { GeoPoint } from 'firebase/firestore';
 import LocationPicker from '../../components/LocationPicker';
 import InteractButton from '../../components/InteractButton';
@@ -15,7 +14,8 @@ import InteractButton from '../../components/InteractButton';
 const SetLocationEventDetails = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
     const { event } = route.params;
-    const { userInfo } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     const [locationName, setLocationName] = useState<string | undefined>(event.locationName ?? undefined);
@@ -34,32 +34,6 @@ const SetLocationEventDetails = ({ navigation }: EventProps) => {
                     <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                 </TouchableOpacity>
             </View>
-
-            <View className='flex-row mx-4 py-4 items-center justify-center flex-wrap'>
-                <View className='flex-row items-center justify-center'>
-                    <View className='h-7 w-7 bg-pale-blue rounded-full items-center justify-center'>
-                        <Octicons name="check" size={20} color="white" />
-                    </View>
-                    <Text className='text-pale-blue text-lg ml-1'>General</Text>
-                </View>
-
-                <View className='ml-3 h-[2px] w-5 bg-pale-blue' />
-
-                <View className='flex-row items-center justify-center ml-1'>
-                    <View className='h-7 w-7 bg-pale-blue rounded-full items-center justify-center'>
-                        <Octicons name="check" size={20} color="white" />
-                    </View>
-                    <Text className='text-pale-blue text-lg ml-1'>Specific</Text>
-                </View>
-
-                <View className='ml-3 h-[2px] w-5 bg-pale-blue' />
-
-                <View className='flex-row items-center justify-center ml-1'>
-                    <View className='h-7 w-7 bg-pale-blue  rounded-full' />
-                    <Text className='text-pale-blue text-lg ml-1'>Location</Text>
-                </View>
-            </View>
-
 
             <View className='px-5'>
                 <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Location Name</Text>

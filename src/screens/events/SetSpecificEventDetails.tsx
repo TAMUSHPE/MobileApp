@@ -15,8 +15,10 @@ import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/Cust
 const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
     const { event } = route.params;
-    const { userInfo } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
     const [selectableCommittees, setSelectableCommittees] = useState<Committee[]>([]);
     const dropDownRefCommittee = useRef<CustomDropDownMethods>(null);
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -32,6 +34,8 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const [startTimeBuffer, setStartTimeBuffer] = useState<number | undefined>(event.startTimeBuffer ?? undefined);
     const [endTimeBuffer, setEndTimeBuffer] = useState<number | undefined>(event.endTimeBuffer ?? undefined);
     const [hiddenEvent, setHiddenEvent] = useState<boolean | undefined>(event.hiddenEvent ?? undefined);
+    const [isGeneral, setIsGeneral] = useState<boolean>(event.general ?? false);
+
 
     const eventTypeNotification = ["Study Hours", "Workshop", "Volunteer Event", "Social Event", "Intramural Event"]
 
@@ -65,30 +69,6 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
                 </View>
-
-                <View className='flex-row mx-4 py-4 items-center justify-center flex-wrap'>
-                    <View className='flex-row items-center justify-center'>
-                        <View className='h-7 w-7 bg-pale-blue rounded-full items-center justify-center'>
-                            <Octicons name="check" size={20} color="white" />
-                        </View>
-                        <Text className='text-pale-blue text-lg ml-1'>General</Text>
-                    </View>
-
-                    <View className='ml-3 h-[2px] w-5 bg-pale-blue' />
-
-                    <View className='flex-row items-center justify-center ml-1'>
-                        <View className='h-7 w-7 bg-pale-blue rounded-full' />
-                        <Text className='text-pale-blue text-lg ml-1'>Specific</Text>
-                    </View>
-
-                    <View className='ml-3 h-[2px] w-5 bg-gray-500' />
-
-                    <View className='flex-row items-center justify-center ml-1'>
-                        <View className='h-7 w-7 border border-gray-500 rounded-full' />
-                        <Text className='text-gray-500 text-lg ml-1'>Location</Text>
-                    </View>
-                </View>
-
 
                 <View className={`flex flex-col px-4 pt-6 flex-1 ${darkMode ? "bg-primary-bg-dark" : ""}`}>
                     <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Associated Committee</Text>
@@ -245,6 +225,20 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                             </View>
                         )}
 
+                        {/* toggle to make events appear on general tab*/}
+                        <KeyboardAvoidingView className='py-3'>
+                            <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Scope</Text>
+                            <View className="flex flex-row items-center justify-between py-2">
+                                <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Club-Wide Event</Text>
+                                <Switch
+                                    trackColor={{ false: "#999796", true: "#001F5B" }}
+                                    thumbColor={isGeneral ? "#72A9BE" : "#f4f3f4"}
+                                    ios_backgroundColor="#999796"
+                                    onValueChange={() => setIsGeneral(previousState => !previousState)}
+                                    value={isGeneral}
+                                />
+                            </View>
+                        </KeyboardAvoidingView>
 
                         <Text className={`mt-7 text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Hidden Event</Text>
                         <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>All Hidden event will not be display in events screent</Text>
@@ -294,6 +288,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                     startTimeBuffer,
                                     endTimeBuffer,
                                     hiddenEvent,
+                                    general: isGeneral
                                 });
                                 navigation.navigate("setLocationEventDetails", { event: event });
                             }
