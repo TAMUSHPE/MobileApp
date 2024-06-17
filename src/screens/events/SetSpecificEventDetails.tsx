@@ -318,10 +318,11 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 textClassName='text-center text-white text-2xl font-bold'
                                 label='Next'
                                 onPress={() => {
-                                    if (workshopType == 'None') {
-                                        Alert.alert("Workshop type is 'None'", "The workshop type must be selected.");
-                                    }
-                                    else if (event.copyFromObject) {
+                                    // if (workshopType == 'None') {
+                                    //     Alert.alert("Workshop type is 'None'", "The workshop type must be selected.");
+                                    // }
+                                    // else 
+                                    if (event.copyFromObject) {
                                         event.copyFromObject({
                                             signInPoints,
                                             signOutPoints,
