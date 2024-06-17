@@ -319,7 +319,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                         <View className='mt-6 mx-4'>
                             <Text className={`mb-1 text-base font-semibold ${darkMode ? "text-white" : "text-black"}`}>Description</Text>
                             <TextInput
-                                className={`text-lg p-2 rounded border border-1 border-black ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
+                                className={`text-lg p-2 h-32 rounded border border-1 border-black ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
                                 value={description}
                                 placeholder='What is this event about?'
                                 placeholderTextColor={darkMode ? "#DDD" : "#777"}

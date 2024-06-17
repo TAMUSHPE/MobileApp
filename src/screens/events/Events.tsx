@@ -236,9 +236,9 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                                         className='absolute bottom-0 h-[70%] w-full rounded-b-lg justify-center'
                                                     >
                                                         <View className='px-4 pt-6'>
-                                                            <Text className='text-xl font-bold text-white'>{event.name}</Text>
+                                                            <Text className='text-xl font-bold text-white'>{truncateStringWithEllipsis(event.name!, 20)}</Text>
                                                             {event.locationName ? (
-                                                                <Text className='text-md font-semibold text-white'>{event.locationName}</Text>
+                                                                <Text className='text-md font-semibold text-white'>{truncateStringWithEllipsis(event.locationName, 24)}</Text>
                                                             ) : null}
                                                             <Text className='text-md font-semibold text-white'>{formatTime(event.startTime?.toDate()!)}</Text>
                                                         </View>
@@ -287,7 +287,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                 )}
 
                                 <TouchableOpacity onPress={() => navigation.navigate("PastEvents")}>
-                                    <Text className='text-xl text-primary-blue mt-8 underline'>View all past events</Text>
+                                    <Text className='text-xl text-primary-blue mt-8 underline'>View more</Text>
                                 </TouchableOpacity>
                             </View>
                         )}
@@ -322,5 +322,13 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 };
 
 type ExtendedEventType = EventType | 'myEvents' | 'clubWide';
+
+const truncateStringWithEllipsis = (name: string, limit = 22) => {
+    if (name.length > limit) {
+        return `${name.substring(0, limit)}...`;
+    }
+    return name;
+};
+
 
 export default Events;
