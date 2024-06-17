@@ -63,7 +63,7 @@ describe("Event Utils", () => {
         const upcomingEvents = await getUpcomingEvents();
         expect(upcomingEvents.length).toBe(0);
 
-        const pastEvents = await getPastEvents();
+        const { events: pastEvents } = await getPastEvents(10, null);
         expect(pastEvents.length).toBe(0);
     });
 
@@ -112,7 +112,7 @@ describe("Event Utils", () => {
         const eventId = await createEvent(event as SHPEEvent);
         expect(eventId).not.toBeNull();
 
-        const pastEvents = await getPastEvents(1);
+        const { events: pastEvents } = await getPastEvents(1, null);
         expect(pastEvents.length).toBe(1);
 
         const fetchedEvent = pastEvents.find(e => e.id === eventId);
@@ -134,7 +134,7 @@ describe("Event Utils", () => {
         const eventId = await createEvent(event as SHPEEvent);
         expect(eventId).not.toBeNull();
 
-        const pastEvents = await getPastEvents();
+        const { events: pastEvents } = await getPastEvents(10, null);
         expect(pastEvents.length).toBeGreaterThan(0);
 
         const fetchedEvent = pastEvents.find(e => e.id === eventId);
@@ -143,7 +143,6 @@ describe("Event Utils", () => {
 
         await deleteDoc(doc(db, "events", eventId!));
     });
-
     test("Multiple events and sorting", async () => {
         const event1 = generateTestEvent({
             startTime: Timestamp.fromDate(new Date(Date.now() + 3600 * 1000)),
@@ -200,7 +199,7 @@ describe("Event Utils", () => {
         expect(upcomingEvents.find(e => e.id === upcomingEventId)).toBeDefined();
         expect(upcomingEvents.find(e => e.id === pastEventId)).toBeUndefined();
 
-        const pastEvents = await getPastEvents();
+        const { events: pastEvents } = await getPastEvents(10, null);
         expect(pastEvents.length).toBeGreaterThan(0);
         expect(pastEvents.find(e => e.id === pastEventId)).toBeDefined();
         expect(pastEvents.find(e => e.id === upcomingEventId)).toBeUndefined();

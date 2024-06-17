@@ -29,15 +29,17 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
             onPress={() => { navigation.navigate("EventInfo", { eventId: event.id! }) }}
         >
             <Image
-                className="flex h-full w-[25%] rounded-r-md"
+                className="flex h-full w-[25%] rounded-md"
                 resizeMode='cover'
                 defaultSource={Images.SHPE_NAVY}
                 source={event?.coverImageURI ? { uri: event.coverImageURI } : Images.SHPE_NAVY}
             />
 
             <View className='flex-1 px-4 justify-center' >
-                <Text className='text-xl font-bold text-black'>{event.name}</Text>
-                <Text className='text-md font-semibold text-black'>{event.locationName}</Text>
+                <Text className='text-xl font-bold text-black'>{truncateStringWithEllipsis(event.name!)}</Text>
+                {event.locationName ? (
+                    <Text className='text-md font-semibold text-black'>{truncateStringWithEllipsis(event.locationName)}</Text>
+                ) : null}
                 <Text className='text-md font-semibold text-black'>{formatDate(event.startTime?.toDate()!)}</Text>
             </View>
 
@@ -55,5 +57,12 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
         </TouchableOpacity>
     )
 }
+
+const truncateStringWithEllipsis = (name: string, limit = 22) => {
+    if (name.length > limit) {
+        return `${name.substring(0, limit)}...`;
+    }
+    return name;
+};
 
 export default EventCard

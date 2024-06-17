@@ -12,12 +12,14 @@ import FinalizeEvent from "../screens/events/FinalizeEvent";
 import SetLocationEventDetails from "../screens/events/SetLocationEventDetails";
 import EventVerification from "../screens/events/EventVerification";
 import PublicProfileScreen from "../screens/userProfile/PublicProfile";
+import PastEvents from "../screens/events/PastEvents";
 
 const EventsStack = () => {
     const Stack = createNativeStackNavigator<EventsStackParams>();
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="EventsScreen" component={Events} />
+            <Stack.Screen name="PastEvents" component={PastEvents} />
             <Stack.Screen name="EventInfo" component={EventInfo} />
             <Stack.Screen name="UpdateEvent" component={UpdateEvent} />
             <Stack.Screen name="QRCode" component={QRCodeManager} />

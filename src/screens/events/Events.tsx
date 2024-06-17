@@ -72,7 +72,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     setIsLoading(true);
 
                     const upcomingEventsData = await getUpcomingEvents();
-                    const pastEventsData = await getPastEvents(10);
+                    const pastEventsData = await getPastEvents(3, null);
                     const currentTime = new Date();
                     const today = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate());
 
@@ -87,7 +87,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 
                     setTodayEvents(todayEvents);
                     setUpcomingEvents(upcomingEvents);
-                    setPastEvents(pastEventsData);
+                    setPastEvents(pastEventsData.events);
 
                     setIsLoading(false);
                 } catch (error) {
@@ -211,7 +211,9 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                                     >
                                                         <View className='px-4 pt-6'>
                                                             <Text className='text-xl font-bold text-white'>{event.name}</Text>
-                                                            <Text className='text-md font-semibold text-white'>{event.locationName}</Text>
+                                                            {event.locationName ? (
+                                                                <Text className='text-md font-semibold text-white'>{event.locationName}</Text>
+                                                            ) : null}
                                                             <Text className='text-md font-semibold text-white'>{formatTime(event.startTime?.toDate()!)}</Text>
                                                         </View>
                                                     </LinearGradient>
@@ -257,6 +259,9 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                         })}
                                     </View>
                                 )}
+                                <TouchableOpacity onPress={() => navigation.navigate("PastEvents")}>
+                                    <Text className='text-xl text-primary-blue mt-8 underline'>View all past events</Text>
+                                </TouchableOpacity>
                             </View>
                         )}
                     </View>

@@ -1443,27 +1443,30 @@ export const getUpcomingEvents = async () => {
     return events;
 };
 
-export const getPastEvents = async (numLimit?: number) => {
+export const getPastEvents = async (numLimit: number, startAfterDoc: any, setEndOfData?: (endOfData: boolean) => void) => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
     let q;
 
-    if (numLimit !== undefined) {
-        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"), limit(numLimit));
+    if (startAfterDoc) {
+        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"), startAfter(startAfterDoc), limit(numLimit));
     } else {
-        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"));
+        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"), limit(numLimit));
     }
 
     const querySnapshot = await getDocs(q);
     const events: SHPEEvent[] = [];
 
-    for (const doc of querySnapshot.docs) {
-        const eventData = doc.data();
-        events.push({ id: doc.id, ...eventData });
+    querySnapshot.forEach(doc => {
+        events.push({ id: doc.id, ...doc.data() } as SHPEEvent);
+    });
+
+    if (setEndOfData && querySnapshot.docs.length < numLimit) {
+        setEndOfData(true);
     }
 
-    // Events are already ordered by endTime due to the query, no need to sort again
-    return events;
+    const lastVisibleDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+    return { events, lastVisibleDoc };
 };
 
 /**

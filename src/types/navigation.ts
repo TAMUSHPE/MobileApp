@@ -81,6 +81,7 @@ export type ResourcesStackParams = {
 
 export type EventsStackParams = {
     EventsScreen: undefined;
+    PastEvents: undefined;
     UpdateEvent: { event: SHPEEvent };
     EventInfo: { eventId: string };
     QRCode: { event: SHPEEvent };
