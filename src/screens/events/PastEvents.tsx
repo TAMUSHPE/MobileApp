@@ -62,7 +62,7 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
                         <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Past Events</Text>
                     </View>
                     <TouchableOpacity onPress={() => navigation.goBack()} className='py-1 px-4'>
-                        <Octicons name="chevron-left" size={30} color={darkMode ? "black" : "white"} />
+                        <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
                 </View>
 
