@@ -102,7 +102,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                         {/* Cover Image */}
                         {localImageURI === undefined ?
                             <TouchableOpacity
-                                className={`my-2 mx-4 rounded-2xl h-40 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                                className={`my-2 mx-4 mt-4 rounded-2xl h-40 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                                 onPress={() => selectCoverImage()}
                             >
                                 <View
@@ -116,7 +116,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                 </View>
                             </TouchableOpacity>
                             :
-                            <TouchableOpacity className='flex flex-row justify-center mx-4' onPress={() => selectCoverImage()}>
+                            <TouchableOpacity className='flex flex-row justify-center mx-4 mt-4' onPress={() => selectCoverImage()}>
                                 <Image source={{ uri: localImageURI as string }} className='rounded-2xl h-40 w-full' />
 
                                 <TouchableOpacity
