@@ -173,6 +173,21 @@ const EventInfo = ({ navigation }: EventProps) => {
                     <Text className={`text-center mt-1 text-md text-grey-dark`}>This event is eligible for national convention requirements*</Text>
                 )}
 
+                {hasPrivileges && (
+                    <View className="flex-row w-full mx-4 mt-2">
+                        <View className='flex-row w-[50%]'>
+                            <Octicons name="sign-in" size={24} color="black" />
+                            <Text className='ml-2 text-xl text-black '>{attendanceCounts.signedInCount || 0} Member</Text>
+                        </View>
+
+                        {signInPoints && (
+                            <View className='flex-row flex-1'>
+                                <Octicons name="sign-out" size={24} color="black" />
+                                <Text className='ml-2 text-xl text-black '>{attendanceCounts.signedOutCount || 0} Member</Text>
+                            </View>
+                        )}
+                    </View>
+                )}
                 <View className='mx-4 mt-3'>
                     <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{name}</Text>
                     <Text className={`text-lg text-grey-dark`}>{eventType}{committee && (" • " + reverseFormattedFirebaseName(committee))} • {calculateMaxPossiblePoints(event)} points</Text>
@@ -241,20 +256,6 @@ const EventInfo = ({ navigation }: EventProps) => {
             {!loadingUserEventLog && (
                 <View className='absolute w-full bottom-0 mb-5 z-50 justify-center items-center'>
                     <View className='w-full'>
-                        {hasPrivileges && (
-                            <View
-                                className="mt-2 mx-4 px-1 py-1 rounded-md mb-1 justify-center flex-row"
-                                style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
-                            >
-                                <View className='w-[50%]'>
-                                    <Text className='text-lg text-grey-dark'>{attendanceCounts.signedInCount || 0} Signed in</Text>
-                                </View>
-                                <View className='w-[50%]'>
-                                    <Text className='text-lg text-grey-dark'>{attendanceCounts.signedOutCount || 0} Signed out</Text>
-                                </View>
-
-                            </View>
-                        )}
                         <TouchableOpacity
                             onPress={() => { navigation.navigate("QRCodeScanningScreen") }}
                             disabled={!(eventButtonState == EventButtonState.SIGN_IN || eventButtonState == EventButtonState.SIGN_OUT)}
