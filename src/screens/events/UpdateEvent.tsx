@@ -2,10 +2,10 @@ import { View, Text, TouchableOpacity, TextInput, Image, Platform, TouchableHigh
 import React, { useContext, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation'
 import { useRoute } from '@react-navigation/core';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
 import { CommitteeMeeting, EventType, GeneralMeeting, IntramuralEvent, CustomEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop } from '../../types/events';
-import { setEvent, uploadFile } from '../../api/firebaseUtils';
+import { destroyEvent, setEvent, uploadFile } from '../../api/firebaseUtils';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from "expo-image-picker";
 import { Images } from '../../../assets';
@@ -20,6 +20,8 @@ import InteractButton from '../../components/InteractButton';
 import { getBlobFromURI, selectImage } from '../../api/fileSelection';
 import { CommonMimeTypes, validateFileBlob } from '../../helpers';
 import { auth } from '../../config/firebaseConfig';
+import { LinearGradient } from 'expo-linear-gradient';
+import DismissibleModal from '../../components/DismissibleModal';
 
 const UpdateEvent = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
@@ -28,6 +30,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    const insets = useSafeAreaInsets();
 
     // UI Hooks
     const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
@@ -38,6 +42,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const [localImageURI, setLocalImageURI] = useState<string>();
     const [isUploading, setIsUploading] = useState<boolean>();
     const [loading, setLoading] = useState<boolean>(false);
+    const [showDeletionConfirmation, setShowDeletionConfirmation] = useState<boolean>(false);
 
 
     // Form Data Hooks
@@ -144,7 +149,18 @@ const UpdateEvent = ({ navigation }: EventProps) => {
 
         await setEvent(event.id!, updatedEvent);
         setLoading(false)
+        navigation.navigate("EventInfo", { event: updatedEvent });
     };
+
+    const handleDestroyEvent = async () => {
+        const isDeleted = await destroyEvent(event.id!);
+        if (isDeleted) {
+            navigation.navigate("EventsScreen")
+        } else {
+            console.log("Failed to delete the event.");
+        }
+    }
+
 
     return (
         <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
@@ -177,6 +193,12 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         }}
                     />
 
+                    <LinearGradient
+                        colors={['rgba(255,255,255,.7)', 'rgba(255,255,255,0.6)', 'rgba(255,255,255,0)']}
+                        className='absolute w-full'
+                        style={{ height: insets.top + 30 }}
+                    ></LinearGradient>
+
                     <SafeAreaView edges={['top']}>
                         <View className='flex-row justify-between mx-4 h-full'>
                             <View className='flex-1 w-full h-full absolute justify-center items-center '>
@@ -190,13 +212,20 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                 </TouchableOpacity>
                             </View>
 
-
                             <TouchableOpacity
-                                onPress={() => { navigation.goBack(); }}
+                                onPress={() => { navigation.goBack() }}
                                 className="rounded-full w-10 h-10 justify-center items-center"
                                 style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
                             >
                                 <Octicons name="chevron-left" size={30} color="white" />
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => { setShowDeletionConfirmation(true) }}
+                                className="absolute top-0 right-0 rounded-full w-10 h-10 justify-center items-center"
+                                style={{ backgroundColor: 'rgba(0,0,0,.8)' }}
+                            >
+                                <Octicons name="trash" size={24} color="#FF0000" />
                             </TouchableOpacity>
                         </View>
                     </SafeAreaView>
@@ -545,6 +574,37 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     />
                 </View>
             </Modal>
+
+            <DismissibleModal
+                visible={showDeletionConfirmation}
+                setVisible={setShowDeletionConfirmation}
+            >
+                <View className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+                    <Octicons name="trash" size={24} color="black" />
+                    <View className='flex items-center w-[90%]'>
+                        <Text className="text-center text-md font-bold text-red-1">This is *not* reversable!</Text>
+                        <Text className="text-center text-lg font-bold">Are you sure you want to destroy this event?</Text>
+                        <View className="flex-row mt-8">
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    setShowDeletionConfirmation(false);
+                                    setLoading(true);
+                                    handleDestroyEvent().then(() => setLoading(false));
+                                }}
+                                className="w-[45%] bg-red-1 rounded-xl items-center justify-center h-12 mr-2"
+                            >
+                                <Text className='text-xl font-bold text-white'>Delete</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setShowDeletionConfirmation(false)}
+                                className="w-[45%] rounded-xl justify-center items-center ml-2 border border-black"
+                            >
+                                <Text className='text-xl font-bold px-3 text-black'>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </DismissibleModal>
         </View>
     )
 }
