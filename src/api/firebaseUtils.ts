@@ -598,19 +598,34 @@ export const destroyEvent = async (eventID: string) => {
     }
 };
 
-export const getAttendanceNumber = async (eventId: string): Promise<number> => {
+export const getAttendanceNumber = async (eventId: string) => {
     try {
         const logsRef = collection(db, `events/${eventId}/logs`);
         const q = query(logsRef);
         const querySnapshot = await getDocs(q);
 
-        return querySnapshot.docs.length;
+        let signedInCount = 0;
+        let signedOutCount = 0;
+
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.signInTime) {
+                signedInCount++;
+            }
+            if (data.signOutTime) {
+                signedOutCount++;
+            }
+        });
+
+        return {
+            signedInCount,
+            signedOutCount
+        };
     } catch (error) {
         console.error("Error calculating attendance number:", error);
         throw new Error("Unable to calculate attendance.");
     }
-}
-
+};
 /**
  * Signs a user into an event given an event id
  * @param eventID ID of event to sign into. This is the name of the event document in firestore

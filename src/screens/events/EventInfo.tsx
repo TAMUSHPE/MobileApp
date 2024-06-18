@@ -2,7 +2,7 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Pla
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Octicons } from '@expo/vector-icons';
+import { Octicons, FontAwesome6, Entypo } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
 import { getEvent, getAttendanceNumber, getPublicUserData, getUsers, signInToEvent, signOutOfEvent, getUserEventLog } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
@@ -42,6 +42,7 @@ const EventInfo = ({ navigation }: EventProps) => {
     const [creatorData, setCreatorData] = useState<PublicUserInfo | null>(null);
     const [loadingUserEventLog, setLoadingUserEventLog] = useState<boolean>(true);
     const [userEventLog, setUserEventLog] = useState<SHPEEventLog | null>(null);
+    const [attendanceCounts, setAttendanceCounts] = useState<{ signedInCount: number, signedOutCount: number }>({ signedInCount: 0, signedOutCount: 0 });
 
 
     useEffect(() => {
@@ -52,7 +53,13 @@ const EventInfo = ({ navigation }: EventProps) => {
             setLoadingUserEventLog(false);
         }
 
+        const fetchAttendanceCounts = async () => {
+            const counts = await getAttendanceNumber(event.id!);
+            setAttendanceCounts(counts);
+        }
+
         fetchUserEventLog();
+        fetchAttendanceCounts();
     }, [])
 
     useEffect(() => {
@@ -102,53 +109,6 @@ const EventInfo = ({ navigation }: EventProps) => {
 
     return (
         <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`} >
-            {!loadingUserEventLog && (
-                <View className='absolute w-full bottom-0 mb-5 z-50 justify-center items-center'>
-                    <View className='w-full'>
-                        <TouchableOpacity
-                            onPress={() => { navigation.navigate("QRCodeScanningScreen") }}
-                            disabled={!(eventButtonState == EventButtonState.SIGN_IN || eventButtonState == EventButtonState.SIGN_OUT)}
-                            className={`bg-primary-blue h-14 items-center justify-center rounded-xl mx-4 ${(eventButtonState == EventButtonState.SIGN_IN || eventButtonState == EventButtonState.SIGN_OUT) ? "bg-primary-blue" : "bg-secondary-bg-light border border-grey-dark"}`}
-                            style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 3.84,
-
-                                elevation: 5,
-                            }}
-                        >
-                            {eventButtonState === EventButtonState.SIGN_IN && (
-                                <Text className='text-center text-white text-2xl font-bold'>Sign In</Text>
-                            )}
-                            {eventButtonState === EventButtonState.SIGN_OUT && (
-                                <Text className='text-center text-white text-2xl font-bold'>Sign Out</Text>
-                            )}
-                            {eventButtonState === EventButtonState.NOT_STARTED && (
-                                <Text className='text-center text-grey-dark text-xl'>This event has not started</Text>
-                            )}
-                            {eventButtonState === EventButtonState.EVENT_OVER && (
-                                <Text className='text-center text-grey-dark text-xl'>This event is over</Text>
-                            )}
-                            {eventButtonState === EventButtonState.RECEIVED_POINTS && (
-                                <Text className='text-center text-grey-dark text-xl'>You received {userEventLog?.points} points for this event </Text>
-                            )}
-                        </TouchableOpacity>
-                    </View>
-                    {((eventButtonState === EventButtonState.SIGN_IN || eventButtonState === EventButtonState.SIGN_OUT) && (geolocation && geofencingRadius)) && (
-                        <View
-                            className="mt-2 mx-4 px-1 py-1 rounded-md mb-1 justify-center items-center"
-                            style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
-                        >
-                            <Text>You must be at the location to scan the QRCode.</Text>
-                        </View>
-                    )}
-                </View>
-            )}
-
             <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}
@@ -185,8 +145,27 @@ const EventInfo = ({ navigation }: EventProps) => {
                             >
                                 <Octicons name="chevron-left" size={30} color="white" />
                             </TouchableOpacity>
+                            {hasPrivileges && (
+                                <TouchableOpacity
+                                    onPress={() => { console.log("Edit Button") }}
+                                    className='absolute top-0 right-0 p-2 rounded-full items-center justify-center'
+                                    style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+                                >
+                                    <Entypo name="dots-three-vertical" size={24} color="white" />
+                                </TouchableOpacity>
+                            )}
                         </View>
                     </SafeAreaView>
+
+                    {hasPrivileges && (
+                        <TouchableOpacity
+                            onPress={() => { navigation.navigate("QRCode", { event: event }) }}
+                            className='absolute right-0 bottom-0 p-3 rounded-full m-4 items-center justify-center'
+                            style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+                        >
+                            <FontAwesome6 name="qrcode" size={24} color="white" />
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 {/* General Details */}
@@ -258,8 +237,67 @@ const EventInfo = ({ navigation }: EventProps) => {
                 )}
 
                 <View className='pb-20' />
-
             </KeyboardAwareScrollView>
+            {!loadingUserEventLog && (
+                <View className='absolute w-full bottom-0 mb-5 z-50 justify-center items-center'>
+                    <View className='w-full'>
+                        {hasPrivileges && (
+                            <View
+                                className="mt-2 mx-4 px-1 py-1 rounded-md mb-1 justify-center flex-row"
+                                style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
+                            >
+                                <View className='w-[50%]'>
+                                    <Text className='text-lg text-grey-dark'>{attendanceCounts.signedInCount || 0} Signed in</Text>
+                                </View>
+                                <View className='w-[50%]'>
+                                    <Text className='text-lg text-grey-dark'>{attendanceCounts.signedOutCount || 0} Signed out</Text>
+                                </View>
+
+                            </View>
+                        )}
+                        <TouchableOpacity
+                            onPress={() => { navigation.navigate("QRCodeScanningScreen") }}
+                            disabled={!(eventButtonState == EventButtonState.SIGN_IN || eventButtonState == EventButtonState.SIGN_OUT)}
+                            className={`bg-primary-blue h-14 items-center justify-center rounded-xl mx-4 ${(eventButtonState == EventButtonState.SIGN_IN || eventButtonState == EventButtonState.SIGN_OUT) ? "bg-primary-blue" : "bg-secondary-bg-light border border-grey-dark"}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+
+                                elevation: 5,
+                            }}
+                        >
+                            {eventButtonState === EventButtonState.SIGN_IN && (
+                                <Text className='text-center text-white text-2xl font-bold'>Sign In</Text>
+                            )}
+                            {eventButtonState === EventButtonState.SIGN_OUT && (
+                                <Text className='text-center text-white text-2xl font-bold'>Sign Out</Text>
+                            )}
+                            {eventButtonState === EventButtonState.NOT_STARTED && (
+                                <Text className='text-center text-grey-dark text-xl'>This event has not started</Text>
+                            )}
+                            {eventButtonState === EventButtonState.EVENT_OVER && (
+                                <Text className='text-center text-grey-dark text-xl'>This event is over</Text>
+                            )}
+                            {eventButtonState === EventButtonState.RECEIVED_POINTS && (
+                                <Text className='text-center text-grey-dark text-xl'>You received {userEventLog?.points} points for this event </Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                    {((eventButtonState === EventButtonState.SIGN_IN || eventButtonState === EventButtonState.SIGN_OUT) && (geolocation && geofencingRadius)) && (
+                        <View
+                            className="mt-2 mx-4 px-1 py-1 rounded-md mb-1 justify-center items-center"
+                            style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
+                        >
+                            <Text>You must be at the location to scan the QRCode.</Text>
+                        </View>
+                    )}
+                </View>
+            )}
         </View>
     )
 }

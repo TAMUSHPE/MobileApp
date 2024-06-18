@@ -45,7 +45,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
             </View>
 
             {hasPrivileges && (
-                <View className='h-full bg-blue-400 items-center justify-center mx-2'>
+                <View className='h-full  items-center justify-center mx-2'>
                     <TouchableOpacity
                         onPress={() => { navigation.navigate("QRCode", { event: event }) }}
                         className='absolute right-0 p-2 rounded-full'
