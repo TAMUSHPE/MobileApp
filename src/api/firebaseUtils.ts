@@ -551,26 +551,6 @@ export const isUserInBlacklist = async (uid: string): Promise<boolean> => {
 };
 
 
-
-/**
- * Updates a given event
- * @param id Name of event document in firestore
- * @param event Object to replace firestore document
- * @returns Document name firebase or null if an issue occurred
- */
-export const setEvent = async (id: string, event: SHPEEvent): Promise<string | null> => {
-    try {
-        const docRef = doc(db, "events", id);
-        await updateDoc(docRef, {
-            ...event
-        });
-        return id;
-    } catch (error) {
-        console.error("Error updating document: ", error);
-        return null;
-    }
-}
-
 /**
  * Fetches a given event document from firestore
  * @param eventID Document name of event in firestore
@@ -616,31 +596,6 @@ export const destroyEvent = async (eventID: string) => {
         console.error("Error deleting event and its related data: ", error);
         return false;
     }
-};
-
-
-const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
-    try {
-        const eventDoc = doc(db, `events/${eventId}`);
-        const eventDocRef = await getDoc(eventDoc);
-        if (eventDocRef.exists()) {
-            const eventData = eventDocRef.data();
-            const eventEndDate = eventData?.endDate;
-            if (eventEndDate) {
-                const eventEndTime = (eventEndDate as Timestamp).toDate().getTime();
-                const currentTime = new Date().getTime();
-
-                if (currentTime > eventEndTime) {
-                    return EventLogStatus.EVENT_OVER;
-                } else {
-                    return EventLogStatus.EVENT_ONGOING;
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Error checking event active status: ", error);
-    }
-    return EventLogStatus.ERROR;
 };
 
 export const getAttendanceNumber = async (eventId: string): Promise<number> => {
@@ -1483,3 +1438,22 @@ export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
         return null;
     }
 };
+
+/**
+ * Updates a given event
+ * @param id Name of event document in firestore
+ * @param event Object to replace firestore document
+ * @returns Document name firebase or null if an issue occurred
+ */
+export const setEvent = async (id: string, event: SHPEEvent): Promise<string | null> => {
+    try {
+        const docRef = doc(db, "events", id);
+        await updateDoc(docRef, {
+            ...event
+        });
+        return id;
+    } catch (error) {
+        console.error("Error updating document: ", error);
+        return null;
+    }
+}

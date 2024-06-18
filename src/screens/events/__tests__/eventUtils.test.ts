@@ -1,7 +1,7 @@
-import { Timestamp, GeoPoint, deleteDoc, doc, collection, getDocs } from "firebase/firestore";
+import { Timestamp, GeoPoint, deleteDoc, doc, collection, getDocs, getDoc } from "firebase/firestore";
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
-import { createEvent, getUpcomingEvents, getPastEvents } from "../../../api/firebaseUtils";
+import { createEvent, getUpcomingEvents, getPastEvents, setEvent } from "../../../api/firebaseUtils";
 import { EventType, SHPEEvent } from "../../../types/events";
 
 const generateTestEvent = (overrides: Partial<SHPEEvent> = {}): SHPEEvent => {
@@ -58,7 +58,7 @@ afterAll(async () => {
     await signOut(auth);
 });
 
-describe("Event Utils", () => {
+describe("Create and Get Event Functions", () => {
     test("Handle empty events collection", async () => {
         const upcomingEvents = await getUpcomingEvents();
         expect(upcomingEvents.length).toBe(0);
@@ -85,7 +85,7 @@ describe("Event Utils", () => {
         }
     });
 
-    test("Create and fetch upcoming events", async () => {
+    test("Fetch upcoming events", async () => {
         const event = generateTestEvent();
         const eventId = await createEvent(event as SHPEEvent);
         expect(eventId).not.toBeNull();
@@ -143,6 +143,7 @@ describe("Event Utils", () => {
 
         await deleteDoc(doc(db, "events", eventId!));
     });
+
     test("Multiple events and sorting", async () => {
         const event1 = generateTestEvent({
             startTime: Timestamp.fromDate(new Date(Date.now() + 3600 * 1000)),
@@ -230,5 +231,70 @@ describe("Event Utils", () => {
         expect(upcomingEvents.length).toBeGreaterThanOrEqual(100);
 
         await Promise.all(eventIds.map(eventId => deleteDoc(doc(db, "events", eventId!))));
+    });
+});
+
+describe("setEvent Function", () => {
+    test("Update an existing event with valid data", async () => {
+        const event = generateTestEvent();
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const updatedEvent = { ...event, name: "Updated Event Name" };
+        const result = await setEvent(eventId!, updatedEvent);
+
+        expect(result).toBe(eventId);
+
+        const updatedDoc = await getDoc(doc(db, "events", eventId!));
+        expect(updatedDoc.exists()).toBe(true);
+        expect(updatedDoc.data()?.name).toBe("Updated Event Name");
+
+        await deleteDoc(doc(db, "events", eventId!));
+    });
+
+    test("Handle non-existent event ID", async () => {
+        const nonExistentId = "non-existent-id";
+        const event = generateTestEvent();
+
+        const result = await setEvent(nonExistentId, event);
+
+        expect(result).toBeNull();
+    });
+
+    test("Update an event with missing fields", async () => {
+        const event = generateTestEvent();
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const updatedEvent = { ...event };
+        delete updatedEvent.geofencingRadius;
+        const result = await setEvent(eventId!, updatedEvent);
+
+        expect(result).toBe(eventId);
+
+        const updatedDoc = await getDoc(doc(db, "events", eventId!));
+        expect(updatedDoc.exists()).toBe(true);
+        expect(updatedDoc.data()?.name).toBe(event.name);
+
+        await deleteDoc(doc(db, "events", eventId!));
+    });
+
+    test("Update an multiple fields of an event", async () => {
+        const event = generateTestEvent({ locationName: "Initial Location", geolocation: new GeoPoint(30.621, -96.340) });
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const nestedUpdate = { locationName: "Updated Location", geolocation: new GeoPoint(30.622, -96.341) };
+        const result = await setEvent(eventId!, nestedUpdate as SHPEEvent);
+
+        expect(result).toBe(eventId);
+
+        const updatedDoc = await getDoc(doc(db, "events", eventId!));
+        expect(updatedDoc.exists()).toBe(true);
+        expect(updatedDoc.data()?.locationName).toBe("Updated Location");
+        expect(updatedDoc.data()?.geolocation.latitude).toBe(30.622);
+        expect(updatedDoc.data()?.geolocation.longitude).toBe(-96.341);
+
+        await deleteDoc(doc(db, "events", eventId!));
     });
 });
