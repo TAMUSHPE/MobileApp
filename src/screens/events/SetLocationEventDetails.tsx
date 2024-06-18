@@ -36,7 +36,7 @@ const SetLocationEventDetails = ({ navigation }: EventProps) => {
                 </TouchableOpacity>
             </View>
 
-            {/* Event Name */}
+            {/* Location Name */}
             <View className='mt-3 mx-4 pb-6'>
                 <Text className={`mb-1 text-base font-semibold ${darkMode ? "text-white" : "text-black"}`}>
                     Location Name<Text className='text-[#f00]'>*</Text>
@@ -84,6 +84,13 @@ const SetLocationEventDetails = ({ navigation }: EventProps) => {
                         navigation.navigate("FinalizeEvent", { event: event });
                     }}
                 />
+                <View
+                    className="mt-1 mx-4 rounded-sm py-2 justify-center items-center"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}
+                >
+                    <Text> Location details can be changed later</Text>
+                </View>
+
             </View>
         </SafeAreaView>
     );

@@ -110,7 +110,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                     style={{ borderStyle: 'dashed' }}
                                 >
                                     <View className='items-center justify-center h-full'>
-                                        <FontAwesome name="camera" size={40} color="#72A9BE" />
+                                        <FontAwesome name="camera" size={40} color="#1870B8" />
                                         <Text className='mt-1 text-center text-primary-blue text-lg font-semibold'>UPLOAD</Text>
                                     </View>
                                 </View>
@@ -336,7 +336,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             />
                         </View>
 
-                        <View className='w-full absolute bottom-0 mb-16'>
+                        <View className='w-full absolute bottom-0 mb-12'>
                             <InteractButton
                                 buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
                                 textClassName='text-center text-white text-2xl font-bold'
@@ -370,6 +370,9 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                     }
                                 }}
                             />
+                            <View className='w-full items-center justify-center'>
+                                <Text> Location details can be changed later</Text>
+                            </View>
                         </View>
                     </View>
                 </SafeAreaView>

@@ -340,7 +340,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
 
                                 }}
                             />
-                            <View className='mb-3 items-center'>
+                            <View className='mb-3 items-center mt-1'>
                                 <Text className='text-red-1 text-md font-medium'>Specific details can not be changed later* </Text>
                             </View>
                         </View>
