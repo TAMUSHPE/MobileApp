@@ -4,27 +4,20 @@ import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/core';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome6, Entypo } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
-import { getEvent, getAttendanceNumber, getPublicUserData, getUsers, signInToEvent, signOutOfEvent, getUserEventLog } from '../../api/firebaseUtils';
+import { getAttendanceNumber, getPublicUserData, getUsers, signInToEvent, signOutOfEvent, getUserEventLog } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
-import { MillisecondTimes, formatEventDate, formatEventTime, formatTime } from '../../helpers/timeUtils';
-import { SHPEEvent, SHPEEventLog, getStatusMessage } from '../../types/events';
+import { MillisecondTimes, formatEventDate, formatEventTime } from '../../helpers/timeUtils';
+import { SHPEEvent, SHPEEventLog } from '../../types/events';
 import { Images } from '../../../assets';
 import { StatusBar } from 'expo-status-bar';
-import CalendarIcon from '../../../assets/calandar_pale_blue.svg'
-import ClockIcon from '../../../assets/clock-pale-blue.svg'
-import MapIcon from '../../../assets/map-pale-blue.svg'
-import TargetIcon from '../../../assets/target-pale-blue.svg'
 import { handleLinkPress } from '../../helpers/links';
 import MemberCard from '../../components/MemberCard';
 import { PublicUserInfo } from '../../types/user';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 import MembersList from '../../components/MembersList';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { EventProps, EventsStackParams } from '../../types/navigation';
 import { LinearGradient } from 'expo-linear-gradient';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
-import InteractButton from '../../components/InteractButton';
-import { sign } from 'crypto';
 
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<EventInfoScreenRouteProp>();
@@ -43,6 +36,7 @@ const EventInfo = ({ navigation }: EventProps) => {
     const [loadingUserEventLog, setLoadingUserEventLog] = useState<boolean>(true);
     const [userEventLog, setUserEventLog] = useState<SHPEEventLog | null>(null);
     const [attendanceCounts, setAttendanceCounts] = useState<{ signedInCount: number, signedOutCount: number }>({ signedInCount: 0, signedOutCount: 0 });
+    const [showOptionMenu, setShowOptionMenu] = useState<boolean>(false);
 
 
     useEffect(() => {
@@ -146,13 +140,38 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 <Octicons name="chevron-left" size={30} color="white" />
                             </TouchableOpacity>
                             {hasPrivileges && (
-                                <TouchableOpacity
-                                    onPress={() => { console.log("Edit Button") }}
-                                    className='absolute top-0 right-0 p-2 rounded-full items-center justify-center'
-                                    style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
-                                >
-                                    <Entypo name="dots-three-vertical" size={24} color="white" />
-                                </TouchableOpacity>
+                                <View className=''>
+                                    <TouchableOpacity
+                                        onPress={() => { setShowOptionMenu(!showOptionMenu) }}
+                                        className='absolute top-0 right-0 p-2 rounded-full items-center justify-center'
+                                        style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+                                    >
+                                        <Entypo name="dots-three-vertical" size={24} color="white" />
+                                    </TouchableOpacity>
+                                    {showOptionMenu && (
+                                        <View className='absolute right-10 top-5 rounded-md items-center'
+                                            style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}
+                                        >
+                                            <TouchableOpacity
+                                                className='px-4'
+                                                onPress={() => {
+                                                    setShowOptionMenu(false);
+                                                    navigation.navigate("UpdateEvent", { event: event })
+                                                }}
+                                            >
+                                                <Text className='text-white text-xl py-3 font-medium'>Edit Event</Text>
+                                            </TouchableOpacity>
+                                            <View className='w-[70%] bg-white' style={{ height: 1 }} />
+                                            <TouchableOpacity className='px-4'>
+                                                <Text className='text-white text-xl py-3 font-medium'>Manual Sign In</Text>
+                                            </TouchableOpacity>
+                                            <View className='w-[70%] bg-white mx-4' style={{ height: 1 }} />
+                                            <TouchableOpacity className='px-4 py-3'>
+                                                <Text className='text-white text-xl font-medium'>Manual Sign Out</Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+                                </View>
                             )}
                         </View>
                     </SafeAreaView>
