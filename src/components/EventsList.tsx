@@ -35,7 +35,7 @@ const EventsList = ({ events, navigation, isLoading, showImage = true, onEventCl
                         key={index}
                         className="flex-row space-x-2 pt-4"
                         onPress={() => {
-                            navigation.navigate("EventInfo", { eventId: event.id });
+                            navigation.navigate("EventInfo", { event: event });
                             if (onEventClick) {
                                 onEventClick();
                             }

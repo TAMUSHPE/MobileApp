@@ -5,7 +5,7 @@ import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateFileBlob, validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/user";
 import { Committee } from "../types/committees";
-import { SHPEEvent, EventLogStatus, UserEventData } from "../types/events";
+import { SHPEEvent, EventLogStatus, UserEventData, SHPEEventLog } from "../types/events";
 import * as Location from 'expo-location';
 import { deleteUser } from "firebase/auth";
 import { LinkData } from "../types/links";
@@ -708,15 +708,14 @@ export const signOutOfEvent = async (eventID: string, uid?: string): Promise<Eve
             }
         });
 }
-
-export const isUserSignedIn = async (eventId: string, uid: string) => {
+export const getUserEventLog = async (eventId: string, uid: string): Promise<SHPEEventLog | null> => {
     const eventLogDocRef = doc(db, 'events', eventId, 'logs', uid);
     const docSnap = await getDoc(eventLogDocRef);
 
     if (docSnap.exists()) {
-        return true;
+        return docSnap.data();
     } else {
-        return false;
+        return null;
     }
 }
 

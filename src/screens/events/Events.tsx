@@ -223,7 +223,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 
                                                         elevation: 5,
                                                     }}
-                                                    onPress={() => { navigation.navigate("EventInfo", { eventId: event.id! }) }}
+                                                    onPress={() => { navigation.navigate("EventInfo", { event: event }) }}
                                                 >
                                                     <Image
                                                         className="flex h-full w-full rounded-2xl"

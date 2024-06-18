@@ -27,7 +27,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
 
                 elevation: 5,
             }}
-            onPress={() => { navigation.navigate("EventInfo", { eventId: event.id! }) }}
+            onPress={() => { navigation.navigate("EventInfo", { event: event }) }}
         >
             <Image
                 className="flex h-full w-[25%] rounded-md"

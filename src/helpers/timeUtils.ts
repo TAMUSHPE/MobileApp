@@ -38,6 +38,15 @@ export const formatDate = (date: Date): string => {
     return `${dayOfWeek}, ${month} ${day}`;
 };
 
+export const formatDateWithYear = (date: Date): string => {
+    const dayOfWeek = dayNames[date.getDay()];
+    const day = date.getDate();
+    const month = monthNames[date.getMonth()];
+
+    return `${month} ${day}, ${date.getFullYear()}`;
+};
+
+
 /**
  * Constructs a readable string that represents the time of day of a given `Date` object
  * @param date 
@@ -47,8 +56,28 @@ export const formatTime = (date: Date): string => {
     const hour = date.getHours();
     const minute = date.getMinutes();
 
-    return `${hour % 12 == 0 ? 12 : hour % 12}:${minute.toString().padStart(2, '0')}${hour > 11 ? "pm" : "am"}`
+    return `${hour % 12 == 0 ? 12 : hour % 12}:${minute.toString().padStart(2, '0')}${hour > 11 ? "pm" : "am"}`;
 }
+
+export const formatEventTime = (startDate: Date, endDate: Date): string => {
+    const startHour = startDate.getHours();
+    const endHour = endDate.getHours();
+    const startMinute = startDate.getMinutes();
+    const endMinute = endDate.getMinutes();
+
+    const startAmPm = startHour >= 12 ? "pm" : "am";
+    const endAmPm = endHour >= 12 ? "pm" : "am";
+
+    const formattedStartTime = `${startHour % 12 === 0 ? 12 : startHour % 12}:${startMinute.toString().padStart(2, '0')}`;
+    const formattedEndTime = `${endHour % 12 === 0 ? 12 : endHour % 12}:${endMinute.toString().padStart(2, '0')}${endAmPm}`;
+
+    if (startAmPm === endAmPm) {
+        return `${formattedStartTime} - ${formattedEndTime}`;
+    }
+
+    return `${formattedStartTime}${startAmPm} - ${formattedEndTime}`;
+}
+
 
 /**
  * Constructs a readable string that represents the date and time of day of a given `Date` object and it's timezone offset.
@@ -75,20 +104,15 @@ export const formatEventDate = (startTime: Date, endTime: Date) => {
         return `${month} ${day}`;
     }
 
-    const formatDayYearOnly = (date: Date): string => {
-        const day = date.getDate();
-        const year = date.getFullYear();
 
-        return `${day} ${year}`;
-    }
 
     if (isSameDay) {
         return `${formatDate(startTime)}`;
     } else if (isSameMonth) {
-        return `${formatMonthDayOnly(startTime)}-${formatDayYearOnly(endTime)}`;
+        return `${formatMonthDayOnly(startTime)} - ${endTime.getDate()}`;
     } else if (isSameYear) {
-        return `${formatMonthDayOnly(startTime)}-${formatDate(endTime)}`;
+        return `${formatMonthDayOnly(startTime)} - ${formatDate(endTime)}`;
     } else {
-        return `${formatDate(startTime)} - ${formatDate(endTime)}`;
+        return `${formatDateWithYear(startTime)} - ${formatDateWithYear(endTime)}`;
     }
 };
