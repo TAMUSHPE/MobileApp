@@ -11,17 +11,19 @@ import { Octicons } from '@expo/vector-icons';
 const zacharyCoords = { latitude: 30.621160236499136, longitude: -96.3403560168198 }
 const initialMapDelta = { latitudeDelta: 0.0922, longitudeDelta: 0.0421 } // Size of map view
 
-const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords }: {
+const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, initialRadius, containerClassName = "" }: {
     onLocationChange: (locationDetails: GooglePlaceDetail | undefined | null, radius: number | undefined) => void
-    initialCoordinate?: LatLng
+    initialCoordinate?: LatLng,
+    initialRadius?: number,
+    containerClassName?: string
 }) => {
     const [userLocation, setUserLocation] = useState<Location.LocationObject>();
     const [locationDetails, setLocationDetails] = useState<GooglePlaceDetail | null>();
     const [draggableMarkerCoord, setDraggableMarkerCoord] = useState<LatLng>(initialCoordinate);
     const [mapRegion, setMapRegion] = useState<Region>({ ...initialCoordinate, ...initialMapDelta });
-    const [initialRadius, setInitialRadius] = useState<number>(100);
-    const [radius, setRadius] = useState<number>();
-    const [geofencingEnabled, setGeofencingEnabled] = useState<boolean>(false);
+    const [defaultRadius, setDefaultRadius] = useState<number>(100);
+    const [radius, setRadius] = useState<number | undefined>(initialRadius);
+    const [geofencingEnabled, setGeofencingEnabled] = useState<boolean>(initialRadius ? true : false);
 
     useEffect(() => {
         Location.requestForegroundPermissionsAsync()
@@ -71,7 +73,7 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords }:
                 )}
             </MapView>
 
-            <View className="absolute z-10 p-3 w-full top-0 ">
+            <View className={`absolute z-10 p-3 w-full top-0 ` + containerClassName}>
                 <View className='w-full flex-row items-center justify-center'>
                     {/* Search Box for to search using Google Places */}
                     <GooglePlacesAutocomplete
@@ -146,7 +148,7 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords }:
                             <Text className='flex-1 text-xl font-semibold'>Area Restriction</Text>
                             <TouchableOpacity onPress={() => {
                                 setGeofencingEnabled(true);
-                                setRadius(initialRadius);
+                                setRadius(defaultRadius);
                             }}>
                                 <Text className='text-lg text-primary-blue font-semibold '>Enable</Text>
                             </TouchableOpacity>
