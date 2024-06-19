@@ -1,5 +1,5 @@
-import { View, Text, Switch } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import { View, Text, Switch, useColorScheme } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
 import { GooglePlacesAutocomplete, GooglePlaceDetail } from 'react-native-google-places-autocomplete';
 import MapView, { Marker, Circle, LatLng, Region } from 'react-native-maps';
 import * as Location from 'expo-location'
@@ -7,6 +7,7 @@ import { GooglePlacesApiKey, presetLocationList, reverseGeocode } from '../helpe
 import Slider from '@react-native-community/slider';
 import { TouchableOpacity } from 'react-native';
 import { Octicons } from '@expo/vector-icons';
+import { UserContext } from '../context/UserContext';
 
 const zacharyCoords = { latitude: 30.621160236499136, longitude: -96.3403560168198 }
 const initialMapDelta = { latitudeDelta: 0.0922, longitudeDelta: 0.0421 } // Size of map view
@@ -17,6 +18,14 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
     initialRadius?: number,
     containerClassName?: string
 }) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [userLocation, setUserLocation] = useState<Location.LocationObject>();
     const [locationDetails, setLocationDetails] = useState<GooglePlaceDetail | null>();
     const [draggableMarkerCoord, setDraggableMarkerCoord] = useState<LatLng>(initialCoordinate);
@@ -73,37 +82,72 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
                 )}
             </MapView>
 
-            <View className={`absolute z-10 p-3 w-full top-0 ` + containerClassName}>
+            <View className={`absolute z-10 p-3 w-full top-0 ${containerClassName}`}>
                 <View className='w-full flex-row items-center justify-center'>
-                    {/* Search Box for to search using Google Places */}
-                    <GooglePlacesAutocomplete
-                        placeholder="Search"
-                        query={{
-                            key: GooglePlacesApiKey,
-                            language: 'en',
-                        }}
-                        onPress={(data, details = null) => {
-                            if (details === null) {
-                                alert("There was a problem searching for that location. Please try again.")
-                                return;
-                            }
+                    {/* Search Box for Google Places */}
+                    <View className='flex-1 relative z-20'>
+                        <GooglePlacesAutocomplete
+                            placeholder="Search"
+                            query={{
+                                key: GooglePlacesApiKey,
+                                language: 'en',
+                            }}
+                            onPress={(data, details = null) => {
+                                if (details === null) {
+                                    alert("There was a problem searching for that location. Please try again.");
+                                    return;
+                                }
 
-                            setLocationDetails(details);
-                            setDraggableMarkerCoord({
-                                latitude: details.geometry.location.lat,
-                                longitude: details.geometry.location.lng,
-                            });
-                            setMapRegion({
-                                latitude: details.geometry.location.lat,
-                                longitude: details.geometry.location.lng,
-                                ...initialMapDelta
-                            });
-                            setLocationDetails(details);
-                        }}
-                        fetchDetails={true}
-                        predefinedPlaces={presetLocationList}
-                        onFail={(error) => console.error(error)}
-                    />
+                                setLocationDetails(details);
+                                setDraggableMarkerCoord({
+                                    latitude: details.geometry.location.lat,
+                                    longitude: details.geometry.location.lng,
+                                });
+                                setMapRegion({
+                                    latitude: details.geometry.location.lat,
+                                    longitude: details.geometry.location.lng,
+                                    ...initialMapDelta,
+                                });
+                                setLocationDetails(details);
+                            }}
+                            fetchDetails={true}
+                            predefinedPlaces={presetLocationList}
+                            onFail={(error) => console.error(error)}
+                            styles={{
+                                textInputContainer: {
+                                    backgroundColor: darkMode ? 'black' : 'white',
+                                    borderRadius: 10,
+                                    paddingHorizontal: 10,
+                                },
+                                textInput: {
+                                    backgroundColor: darkMode ? 'black' : 'white',
+                                    color: darkMode ? 'white' : 'black',
+                                    borderRadius: 10,
+                                    height: 40,
+                                },
+                                listView: {
+                                    position: 'absolute',
+                                    top: 50,
+                                    left: 0,
+                                    right: 0,
+                                    backgroundColor: darkMode ? 'black' : 'white',
+                                    zIndex: 9999,
+                                    borderRadius: 10,
+                                },
+                                row: {
+                                    backgroundColor: darkMode ? 'black' : 'white',
+                                    borderBottomWidth: 0.5,
+                                    borderBottomColor: darkMode ? 'gray' : 'lightgray',
+                                },
+                                description: {
+                                    color: darkMode ? 'white' : 'black',
+                                },
+                                predefinedPlacesDescription: {
+                                    color: darkMode ? 'white' : 'black',
+                                },
+                            }}
+                        />
+                    </View>
 
                     <TouchableOpacity
                         className='h-12 w-12 items-center justify-center ml-4 bg-primary-blue rounded-md'
@@ -130,9 +174,9 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
                     </TouchableOpacity>
                 </View>
 
-                <View>
+                <View className='-z-20'>
                     {!geofencingEnabled && (
-                        <View className='flex-row items-center justify-between mt-4 w-full px-4 bg-secondary-bg-light h-12 rounded-lg'
+                        <View className={`flex-row items-center justify-between mt-4 w-full px-4 h-12 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                             style={{
                                 shadowColor: "#000",
                                 shadowOffset: {
@@ -141,22 +185,21 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
                                 },
                                 shadowOpacity: 0.25,
                                 shadowRadius: 3.84,
-
                                 elevation: 5,
                             }}
                         >
-                            <Text className='flex-1 text-xl font-semibold'>Area Restriction</Text>
+                            <Text className={`flex-1 text-xl font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>Area Restriction</Text>
                             <TouchableOpacity onPress={() => {
                                 setGeofencingEnabled(true);
                                 setRadius(defaultRadius);
                             }}>
-                                <Text className='text-lg text-primary-blue font-semibold '>Enable</Text>
+                                <Text className='text-lg text-primary-blue font-semibold'>Enable</Text>
                             </TouchableOpacity>
                         </View>
                     )}
 
                     {geofencingEnabled && (
-                        <View className='flex-1 bg-secondary-bg-light rounded-md px-4 pt-1 mt-4 flex-row items-center'>
+                        <View className={`flex-1 rounded-md px-4 pt-1 mt-4 flex-row items-center ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}>
                             <View className='flex-1'>
                                 <Slider
                                     minimumValue={0}
@@ -171,9 +214,8 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
                                     }}
                                     minimumTrackTintColor="#1870B8"
                                 />
-
                             </View>
-                            <Text className='text-lg ml-3'>{radius?.toFixed(0)}m</Text>
+                            <Text className={`text-lg ml-3 ${darkMode ? 'text-white' : 'text-black'}`}>{radius?.toFixed(0)}m</Text>
                         </View>
                     )}
                 </View>

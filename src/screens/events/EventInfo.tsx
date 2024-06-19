@@ -53,8 +53,7 @@ const EventInfo = ({ navigation }: EventProps) => {
         setAttendanceCounts(counts);
         setLoading(false)
     }
-    console.log("locationName:", locationName);
-    console.log("geolocation:", geolocation);
+
     useEffect(() => {
         const fetchUserEventLog = async () => {
             setLoadingUserEventLog(true);

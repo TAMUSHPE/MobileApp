@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, useColorScheme } from 'react-native'
 import React, { useContext, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation'
 import { useRoute } from '@react-navigation/core';
@@ -17,7 +17,11 @@ const SetLocationEventDetails = ({ navigation }: EventProps) => {
 
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const [locationName, setLocationName] = useState<string | undefined>(event.locationName ?? undefined);
     const [geolocation, setGeolocation] = useState<GeoPoint | undefined>(event.geolocation ?? undefined);
@@ -85,12 +89,11 @@ const SetLocationEventDetails = ({ navigation }: EventProps) => {
                     }}
                 />
                 <View
-                    className="mt-1 mx-4 rounded-sm py-2 justify-center items-center"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.6)' }}
+                    className="mt-1 mx-4 rounded-md py-2 justify-center items-center"
+                    style={{ backgroundColor: darkMode ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.6)' }}
                 >
-                    <Text> Location details can be changed later</Text>
+                    <Text style={{ color: darkMode ? 'white' : 'black' }}>Location details can be changed later</Text>
                 </View>
-
             </View>
         </SafeAreaView>
     );

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, Alert, useColorScheme } from 'react-native'
 import React, { useContext, useState } from 'react'
 import { CommitteeMeeting, CustomEvent, EventType, GeneralMeeting, IntramuralEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop } from '../../types/events'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -20,7 +20,11 @@ import { StatusBar } from 'expo-status-bar';
 const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const [selectedEventType, setSelectedEventType] = useState<EventType | undefined>();
 
@@ -32,7 +36,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
         return (
             <View className='w-[47%] mt-8'>
                 <TouchableOpacity
-                    className={`w-[100%] flex-row px-2 py-4 items-center rounded-lg border border-grey-dark bg-secondary-bg-light`}
+                    className={`w-[100%] flex-row px-2 py-4 items-center rounded-lg border ${darkMode ? 'border-grey-light bg-secondary-bg-dark' : 'border-grey-dark bg-secondary-bg-light'}`}
                     style={{
                         shadowColor: "#000",
                         shadowOffset: {
@@ -41,7 +45,6 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                         },
                         shadowOpacity: 0.25,
                         shadowRadius: 3.84,
-
                         elevation: 5,
                     }}
                     onPress={() => {
@@ -49,22 +52,20 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                             setSelectedEventType(undefined);
                             return;
                         }
-                        setSelectedEventType(eventType)
+                        setSelectedEventType(eventType);
                     }}
                 >
-                    <View className={`h-7 w-7 border-2 rounded-full items-center justify-center ${eventType == selectedEventType ? "border-primary-blue" : "border-grey-dark"}`}>
+                    <View className={`h-7 w-7 border-2 rounded-full items-center justify-center ${eventType == selectedEventType ? "border-primary-blue" : darkMode ? "border-grey-light" : "border-grey-dark"}`}>
                         <View className={`h-5 w-5 rounded-full ${eventType == selectedEventType && "bg-primary-blue"}`} />
                     </View>
-                    <View className='bg-gray-300 h-8 w-8 ml-2 rounded-md items-center justify-center'>
+                    <View className={`h-8 w-8 ml-2 rounded-md items-center justify-center bg-grey-light`}>
                         {Image && <Image width={25} height={25} />}
                     </View>
-
-                    <Text className={`flex-1 ml-2 text-md`}>{label}</Text>
+                    <Text className={`flex-1 ml-2 text-md ${darkMode ? 'text-white' : 'text-black'}`}>{label}</Text>
                 </TouchableOpacity>
             </View>
         )
     }
-
     return (
         <SafeAreaView edges={['top']} className={`flex flex-col h-screen ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />

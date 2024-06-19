@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Alert, TouchableHighlight, Platform, Image } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, Alert, TouchableHighlight, Platform, Image, useColorScheme } from 'react-native';
 import React, { useContext, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
@@ -24,7 +24,11 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
 
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     // UI Hooks
     const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);

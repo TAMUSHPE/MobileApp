@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Switch, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Switch, ScrollView, useColorScheme, Modal } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation';
@@ -20,7 +20,11 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
 
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const insets = useSafeAreaInsets();
 
@@ -63,14 +67,12 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     };
 
     return (
-        <View>
+        <View className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <KeyboardAwareScrollView
                 showsVerticalScrollIndicator={false}
-                className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
+                className={`flex-1`}
             >
                 <SafeAreaView className={`flex flex-col h-screen`}>
-                    <StatusBar style={darkMode ? "light" : "dark"} />
-                    {/* Header */}
                     <View className='flex-row items-center'>
                         <View className='absolute w-full justify-center items-center'>
                             <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Specific Details</Text>
@@ -88,7 +90,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
 
                             <View className='space-y-4'>
                                 {event.signInPoints !== undefined && (
-                                    <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
+                                    <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                         style={{
                                             shadowColor: "#000",
                                             shadowOffset: {
@@ -97,17 +99,16 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                             },
                                             shadowOpacity: 0.25,
                                             shadowRadius: 3.84,
-
                                             elevation: 5,
                                         }}
                                     >
-                                        <Text className='flex-1 text-xl font-semibold'>Sign In</Text>
+                                        <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Sign In</Text>
 
                                         <View className='w-[75%] flex-row space-x-3'>
                                             {points.map((point) => (
                                                 <TouchableOpacity
                                                     key={point}
-                                                    className={`w-10 h-10 rounded-xl items-center border justify-center ${signInPoints === point ? "bg-primary-blue border-primary-blue" : "bg-secondary-bg-light border-grey-dark"}`}
+                                                    className={`w-10 h-10 rounded-xl items-center border justify-center ${signInPoints === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
                                                     onPress={() => {
                                                         if (signInPoints === point) {
                                                             setSignInPoints(undefined);
@@ -116,7 +117,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                                         }
                                                     }}
                                                 >
-                                                    <Text className={`text-white text-xl font-semibold ${signInPoints === point ? "text-white" : "text-black"}`}>+{point}</Text>
+                                                    <Text className={`text-xl font-semibold ${signInPoints === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
                                                 </TouchableOpacity>
                                             ))}
                                         </View>
@@ -124,7 +125,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 )}
 
                                 {event.signOutPoints !== undefined && (
-                                    <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
+                                    <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                         style={{
                                             shadowColor: "#000",
                                             shadowOffset: {
@@ -133,17 +134,16 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                             },
                                             shadowOpacity: 0.25,
                                             shadowRadius: 3.84,
-
                                             elevation: 5,
                                         }}
                                     >
-                                        <Text className='flex-1 text-xl font-semibold'>Sign Out</Text>
+                                        <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Sign Out</Text>
 
                                         <View className='w-[75%] flex-row space-x-3'>
                                             {points.map((point) => (
                                                 <TouchableOpacity
                                                     key={point}
-                                                    className={`w-10 h-10 rounded-xl items-center border justify-center ${signOutPoints === point ? "bg-primary-blue border-primary-blue" : "bg-secondary-bg-light border-grey-dark"}`}
+                                                    className={`w-10 h-10 rounded-xl items-center border justify-center ${signOutPoints === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
                                                     onPress={() => {
                                                         if (signOutPoints === point) {
                                                             setSignOutPoints(undefined);
@@ -152,7 +152,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                                         }
                                                     }}
                                                 >
-                                                    <Text className={`text-white text-xl font-semibold ${signOutPoints === point ? "text-white" : "text-black"}`}>+{point}</Text>
+                                                    <Text className={`text-xl font-semibold ${signOutPoints === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
                                                 </TouchableOpacity>
                                             ))}
                                         </View>
@@ -160,7 +160,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 )}
 
                                 {event.pointsPerHour !== undefined && (
-                                    <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
+                                    <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                         style={{
                                             shadowColor: "#000",
                                             shadowOffset: {
@@ -169,17 +169,16 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                             },
                                             shadowOpacity: 0.25,
                                             shadowRadius: 3.84,
-
                                             elevation: 5,
                                         }}
                                     >
-                                        <Text className='flex-1 text-xl font-semibold'>Hourly</Text>
+                                        <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Hourly</Text>
 
                                         <View className='w-[75%] flex-row space-x-3'>
                                             {points.map((point) => (
                                                 <TouchableOpacity
                                                     key={point}
-                                                    className={`w-10 h-10 rounded-xl items-center border justify-center ${pointsPerHour === point ? "bg-primary-blue border-primary-blue" : "bg-secondary-bg-light border-grey-dark"}`}
+                                                    className={`w-10 h-10 rounded-xl items-center border justify-center ${pointsPerHour === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
                                                     onPress={() => {
                                                         if (pointsPerHour === point) {
                                                             setPointsPerHour(undefined);
@@ -188,13 +187,12 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                                         }
                                                     }}
                                                 >
-                                                    <Text className={`text-white text-xl font-semibold ${pointsPerHour === point ? "text-white" : "text-black"}`}>+{point}</Text>
+                                                    <Text className={`text-xl font-semibold ${pointsPerHour === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
                                                 </TouchableOpacity>
                                             ))}
                                         </View>
                                     </View>
                                 )}
-
                             </View>
                         </View>
                         {/* Event Scope (Club-Wide, Associated Committees, Notifications)*/}
@@ -202,7 +200,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                             <Text className={`text-2xl font-semibold mb-4 ${darkMode ? "text-white" : "text-black"}`}>Event Scope</Text>
 
                             <View className='space-y-4'>
-                                <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
+                                <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                     style={{
                                         shadowColor: "#000",
                                         shadowOffset: {
@@ -211,11 +209,10 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         },
                                         shadowOpacity: 0.25,
                                         shadowRadius: 3.84,
-
                                         elevation: 5,
                                     }}
                                 >
-                                    <Text className='flex-1 text-xl font-semibold'>Club-Wide</Text>
+                                    <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Club-Wide</Text>
                                     <Switch
                                         trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                         thumbColor={"white"}
@@ -225,7 +222,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                     />
                                 </View>
 
-                                <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
+                                <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                     style={{
                                         shadowColor: "#000",
                                         shadowOffset: {
@@ -234,11 +231,10 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         },
                                         shadowOpacity: 0.25,
                                         shadowRadius: 3.84,
-
                                         elevation: 5,
                                     }}
                                 >
-                                    <Text className='flex-1 text-xl font-semibold'>Associated Committee</Text>
+                                    <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Associated Committee</Text>
                                     <View className='flex-row flex-wrap w-[60%]'>
                                         <CustomDropDownMenu
                                             data={createCommitteeList(selectableCommittees)}
@@ -255,7 +251,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 </View>
 
                                 <View className='-z-10'>
-                                    <View className='flex-col px-4 bg-secondary-bg-light h-16 rounded-lg'
+                                    <View className={`flex-col px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                         style={{
                                             shadowColor: "#000",
                                             shadowOffset: {
@@ -264,12 +260,11 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                             },
                                             shadowOpacity: 0.25,
                                             shadowRadius: 3.84,
-
                                             elevation: 5,
                                         }}
                                     >
                                         <View className='flex-row items-center justify-between w-full flex-1'>
-                                            <Text className='flex-1 text-xl font-semibold'>Notifications</Text>
+                                            <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Notifications</Text>
                                             <Switch
                                                 trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                                 thumbColor={"white"}
@@ -282,19 +277,25 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                     {!notificationSent && (
                                         <View className='mt-1 w-full justify-center items-center'>
                                             {isGeneral ? (
-                                                <Text>All Members will be notified</Text>
+                                                <Text className={darkMode ? 'text-white' : 'text-black'}>All Members will be notified</Text>
                                             ) : (
                                                 <>
                                                     {committee && committee !== "" && eventTypeNotification.includes(event.eventType!) ? (
-                                                        <Text className='text-center'>This will notify <Text className='text-semibold text-primary-blue'>{reverseFormattedFirebaseName(committee)}</Text> members and those interested in <Text className='text-semibold text-primary-blue'>{event.eventType}</Text></Text>
+                                                        <Text className={`text-center ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                            This will notify <Text className='text-semibold text-primary-blue'>{reverseFormattedFirebaseName(committee)}</Text> members and those interested in <Text className='text-semibold text-primary-blue'>{event.eventType}</Text>
+                                                        </Text>
                                                     ) : (
                                                         <View>
                                                             {committee && committee !== "" && (
-                                                                <Text className='text-center'>Member in <Text className='text-semibold text-primary-blue'>{reverseFormattedFirebaseName(committee)}</Text> will be notified</Text>
+                                                                <Text className={`text-center ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                                    Member in <Text className='text-semibold text-primary-blue'>{reverseFormattedFirebaseName(committee)}</Text> will be notified
+                                                                </Text>
                                                             )}
 
                                                             {eventTypeNotification.includes(event.eventType!) && (
-                                                                <Text className='text-center'>Members interested in <Text className='text-semibold text-primary-blue'>{event.eventType}</Text> will be notified</Text>
+                                                                <Text className={`text-center ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                                    Members interested in <Text className='text-semibold text-primary-blue'>{event.eventType}</Text> will be notified
+                                                                </Text>
                                                             )}
                                                         </View>
                                                     )}
@@ -307,10 +308,8 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         </View>
 
                         <View className='w-full mt-12 -z-10 '>
-                            <TouchableOpacity className='mb-3 items-center'
-                                onPress={() => setAdvanceOptionsModal(true)}
-                            >
-                                <Text className='underline text-lg font-medium'>Advanced Options</Text>
+                            <TouchableOpacity className='mb-3 items-center' onPress={() => setAdvanceOptionsModal(true)}>
+                                <Text className={`underline text-lg font-medium ${darkMode ? 'text-white' : 'text-black'}`}>Advanced Options</Text>
                             </TouchableOpacity>
 
                             <InteractButton
@@ -352,11 +351,13 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                 )}
             </KeyboardAwareScrollView>
 
-            <DismissibleModal
+            <Modal
+                transparent
                 visible={advanceOptionsModal}
-                setVisible={setAdvanceOptionsModal}
+                animationType='slide'
+                onRequestClose={() => setAdvanceOptionsModal(false)}
             >
-                <View className='flex bg-white h-screen w-screen'>
+                <View className={`flex h-screen w-screen ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                     {/* Header */}
                     <View style={{ marginTop: insets.top }} className='flex-row items-center'>
                         <View className='absolute w-full justify-center items-center'>
@@ -369,7 +370,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
 
                     {/* Advance Options */}
                     <View className='px-4 mt-10 space-y-8'>
-                        <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
+                        <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                             style={{
                                 shadowColor: "#000",
                                 shadowOffset: {
@@ -378,11 +379,10 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 },
                                 shadowOpacity: 0.25,
                                 shadowRadius: 3.84,
-
                                 elevation: 5,
                             }}
                         >
-                            <Text className='flex-1 text-xl font-semibold'>Eligible for National Convention</Text>
+                            <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Eligible for National Convention</Text>
                             <Switch
                                 trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                 thumbColor={"white"}
@@ -392,7 +392,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                             />
                         </View>
 
-                        <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
+                        <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                             style={{
                                 shadowColor: "#000",
                                 shadowOffset: {
@@ -401,11 +401,10 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 },
                                 shadowOpacity: 0.25,
                                 shadowRadius: 3.84,
-
                                 elevation: 5,
                             }}
                         >
-                            <Text className='flex-1 text-xl font-semibold'>Hidden Event</Text>
+                            <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Hidden Event</Text>
                             <Switch
                                 trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                 thumbColor={"white"}
@@ -416,7 +415,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         </View>
 
                         <View>
-                            <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
+                            <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                 style={{
                                     shadowColor: "#000",
                                     shadowOffset: {
@@ -425,11 +424,10 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                     },
                                     shadowOpacity: 0.25,
                                     shadowRadius: 3.84,
-
                                     elevation: 5,
                                 }}
                             >
-                                <Text className='flex-1 text-xl font-semibold'>Start Buffer (mins)</Text>
+                                <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Start Buffer (mins)</Text>
                                 <View className='flex-row flex-wrap w-[60%]'>
                                     <CustomDropDownMenu
                                         data={TIMES}
@@ -445,12 +443,12 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 </View>
                             </View>
                             <View className='mt-1 w-full justify-center items-center -z-10'>
-                                <Text className='text-center'>Allow to scan QRCode <Text className='text-primary-blue font-semibold'>{startTimeBuffer && ((startTimeBuffer / 60000).toFixed(0)).toString()} mins </Text>before event starts</Text>
+                                <Text className={`text-center ${darkMode ? "text-white" : "text-black"}`}>Allow to scan QRCode <Text className='text-primary-blue font-semibold'>{startTimeBuffer && ((startTimeBuffer / 60000).toFixed(0)).toString()} mins </Text>before event starts</Text>
                             </View>
                         </View>
 
                         <View className='-z-10'>
-                            <View className='flex-row items-center justify-between w-full px-4 bg-secondary-bg-light h-16 rounded-lg'
+                            <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                 style={{
                                     shadowColor: "#000",
                                     shadowOffset: {
@@ -459,11 +457,10 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                     },
                                     shadowOpacity: 0.25,
                                     shadowRadius: 3.84,
-
                                     elevation: 5,
                                 }}
                             >
-                                <Text className='flex-1 text-xl font-semibold'>End Buffer (mins)</Text>
+                                <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>End Buffer (mins)</Text>
                                 <View className='flex-row flex-wrap w-[60%]'>
                                     <CustomDropDownMenu
                                         data={TIMES}
@@ -480,12 +477,13 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                             </View>
 
                             <View className='mt-1 w-full justify-center items-center -z-20'>
-                                <Text className='text-center'>Allow to scan QRCode <Text className='text-primary-blue font-semibold'>{endTimeBuffer && ((endTimeBuffer / 60000).toFixed(0)).toString()} mins </Text>after event ends</Text>
+                                <Text className={`text-center ${darkMode ? "text-white" : "text-black"}`}>Allow to scan QRCode <Text className='text-primary-blue font-semibold'>{endTimeBuffer && ((endTimeBuffer / 60000).toFixed(0)).toString()} mins </Text>after event ends</Text>
                             </View>
                         </View>
                     </View>
                 </View>
-            </DismissibleModal>
+            </Modal>
+
         </View>
     );
 };
