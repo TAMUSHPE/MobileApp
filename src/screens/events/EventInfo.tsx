@@ -1,6 +1,6 @@
-import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, Platform, Modal, Alert } from 'react-native'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/core';
+import { View, Text, TouchableOpacity, ActivityIndicator, Image, Platform, Modal, Alert, ScrollView } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
+import { RouteProp, useRoute } from '@react-navigation/core';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome6, Entypo } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
@@ -11,13 +11,11 @@ import { SHPEEvent, SHPEEventLog, getStatusMessage } from '../../types/events';
 import { Images } from '../../../assets';
 import { StatusBar } from 'expo-status-bar';
 import { handleLinkPress } from '../../helpers/links';
-import MemberCard from '../../components/MemberCard';
 import { PublicUserInfo } from '../../types/user';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 import MembersList from '../../components/MembersList';
 import { EventProps, EventsStackParams } from '../../types/navigation';
 import { LinearGradient } from 'expo-linear-gradient';
-import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
 
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<EventInfoScreenRouteProp>();
@@ -121,7 +119,7 @@ const EventInfo = ({ navigation }: EventProps) => {
 
     return (
         <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`} >
-            <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
+            <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}
                 <View
@@ -167,46 +165,50 @@ const EventInfo = ({ navigation }: EventProps) => {
                                         <Entypo name="dots-three-vertical" size={24} color="white" />
                                     </TouchableOpacity>
                                     {showOptionMenu && (
-                                        <View className='absolute right-10 top-5 rounded-md items-center'
-                                            style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}
-                                        >
-                                            <TouchableOpacity
-                                                className='px-4'
-                                                onPress={() => {
-                                                    setShowOptionMenu(false);
-                                                    navigation.navigate("UpdateEvent", { event: event })
-                                                }}
+                                        <View>
+                                            <TouchableOpacity onPress={() => { setShowOptionMenu(false) }} className='absolute -right-4 w-screen h-screen z-10' />
+
+                                            <View className='absolute right-10 top-5 rounded-md items-center z-20'
+                                                style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}
                                             >
-                                                <Text className='text-white text-xl py-3 font-medium'>Edit Event</Text>
-                                            </TouchableOpacity>
-                                            <View className='w-[70%] bg-white' style={{ height: 1 }} />
-                                            <TouchableOpacity
-                                                className='px-4'
-                                                onPress={() => {
-                                                    setShowOptionMenu(false);
-                                                    setUserSignInOut("signIn")
-                                                    setUserModalVisible(true)
-                                                    if (!allUserFetched) {
-                                                        fetchAllUsers();
-                                                    }
-                                                }}
-                                            >
-                                                <Text className='text-white text-xl py-3 font-medium'>Manual Sign In</Text>
-                                            </TouchableOpacity>
-                                            <View className='w-[70%] bg-white mx-4' style={{ height: 1 }} />
-                                            <TouchableOpacity
-                                                className='px-4 py-3'
-                                                onPress={() => {
-                                                    setShowOptionMenu(false);
-                                                    setUserSignInOut("signOut")
-                                                    setUserModalVisible(true)
-                                                    if (!allUserFetched) {
-                                                        fetchAllUsers();
-                                                    }
-                                                }}
-                                            >
-                                                <Text className='text-white text-xl font-medium'>Manual Sign Out</Text>
-                                            </TouchableOpacity>
+                                                <TouchableOpacity
+                                                    className='px-4'
+                                                    onPress={() => {
+                                                        setShowOptionMenu(false);
+                                                        navigation.navigate("UpdateEvent", { event: event })
+                                                    }}
+                                                >
+                                                    <Text className='text-white text-xl py-3 font-medium'>Edit Event</Text>
+                                                </TouchableOpacity>
+                                                <View className='w-[70%] bg-white' style={{ height: 1 }} />
+                                                <TouchableOpacity
+                                                    className='px-4'
+                                                    onPress={() => {
+                                                        setShowOptionMenu(false);
+                                                        setUserSignInOut("signIn")
+                                                        setUserModalVisible(true)
+                                                        if (!allUserFetched) {
+                                                            fetchAllUsers();
+                                                        }
+                                                    }}
+                                                >
+                                                    <Text className='text-white text-xl py-3 font-medium'>Manual Sign In</Text>
+                                                </TouchableOpacity>
+                                                <View className='w-[70%] bg-white mx-4' style={{ height: 1 }} />
+                                                <TouchableOpacity
+                                                    className='px-4 py-3'
+                                                    onPress={() => {
+                                                        setShowOptionMenu(false);
+                                                        setUserSignInOut("signOut")
+                                                        setUserModalVisible(true)
+                                                        if (!allUserFetched) {
+                                                            fetchAllUsers();
+                                                        }
+                                                    }}
+                                                >
+                                                    <Text className='text-white text-xl font-medium'>Manual Sign Out</Text>
+                                                </TouchableOpacity>
+                                            </View>
                                         </View>
                                     )}
                                 </View>
@@ -217,7 +219,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                     {hasPrivileges && (
                         <TouchableOpacity
                             onPress={() => { navigation.navigate("QRCode", { event: event }) }}
-                            className='absolute right-0 bottom-0 p-3 rounded-full m-4 items-center justify-center'
+                            className='absolute right-0 bottom-0 p-3 rounded-full m-4 items-center justify-center -z-10'
                             style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
                         >
                             <FontAwesome6 name="qrcode" size={24} color="white" />
@@ -225,97 +227,94 @@ const EventInfo = ({ navigation }: EventProps) => {
                     )}
                 </View>
 
-                {/* General Details */}
-                {nationalConventionEligible && (
-                    <Text className={`text-center mt-1 text-md text-grey-dark`}>This event is eligible for national convention requirements*</Text>
-                )}
+                <View className='-z-10'>
+                    {/* General Details */}
+                    {nationalConventionEligible && (<Text className={`text-center mt-1 text-md text-grey-dark`}>This event is eligible for national convention requirements*</Text>)}
 
-                {loading && (
-                    <View>
-                        <ActivityIndicator size="small" className='mt-3' />
-                    </View>
-                )}
+                    {loading && (<ActivityIndicator size="small" className='mt-3' />)}
 
-                {(hasPrivileges && !loading) && (
-                    <View className="flex-row w-full mx-4 mt-2">
-                        <View className='flex-row w-[50%]'>
-                            <Octicons name="sign-in" size={24} color="black" />
-                            <Text className='ml-2 text-xl text-black '>{attendanceCounts.signedInCount || 0} Member</Text>
+                    {(hasPrivileges && !loading) && (
+                        <View className="flex-row w-full mx-4 mt-2">
+                            <View className='flex-row w-[50%]'>
+                                <Octicons name="sign-in" size={24} color="black" />
+                                <Text className='ml-2 text-xl text-black '>{attendanceCounts.signedInCount || 0} Member</Text>
+                            </View>
+
+                            {signInPoints && (
+                                <View className='flex-row flex-1'>
+                                    <Octicons name="sign-out" size={24} color="black" />
+                                    <Text className='ml-2 text-xl text-black '>{attendanceCounts.signedOutCount || 0} Member</Text>
+                                </View>
+                            )}
                         </View>
+                    )}
 
-                        {signInPoints && (
-                            <View className='flex-row flex-1'>
-                                <Octicons name="sign-out" size={24} color="black" />
-                                <Text className='ml-2 text-xl text-black '>{attendanceCounts.signedOutCount || 0} Member</Text>
+                    <View className='mx-4 mt-3'>
+                        <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{name}</Text>
+                        <Text className={`text-lg text-grey-dark`}>{eventType}{committee && (" • " + reverseFormattedFirebaseName(committee))} • {calculateMaxPossiblePoints(event)} points</Text>
+                        <Text className={`text-lg text-grey-dark`}>Hosted By {creatorData?.name}</Text>
+                    </View>
+
+                    {/* Date, Time and Location */}
+                    <View className='mt-6 mx-4 p-4 bg-secondary-bg-light rounded-lg'
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                                width: 0,
+                                height: 2,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 3.84,
+
+                            elevation: 5,
+                        }}
+                    >
+                        <View className='flex-row'>
+                            <View className='w-[50%]'>
+                                <Text className='text-lg text-grey-dark'>Date</Text>
+                                <Text className='text-xl text-black font-bold'>{(startTime && endTime) ? formatEventDate(startTime.toDate(), endTime.toDate()) : ""}</Text>
+                            </View>
+
+                            <View className='flex-1'>
+                                <Text className='text-lg text-grey-dark'>Time</Text>
+                                <Text className='text-xl text-black font-bold'>{startTime && endTime && formatEventTime(startTime.toDate(), endTime.toDate())}</Text>
+                            </View>
+                        </View>
+                        {locationName && (
+                            <View className='mt-4'>
+                                <Text className='text-lg text-grey-dark'>Location</Text>
+                                <View className='flex-row items-center flex-1 flex-wrap'>
+                                    <Text className='text-xl text-black font-bold'>{locationName}     {geolocation && (
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                if (Platform.OS === 'ios') {
+                                                    handleLinkPress(`http://maps.apple.com/?daddr=${geolocation.latitude},${geolocation.longitude}`);
+                                                } else if (Platform.OS === 'android') {
+                                                    handleLinkPress(`https://www.google.com/maps/dir/?api=1&destination=${geolocation.latitude},${geolocation.longitude}`);
+                                                }
+                                            }}
+                                        >
+                                            <Text className='underline text-primary-blue font-semibold'>View in Maps</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                    </Text>
+
+                                </View>
                             </View>
                         )}
                     </View>
-                )}
-                <View className='mx-4 mt-3'>
-                    <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{name}</Text>
-                    <Text className={`text-lg text-grey-dark`}>{eventType}{committee && (" • " + reverseFormattedFirebaseName(committee))} • {calculateMaxPossiblePoints(event)} points</Text>
-                    <Text className={`text-lg text-grey-dark`}>Hosted By {creatorData?.name}</Text>
-                </View>
 
-                {/* Date, Time and Location */}
-                <View className='mt-6 mx-4 p-4 bg-secondary-bg-light rounded-lg'
-                    style={{
-                        shadowColor: "#000",
-                        shadowOffset: {
-                            width: 0,
-                            height: 2,
-                        },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 3.84,
-
-                        elevation: 5,
-                    }}
-                >
-                    <View className='flex-row'>
-                        <View className='w-[50%]'>
-                            <Text className='text-lg text-grey-dark'>Date</Text>
-                            <Text className='text-xl text-black font-bold'>{(startTime && endTime) ? formatEventDate(startTime.toDate(), endTime.toDate()) : ""}</Text>
-                        </View>
-
-                        <View className='flex-1'>
-                            <Text className='text-lg text-grey-dark'>Time</Text>
-                            <Text className='text-xl text-black font-bold'>{startTime && endTime && formatEventTime(startTime.toDate(), endTime.toDate())}</Text>
-                        </View>
-                    </View>
-                    {locationName && (
-                        <View className='mt-4'>
-                            <Text className='text-lg text-grey-dark'>Location</Text>
-                            <View className='flex-row items-center flex-1 flex-wrap'>
-                                <Text className='text-xl text-black font-bold'>{locationName}     {geolocation && (
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            if (Platform.OS === 'ios') {
-                                                handleLinkPress(`http://maps.apple.com/?daddr=${geolocation.latitude},${geolocation.longitude}`);
-                                            } else if (Platform.OS === 'android') {
-                                                handleLinkPress(`https://www.google.com/maps/dir/?api=1&destination=${geolocation.latitude},${geolocation.longitude}`);
-                                            }
-                                        }}
-                                    >
-                                        <Text className='underline text-primary-blue font-semibold'>View in Maps</Text>
-                                    </TouchableOpacity>
-                                )}
-                                </Text>
-
-                            </View>
+                    {/* Description */}
+                    {(description && description.trim() != "") && (
+                        <View className='mx-4 mt-6'>
+                            <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>About Event</Text>
+                            <Text className={`text-lg text-black`}>{description}</Text>
                         </View>
                     )}
+
+                    <View className='pb-20' />
                 </View>
-
-                {/* Description */}
-                {(description && description.trim() != "") && (
-                    <View className='mx-4 mt-6'>
-                        <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>About Event</Text>
-                        <Text className={`text-lg text-black`}>{description}</Text>
-                    </View>
-                )}
-
-                <View className='pb-20' />
-            </KeyboardAwareScrollView>
+            </ScrollView >
             {!loadingUserEventLog && (
                 <View className='absolute w-full bottom-0 mb-5 z-50 justify-center items-center'>
                     <View className='w-full'>
@@ -348,7 +347,10 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 <Text className='text-center text-grey-dark text-xl'>This event is over</Text>
                             )}
                             {eventButtonState === EventButtonState.RECEIVED_POINTS && (
-                                <Text className='text-center text-grey-dark text-xl'>You received {userEventLog?.points} points for this event </Text>
+                                <View>
+                                    <Text className='text-center text-grey-dark text-xl'>You received {userEventLog?.points} points for this event </Text>
+                                    <Text className='text-center text-grey-dark'>Points will be updated later after verification. No action needed.</Text>
+                                </View>
                             )}
                         </TouchableOpacity>
                     </View>
