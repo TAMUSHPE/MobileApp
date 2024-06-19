@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, Image, Platform, TouchableHighlight, Modal, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, Image, Platform, TouchableHighlight, Modal, Alert, ActivityIndicator, useColorScheme } from 'react-native'
 import React, { useContext, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation'
 import { useRoute } from '@react-navigation/core';
@@ -29,7 +29,11 @@ const UpdateEvent = ({ navigation }: EventProps) => {
 
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const insets = useSafeAreaInsets();
 
@@ -184,8 +188,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 >
                     <Image
                         className="flex w-full h-full absolute"
-                        defaultSource={Images.SHPE_NAVY}
-                        source={coverImageURI ? { uri: coverImageURI } : Images.SHPE_NAVY}
+                        defaultSource={darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
+                        source={coverImageURI ? { uri: coverImageURI } : darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
                         style={{
                             width: "100%",
                             height: "auto",
