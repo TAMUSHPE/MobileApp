@@ -620,6 +620,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
     const { userInfo, setUserInfo } = useContext(UserContext)!;
     const [loading, setLoading] = useState<boolean>(false);
     const [darkModeToggled, setDarkModeToggled] = useState<boolean>(userInfo?.private?.privateInfo?.settings?.darkMode ?? false);
+    const [systemDefaultToggled, setSystemDefaultToggled] = useState<boolean>(userInfo?.private?.privateInfo?.settings?.useSystemDefault ?? false);
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode
 
@@ -642,7 +643,8 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                     setLoading(true);
                     await setPrivateUserData({
                         settings: {
-                            darkMode: !darkMode
+                            darkMode: !darkMode,
+                            useSystemDefault: false,
                         }
                     })
                         .then(async () => {
@@ -652,8 +654,42 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                                         if (firebaseUser) {
                                             setUserInfo(firebaseUser);
                                             await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                                        } else {
+                                            console.warn("firebaseUser returned as undefined when attempting to sync. Sync will be skipped.");
                                         }
-                                        else {
+                                    })
+                                    .catch(err => console.error(err));
+                            }
+                        })
+                        .catch((err) => console.error(err))
+                        .finally(() => {
+                            setLoading(false);
+                        });
+                }}
+                disabled={systemDefaultToggled}
+            />
+
+            <SettingsToggleButton
+                mainText='Use system default'
+                subText='Automatically switch based on system setting'
+                isToggled={systemDefaultToggled}
+                darkMode={darkMode}
+                onPress={async () => {
+                    setSystemDefaultToggled(!systemDefaultToggled);
+                    setLoading(true);
+                    await setPrivateUserData({
+                        settings: {
+                            useSystemDefault: !systemDefaultToggled
+                        }
+                    })
+                        .then(async () => {
+                            if (auth.currentUser?.uid) {
+                                await getUser(auth.currentUser?.uid)
+                                    .then(async (firebaseUser) => {
+                                        if (firebaseUser) {
+                                            setUserInfo(firebaseUser);
+                                            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                                        } else {
                                             console.warn("firebaseUser returned as undefined when attempting to sync. Sync will be skipped.");
                                         }
                                     })
