@@ -215,7 +215,7 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
                                     minimumTrackTintColor="#1870B8"
                                 />
                             </View>
-                            <Text className={`text-lg ml-3 ${darkMode ? 'text-white' : 'text-black'}`}>{radius?.toFixed(0)}m</Text>
+                            <Text className={`text-lg ml-3 ${darkMode ? 'text-white' : 'text-black'}`}>{radius?.toFixed(0)} meters</Text>
                         </View>
                     )}
                 </View>

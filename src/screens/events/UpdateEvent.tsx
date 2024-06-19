@@ -198,7 +198,11 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     />
 
                     <LinearGradient
-                        colors={['rgba(255,255,255,.7)', 'rgba(255,255,255,0.6)', 'rgba(255,255,255,0)']}
+                        colors={
+                            darkMode
+                                ? ['rgba(0,0,0,.8)', 'rgba(0,0,0,.5)', 'rgba(0,0,0,0)']
+                                : ['rgba(255,255,255,.8)', 'rgba(255,255,255,0.5)', 'rgba(255,255,255,0)']
+                        }
                         className='absolute w-full'
                         style={{ height: insets.top + 30 }}
                     ></LinearGradient>
@@ -206,14 +210,18 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     <SafeAreaView edges={['top']}>
                         <View className='flex-row justify-between mx-4 h-full'>
                             <View className='flex-1 w-full h-full absolute justify-center items-center '>
-                                <TouchableOpacity
-                                    onPress={() => selectCoverImage()}
-                                    className="rounded-3xl w-24 h-24 justify-center items-center"
-                                    style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
-                                >
-                                    <FontAwesome name="camera" size={40} color="white" />
-                                    <Text className='mt-1 text-center text-white text-lg font-semibold'>UPLOAD</Text>
-                                </TouchableOpacity>
+                                {isUploading ? (
+                                    <ActivityIndicator />
+                                ) : (
+                                    <TouchableOpacity
+                                        onPress={() => selectCoverImage()}
+                                        className="rounded-3xl w-24 h-24 justify-center items-center"
+                                        style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+                                    >
+                                        <FontAwesome name="camera" size={40} color="white" />
+                                        <Text className='mt-1 text-center text-white text-lg font-semibold'>UPLOAD</Text>
+                                    </TouchableOpacity>
+                                )}
                             </View>
 
                             <TouchableOpacity
@@ -583,11 +591,11 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 visible={showDeletionConfirmation}
                 setVisible={setShowDeletionConfirmation}
             >
-                <View className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
-                    <Octicons name="trash" size={24} color="black" />
+                <View className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+                    <Octicons name="trash" size={24} color={darkMode ? "white" : "black"} />
                     <View className='flex items-center w-[90%]'>
                         <Text className="text-center text-md font-bold text-red-1">This is *not* reversable!</Text>
-                        <Text className="text-center text-lg font-bold">Are you sure you want to destroy this event?</Text>
+                        <Text className={`text-center text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>Are you sure you want to destroy this event?</Text>
                         <View className="flex-row mt-8">
                             <TouchableOpacity
                                 onPress={async () => {
@@ -601,9 +609,9 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 onPress={() => setShowDeletionConfirmation(false)}
-                                className="w-[45%] rounded-xl justify-center items-center ml-2 border border-black"
+                                className={`w-[45%] rounded-xl justify-center items-center ml-2 border ${darkMode ? "border-white" : "border-black"}`}
                             >
-                                <Text className='text-xl font-bold px-3 text-black'>Cancel</Text>
+                                <Text className={`text-xl font-bold px-3 ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
                             </TouchableOpacity>
                         </View>
                     </View>

@@ -255,12 +255,11 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>{attendanceCounts.signedInCount || 0} Member</Text>
                             </View>
 
-                            {signInPoints && (
-                                <View className='flex-row flex-1'>
-                                    <Octicons name="sign-out" size={24} color={darkMode ? "white" : "black"} />
-                                    <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>{attendanceCounts.signedOutCount || 0} Member</Text>
-                                </View>
-                            )}
+                            <View className='flex-row w-[50%]'>
+                                <Octicons name="sign-out" size={24} color={darkMode ? "white" : "black"} />
+                                <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>{attendanceCounts.signedOutCount || 0} Member</Text>
+                            </View>
+
                         </View>
                     )}
 
@@ -420,6 +419,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                             key={forceUpdate}
                             handleCardPress={(uid) => {
                                 if (userSignInOut === "signIn") {
+                                    setLoading(true);
                                     signInToEvent(event.id!, uid).then((status) => {
                                         Alert.alert(
                                             'Status',
@@ -429,6 +429,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                                         );
                                     });
                                 } else if (userSignInOut === "signOut") {
+                                    setLoading(true);
                                     signOutOfEvent(event.id!, uid).then((status) => {
                                         Alert.alert(
                                             'Status',
