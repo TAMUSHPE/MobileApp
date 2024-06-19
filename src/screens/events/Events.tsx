@@ -12,11 +12,15 @@ import { Images } from '../../../assets';
 import { formatTime } from '../../helpers/timeUtils';
 import EventCard from './EventCard';
 import { StatusBar } from 'expo-status-bar';
+import { useColorScheme } from 'react-native';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const [todayEvents, setTodayEvents] = useState<SHPEEvent[]>([]);
     const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
@@ -228,8 +232,8 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                                     <Image
                                                         className="flex h-full w-full rounded-2xl"
                                                         resizeMode='cover'
-                                                        defaultSource={Images.SHPE_NAVY_HORIZ}
-                                                        source={event?.coverImageURI ? { uri: event.coverImageURI } : Images.SHPE_NAVY_HORIZ}
+                                                        defaultSource={darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
+                                                        source={event?.coverImageURI ? { uri: event.coverImageURI } : darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
                                                     />
                                                     <LinearGradient
                                                         colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.5)', 'rgba(0,0,0,0.8)']}

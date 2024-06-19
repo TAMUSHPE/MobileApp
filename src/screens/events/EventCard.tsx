@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native'
+import { View, Text, TouchableOpacity, Image, useColorScheme } from 'react-native'
 import React, { useContext } from 'react'
 import { FontAwesome6 } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext'
@@ -9,7 +9,10 @@ import { SHPEEvent } from '../../types/events'
 const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any }) => {
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
@@ -32,8 +35,8 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
             <Image
                 className="flex h-full w-[25%] rounded-md"
                 resizeMode='cover'
-                defaultSource={Images.SHPE_NAVY}
-                source={event?.coverImageURI ? { uri: event.coverImageURI } : Images.SHPE_NAVY}
+                defaultSource={darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
+                source={event?.coverImageURI ? { uri: event.coverImageURI } : darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
             />
 
             <View className='flex-1 px-4 justify-center' >

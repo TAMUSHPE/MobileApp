@@ -1,13 +1,22 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, TextInput, useColorScheme } from 'react-native'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { HomeStackParams } from '../types/navigation'
 import MemberCard from './MemberCard'
 import { MAJORS, PublicUserInfo, UserFilter, classYears } from '../types/user';
 import CustomDropDownMenu, { CustomDropDownMethods } from './CustomDropDown';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { UserContext } from '../context/UserContext';
 
 const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, navigation }) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [search, setSearch] = useState<string>("")
     const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [filter, setFilter] = useState<UserFilter>({ major: "", classYear: "", role: "" });
@@ -68,14 +77,25 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
                 <View className='flex-row mb-4'>
                     <TouchableOpacity
                         activeOpacity={1}
-                        className='bg-gray-300 rounded-xl px-4 py-2 flex-row flex-1'
+                        className={`rounded-xl px-4 py-2 flex-row flex-1 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                         onPress={() => { inputRef.current?.focus() }}
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                                width: 0,
+                                height: 2,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 3.84,
+
+                            elevation: 5,
+                        }}
                     >
                         <View className='mr-3'>
-                            <Octicons name="search" size={24} color="grey" />
+                            <Octicons name="search" size={24} color={darkMode ? "white" : "black"} />
                         </View>
                         <TextInput
-                            style={{ textAlignVertical: 'top' }}
+                            style={{ textAlignVertical: 'top', color: darkMode ? 'black' : 'white' }}
                             onChangeText={(text) => {
                                 setSearch(text);
                             }}
@@ -83,19 +103,20 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
                             value={search}
                             underlineColorAndroid="transparent"
                             placeholder="Search"
+                            placeholderTextColor={"grey"}
                             className='flex-1 text-lg justify-center'
                         />
                     </TouchableOpacity>
-                    <TouchableOpacity
+                    {/* <TouchableOpacity
                         onPress={() => setShowFilterMenu(!showFilterMenu)}
                         className='pl-4 items-center justify-center'
                         style={{ minWidth: 45 }}
                     >
                         <Octicons name="filter" size={27} color="black" />
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                 </View>
 
-                {showFilterMenu && (
+                {/* {showFilterMenu && (
                     <View className='flex-row py-4'>
                         <View className='flex-1 space-y-4'>
                             <View className='justify-start flex-row z-10'>
@@ -124,7 +145,7 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
                                 />
                                 <TouchableOpacity
                                     onPress={() => handleApplyFilter()}
-                                    className='items-center justify-center bg-pale-blue py-2 w-20 rounded-lg ml-3'>
+                                    className='items-center justify-center bg-primary-blue py-2 w-20 rounded-lg ml-3'>
                                     <Text className='text-white font-bold text-xl'>Apply</Text>
                                 </TouchableOpacity>
                             </View>
@@ -146,12 +167,12 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
                                 <TouchableOpacity
                                     onPress={() => handleClearFilter()}
                                     className='items-center justify-center py-2 w-20 rounded-lg ml-3'>
-                                    <Text className='font-bold text-xl text-pale-blue'>Rest</Text>
+                                    <Text className='font-bold text-xl text-primary-blue'>Reset</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
                     </View>
-                )}
+                )} */}
             </View>
 
             <ScrollView className='-z-20'>

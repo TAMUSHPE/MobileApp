@@ -32,10 +32,6 @@ const EventInfo = ({ navigation }: EventProps) => {
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-
-    console.log(darkMode, "darkmode")
-    console.log(colorScheme, "colorScheme")
-
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
     const [creatorData, setCreatorData] = useState<PublicUserInfo | null>(null);
@@ -57,7 +53,8 @@ const EventInfo = ({ navigation }: EventProps) => {
         setAttendanceCounts(counts);
         setLoading(false)
     }
-
+    console.log("locationName:", locationName);
+    console.log("geolocation:", geolocation);
     useEffect(() => {
         const fetchUserEventLog = async () => {
             setLoadingUserEventLog(true);
@@ -139,8 +136,8 @@ const EventInfo = ({ navigation }: EventProps) => {
                 >
                     <Image
                         className="flex w-full h-full absolute"
-                        defaultSource={Images.SHPE_NAVY}
-                        source={coverImageURI ? { uri: coverImageURI } : Images.SHPE_NAVY}
+                        defaultSource={darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
+                        source={coverImageURI ? { uri: coverImageURI } : darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
                         style={{
                             width: "100%",
                             height: "auto",
@@ -149,16 +146,20 @@ const EventInfo = ({ navigation }: EventProps) => {
                     />
 
                     <LinearGradient
-                        colors={['rgba(255,255,255,.7)', 'rgba(255,255,255,0.6)', 'rgba(255,255,255,0)']}
+                        colors={
+                            darkMode
+                                ? ['rgba(0,0,0,.8)', 'rgba(0,0,0,.5)', 'rgba(0,0,0,0)']
+                                : ['rgba(255,255,255,.8)', 'rgba(255,255,255,0.5)', 'rgba(255,255,255,0)']
+                        }
                         className='absolute w-full'
-                        style={{ height: insets.top + 30 }}
+                        style={{ height: insets.top + 25 }}
                     ></LinearGradient>
 
                     <SafeAreaView edges={['top']}>
                         <View className='flex-row justify-between mx-4 h-full'>
                             <TouchableOpacity
                                 onPress={() => { navigation.goBack(); }}
-                                className="rounded-full w-10 h-10 justify-center items-center"
+                                className="rounded-full w-10 h-10 justify-center items-center z-20"
                                 style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
                             >
                                 <Octicons name="chevron-left" size={30} color="white" />
@@ -226,8 +227,11 @@ const EventInfo = ({ navigation }: EventProps) => {
 
                     {hasPrivileges && (
                         <TouchableOpacity
-                            onPress={() => { navigation.navigate("QRCode", { event: event }) }}
-                            className='absolute right-0 bottom-0 p-3 rounded-full m-4 items-center justify-center -z-10'
+                            onPress={() => {
+                                navigation.navigate("QRCode", { event: event })
+                                setShowOptionMenu(false)
+                            }}
+                            className='absolute right-0 bottom-0 p-3 rounded-full m-4 items-center justify-center'
                             style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
                         >
                             <FontAwesome6 name="qrcode" size={24} color="white" />
@@ -237,21 +241,25 @@ const EventInfo = ({ navigation }: EventProps) => {
 
                 <View className='-z-10'>
                     {/* General Details */}
-                    {nationalConventionEligible && (<Text className={`text-center mt-1 text-md text-grey-dark`}>This event is eligible for national convention requirements*</Text>)}
+                    {nationalConventionEligible && (
+                        <Text className={`text-center mt-1 text-md ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
+                            This event is eligible for national convention requirements*
+                        </Text>
+                    )}
 
                     {loading && (<ActivityIndicator size="small" className='mt-3' />)}
 
                     {(hasPrivileges && !loading) && (
                         <View className="flex-row w-full mx-4 mt-2">
                             <View className='flex-row w-[50%]'>
-                                <Octicons name="sign-in" size={24} color="black" />
-                                <Text className='ml-2 text-xl text-black '>{attendanceCounts.signedInCount || 0} Member</Text>
+                                <Octicons name="sign-in" size={24} color={darkMode ? "white" : "black"} />
+                                <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>{attendanceCounts.signedInCount || 0} Member</Text>
                             </View>
 
                             {signInPoints && (
                                 <View className='flex-row flex-1'>
-                                    <Octicons name="sign-out" size={24} color="black" />
-                                    <Text className='ml-2 text-xl text-black '>{attendanceCounts.signedOutCount || 0} Member</Text>
+                                    <Octicons name="sign-out" size={24} color={darkMode ? "white" : "black"} />
+                                    <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>{attendanceCounts.signedOutCount || 0} Member</Text>
                                 </View>
                             )}
                         </View>
@@ -259,12 +267,17 @@ const EventInfo = ({ navigation }: EventProps) => {
 
                     <View className='mx-4 mt-3'>
                         <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{name}</Text>
-                        <Text className={`text-lg text-grey-dark`}>{eventType}{committee && (" • " + reverseFormattedFirebaseName(committee))} • {calculateMaxPossiblePoints(event)} points</Text>
-                        <Text className={`text-lg text-grey-dark`}>Hosted By {creatorData?.name}</Text>
+                        <Text className={`text-lg ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>
+                            {eventType}
+                            {committee && (" • " + reverseFormattedFirebaseName(committee))} • {calculateMaxPossiblePoints(event)} points
+                        </Text>
+                        <Text className={`text-lg ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>
+                            Hosted By {creatorData?.name}
+                        </Text>
                     </View>
 
                     {/* Date, Time and Location */}
-                    <View className='mt-6 mx-4 p-4 bg-secondary-bg-light rounded-lg'
+                    <View className={`mt-6 mx-4 p-4 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                         style={{
                             shadowColor: "#000",
                             shadowOffset: {
@@ -273,26 +286,29 @@ const EventInfo = ({ navigation }: EventProps) => {
                             },
                             shadowOpacity: 0.25,
                             shadowRadius: 3.84,
-
                             elevation: 5,
                         }}
                     >
                         <View className='flex-row'>
                             <View className='w-[50%]'>
-                                <Text className='text-lg text-grey-dark'>Date</Text>
-                                <Text className='text-xl text-black font-bold'>{(startTime && endTime) ? formatEventDate(startTime.toDate(), endTime.toDate()) : ""}</Text>
+                                <Text className={`text-lg ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>Date</Text>
+                                <Text className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>{(startTime && endTime) ? formatEventDate(startTime.toDate(), endTime.toDate()) : ""}</Text>
                             </View>
 
                             <View className='flex-1'>
-                                <Text className='text-lg text-grey-dark'>Time</Text>
-                                <Text className='text-xl text-black font-bold'>{startTime && endTime && formatEventTime(startTime.toDate(), endTime.toDate())}</Text>
+                                <Text className={`text-lg ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>Time</Text>
+                                <Text className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>{startTime && endTime && formatEventTime(startTime.toDate(), endTime.toDate())}</Text>
                             </View>
                         </View>
+
                         {locationName && (
                             <View className='mt-4'>
-                                <Text className='text-lg text-grey-dark'>Location</Text>
-                                <View className='flex-row items-center flex-1 flex-wrap'>
-                                    <Text className='text-xl text-black font-bold'>{locationName}     {geolocation && (
+                                <Text className={`text-lg ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>Location</Text>
+                                <View className='flex-row flew-wrap items-center'>
+                                    <Text className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                        {locationName}
+                                    </Text>
+                                    {geolocation && (
                                         <TouchableOpacity
                                             onPress={() => {
                                                 if (Platform.OS === 'ios') {
@@ -302,11 +318,9 @@ const EventInfo = ({ navigation }: EventProps) => {
                                                 }
                                             }}
                                         >
-                                            <Text className='underline text-primary-blue font-semibold'>View in Maps</Text>
+                                            <Text className='underline text-primary-blue font-semibold text-md ml-4'>View in Maps</Text>
                                         </TouchableOpacity>
                                     )}
-                                    </Text>
-
                                 </View>
                             </View>
                         )}
@@ -316,20 +330,21 @@ const EventInfo = ({ navigation }: EventProps) => {
                     {(description && description.trim() != "") && (
                         <View className='mx-4 mt-6'>
                             <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>About Event</Text>
-                            <Text className={`text-lg text-black`}>{description}</Text>
+                            <Text className={`text-lg ${darkMode ? "text-grey-light" : "text-black"}`}>{description}</Text>
                         </View>
                     )}
 
                     <View className='pb-20' />
                 </View>
-            </ScrollView >
+            </ScrollView>
+
             {!loadingUserEventLog && (
                 <View className='absolute w-full bottom-0 mb-5 z-50 justify-center items-center'>
                     <View className='w-full'>
                         <TouchableOpacity
                             onPress={() => { navigation.navigate("QRCodeScanningScreen") }}
                             disabled={!(eventButtonState == EventButtonState.SIGN_IN || eventButtonState == EventButtonState.SIGN_OUT)}
-                            className={`bg-primary-blue h-14 items-center justify-center rounded-xl mx-4 ${(eventButtonState == EventButtonState.SIGN_IN || eventButtonState == EventButtonState.SIGN_OUT) ? "bg-primary-blue" : "bg-secondary-bg-light border border-grey-dark"}`}
+                            className={`h-14 items-center justify-center rounded-xl mx-4 ${(eventButtonState == EventButtonState.SIGN_IN || eventButtonState == EventButtonState.SIGN_OUT) ? "bg-primary-blue" : `${darkMode ? "bg-secondary-bg-dark border border-grey-light" : "bg-secondary-bg-light border border-grey-dark"}`}`}
                             style={{
                                 shadowColor: "#000",
                                 shadowOffset: {
@@ -338,7 +353,6 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 },
                                 shadowOpacity: 0.25,
                                 shadowRadius: 3.84,
-
                                 elevation: 5,
                             }}
                         >
@@ -349,15 +363,15 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 <Text className='text-center text-white text-2xl font-bold'>Sign Out</Text>
                             )}
                             {eventButtonState === EventButtonState.NOT_STARTED && (
-                                <Text className='text-center text-grey-dark text-xl'>This event has not started</Text>
+                                <Text className={`text-center ${darkMode ? 'text-grey-light' : 'text-grey-dark'} text-xl`}>This event has not started</Text>
                             )}
                             {eventButtonState === EventButtonState.EVENT_OVER && (
-                                <Text className='text-center text-grey-dark text-xl'>This event is over</Text>
+                                <Text className={`text-center ${darkMode ? 'text-grey-light' : 'text-grey-dark'} text-xl`}>This event is over</Text>
                             )}
                             {eventButtonState === EventButtonState.RECEIVED_POINTS && (
                                 <View>
-                                    <Text className='text-center text-grey-dark text-xl'>You received {userEventLog?.points} points for this event </Text>
-                                    <Text className='text-center text-grey-dark'>Points will be updated later after verification. No action needed.</Text>
+                                    <Text className={`text-center ${darkMode ? 'text-grey-light' : 'text-grey-dark'} text-xl`}>You received {userEventLog?.points} points for this event </Text>
+                                    <Text className={`text-center ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>Points will be updated later after verification. No action needed.</Text>
                                 </View>
                             )}
                         </TouchableOpacity>
@@ -365,9 +379,9 @@ const EventInfo = ({ navigation }: EventProps) => {
                     {((eventButtonState === EventButtonState.SIGN_IN || eventButtonState === EventButtonState.SIGN_OUT) && (geolocation && geofencingRadius)) && (
                         <View
                             className="mt-2 mx-4 px-1 py-1 rounded-md mb-1 justify-center items-center"
-                            style={{ backgroundColor: 'rgba(255,255,255,0.8)' }}
+                            style={{ backgroundColor: darkMode ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.8)' }}
                         >
-                            <Text>You must be at the location to scan the QRCode.</Text>
+                            <Text className={darkMode ? 'text-white' : 'text-black'}>You must be at the location to scan the QRCode.</Text>
                         </View>
                     )}
                 </View>
@@ -383,19 +397,18 @@ const EventInfo = ({ navigation }: EventProps) => {
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className='bg-white'
+                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
                 >
-
                     <View className='flex-row items-center h-10 mb-4'>
                         <View className='w-screen absolute'>
-                            <Text className="text-2xl font-bold justify-center text-center">Select a Member</Text>
+                            <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>Select a Member</Text>
                         </View>
 
                         <TouchableOpacity
                             className='ml-6 px-4'
                             onPress={() => setUserModalVisible(false)}
                         >
-                            <Octicons name="x" size={26} color="black" />
+                            <Octicons name="x" size={26} color={darkMode ? "white" : "black"} />
                         </TouchableOpacity>
                     </View>
 
@@ -403,8 +416,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                         <ActivityIndicator className="mb-2" size="small" />
                     )}
 
-
-                    <View className="h-[100%] w-[100%] bg-white">
+                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         <MembersList
                             key={forceUpdate}
                             handleCardPress={(uid) => {
