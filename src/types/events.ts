@@ -274,7 +274,9 @@ export class VolunteerEvent extends SHPEEvent {
         this.eventType = EventType.VOLUNTEER_EVENT;
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.pointsPerHour = 2;
+        this.signInPoints = 0;
+        this.signOutPoints = 0;
+        this.pointsPerHour = 1;
         this.locationName = null;
         this.geolocation = null;
         this.general = false
