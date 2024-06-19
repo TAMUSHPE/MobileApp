@@ -1,5 +1,5 @@
-import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, useColorScheme } from 'react-native'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Ionicons, Octicons, FontAwesome6 } from '@expo/vector-icons';
@@ -12,7 +12,7 @@ import { Images } from '../../../assets';
 import { formatTime } from '../../helpers/timeUtils';
 import EventCard from './EventCard';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'react-native';
+import { useFocusEffect } from '@react-navigation/core';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const userContext = useContext(UserContext);
@@ -64,6 +64,14 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
         fetchEvents();
     }, [])
 
+    useFocusEffect(
+        useCallback(() => {
+            if (hasPrivileges) {
+                fetchEvents();
+            }
+        }, [hasPrivileges])
+    );
+
     const handleFilterSelect = (filter: ExtendedEventType) => {
         if (selectedFilter === filter) {
             setSelectedFilter(null);
@@ -108,26 +116,6 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                 {/* Header */}
                 <View className='flex-row px-4'>
                     <Text className={`text-4xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Events</Text>
-
-                    {(!isLoading && hasPrivileges) && (
-                        <TouchableOpacity
-                            className='bg-primary-blue rounded-full h-10 w-10 shadow-lg justify-center items-center ml-4'
-                            style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 3.84,
-
-                                elevation: 5,
-                            }}
-                            onPress={() => fetchEvents()}
-                        >
-                            <Ionicons name="refresh" size={24} color="white" />
-                        </TouchableOpacity>
-                    )}
                 </View>
 
                 {/* Filters */}
