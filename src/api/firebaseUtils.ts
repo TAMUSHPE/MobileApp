@@ -577,8 +577,9 @@ export const destroyEvent = async (eventID: string) => {
     try {
         const eventRef = doc(db, "events", eventID);
         const logRef = collection(db, `/events/${eventID}/logs`);
-        const summaryRef = collection(db, `/events/${eventID}/summaries`);
+        const usersRef = collection(db, "users");
 
+        // Delete the event log collection and the event document
         const deleteSubCollection = async (ref: CollectionReference) => {
             const snapshot = await getDocs(query(ref));
             if (!snapshot.empty) {
@@ -588,9 +589,17 @@ export const destroyEvent = async (eventID: string) => {
         };
 
         await deleteSubCollection(logRef);
-        await deleteSubCollection(summaryRef);
-
         await deleteDoc(eventRef);
+
+        // Fetch all users and delete the event log from each user's collection
+        const userSnapshot = await getDocs(usersRef);
+        if (!userSnapshot.empty) {
+            const deleteEventLogPromises = userSnapshot.docs.map(async (userDoc) => {
+                const userEventLogRef = doc(db, `users/${userDoc.id}/event-logs`, eventID);
+                await deleteDoc(userEventLogRef);
+            });
+            await Promise.all(deleteEventLogPromises);
+        }
 
         return true;
     } catch (error) {
@@ -598,7 +607,6 @@ export const destroyEvent = async (eventID: string) => {
         return false;
     }
 };
-
 export const getAttendanceNumber = async (eventId: string) => {
     try {
         const logsRef = collection(db, `events/${eventId}/logs`);
