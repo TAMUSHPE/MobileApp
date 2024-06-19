@@ -161,6 +161,7 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                 <InteractButton
                     buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
                     textClassName='text-center text-white text-2xl font-bold'
+                    underlayColor="#468DC6"
                     label='Create'
                     onPress={async () => {
                         await createEvent(event);

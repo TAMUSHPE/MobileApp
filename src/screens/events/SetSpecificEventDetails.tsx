@@ -246,6 +246,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                             displayType='value'
                                             ref={dropDownRefCommittee}
                                             disableSearch
+                                            darkMode={darkMode}
                                         />
                                     </View>
                                 </View>
@@ -315,6 +316,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                             <InteractButton
                                 buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
                                 textClassName='text-center text-white text-2xl font-bold'
+                                underlayColor="#468DC6"
                                 label='Next'
                                 onPress={() => {
                                     // if (workshopType == 'None') {
@@ -439,6 +441,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         displayType='iso'
                                         disableSearch
                                         selectedItemProp={startTimeBuffer ? { value: ((startTimeBuffer / 60000).toFixed(0)).toString(), iso: ((startTimeBuffer / 60000).toFixed(0)).toString() } : null}
+                                        darkMode={darkMode}
                                     />
                                 </View>
                             </View>
@@ -472,6 +475,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         displayType='iso'
                                         disableSearch
                                         selectedItemProp={endTimeBuffer ? { value: ((endTimeBuffer / 60000).toFixed(0)).toString(), iso: ((endTimeBuffer / 60000).toFixed(0)).toString() } : null}
+                                        darkMode={darkMode}
                                     />
                                 </View>
                             </View>

@@ -113,6 +113,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                         <InteractButton
                             buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
                             textClassName='text-center text-white text-2xl font-bold'
+                            underlayColor="#468DC6"
                             label='Next'
                             onPress={() => {
                                 let newEvent: SHPEEvent | undefined = undefined;
