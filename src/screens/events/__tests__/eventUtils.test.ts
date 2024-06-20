@@ -1,8 +1,8 @@
-import { Timestamp, GeoPoint, deleteDoc, doc, collection, getDocs, getDoc } from "firebase/firestore";
+import { Timestamp, GeoPoint, deleteDoc, doc, collection, getDocs, getDoc, setDoc } from "firebase/firestore";
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
-import { createEvent, getUpcomingEvents, getPastEvents, setEvent } from "../../../api/firebaseUtils";
-import { EventType, SHPEEvent } from "../../../types/events";
+import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, signInToEvent, getAttendanceNumber, getUserEventLog, fetchEventByName, getInterestsEvent } from "../../../api/firebaseUtils";
+import { EventLogStatus, EventType, SHPEEvent } from "../../../types/events";
 
 const generateTestEvent = (overrides: Partial<SHPEEvent> = {}): SHPEEvent => {
     const currentTime = new Date();
@@ -58,7 +58,7 @@ afterAll(async () => {
     await signOut(auth);
 });
 
-describe("Create and Get Event Functions", () => {
+describe("Create events", () => {
     test("Handle empty events collection", async () => {
         const upcomingEvents = await getUpcomingEvents();
         expect(upcomingEvents.length).toBe(0);
@@ -84,6 +84,49 @@ describe("Create and Get Event Functions", () => {
             expect(error).toBeDefined();
         }
     });
+});
+
+describe("Various Fetch events", () => {
+    test("Fetch existing event", async () => {
+        const event = generateTestEvent();
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const fetchedEvent = await getEvent(eventId!);
+        expect(fetchedEvent).toBeDefined();
+        expect(fetchedEvent).toMatchObject(event);
+    })
+
+    test("Fetch non-existent event", async () => {
+        const nonExistentEventID = "nonExistentEventID";
+        const fetchedEvent = await getEvent(nonExistentEventID);
+        expect(fetchedEvent).toBeNull();
+    });
+
+    test("Fetch event with null ID", async () => {
+        const nullEventID: any = null;
+        const fetchedEvent = await getEvent(nullEventID);
+        expect(fetchedEvent).toBeNull();
+    });
+
+    test("Fetch existing  event by name", async () => {
+        const eventName = "Existing Event";
+        const event = generateTestEvent({ name: eventName });
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const fetchedEvent = await fetchEventByName(eventName);
+        expect(fetchedEvent).toBeDefined();
+        expect(fetchedEvent).toMatchObject(event);
+
+        await deleteDoc(doc(db, "events", eventId!));
+    });
+
+    test("Fetch non-existent event by name", async () => {
+        const nonExistentEventName = "Non-existent Event";
+        const fetchedEvent = await fetchEventByName(nonExistentEventName);
+        expect(fetchedEvent).toBeNull();
+    });
 
     test("Fetch upcoming events", async () => {
         const event = generateTestEvent();
@@ -99,6 +142,35 @@ describe("Create and Get Event Functions", () => {
 
         await deleteDoc(doc(db, "events", eventId!));
     });
+
+    test("fetches events for given interests", async () => {
+        const interests = ['Test Type 1', 'Test Type 2'];
+        const event1 = generateTestEvent({ eventType: 'Test Type 1' as EventType });
+        const event2 = generateTestEvent({ eventType: 'Test Type 2' as EventType });
+        const eventId1 = await createEvent(event1);
+        const eventId2 = await createEvent(event2);
+        expect(eventId1).not.toBeNull();
+        expect(eventId2).not.toBeNull();
+
+        const events = await getInterestsEvent(interests);
+        expect(events.length).toBe(2);
+
+        const fetchedEvent1 = events.find(e => e.id === eventId1);
+        const fetchedEvent2 = events.find(e => e.id === eventId2);
+        expect(fetchedEvent1).toMatchObject(event1);
+        expect(fetchedEvent2).toMatchObject(event2);
+
+        await deleteDoc(doc(db, "events", eventId1!));
+        await deleteDoc(doc(db, "events", eventId2!));
+    });
+
+    test("returns an empty array if no events found for interests", async () => {
+        const interests = ['Non-existent Type'];
+
+        const events = await getInterestsEvent(interests);
+        expect(events.length).toBe(0);
+    });
+
 
     test("Fetch past events with limit", async () => {
         const event = generateTestEvent({
@@ -234,7 +306,7 @@ describe("Create and Get Event Functions", () => {
     });
 });
 
-describe("setEvent Function", () => {
+describe("Update Events", () => {
     test("Update an existing event with valid data", async () => {
         const event = generateTestEvent();
         const eventId = await createEvent(event as SHPEEvent);
@@ -296,5 +368,123 @@ describe("setEvent Function", () => {
         expect(updatedDoc.data()?.geolocation.longitude).toBe(-96.341);
 
         await deleteDoc(doc(db, "events", eventId!));
+    });
+});
+
+
+describe("Destroy Event Function", () => {
+    test("Delete an existing event", async () => {
+        const event = generateTestEvent();
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const result = await destroyEvent(eventId!);
+        expect(result).toBe(true);
+
+        const deletedEvent = await getDoc(doc(db, "events", eventId!));
+        expect(deletedEvent.exists()).toBe(false);
+    });
+
+    test("Handle non-existent event ID", async () => {
+        const nonExistentEventID = "nonExistentEventID";
+        const result = await destroyEvent(nonExistentEventID);
+        expect(result).toBe(false);
+    });
+
+    test("Delete event and its logs", async () => {
+        const event = generateTestEvent();
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const logRef = doc(db, `events/${eventId}/logs`, "log1");
+        await setDoc(logRef, { log: "sample log" });
+
+        const result = await destroyEvent(eventId!);
+        expect(result).toBe(true);
+
+        const deletedLog = await getDoc(logRef);
+        expect(deletedLog.exists()).toBe(false);
+    });
+
+    test("Delete event and related user event logs", async () => {
+        const event = generateTestEvent();
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const userRef = doc(db, "users", "user1");
+        await setDoc(userRef, { name: "User 1" });
+
+        const userEventLogRef = doc(db, `users/user1/event-logs`, eventId!);
+        await setDoc(userEventLogRef, { log: "user event log" });
+
+        const result = await destroyEvent(eventId!);
+        expect(result).toBe(true);
+
+        const deletedUserEventLog = await getDoc(userEventLogRef);
+        expect(deletedUserEventLog.exists()).toBe(false);
+    });
+});
+
+describe("Event Attendance and Logs", () => {
+    test("Get attendance numbers for an event", async () => {
+        const event = generateTestEvent();
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const logRef1 = doc(db, `events/${eventId}/logs`, "user1");
+        await setDoc(logRef1, { signInTime: Timestamp.fromDate(new Date()), signOutTime: Timestamp.fromDate(new Date()) });
+
+        const logRef2 = doc(db, `events/${eventId}/logs`, "user2");
+        await setDoc(logRef2, { signInTime: Timestamp.fromDate(new Date()) });
+
+        const attendance = await getAttendanceNumber(eventId!);
+        expect(attendance.signedInCount).toBe(2);
+        expect(attendance.signedOutCount).toBe(1);
+
+        await destroyEvent(eventId!);
+    });
+
+    test("Get attendance numbers for an event with no logs", async () => {
+        const event = generateTestEvent();
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const attendance = await getAttendanceNumber(eventId!);
+        expect(attendance.signedInCount).toBe(0);
+        expect(attendance.signedOutCount).toBe(0);
+
+        await destroyEvent(eventId!);
+    });
+
+    test("Get user event log for an existing event and user", async () => {
+        const event = generateTestEvent();
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const userLog = { signInTime: Timestamp.fromDate(new Date()), signOutTime: Timestamp.fromDate(new Date()) };
+        const logRef = doc(db, `events/${eventId}/logs`, "user1");
+        await setDoc(logRef, userLog);
+
+        const fetchedLog = await getUserEventLog(eventId!, "user1");
+        expect(fetchedLog).toMatchObject(userLog);
+
+        await destroyEvent(eventId!);
+    });
+
+    test("Get user event log for a non-existent event", async () => {
+        const nonExistentEventID = "nonExistentEventID";
+        const fetchedLog = await getUserEventLog(nonExistentEventID, "user1");
+        expect(fetchedLog).toBeNull();
+    });
+
+    test("Get user event log for a non-existent user", async () => {
+        const event = generateTestEvent();
+        const eventId = await createEvent(event as SHPEEvent);
+        expect(eventId).not.toBeNull();
+
+        const fetchedLog = await getUserEventLog(eventId!, "nonExistentUser");
+        expect(fetchedLog).toBeNull();
+
+        await destroyEvent(eventId!);
     });
 });
