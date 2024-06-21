@@ -1,88 +1,95 @@
-import { View, Text, TouchableOpacity, TextInput, Image, ScrollView, Platform, TouchableHighlight, KeyboardAvoidingView, Modal, ActivityIndicator, Alert, Switch } from 'react-native'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import { View, Text, TouchableOpacity, TextInput, Image, Platform, TouchableHighlight, Modal, Alert, ActivityIndicator, useColorScheme } from 'react-native'
+import React, { useContext, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation'
 import { useRoute } from '@react-navigation/core';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { CommitteeMeeting, EventType, GeneralMeeting, IntramuralEvent, CustomEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop, WorkshopType } from '../../types/events';
-import { destroyEvent, getCommittees, setEvent } from '../../api/firebaseUtils';
-import { Octicons } from '@expo/vector-icons';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Octicons, FontAwesome } from '@expo/vector-icons';
+import { CommitteeMeeting, EventType, GeneralMeeting, IntramuralEvent, CustomEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop } from '../../types/events';
+import { destroyEvent, setEvent, uploadFile } from '../../api/firebaseUtils';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import * as ImagePicker from "expo-image-picker";
 import { Images } from '../../../assets';
 import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { UserContext } from '../../context/UserContext';
 import { MillisecondTimes, formatDate, formatTime } from '../../helpers/timeUtils';
 import { StatusBar } from 'expo-status-bar';
-import DismissibleModal from '../../components/DismissibleModal';
-import * as ImagePicker from "expo-image-picker";
 import { Committee } from '../../types/committees';
-import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
 import LocationPicker from '../../components/LocationPicker';
-import { getBlobFromURI, selectImage, uploadFile } from '../../api/fileSelection';
+import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
+import InteractButton from '../../components/InteractButton';
+import { getBlobFromURI, selectImage } from '../../api/fileSelection';
 import { CommonMimeTypes, validateFileBlob } from '../../helpers';
 import { auth } from '../../config/firebaseConfig';
+import { LinearGradient } from 'expo-linear-gradient';
+import DismissibleModal from '../../components/DismissibleModal';
 
 const UpdateEvent = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
     const { event } = route.params;
-    const { userInfo } = useContext(UserContext)!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
-    const [selectableCommittees, setSelectableCommittees] = useState<Committee[]>([]);
 
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
+    const insets = useSafeAreaInsets();
 
     // UI Hooks
-    const [updated, setUpdated] = useState<boolean>(false);
-    const [changesMade, setChangesMade] = useState<boolean>(false);
     const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
     const [showStartTimePicker, setShowStartTimePicker] = useState<boolean>(false);
     const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
     const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
+    const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
+    const [localImageURI, setLocalImageURI] = useState<string>();
+    const [isUploading, setIsUploading] = useState<boolean>();
     const [loading, setLoading] = useState<boolean>(false);
     const [showDeletionConfirmation, setShowDeletionConfirmation] = useState<boolean>(false);
-    const dropDownRefCommittee = useRef<CustomDropDownMethods>(null);
-    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-    const [showLocationPicker, setShowLocationPicker] = useState<boolean>(false);
-    const [localEventName, setLocalEventName] = useState<string | undefined | null>(event.name);
-    const [localCoverImageURI, setLocalCoverImageURI] = useState<string>(event.coverImageURI ?? '');
-    const [isFocused, setIsFocused] = useState<boolean>(true);
 
 
     // Form Data Hooks
-    const [name, setName] = useState<string | undefined | null>(event.name);
-    const [description, setDescription] = useState<string | undefined | null>(event.description);
-    const [tags, setTags] = useState<string[] | undefined | null>(event.tags);
-    const [startTime, setStartTime] = useState<Timestamp | undefined | null>(event.startTime);
-    const [endTime, setEndTime] = useState<Timestamp | undefined | null>(event.endTime);
-    const [startTimeBuffer, setStartTimeBuffer] = useState<number | undefined | null>(event.startTimeBuffer);
-    const [endTimeBuffer, setEndTimeBuffer] = useState<number | undefined | null>(event.endTimeBuffer);
-    const [coverImageURI, setCoverImageURI] = useState<string | undefined | null>(event.coverImageURI);
-    const [signInPoints, setSignInPoints] = useState<number | undefined | null>(event.signInPoints);
-    const [signOutPoints, setSignOutPoints] = useState<number | undefined | null>(event.signOutPoints);
-    const [pointsPerHour, setPointsPerHour] = useState<number | undefined | null>(event.pointsPerHour);
-    const [locationName, setLocationName] = useState<string | undefined | null>(event.locationName);
-    const [geolocation, setGeolocation] = useState<GeoPoint | undefined | null>(event.geolocation);
-    const [geofencingRadius, setGeofencingRadius] = useState<number | undefined | null>(event.geofencingRadius);
-    const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType);
-    const [committee, setCommittee] = useState<string | undefined | null>(event.committee);
-    const [nationalConventionEligible, setNationalConventionEligible] = useState<boolean | undefined | null>(event.nationalConventionEligible);
-    const [general, setIsGeneral] = useState<boolean | undefined | null>(event.general);
+    const [name, setName] = useState<string>(event.name ?? "");
+    const [startTime, setStartTime] = useState<Timestamp | undefined>(event.startTime ?? undefined);
+    const [endTime, setEndTime] = useState<Timestamp | undefined>(event.endTime ?? undefined);
+    const [description, setDescription] = useState<string>(event.description ?? "");
+    const [coverImageURI, setCoverImageURI] = useState<string>(event.coverImageURI ?? "");
+    const [locationName, setLocationName] = useState<string | undefined>(event.locationName ?? undefined);
+    const [geolocation, setGeolocation] = useState<GeoPoint | undefined>(event.geolocation ?? undefined);
+    const [geofencingRadius, setGeofencingRadius] = useState<number | undefined>(event.geofencingRadius ?? undefined);
 
-    useEffect(() => {
-        getCommittees()
-            .then((result) => setSelectableCommittees(result))
-            .catch(err => console.error("Issue getting committees:", err));
-    }, []);
 
-    useEffect(() => {
-        if (openDropdown === null) {
-            setIsFocused(true);
-        } else {
-            setIsFocused(false);
+    const selectCoverImage = async () => {
+        const result = await selectImage({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+        })
+
+        if (result) {
+            const imageBlob = await getBlobFromURI(result.assets![0].uri);
+            if (imageBlob && validateFileBlob(imageBlob, CommonMimeTypes.IMAGE_FILES, true)) {
+                setLocalImageURI(result.assets![0].uri);
+                if (!imageBlob) return;
+                setIsUploading(true);
+                uploadFile(
+                    imageBlob!,
+                    CommonMimeTypes.IMAGE_FILES,
+                    `events/cover-images/${auth.currentUser?.uid.toString()}${Date.now().toString()}`,
+                    onImageUploadSuccess,
+                );
+            }
         }
-    }, [openDropdown])
+    }
+
+    const onImageUploadSuccess = async (URL: string) => {
+        setCoverImageURI(URL);
+        setIsUploading(false);
+    }
 
     const handleUpdateEvent = async () => {
-        setLoading(true);
-
+        setLoading(true)
         let updatedEvent: SHPEEvent = {};
         switch (event.eventType) {
             case EventType.GENERAL_MEETING:
@@ -110,57 +117,44 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 updatedEvent = new CustomEvent();
                 break;
             default:
-                console.warn(`Event type ${event.eventType} not handled. This may cause issues if given event object does not follow SHPEEvent schema.`)
+                console.warn(`Event type ${event.eventType} not handled. This may cause issues if given event object does not follow SHPEEvent schema.`);
                 break;
         }
 
-        // Uses spread syntax as fallback in case class does not implement copyFromObject
         if (updatedEvent.copyFromObject) {
             updatedEvent.copyFromObject(event);
-        }
-        else {
+        } else {
             updatedEvent = { ...event };
         }
 
+        console.log(geofencingRadius, 'this is geofencingRadius variable');
+
+        // Create an object without the geofencingRadius field
+        const eventData: any = {
+            name,
+            description,
+            startTime,
+            endTime,
+            coverImageURI,
+            locationName,
+            geolocation,
+            geofencingRadius
+        };
+
+        if (geofencingRadius === undefined) {
+            eventData.geofencingRadius = null;
+        }
         if (updatedEvent.copyFromObject) {
-            updatedEvent.copyFromObject({
-                name,
-                description,
-                tags,
-                startTime,
-                endTime,
-                startTimeBuffer,
-                endTimeBuffer,
-                coverImageURI,
-                signInPoints,
-                signOutPoints,
-                pointsPerHour,
-                locationName,
-                geolocation,
-                geofencingRadius,
-                general,
-                workshopType,
-                committee,
-                nationalConventionEligible,
-            })
+            updatedEvent.copyFromObject(eventData);
         }
 
-        const eventID = await setEvent(event.id!, updatedEvent)
-            .then((eventID) => {
-                setLoading(false);
-                return eventID;
-            });
+        console.log(updatedEvent.geofencingRadius, 'this is updatedEvent Variable geofencing');
+        console.log(updatedEvent, 'updated event');
 
-        if (eventID) {
-            setUpdated(true);
-            setChangesMade(false);
-        }
-        else {
-            console.log('Event update failed');
-        }
-
-        setLocalEventName(name);
-    }
+        await setEvent(event.id!, updatedEvent);
+        setLoading(false)
+        navigation.navigate("EventInfo", { event: updatedEvent });
+    };
 
     const handleDestroyEvent = async () => {
         const isDeleted = await destroyEvent(event.id!);
@@ -171,64 +165,19 @@ const UpdateEvent = ({ navigation }: EventProps) => {
         }
     }
 
-    const selectCoverImage = async () => {
-        const result = await selectImage({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            quality: 1,
-        })
-
-        if (result) {
-            const imageBlob = await getBlobFromURI(result.assets![0].uri);
-            if (imageBlob && validateFileBlob(imageBlob, CommonMimeTypes.IMAGE_FILES, true)) {
-                setLocalCoverImageURI(result.assets![0].uri);
-                if (!imageBlob) return;
-                uploadFile(
-                    imageBlob!,
-                    CommonMimeTypes.IMAGE_FILES,
-                    `events/cover-images/${auth.currentUser?.uid.toString()}${Date.now().toString()}`,
-                    onImageUploadSuccess,
-                );
-            }
-        }
-    }
-
-
-    const onImageUploadSuccess = async (URL: string) => {
-        setCoverImageURI(URL);
-        setChangesMade(true);
-    }
-
-
-    const toggleDropdown = (dropdownKey: string) => {
-        if (openDropdown === dropdownKey) {
-            setOpenDropdown(null);
-        } else {
-            setOpenDropdown(dropdownKey);
-        }
-    };
-
 
     return (
-        <View className='flex-1'>
-            <StatusBar style="light" />
-            {changesMade && (
-                <View className='absolute right-0 bottom-0 z-50 m-5'>
-                    <TouchableOpacity
-                        className='bg-pale-blue px-6 py-3 rounded-md'
-                        onPress={() => handleUpdateEvent()}
-                    >
-                        <Text className='text-white text-lg'>Update</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
-            <ScrollView
-                scrollEnabled={isFocused}
-                className={`flex flex-col flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`}
-                contentContainerStyle={{
-                    paddingBottom: "50%"
-                }}
-            >
+        <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <View className='absolute w-full bottom-0 mb-5 z-50'>
+                <InteractButton
+                    buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
+                    textClassName='text-center text-white text-2xl font-bold'
+                    label='Update'
+                    onPress={() => handleUpdateEvent()}
+                />
+            </View>
+            <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
+                <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}
                 <View
                     style={{
@@ -239,8 +188,8 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 >
                     <Image
                         className="flex w-full h-full absolute"
-                        defaultSource={Images.DEFAULT_USER_PICTURE}
-                        source={localCoverImageURI ? { uri: localCoverImageURI } : Images.EVENT}
+                        defaultSource={darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
+                        source={coverImageURI ? { uri: coverImageURI } : darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
                         style={{
                             width: "100%",
                             height: "auto",
@@ -248,492 +197,287 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         }}
                     />
 
-                    <View className='absolute w-full h-full bg-[#00000055]' />
-
-                    <View className='absolute bottom-0 px-5 py-3'>
-                        <Text className="text-3xl font-bold text-white">{localEventName}{changesMade && ' *'}</Text>
-                        <Text className='text-lg text-white font-bold'>Edit Event</Text>
-                    </View>
+                    <LinearGradient
+                        colors={
+                            darkMode
+                                ? ['rgba(0,0,0,.8)', 'rgba(0,0,0,.5)', 'rgba(0,0,0,0)']
+                                : ['rgba(255,255,255,.8)', 'rgba(255,255,255,0.5)', 'rgba(255,255,255,0)']
+                        }
+                        className='absolute w-full'
+                        style={{ height: insets.top + 30 }}
+                    ></LinearGradient>
 
                     <SafeAreaView edges={['top']}>
-                        <View className='flex-row  mx-5 mt-1'>
+                        <View className='flex-row justify-between mx-4 h-full'>
+                            <View className='flex-1 w-full h-full absolute justify-center items-center '>
+                                {isUploading ? (
+                                    <ActivityIndicator />
+                                ) : (
+                                    <TouchableOpacity
+                                        onPress={() => selectCoverImage()}
+                                        className="rounded-3xl w-24 h-24 justify-center items-center"
+                                        style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+                                    >
+                                        <FontAwesome name="camera" size={40} color="white" />
+                                        <Text className='mt-1 text-center text-white text-lg font-semibold'>UPLOAD</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+
                             <TouchableOpacity
-                                onPress={() => navigation.goBack()}
+                                onPress={() => { navigation.goBack() }}
                                 className="rounded-full w-10 h-10 justify-center items-center"
-                                style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                                style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
                             >
                                 <Octicons name="chevron-left" size={30} color="white" />
                             </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => { setShowDeletionConfirmation(true) }}
+                                className="absolute top-0 right-0 rounded-full w-10 h-10 justify-center items-center"
+                                style={{ backgroundColor: 'rgba(0,0,0,.8)' }}
+                            >
+                                <Octicons name="trash" size={24} color="#FF0000" />
+                            </TouchableOpacity>
                         </View>
                     </SafeAreaView>
-
-                    <View className='absolute right-0 mx-5'>
-                        <SafeAreaView edges={['top']}>
-                            <TouchableOpacity
-                                className='w-20 h-10 justify-center items-center rounded-md'
-                                style={{ backgroundColor: 'rgba(255,0,0,0.7)' }}
-                                onPress={() => setShowDeletionConfirmation(true)}
-                            >
-                                <Text className='text-white font-semibold text-lg'>Destroy</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                className='w-20 h-10  justify-center items-center rounded-md mt-2'
-                                style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                                onPress={() => navigation.navigate("QRCode", { event: event })}
-                            >
-                                <Text className='text-white font-semibold text-lg'>QRCode</Text>
-                            </TouchableOpacity>
-                        </SafeAreaView>
-                    </View>
                 </View>
 
-                {/* Form */}
-                <View className='px-4 my-8'>
-                    {/* Event Name */}
-                    <Text className='text-2xl font-bold'>General Details</Text>
-                    <View className='-z-20'>
-                        <TouchableOpacity
-                            className='bg-pale-blue w-[60%] mt-4 mb-2   px-4 py-2 items-center justify-center rounded-lg '
-                            onPress={() => selectCoverImage()}
-                        >
-                            <Text className='text-white text-lg font-semibold'>Choose Cover Image</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <KeyboardAvoidingView behavior='position' className='py-3'>
-                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Name <Text className='text-[#f00]'>*</Text></Text>
-                        <TextInput
-                            className={`text-lg p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                            value={name ?? ""}
-                            placeholder='What is this event called?'
-                            placeholderTextColor={darkMode ? "#DDD" : "#777"}
-                            onChangeText={(text) => {
-                                setName(text)
-                                setChangesMade(true);
-                            }}
-                            keyboardType='ascii-capable'
-                            enterKeyHint='enter'
-                        />
-                    </KeyboardAvoidingView>
+                {loading && (<ActivityIndicator className="mt-16" size="small" />)}
+                {!loading && (
+                    <View>
 
-                    {/* Start Time Selection Buttons */}
-                    <View className='flex flex-row py-3'>
-                        <View className='flex flex-col w-[60%]'>
-                            <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Start Date <Text className='text-[#f00]'>*</Text></Text>
-                            {Platform.OS == 'android' &&
-                                <TouchableHighlight
-                                    underlayColor={darkMode ? "" : "#EEE"}
-                                    onPress={() => setShowStartDatePicker(true)}
-                                    className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                                >
-                                    <>
-                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
-                                        <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
-                                    </>
-                                </TouchableHighlight>
-                            }
-                            {Platform.OS == 'ios' &&
-                                <View className='flex flex-row items-center'>
-                                    <Octicons className='flex-1' name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
-                                    <DateTimePicker
-                                        themeVariant={darkMode ? 'dark' : 'light'}
-                                        testID='Start Time Picker'
-                                        value={startTime?.toDate() ?? new Date()}
-                                        maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
-                                        mode='date'
-                                        onChange={(_, date) => {
-                                            if (!date) {
-                                                console.warn("Date picked is undefined.")
-                                            }
-                                            else {
-                                                setStartTime(Timestamp.fromDate(date));
-                                                if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
-                                                    setEndTime(Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR));
-                                                }
-                                            }
-                                            setShowStartDatePicker(false);
-                                            setChangesMade(true);
-                                        }}
-                                    />
-                                </View>
-                            }
+                        {/* General Details */}
+                        <View className='px-4 mt-8'>
+                            <Text className={`text-2xl font-semibold mb-4 ${darkMode ? "text-white" : "text-black"}`}>General Details</Text>
                         </View>
-                        <View className='flex flex-col w-[40%]'>
-                            <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Start Time <Text className='text-[#f00]'>*</Text></Text>
-                            {Platform.OS == 'android' &&
-                                <TouchableHighlight
-                                    underlayColor={darkMode ? "" : "#EEE"}
-                                    onPress={() => setShowStartTimePicker(true)}
-                                    className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                                >
-                                    <>
-                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
-                                        <Octicons name='chevron-down' size={24} />
-                                    </>
-                                </TouchableHighlight>
-                            }
 
-                            {Platform.OS == 'ios' &&
-                                <View className='flex flex-row items-center'>
-                                    <Octicons name='clock' size={24} color={darkMode ? 'white' : 'black'} />
-                                    <DateTimePicker
-                                        themeVariant={darkMode ? 'dark' : 'light'}
-                                        value={startTime?.toDate() ?? new Date()}
-                                        mode='time'
-                                        onChange={(_, date) => {
-                                            if (!date) {
-                                                console.warn("Date picked is undefined.")
-                                            }
-                                            else if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
-                                                Alert.alert("Invalid Start Time", "Event cannot stard after end time.")
-                                            }
-                                            else {
-                                                setStartTime(Timestamp.fromDate(date));
-                                                setChangesMade(true);
-                                            }
-                                        }}
-                                    />
-                                </View>
-                            }
+                        {/* Event Name */}
+                        <View className='mx-4'>
+                            <Text className={`mb-1 text-base font-semibold ${darkMode ? "text-white" : "text-black"}`}>
+                                Event Name<Text className='text-[#f00]'>*</Text>
+                            </Text>
+
+                            <TextInput
+                                className={`text-lg p-2 rounded border border-1 border-black ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
+                                value={name}
+                                placeholder='What is this event called?'
+                                placeholderTextColor={darkMode ? "#DDD" : "#777"}
+                                onChangeText={(text) => setName(text)}
+                                keyboardType='ascii-capable'
+                                enterKeyHint='enter'
+                            />
                         </View>
-                    </View>
 
-                    {/* End Time Selection Buttons */}
-                    <View className='flex flex-row pb-3'>
-                        <View className='flex flex-col w-[60%]'>
-                            <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>End Date <Text className='text-[#f00]'>*</Text></Text>
-                            {Platform.OS == 'android' &&
-                                <TouchableHighlight
-                                    underlayColor={darkMode ? "" : "#EEE"}
-                                    onPress={() => setShowEndDatePicker(true)}
-                                    className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                                >
-                                    <>
-                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
-                                        <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
-                                    </>
-                                </TouchableHighlight>
-                            }
-                            {Platform.OS == 'ios' &&
-                                <View className='flex flex-row items-center'>
+                        {/* Start Time Selection Buttons */}
+                        <View className='flex-row mt-6 mx-4'>
+                            <View className='flex-col w-[60%]'>
+                                <Text className={`justify-center mb-1 text-base font-semibold ${darkMode ? "text-white" : "text-black"}`}>
+                                    Start Date<Text className='text-[#f00]'>*</Text>
+                                </Text>
+                                <View className='flex-row'>
                                     <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
-                                    <DateTimePicker
-                                        themeVariant={darkMode ? 'dark' : 'light'}
-                                        testID='Start Time Picker'
-                                        value={endTime?.toDate() ?? new Date()}
-                                        maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
-                                        mode='date'
-                                        onChange={(_, date) => {
-                                            if (!date) {
-                                                console.warn("Date picked is undefined.")
-                                            }
-                                            else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
-                                                Alert.alert("Invalid End Date", "Event cannot end before start date.")
-                                            }
-                                            else {
-                                                setEndTime(Timestamp.fromDate(date));
-                                                setChangesMade(true);
-                                            }
-                                        }}
-                                    />
-                                </View>
-                            }
-                        </View>
-                        <View className='flex flex-col w-[40%]'>
-                            <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>End Time <Text className='text-[#f00]'>*</Text></Text>
-                            {Platform.OS == 'android' &&
-                                <TouchableHighlight
-                                    underlayColor={darkMode ? "" : "#EEE"}
-                                    onPress={() => setShowEndTimePicker(true)}
-                                    className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                                >
-                                    <>
-                                        <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
-                                        <Octicons name='chevron-down' size={24} />
-                                    </>
-                                </TouchableHighlight>
-                            }
-                            {Platform.OS == 'ios' &&
-                                <View className='flex flex-row items-center'>
-                                    <Octicons name='clock' size={24} color={darkMode ? 'white' : 'black'} />
-                                    <DateTimePicker
-                                        themeVariant={darkMode ? 'dark' : 'light'}
-                                        value={endTime?.toDate() ?? new Date()}
-                                        mode='time'
-                                        onChange={(_, date) => {
-                                            if (!date) {
-                                                console.warn("Date picked is undefined.")
-                                            }
-                                            else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
-                                                Alert.alert("Invalid End Time", "Event cannot end before start time.")
-                                            }
-                                            else {
-                                                setEndTime(Timestamp.fromDate(date));
-                                            }
-                                            setShowEndTimePicker(false);
-                                            setChangesMade(true);
-                                        }}
-                                    />
-                                </View>
-                            }
-                        </View>
-                    </View>
-                    {/* toggle to make events appear on general tab*/}
-                    <KeyboardAvoidingView className='py-3'>
-                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Event Scope</Text>
-                        <View className="flex flex-row items-center justify-between py-2">
-                            <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Club-Wide Event</Text>
-                            <Switch
-                                trackColor={{ false: "#999796", true: "#001F5B" }}
-                                thumbColor={general ? "#72A9BE" : "#f4f3f4"}
-                                ios_backgroundColor="#999796"
-                                onValueChange={() => {
-                                    setIsGeneral(previousState => !previousState)
-                                    setChangesMade(true);
-                                }}
-                                value={general || false}
-                            />
-                        </View>
-                    </KeyboardAvoidingView>
+                                    {Platform.OS == 'android' &&
+                                        <View className='flex-row items-center'>
+                                            <TouchableHighlight
+                                                underlayColor={darkMode ? "" : "#EEE"}
+                                                onPress={() => setShowStartDatePicker(true)}
+                                                className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
+                                            >
+                                                <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
+                                            </TouchableHighlight>
 
-                    {/* Description */}
-                    <KeyboardAvoidingView behavior='position' className='py-3'>
-                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Description</Text>
-                        <TextInput
-                            className={`h-32 text-lg p-2 rounded-md ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                            value={description || ""}
-                            placeholder='What is this event about?'
-                            placeholderTextColor={darkMode ? "#DDD" : "#777"}
-                            onChangeText={(text: string) => {
-                                if (text.length <= 250) {
-                                    setDescription(text)
-                                    setChangesMade(true);
-                                }
-                            }}
-                            numberOfLines={2}
-                            keyboardType='ascii-capable'
-                            autoCapitalize='sentences'
-                            multiline
-                            style={{ textAlignVertical: 'top' }}
-                            enterKeyHint='enter'
-                        />
-                    </KeyboardAvoidingView>
-
-                    <Text className='text-2xl font-bold mt-8 mb-4'>Specific Details</Text>
-
-                    <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Associated Committee</Text>
-                    <View className='flex-row flex-wrap mb-6 z-30'>
-                        <CustomDropDownMenu
-                            data={createCommitteeList(selectableCommittees)}
-                            onSelect={(item) => {
-                                setCommittee(item.iso);
-                                setChangesMade(true);
-                            }}
-                            searchKey="committee"
-                            label="Select Committee"
-                            isOpen={openDropdown === 'committee'}
-                            onToggle={() => toggleDropdown('committee')}
-                            displayType='value'
-                            ref={dropDownRefCommittee}
-                            disableSearch
-                            selectedItemProp={event.committee ? { value: event.committee, iso: event.committee } : null}
-                        />
-                    </View>
-                    <View className='flex-row flex-wrap mb-4'>
-                        {event.signInPoints !== undefined &&
-                            <View className='w-[48%] mr-[2%] z-30'>
-                                <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Signing In <Text className='text-[#f00]'>*</Text></Text>
-                                <CustomDropDownMenu
-                                    data={POINTS}
-                                    onSelect={(item) => {
-                                        setSignInPoints(Number(item.iso))
-                                        setChangesMade(true);
-                                    }}
-                                    searchKey="point"
-                                    label="Select Points"
-                                    isOpen={openDropdown === 'pointSignIn'}
-                                    onToggle={() => toggleDropdown('pointSignIn')}
-                                    displayType='iso'
-                                    disableSearch
-                                    selectedItemProp={event.signInPoints ? { value: String(event.signInPoints), iso: String(event.signInPoints) } : null}
-                                />
-                            </View>
-                        }
-                        {event.signOutPoints !== undefined &&
-                            <View className='w-[48%] mr-[2%] z-20'>
-                                <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Points for Signing Out <Text className='text-[#f00]'>*</Text></Text>
-                                <CustomDropDownMenu
-                                    data={POINTS}
-                                    onSelect={(item) => {
-                                        setSignOutPoints(Number(item.iso))
-                                        setChangesMade(true);
-                                    }}
-                                    searchKey="point"
-                                    label="Select Points"
-                                    isOpen={openDropdown === 'pointSignOut'}
-                                    onToggle={() => toggleDropdown('pointSignOut')}
-                                    displayType='iso'
-                                    disableSearch
-                                    selectedItemProp={event.signOutPoints ? { value: String(event.signOutPoints), iso: String(event.signOutPoints) } : null}
-                                />
-                            </View>
-                        }
-                        {event.pointsPerHour !== undefined &&
-                            <View className={`w-[48%] mr-[2%] ${(event.signOutPoints != undefined && event.signInPoints != undefined) && "mt-9"}`}>
-                                <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Hourly Points<Text className='text-[#f00]'>*</Text></Text>
-                                <CustomDropDownMenu
-                                    data={POINTS}
-                                    onSelect={(item) => {
-                                        setPointsPerHour(Number(item.iso))
-                                        setChangesMade(true);
-                                    }}
-                                    searchKey="point"
-                                    label="Select Points"
-                                    isOpen={openDropdown === 'pointPerHour'}
-                                    onToggle={() => toggleDropdown('pointPerHour')}
-                                    displayType='iso'
-                                    disableSearch
-                                    selectedItemProp={event.pointsPerHour ? { value: String(event.pointsPerHour), iso: String(event.pointsPerHour) } : null}
-                                />
-                            </View>
-                        }
-                    </View>
-
-                    {event.workshopType !== undefined &&
-                        <View className='-z-10'>
-                            <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Workshop Type <Text className='text-[#f00]'>*</Text></Text>
-                            <CustomDropDownMenu
-                                data={[
-                                    { workshopType: "Academic", iso: "Academic" },
-                                    { workshopType: "Professional", iso: "Professional" }
-                                ]}
-                                onSelect={(item) => {
-                                    setWorkshopType(item.iso as WorkshopType);
-                                    switch (item.iso) {
-                                        case "Academic":
-                                            setSignInPoints(2);
-                                        case "Professional":
-                                            setSignInPoints(3);
+                                            <TouchableHighlight
+                                                underlayColor={darkMode ? "" : "#EEE"}
+                                                onPress={() => setShowStartTimePicker(true)}
+                                                className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                            >
+                                                <>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
+                                                    <Octicons name='chevron-down' size={24} />
+                                                </>
+                                            </TouchableHighlight>
+                                        </View>
                                     }
-                                    setChangesMade(true);
+
+                                    {Platform.OS == 'ios' &&
+                                        <View className='flex-row items-center'>
+                                            <DateTimePicker
+                                                themeVariant={darkMode ? 'dark' : 'light'}
+                                                testID='Start Time Picker'
+                                                value={startTime?.toDate() ?? new Date()}
+                                                maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
+                                                mode='date'
+                                                onChange={(_, date) => {
+                                                    if (!date) {
+                                                        console.warn("Date picked is undefined.")
+                                                    }
+                                                    else {
+                                                        setStartTime(Timestamp.fromDate(date));
+                                                        if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
+                                                            setEndTime(Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR));
+                                                        }
+                                                    }
+                                                    setShowStartDatePicker(false);
+                                                }}
+                                            />
+
+                                            <DateTimePicker
+                                                themeVariant={darkMode ? 'dark' : 'light'}
+                                                value={startTime?.toDate() ?? new Date()}
+                                                mode='time'
+                                                onChange={(_, date) => {
+                                                    if (isUploading) {
+                                                        Alert.alert("Image upload in progress.", "Please wait for image to finish uploading.")
+                                                    }
+                                                    else if (!date) {
+                                                        console.warn("Date picked is undefined.")
+                                                    }
+                                                    else if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
+                                                        Alert.alert("Invalid Start Time", "Event cannot start after end time.")
+                                                    }
+                                                    else {
+                                                        setStartTime(Timestamp.fromDate(date));
+                                                    }
+                                                }}
+                                            />
+                                        </View>
+                                    }
+
+                                </View>
+                            </View>
+                        </View>
+
+                        {/* End Time Selection Buttons */}
+                        <View className='flex flex-row mt-3 mx-4'>
+                            <View className='flex flex-col w-[60%]'>
+                                <Text className={`justify-center mb-1 text-base font-semibold ${darkMode ? "text-white" : "text-black"}`}>
+                                    End Date<Text className='text-[#f00]'>*</Text>
+                                </Text>
+
+                                <View className='flex-row items-center'>
+                                    <Octicons name='calendar' size={24} color={darkMode ? 'white' : 'black'} />
+                                    {Platform.OS == 'android' &&
+                                        <View className='flex-row items-center'>
+                                            <TouchableHighlight
+                                                underlayColor={darkMode ? "" : "#EEE"}
+                                                onPress={() => setShowEndDatePicker(true)}
+                                                className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                            >
+                                                <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
+                                            </TouchableHighlight>
+
+                                            <TouchableHighlight
+                                                underlayColor={darkMode ? "" : "#EEE"}
+                                                onPress={() => setShowEndTimePicker(true)}
+                                                className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
+                                            >
+                                                <>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
+                                                    <Octicons name='chevron-down' size={24} />
+                                                </>
+                                            </TouchableHighlight>
+                                        </View>
+                                    }
+
+                                    {Platform.OS == 'ios' &&
+                                        <View className='flex flex-row items-center'>
+                                            <DateTimePicker
+                                                themeVariant={darkMode ? 'dark' : 'light'}
+                                                testID='Start Time Picker'
+                                                value={endTime?.toDate() ?? new Date()}
+                                                maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
+                                                mode='date'
+                                                onChange={(_, date) => {
+                                                    if (!date) {
+                                                        console.warn("Date picked is undefined.")
+                                                    }
+                                                    else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
+                                                        Alert.alert("Invalid End Date", "Event cannot end before start date.")
+                                                    }
+                                                    else {
+                                                        setEndTime(Timestamp.fromDate(date));
+                                                    }
+                                                }}
+                                            />
+
+                                            <DateTimePicker
+                                                themeVariant={darkMode ? 'dark' : 'light'}
+                                                value={endTime?.toDate() ?? new Date()}
+                                                mode='time'
+                                                onChange={(_, date) => {
+                                                    if (!date) {
+                                                        console.warn("Date picked is undefined.")
+                                                    }
+                                                    else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
+                                                        Alert.alert("Invalid End Time", "Event cannot end before start time.")
+                                                    }
+                                                    else {
+                                                        setEndTime(Timestamp.fromDate(date));
+                                                    }
+                                                    setShowEndTimePicker(false);
+                                                }}
+                                            />
+                                        </View>
+                                    }
+                                </View>
+                            </View>
+                        </View>
+
+                        {/* Description */}
+                        <View className='mt-6 mx-4'>
+                            <Text className={`mb-1 text-base font-semibold ${darkMode ? "text-white" : "text-black"}`}>Description</Text>
+                            <TextInput
+                                className={`text-lg p-2 h-32 rounded border border-1 border-black ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
+                                value={description}
+                                placeholder='What is this event about?'
+                                placeholderTextColor={darkMode ? "#DDD" : "#777"}
+                                onChangeText={(text: string) => {
+                                    if (text.length <= 250)
+                                        setDescription(text)
                                 }}
-                                searchKey="workshopType"
-                                label="Select Workshop Type"
-                                isOpen={openDropdown === 'workshopType'}
-                                onToggle={() => toggleDropdown('workshopType')}
-                                displayType='value'
-                                disableSearch
-                                selectedItemProp={event.workshopType ? { value: event.workshopType, iso: event.workshopType } : null}
+                                numberOfLines={2}
+                                keyboardType='ascii-capable'
+                                autoCapitalize='sentences'
+                                multiline
+                                style={{ textAlignVertical: 'top' }}
+                                enterKeyHint='enter'
                             />
                         </View>
-                    }
 
-                    <TouchableOpacity
-                        className='flex-row mt-9 items-center -z-20'
-                        onPress={() => {
-                            setNationalConventionEligible(!nationalConventionEligible)
-                            setChangesMade(true);
-                        }}
-                    >
-                        <View className='h-8 w-8 border-2 border-pale-blue rounded-md items-center justify-center'>
-                            {nationalConventionEligible && (
-                                <Octicons name="check" size={26} color="#72A9BE" />
-                            )}
+                        {/* Location Details */}
+                        <View className='px-4 mt-10'>
+                            <Text className={`text-2xl font-semibold mb-4 ${darkMode ? "text-white" : "text-black"}`}>Location Details</Text>
                         </View>
-                        <Text className='ml-2 text-lg'>Eligible for National Convention</Text>
-                    </TouchableOpacity>
 
-                    <View className='-z-20'>
-                        <Text className='text-2xl font-bold mt-4 mb-4'>Location Details</Text>
-                    </View>
+                        {/* Location Name */}
+                        <View className='mx-4 pb-6'>
+                            <Text className={`mb-1 text-base font-semibold ${darkMode ? "text-white" : "text-black"}`}>
+                                Location Name<Text className='text-[#f00]'>*</Text>
+                            </Text>
 
-                    {/* Location Name */}
-                    <View className='-z-20'>
-                        <Text className={`text-base ${darkMode ? "text-gray-100" : "text-gray-500"}`}>Location Name</Text>
-                        <TextInput
-                            className={`text-lg p-2 rounded mb-4 ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
-                            value={locationName || ""}
-                            placeholder='Ex. Zach 420'
-                            placeholderTextColor={darkMode ? "#DDD" : "#777"}
-                            onChangeText={(text) => {
-                                setLocationName(text)
-                                setChangesMade(true);
-                            }}
-                            keyboardType='ascii-capable'
-                            enterKeyHint='enter'
-                        />
-                    </View>
+                            <TextInput
+                                className={`text-lg p-2 rounded border border-1 border-black ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
+                                value={locationName}
+                                placeholder='Ex. Zach 420'
+                                placeholderTextColor={darkMode ? "#DDD" : "#777"}
+                                onChangeText={(text) => setLocationName(text)}
+                                keyboardType='ascii-capable'
+                                enterKeyHint='enter'
+                            />
+                        </View>
 
-                    <View className='-z-20'>
                         <TouchableOpacity
-                            className='bg-pale-blue w-[60%] mt-1 mb-8 px-4 py-2 items-center justify-center rounded-lg '
+                            className='border mx-4 px-4 py-2 items-center justify-center rounded-lg '
                             onPress={() => setShowLocationPicker(true)}
                         >
-                            <Text className='text-white text-lg font-semibold'>Open Geolocation Editor</Text>
+                            <Text className='text-black text-lg font-semibold'>Open Location Editor</Text>
                         </TouchableOpacity>
+
+                        <View className='mb-24' />
                     </View>
-                </View>
-            </ScrollView>
-
-            <Modal
-                visible={loading}
-                transparent
-            >
-                <View className='h-full flex justify-center items-center'>
-                    <ActivityIndicator size={90} />
-                </View>
-            </Modal>
-
-            <DismissibleModal
-                visible={showDeletionConfirmation}
-                setVisible={setShowDeletionConfirmation}
-            >
-                <View className={`flex flex-col rounded-md p-3 space-y-6 w-[80%] h-[30%] ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
-                    <Text className='text-lg h-[60%]'>Are you <Text className='italic'>sure</Text> that you want to destroy this event?{'\n\nNote: This is *not* reversable!'}</Text>
-                    <View className='flex flex-row flex-1 space-x-2'>
-                        <TouchableHighlight
-                            className='rounded-md flex flex-col justify-center items-center flex-1 h-full bg-[#ff1c1c]'
-                            underlayColor={'#b30000'}
-                            onPress={() => {
-                                setShowDeletionConfirmation(false);
-                                setLoading(true);
-                                handleDestroyEvent().then(() => setLoading(false));
-                            }}
-                        >
-                            <Text className={`text-center text-white text-xl`}><Octicons name='repo-deleted' size={20} /> Delete</Text>
-                        </TouchableHighlight>
-                        <TouchableHighlight
-                            className={`rounded-md flex flex-col justify-center items-center flex-1 h-full ${darkMode ? "bg-gray-600" : "bg-gray-200"}`}
-                            underlayColor={darkMode ? "" : ""}
-                            onPress={() => setShowDeletionConfirmation(false)}
-                        >
-                            <Text className={`text-center text-xl ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
-                        </TouchableHighlight>
-                    </View>
-                </View>
-            </DismissibleModal>
-
-            <Modal visible={showLocationPicker}>
-                <SafeAreaView edges={['top']} className='flex-1 mt-12'>
-                    <TouchableOpacity
-                        className='absolute right-0 bottom-0 z-50 mr-3 mb-20 bg-pale-blue  px-4 py-2 rounded-lg'
-                        onPress={() => { setShowLocationPicker(false) }}
-                    >
-                        <Text className='text-white text-2xl font-semibold'>Done</Text>
-                    </TouchableOpacity>
-                    <Text className='text-2xl font-semibold ml-5 mb-5 text-center'>Update Event Location </Text>
-                    <LocationPicker
-                        onLocationChange={(location, radius) => {
-                            if (location?.geometry.location.lat && location?.geometry.location.lng) {
-                                setGeolocation(new GeoPoint(location?.geometry.location.lat, location?.geometry.location.lng));
-                            }
-                            setGeofencingRadius(radius);
-                            setChangesMade(true);
-                        }}
-                        initialCoordinate={geolocation ? { latitude: geolocation.latitude, longitude: geolocation.longitude } : undefined}
-                    />
-                </SafeAreaView>
-            </Modal>
+                )}
+            </KeyboardAwareScrollView>
 
             {/* Start Date Pickers */}
             {Platform.OS == 'android' && showStartDatePicker &&
@@ -743,18 +487,16 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
                     mode='date'
                     onChange={(_, date) => {
-                        setShowStartDatePicker(false);
                         if (!date) {
                             console.warn("Date picked is undefined.");
                         }
-                        else if (endTime && date.valueOf() > endTime.toMillis()) {
-                            setStartTime(Timestamp.fromDate(date));
-                            setEndTime(Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR));
-                        }
                         else {
                             setStartTime(Timestamp.fromDate(date));
+                            if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
+                                setEndTime(Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR));
+                            }
                         }
-                        setChangesMade(true);
+                        setShowStartDatePicker(false);
                     }}
                 />
             }
@@ -762,21 +504,21 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 <DateTimePicker
                     testID='Start Time Picker'
                     value={startTime?.toDate() ?? new Date()}
-                    maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
                     mode='time'
                     onChange={(_, date) => {
-                        setShowStartTimePicker(false);
-                        if (!date) {
-                            console.warn("Date picked is undefined.");
+                        if (isUploading) {
+                            Alert.alert("Image upload in progress.", "Please wait for image to finish uploading.")
                         }
-                        else if (endTime && date.valueOf() > endTime.toMillis()) {
-                            setStartTime(Timestamp.fromDate(date));
-                            setEndTime(Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR));
+                        else if (!date) {
+                            console.warn("Date picked is undefined.")
+                        }
+                        else if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
+                            Alert.alert("Invalid Start Time", "Event cannot start after end time.")
                         }
                         else {
                             setStartTime(Timestamp.fromDate(date));
                         }
-                        setChangesMade(true);
+                        setShowStartTimePicker(false);
                     }}
                 />
             }
@@ -784,46 +526,97 @@ const UpdateEvent = ({ navigation }: EventProps) => {
             {/* End Date Pickers */}
             {Platform.OS == 'android' && showEndDatePicker &&
                 <DateTimePicker
-                    testID='End Date Picker'
+                    testID='Start Time Picker'
                     value={endTime?.toDate() ?? new Date()}
                     maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
                     mode='date'
                     onChange={(_, date) => {
-                        setShowEndDatePicker(false);
                         if (!date) {
-                            console.warn("Date picked is undefined.");
+                            console.warn("Date picked is undefined.")
                         }
-                        else if (startTime && startTime.toMillis() > date.valueOf()) {
-                            Alert.alert("Invalid End Date", "Event cannot end before start time")
+                        else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
+                            Alert.alert("Invalid End Date", "Event cannot end before start date.")
                         }
                         else {
                             setEndTime(Timestamp.fromDate(date));
                         }
-                        setChangesMade(true);
+                        setShowEndDatePicker(false);
                     }}
                 />
             }
             {Platform.OS == 'android' && showEndTimePicker &&
                 <DateTimePicker
-                    testID='End Time Picker'
                     value={endTime?.toDate() ?? new Date()}
-                    maximumDate={new Date(Date.now() + MillisecondTimes.YEAR)}
                     mode='time'
                     onChange={(_, date) => {
-                        setShowEndTimePicker(false);
                         if (!date) {
-                            console.warn("Date picked is undefined.");
+                            console.warn("Date picked is undefined.")
                         }
-                        else if (startTime && startTime.toMillis() > date.valueOf()) {
-                            Alert.alert("Invalid End Date", "Event cannot end before start time")
+                        else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
+                            Alert.alert("Invalid End Time", "Event cannot end before start time.")
                         }
                         else {
                             setEndTime(Timestamp.fromDate(date));
                         }
-                        setChangesMade(true);
+                        setShowEndTimePicker(false);
                     }}
                 />
             }
+
+            <Modal visible={showLocationPicker}>
+                <View className='flex-1'>
+                    <View className='z-50 w-full absolute bottom-0 mb-12'>
+                        <InteractButton
+                            buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
+                            textClassName='text-center text-white text-2xl font-bold'
+                            label='Done'
+                            onPress={() => { setShowLocationPicker(false) }}
+                        />
+                    </View>
+                    <LocationPicker
+                        onLocationChange={(location, radius) => {
+                            if (location?.geometry.location.lat && location?.geometry.location.lng) {
+                                setGeolocation(new GeoPoint(location?.geometry.location.lat, location?.geometry.location.lng));
+                            }
+                            setGeofencingRadius(radius);
+                        }}
+                        initialCoordinate={geolocation ? { latitude: geolocation.latitude, longitude: geolocation.longitude } : undefined}
+                        initialRadius={geofencingRadius ?? undefined}
+                        containerClassName="pt-16"
+                    />
+                </View>
+            </Modal>
+
+            <DismissibleModal
+                visible={showDeletionConfirmation}
+                setVisible={setShowDeletionConfirmation}
+            >
+                <View className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+                    <Octicons name="trash" size={24} color={darkMode ? "white" : "black"} />
+                    <View className='flex items-center w-[90%]'>
+                        <Text className="text-center text-md font-bold text-red-1">This is *not* reversable!</Text>
+                        <Text className={`text-center text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>Are you sure you want to destroy this event?</Text>
+                        <View className="flex-row mt-8">
+                            <TouchableOpacity
+                                onPress={async () => {
+                                    setShowDeletionConfirmation(false);
+                                    setLoading(true);
+                                    handleDestroyEvent().then(() => setLoading(false));
+                                }}
+                                className="w-[45%] bg-red-1 rounded-xl items-center justify-center h-12 mr-2"
+                            >
+                                <Text className='text-xl font-bold text-white'>Delete</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => setShowDeletionConfirmation(false)}
+                                className={`w-[45%] rounded-xl justify-center items-center ml-2 border ${darkMode ? "border-white" : "border-black"}`}
+                            >
+                                <Text className={`text-xl font-bold px-3 ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </DismissibleModal>
         </View>
     )
 }
@@ -835,14 +628,6 @@ const createCommitteeList = (committees: Committee[]) => {
     }));
 };
 
-const POINTS = [
-    { point: "0", iso: "0" },
-    { point: "1", iso: "1" },
-    { point: "2", iso: "2" },
-    { point: "3", iso: "3" },
-    { point: "4", iso: "4" },
-    { point: "5", iso: "5" },
-]
 
 
 export default UpdateEvent;

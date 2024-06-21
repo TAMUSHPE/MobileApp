@@ -22,13 +22,13 @@ const SettingsSectionTitle = ({ text, darkMode }: { text: string, darkMode?: boo
  */
 const SettingsButton = ({ iconName, mainText, mainTextColor, subText, darkMode, onPress }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string | null, mainTextColor?: string, subText?: string | null, darkMode?: boolean, onPress?: Function }) => {
     const mainTextStyle: StyleProp<TextStyle> = {}
-    if(mainTextColor){
+    if (mainTextColor) {
         mainTextStyle.color = mainTextColor;
     }
-    else{
+    else {
         mainTextStyle.color = darkMode ? "#FFF" : "#000";
     }
-    
+
     return (
         <TouchableHighlight
             onPress={() => onPress ? onPress() : console.log(`${mainText} Button Pressed`)}
@@ -54,13 +54,14 @@ const SettingsButton = ({ iconName, mainText, mainTextColor, subText, darkMode, 
  * @param darkMode           - Whether or not the button should display in dark mode. Will default to false
  * @param onPress            - Function that is called when button is pressed. Defaults to logging "Button Pressed"
  * @param isToggled          - Sets whether or not the button is toggled on/off. If this doesn't have a value, the button will stay off.
+ * @param disabled           - Sets whether or not the button is disabled. If this doesn't have a value, the button will stay enabled.
  */
-const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, isToggled }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string | null, subText?: string | null, darkMode?: boolean, onPress?: () => any | Promise<any>, isToggled?: boolean }) => {
+const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, isToggled, disabled }: { iconName?: keyof typeof MaterialCommunityIcons.glyphMap, mainText?: string | null, subText?: string | null, darkMode?: boolean, onPress?: () => any | Promise<any>, isToggled?: boolean, disabled?: boolean }) => {
     // Used to guard button from being spammed
     const [buttonLocked, setButtonLocked] = useState<boolean>(false);
 
     const handleToggle = async () => {
-        if (buttonLocked) return;
+        if (buttonLocked || disabled) return;
 
         setButtonLocked(true);
         await new Promise<void>(async (resolve) => {
@@ -75,19 +76,21 @@ const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, 
         <TouchableHighlight
             onPress={() => handleToggle()}
             underlayColor={darkMode ? "#444" : "#DDD"}
-            className='w-full h-24 justify-center px-3'
+            className={`w-full h-24 justify-center px-3 ${disabled ? 'opacity-50' : ''}`}
+            disabled={disabled}
         >
             <View className='flex-row justify-between'>
                 <View className='flex-row my-2 items-center'>
                     {iconName && <MaterialCommunityIcons name={iconName} size={46} color={darkMode ? "white" : "black"} />}
                     <View className="ml-3 flex-col">
-                        <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"}`}>{mainText ?? "Default Text"}</Text>
-                        {subText && <Text className={`text-lg ${darkMode ? "text-[#BBB]" : "text-[#444]"}`}>{subText}</Text>}
+                        <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"} ${disabled ? "text-gray-400" : ""}`}>{mainText ?? "Default Text"}</Text>
+                        {subText && <Text className={`text-lg ${darkMode ? "text-[#BBB]" : "text-[#444]"} ${disabled ? "text-gray-400" : ""}`}>{subText}</Text>}
                     </View>
                 </View>
                 <Switch
                     onValueChange={() => handleToggle()}
                     value={isToggled}
+                    disabled={disabled}
                 />
             </View>
         </TouchableHighlight>

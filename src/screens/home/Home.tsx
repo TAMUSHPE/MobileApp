@@ -33,12 +33,13 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         <ScrollView className="flex flex-col bg-offwhite">
             <StatusBar style='dark' />
             {/* Header */}
-            <SafeAreaView className='flex-1 bg-white' edges={["top"]}>
-                <View className='flex-row px-6 pb-4 mt-2 items-center'>
-                    <View className='flex-1 justify-center items-start'>
+            <SafeAreaView className='bg-white' edges={["top"]}>
+                <View className='mx-4 flex-1 flex-row mt-2 items-center'>
+                    <View className='flex-1'>
                         <Image
-                            className="h-10 w-52"
-                            source={Images.LOGO_LIGHT}
+                            resizeMode='contain'
+                            className="h-11 w-36"
+                            source={Images.SHPE_NAVY_HEADER}
                         />
                     </View>
                     <TouchableOpacity

@@ -54,7 +54,8 @@ export interface PublicUserInfo {
  * Different sliders and values will be added to this over time.
  */
 export interface AppSettings {
-    darkMode: boolean;
+    darkMode?: boolean;
+    useSystemDefault?: boolean;
 }
 
 /**

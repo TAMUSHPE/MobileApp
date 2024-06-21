@@ -41,7 +41,7 @@ export type HomeStackParams = {
     MemberSHPE: undefined;
 
     // Event Screens
-    EventInfo: { eventId: string };
+    EventInfo: { event: SHPEEvent };
     UpdateEvent: { event: SHPEEvent };
     QRCode: { event: SHPEEvent };
 
@@ -81,9 +81,12 @@ export type ResourcesStackParams = {
 
 export type EventsStackParams = {
     EventsScreen: undefined;
+    PastEvents: undefined;
     UpdateEvent: { event: SHPEEvent };
-    EventInfo: { eventId: string };
+    EventInfo: { event: SHPEEvent };
     QRCode: { event: SHPEEvent };
+    QRCodeScanningScreen: undefined;
+
 
     // Events related to event creation
     CreateEvent: undefined;
@@ -102,7 +105,7 @@ export type CommitteesStackParams = {
     CommitteeEditor: { committee?: Committee; };
 
     // Event Screens
-    EventInfo: { eventId: string };
+    EventInfo: { event: SHPEEvent };
     UpdateEvent: { event: SHPEEvent };
     QRCode: { event: SHPEEvent };
 

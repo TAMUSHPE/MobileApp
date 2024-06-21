@@ -2,10 +2,10 @@ import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject, getDownloadURL, uploadBytes } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
-import { validateTamuEmail } from "../helpers/validation";
+import { validateFileBlob, validateTamuEmail } from "../helpers/validation";
 import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/user";
 import { Committee } from "../types/committees";
-import { SHPEEvent, EventLogStatus, UserEventData } from "../types/events";
+import { SHPEEvent, EventLogStatus, UserEventData, SHPEEventLog } from "../types/events";
 import * as Location from 'expo-location';
 import { deleteUser } from "firebase/auth";
 import { LinkData } from "../types/links";
@@ -260,6 +260,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
         completedAccountSetup: false,
         settings: {
             darkMode: false,
+            useSystemDefault: true,
         },
         expirationDate: Timestamp.fromDate(oneWeekFromNow),
         email: auth.currentUser?.email ?? "",
@@ -311,6 +312,65 @@ export const uploadFileToFirebase = (file: Uint8Array | ArrayBuffer | Blob, path
     const storageRef = ref(storage, path);
     const uploadTask = uploadBytesResumable(storageRef, file, metadata);
     return uploadTask;
+};
+
+
+export const uploadFile = async (
+    blob: Blob,
+    validMimeTypes: string[] = [],
+    storagePath: string,
+    onSuccess: ((url: string) => Promise<void>) | null = null,
+    onProgress: ((progress: number) => void) | null = null,
+    setLoading: ((load: boolean) => void) | null = null
+) => {
+    if (validMimeTypes.length > 0 && !validateFileBlob(blob, validMimeTypes, true)) {
+        if (setLoading !== null) {
+            setLoading(false);
+        }
+        return;
+    }
+
+    const uploadTask = uploadFileToFirebase(blob, storagePath);
+
+    uploadTask.on("state_changed",
+        (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            if (onProgress !== null) {
+                onProgress(progress);
+            }
+            console.log(`Upload is ${progress}% done`);
+        },
+        (error) => {
+            if (setLoading !== null) {
+                setLoading(false);
+            }
+            switch (error.code) {
+                case "storage/unauthorized":
+                    alert("File could not be uploaded due to user permissions.");
+                    break;
+                case "storage/canceled":
+                    alert("File upload cancelled");
+                    break;
+                default:
+                    alert("An unknown error has occurred");
+                    break;
+            }
+        },
+        async () => {
+            try {
+                const URL = await getDownloadURL(uploadTask.snapshot.ref);
+                if (onSuccess !== null) {
+                    await onSuccess(URL);
+                }
+            } catch (error) {
+                console.error("Error in uploadFile:", error);
+            } finally {
+                if (setLoading !== null) {
+                    setLoading(false);
+                }
+            }
+        }
+    );
 };
 
 
@@ -491,295 +551,6 @@ export const isUserInBlacklist = async (uid: string): Promise<boolean> => {
     }
 };
 
-/**
- * Creates a new SHPE event document in firestore
- * @param event Object with event details
- * @returns Document name in firestore. Null if error occurred
- */
-export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
-    try {
-        const docRef = await addDoc(collection(db, "events"), { ...event });
-        return docRef.id;
-    } catch (error) {
-        console.error("Error adding document: ", error);
-        return null;
-    }
-};
-
-/**
- * Updates a given event
- * @param id Name of event document in firestore
- * @param event Object to replace firestore document
- * @returns Document name firebase or null if an issue occurred
- */
-export const setEvent = async (id: string, event: SHPEEvent): Promise<string | null> => {
-    try {
-        const docRef = doc(db, "events", id);
-        await updateDoc(docRef, {
-            ...event
-        });
-        return id;
-    } catch (error) {
-        console.error("Error updating document: ", error);
-        return null;
-    }
-}
-
-/**
- * Fetches a given event document from firestore
- * @param eventID Document name of event in firestore
- * @returns Document data from firestore. null if there is an issue obtaining document.
- */
-export const getEvent = async (eventID: string): Promise<null | SHPEEvent> => {
-    try {
-        const eventRef = doc(db, "events", eventID);
-        const eventDoc = await getDoc(eventRef);
-        if (eventDoc.exists()) {
-            return eventDoc.data() as SHPEEvent;
-        } else {
-            console.error("No such document!");
-            return null;
-        }
-    } catch (error) {
-        console.error("Error getting document:", error);
-        return null;
-    }
-}
-
-type SHPEEventWithCommitteeData = SHPEEvent & { committeeData?: Committee | undefined };
-
-
-export const getUpcomingEvents = async () => {
-    const currentTime = new Date();
-    const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endTime", ">", currentTime));
-    const querySnapshot = await getDocs(q);
-    const events: SHPEEventWithCommitteeData[] = [];
-
-    for (const doc of querySnapshot.docs) {
-        const eventData = doc.data();
-        let committeeData: Committee | undefined;
-
-        if (eventData.committee) {
-            committeeData = await getCommittee(eventData.committee) || undefined;
-        }
-
-
-        events.push({ id: doc.id, ...eventData, committeeData: committeeData });
-    }
-
-    events.sort((a, b) => {
-        const dateA = a.startTime ? a.startTime.toDate() : undefined;
-        const dateB = b.startTime ? b.startTime.toDate() : undefined;
-
-        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
-    });
-
-    return events;
-};
-
-export const getPastEvents = async (numLimit?: number) => {
-    const currentTime = new Date();
-    const eventsRef = collection(db, "events");
-    let q;
-
-    if (numLimit !== undefined) {
-        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"), limit(numLimit));
-    } else {
-        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"));
-    }
-
-    const querySnapshot = await getDocs(q);
-    const events: SHPEEventWithCommitteeData[] = [];
-
-    for (const doc of querySnapshot.docs) {
-        const eventData = doc.data();
-        let committeeData: Committee | undefined;
-
-        if (eventData.committee) {
-            committeeData = await getCommittee(eventData.committee) || undefined;
-        }
-
-        events.push({ id: doc.id, ...eventData, committeeData });
-    }
-
-    // Events are already ordered by endTime due to the query, no need to sort again
-    return events;
-};
-
-
-export const destroyEvent = async (eventID: string) => {
-    try {
-        const eventRef = doc(db, "events", eventID);
-        const logRef = collection(db, `/events/${eventID}/logs`);
-        const summaryRef = collection(db, `/events/${eventID}/summaries`);
-
-        const deleteSubCollection = async (ref: CollectionReference) => {
-            const snapshot = await getDocs(query(ref));
-            if (!snapshot.empty) {
-                const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
-                await Promise.all(deletePromises);
-            }
-        };
-
-        await deleteSubCollection(logRef);
-        await deleteSubCollection(summaryRef);
-
-        await deleteDoc(eventRef);
-
-        return true;
-    } catch (error) {
-        console.error("Error deleting event and its related data: ", error);
-        return false;
-    }
-};
-
-
-const getEventStatus = async (eventId: string): Promise<EventLogStatus> => {
-    try {
-        const eventDoc = doc(db, `events/${eventId}`);
-        const eventDocRef = await getDoc(eventDoc);
-        if (eventDocRef.exists()) {
-            const eventData = eventDocRef.data();
-            const eventEndDate = eventData?.endDate;
-            if (eventEndDate) {
-                const eventEndTime = (eventEndDate as Timestamp).toDate().getTime();
-                const currentTime = new Date().getTime();
-
-                if (currentTime > eventEndTime) {
-                    return EventLogStatus.EVENT_OVER;
-                } else {
-                    return EventLogStatus.EVENT_ONGOING;
-                }
-            }
-        }
-    } catch (error) {
-        console.error("Error checking event active status: ", error);
-    }
-    return EventLogStatus.ERROR;
-};
-
-export const getAttendanceNumber = async (eventId: string): Promise<number> => {
-    try {
-        const logsRef = collection(db, `events/${eventId}/logs`);
-        const q = query(logsRef);
-        const querySnapshot = await getDocs(q);
-
-        return querySnapshot.docs.length;
-    } catch (error) {
-        console.error("Error calculating attendance number:", error);
-        throw new Error("Unable to calculate attendance.");
-    }
-}
-
-/**
- * Signs a user into an event given an event id
- * @param eventID ID of event to sign into. This is the name of the event document in firestore
- * @returns Status representing the status of the cloud function
- */
-export const signInToEvent = async (eventID: string, uid?: string): Promise<EventLogStatus> => {
-    const event = await getEvent(eventID);
-    if (!event) {
-        return EventLogStatus.EVENT_NOT_FOUND;
-    }
-
-    let location: null | { longitude: number, latitude: number } = null;
-
-    if (event.geofencingRadius && event.geofencingRadius > 0) {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status == 'granted') {
-            const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
-            location = (new GeoPoint(latitude, longitude)).toJSON();
-        }
-    }
-
-    return await httpsCallable(functions, "eventSignIn")
-        .call(null, { eventID, location, uid })
-        .then((result) => {
-            if (typeof result.data == "object" && result.data && (result.data as any).success) {
-                return EventLogStatus.SUCCESS
-            }
-            else {
-                return EventLogStatus.ERROR
-            }
-        })
-        .catch(err => {
-            switch (err.code) {
-                case 'functions/already-exists':
-                    return EventLogStatus.ALREADY_LOGGED;
-                case 'functions/failed-precondition':
-                    return EventLogStatus.EVENT_NOT_STARTED;
-                case 'functions/not-found':
-                    return EventLogStatus.EVENT_NOT_FOUND;
-                case 'functions/deadline-exceeded':
-                    return EventLogStatus.EVENT_OVER;
-                case 'functions/out-of-range':
-                    return EventLogStatus.OUT_OF_RANGE;
-                default:
-                    console.error(err);
-                    return EventLogStatus.ERROR;
-            }
-        });
-}
-
-/**
- * Signs a user into an event given an event id
- * @param eventID ID of event to sign into. This is the name of the event document in firestore
- * @returns Status representing the status of the cloud function
- */
-export const signOutOfEvent = async (eventID: string, uid?: string): Promise<EventLogStatus> => {
-    const event = await getEvent(eventID);
-    if (!event) {
-        return EventLogStatus.EVENT_NOT_FOUND;
-    }
-
-    let location: null | { longitude: number, latitude: number } = null;
-
-    if (event.geofencingRadius && event.geofencingRadius > 0) {
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status == 'granted') {
-            const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
-            location = (new GeoPoint(latitude, longitude)).toJSON();
-        }
-    }
-
-    return await httpsCallable(functions, "eventSignOut")
-        .call(null, { eventID, location, uid })
-        .then((result) => {
-            if (typeof result.data == "object" && result.data && (result.data as any).success) {
-                return EventLogStatus.SUCCESS
-            }
-            else {
-                return EventLogStatus.ERROR
-            }
-        })
-        .catch(err => {
-            switch (err.code) {
-                case 'functions/failed-precondition':
-                    return EventLogStatus.EVENT_NOT_STARTED;
-                case 'functions/not-found':
-                    return EventLogStatus.EVENT_NOT_FOUND;
-                case 'functions/deadline-exceeded':
-                    return EventLogStatus.EVENT_OVER;
-                case 'functions/out-of-range':
-                    return EventLogStatus.OUT_OF_RANGE;
-                default:
-                    console.error(err);
-                    return EventLogStatus.ERROR;
-            }
-        });
-}
-
-export const isUserSignedIn = async (eventId: string, uid: string) => {
-    const eventLogDocRef = doc(db, 'events', eventId, 'logs', uid);
-    const docSnap = await getDoc(eventLogDocRef);
-
-    if (docSnap.exists()) {
-        return true;
-    } else {
-        return false;
-    }
-}
 
 export const getMOTM = async () => {
     return getDoc(doc(db, `member-of-the-month/member`))
@@ -1214,41 +985,6 @@ export const getCommitteeEvents = async (committees: string[]) => {
     }
 }
 
-export const getInterestsEvent = async (interests: string[]) => {
-    try {
-        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
-        const currentTime = Timestamp.now();
-
-        const eventsRef = collection(db, 'events');
-
-        for (const interest of interests) {
-            try {
-                const eventsQuery = query(
-                    eventsRef,
-                    where("eventType", "==", interest),
-                    where("endTime", ">=", currentTime)
-                );
-                const querySnapshot = await getDocs(eventsQuery);
-                querySnapshot.forEach((doc) => {
-                    const eventData = doc.data();
-                    const eventDataWithId = { id: doc.id, ...eventData };
-
-                    // Using Map to avoid duplicates
-                    allEvents.set(doc.id, eventDataWithId);
-                });
-            } catch (innerError) {
-                console.error(`Error fetching events for committee ${interests}:`, innerError);
-            }
-        }
-
-        // Convert Map values to an array
-        return Array.from(allEvents.values());
-    } catch (error) {
-        console.error("Error fetching events for user committees:", error);
-        return [];
-    }
-}
-
 const backupAndDeleteUserData = async (userId: string) => {
     const userDocRef = doc(db, `users/${userId}`);
     const backupUserDocRef = doc(db, `deleted-accounts/${userId}`);
@@ -1413,6 +1149,77 @@ export const getMembers = async (): Promise<PublicUserInfo[]> => {
     }
 };
 
+// ============================================================================
+// Event Utilities
+// ============================================================================
+
+/**
+ * Fetches a given event document from firestore
+ * @param eventID Document name of event in firestore
+ * @returns Document data from firestore. null if there is an issue obtaining document.
+ */
+export const getEvent = async (eventID: string): Promise<null | SHPEEvent> => {
+    try {
+        const eventRef = doc(db, "events", eventID);
+        const eventDoc = await getDoc(eventRef);
+        if (eventDoc.exists()) {
+            return eventDoc.data() as SHPEEvent;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        return null;
+    }
+}
+
+export const getUpcomingEvents = async () => {
+    const currentTime = new Date();
+    const eventsRef = collection(db, "events");
+    const q = query(eventsRef, where("endTime", ">", currentTime));
+    const querySnapshot = await getDocs(q);
+    const events: SHPEEvent[] = [];
+
+    for (const doc of querySnapshot.docs) {
+        const eventData = doc.data();
+        events.push({ id: doc.id, ...eventData });
+    }
+
+    events.sort((a, b) => {
+        const dateA = a.startTime ? a.startTime.toDate() : undefined;
+        const dateB = b.startTime ? b.startTime.toDate() : undefined;
+
+        return dateA && dateB ? dateA.getTime() - dateB.getTime() : -1;
+    });
+
+    return events;
+};
+
+export const getPastEvents = async (numLimit: number, startAfterDoc: any, setEndOfData?: (endOfData: boolean) => void) => {
+    const currentTime = new Date();
+    const eventsRef = collection(db, "events");
+    let q;
+
+    if (startAfterDoc) {
+        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"), startAfter(startAfterDoc), limit(numLimit));
+    } else {
+        q = query(eventsRef, where("endTime", "<", currentTime), orderBy("endTime", "desc"), limit(numLimit));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const events: SHPEEvent[] = [];
+
+    querySnapshot.forEach(doc => {
+        events.push({ id: doc.id, ...doc.data() } as SHPEEvent);
+    });
+
+    if (setEndOfData && querySnapshot.docs.length < numLimit) {
+        setEndOfData(true);
+    }
+
+    const lastVisibleDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+    return { events, lastVisibleDoc };
+};
+
 export const fetchEventByName = async (eventName: string): Promise<SHPEEvent | null> => {
     try {
         const eventsRef = collection(db, 'events');
@@ -1431,3 +1238,249 @@ export const fetchEventByName = async (eventName: string): Promise<SHPEEvent | n
         return null;
     }
 };
+
+export const getInterestsEvent = async (interests: string[]) => {
+    try {
+        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
+        const currentTime = Timestamp.now();
+
+        const eventsRef = collection(db, 'events');
+
+        for (const interest of interests) {
+            try {
+                const eventsQuery = query(
+                    eventsRef,
+                    where("eventType", "==", interest),
+                    where("endTime", ">=", currentTime)
+                );
+                const querySnapshot = await getDocs(eventsQuery);
+                querySnapshot.forEach((doc) => {
+                    const eventData = doc.data();
+                    const eventDataWithId = { id: doc.id, ...eventData };
+
+                    // Using Map to avoid duplicates
+                    allEvents.set(doc.id, eventDataWithId);
+                });
+            } catch (innerError) {
+                console.error(`Error fetching events for committee ${interests}:`, innerError);
+            }
+        }
+
+        // Convert Map values to an array
+        return Array.from(allEvents.values());
+    } catch (error) {
+        console.error("Error fetching events for user committees:", error);
+        return [];
+    }
+}
+
+/**
+ * Creates a new SHPE event document in firestore
+ * @param event Object with event details
+ * @returns Document name in firestore. Null if error occurred
+ */
+export const createEvent = async (event: SHPEEvent): Promise<string | null> => {
+    try {
+        const docRef = await addDoc(collection(db, "events"), { ...event });
+        return docRef.id;
+    } catch (error) {
+        console.error("Error adding document: ", error);
+        return null;
+    }
+};
+
+/**
+ * Updates a given event
+ * @param id Name of event document in firestore
+ * @param event Object to replace firestore document
+ * @returns Document name firebase or null if an issue occurred
+ */
+export const setEvent = async (id: string, event: SHPEEvent): Promise<string | null> => {
+    try {
+        const docRef = doc(db, "events", id);
+        await updateDoc(docRef, {
+            ...event
+        });
+        return id;
+    } catch (error) {
+        return null;
+    }
+}
+export const destroyEvent = async (eventID: string) => {
+    try {
+        const eventRef = doc(db, "events", eventID);
+        const eventDoc = await getDoc(eventRef);
+
+        if (!eventDoc.exists()) {
+            return false;
+        }
+
+        const logRef = collection(db, `/events/${eventID}/logs`);
+        const usersRef = collection(db, "users");
+
+        // Delete the event log collection and the event document
+        const deleteSubCollection = async (ref: CollectionReference) => {
+            const snapshot = await getDocs(query(ref));
+            if (!snapshot.empty) {
+                const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(deletePromises);
+            }
+        };
+
+        await deleteSubCollection(logRef);
+        await deleteDoc(eventRef);
+
+        // Fetch all users and delete the event log from each user's collection
+        const userSnapshot = await getDocs(usersRef);
+        if (!userSnapshot.empty) {
+            const deleteEventLogPromises = userSnapshot.docs.map(async (userDoc) => {
+                const userEventLogRef = doc(db, `users/${userDoc.id}/event-logs`, eventID);
+                await deleteDoc(userEventLogRef);
+            });
+            await Promise.all(deleteEventLogPromises);
+        }
+
+        return true;
+    } catch (error) {
+        console.error("Error deleting event and its related data: ", error);
+        return false;
+    }
+};
+
+/**
+ * Signs a user into an event given an event id
+ * @param eventID ID of event to sign into. This is the name of the event document in firestore
+ * @returns Status representing the status of the cloud function
+ */
+export const signInToEvent = async (eventID: string, uid?: string): Promise<EventLogStatus> => {
+    const event = await getEvent(eventID);
+    if (!event) {
+        return EventLogStatus.EVENT_NOT_FOUND;
+    }
+
+    let location: null | { longitude: number, latitude: number } = null;
+
+    if (event.geofencingRadius && event.geofencingRadius > 0) {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status == 'granted') {
+            const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
+            location = (new GeoPoint(latitude, longitude)).toJSON();
+        }
+    }
+
+    return await httpsCallable(functions, "eventSignIn")
+        .call(null, { eventID, location, uid })
+        .then((result) => {
+            if (typeof result.data == "object" && result.data && (result.data as any).success) {
+                return EventLogStatus.SUCCESS
+            }
+            else {
+                return EventLogStatus.ERROR
+            }
+        })
+        .catch(err => {
+            switch (err.code) {
+                case 'functions/already-exists':
+                    return EventLogStatus.ALREADY_LOGGED;
+                case 'functions/failed-precondition':
+                    return EventLogStatus.EVENT_NOT_STARTED;
+                case 'functions/not-found':
+                    return EventLogStatus.EVENT_NOT_FOUND;
+                case 'functions/deadline-exceeded':
+                    return EventLogStatus.EVENT_OVER;
+                case 'functions/out-of-range':
+                    return EventLogStatus.OUT_OF_RANGE;
+                default:
+                    console.error(err);
+                    return EventLogStatus.ERROR;
+            }
+        });
+}
+
+/**
+ * Signs a user into an event given an event id
+ * @param eventID ID of event to sign into. This is the name of the event document in firestore
+ * @returns Status representing the status of the cloud function
+ */
+export const signOutOfEvent = async (eventID: string, uid?: string): Promise<EventLogStatus> => {
+    const event = await getEvent(eventID);
+    if (!event) {
+        return EventLogStatus.EVENT_NOT_FOUND;
+    }
+
+    let location: null | { longitude: number, latitude: number } = null;
+
+    if (event.geofencingRadius && event.geofencingRadius > 0) {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status == 'granted') {
+            const { latitude, longitude } = (await Location.getCurrentPositionAsync()).coords;
+            location = (new GeoPoint(latitude, longitude)).toJSON();
+        }
+    }
+
+    return await httpsCallable(functions, "eventSignOut")
+        .call(null, { eventID, location, uid })
+        .then((result) => {
+            if (typeof result.data == "object" && result.data && (result.data as any).success) {
+                return EventLogStatus.SUCCESS
+            }
+            else {
+                return EventLogStatus.ERROR
+            }
+        })
+        .catch(err => {
+            switch (err.code) {
+                case 'functions/failed-precondition':
+                    return EventLogStatus.EVENT_NOT_STARTED;
+                case 'functions/not-found':
+                    return EventLogStatus.EVENT_NOT_FOUND;
+                case 'functions/deadline-exceeded':
+                    return EventLogStatus.EVENT_OVER;
+                case 'functions/out-of-range':
+                    return EventLogStatus.OUT_OF_RANGE;
+                default:
+                    console.error(err);
+                    return EventLogStatus.ERROR;
+            }
+        });
+}
+
+export const getAttendanceNumber = async (eventId: string) => {
+    try {
+        const logsRef = collection(db, `events/${eventId}/logs`);
+        const q = query(logsRef);
+        const querySnapshot = await getDocs(q);
+
+        let signedInCount = 0;
+        let signedOutCount = 0;
+
+        querySnapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.signInTime) {
+                signedInCount++;
+            }
+            if (data.signOutTime) {
+                signedOutCount++;
+            }
+        });
+
+        return {
+            signedInCount,
+            signedOutCount
+        };
+    } catch (error) {
+        console.error("Error calculating attendance number:", error);
+        throw new Error("Unable to calculate attendance.");
+    }
+};
+
+export const getUserEventLog = async (eventId: string, uid: string): Promise<SHPEEventLog | null> => {
+    const eventLogDocRef = doc(db, 'events', eventId, 'logs', uid);
+    const docSnap = await getDoc(eventLogDocRef);
+
+    if (docSnap.exists()) {
+        return docSnap.data();
+    } else {
+        return null;
+    }
+}

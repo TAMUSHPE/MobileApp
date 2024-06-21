@@ -3,7 +3,7 @@ import { deleteCommittee, getCommittee, getPrivateUserData, getPublicUserData, g
 import { auth, db, storage } from "../../config/firebaseConfig";
 import { PrivateUserInfo, PublicUserInfo, User } from "../../types/user";
 import { validateTamuEmail } from "../../helpers";
-import { doc, setDoc } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, setDoc } from "firebase/firestore";
 import { Committee } from "../../types/committees";
 
 const testUserDataList: User[] = require("./test_data/users.json");
@@ -22,6 +22,12 @@ beforeAll(async () => {
 
     await signInAnonymously(auth);
 
+    // Clean up any existing data
+    const userRef = collection(db, 'users');
+    const querySnapshot = await getDocs(userRef);
+    for (const userDoc of querySnapshot.docs) {
+        await deleteDoc(doc(db, 'users', userDoc.id));
+    }
     // Create fake user data
     for (const user of testUserDataList) {
         await setDoc(doc(db, "users", user.publicInfo!.uid!), user.publicInfo);

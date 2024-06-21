@@ -6,7 +6,7 @@
     "owner": "tamu-shpe",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -52,11 +52,13 @@
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ],
-      "versionCode": 31
+      "versionCode": 31,
+      "userInterfaceStyle": "automatic"
     },
     "ios": {
       "bundleIdentifier": "com.tamu.shpe",
-      "buildNumber": "1"  
+      "buildNumber": "1",
+      "userInterfaceStyle": "automatic"
     },
     "extra": {
       "eas": {
