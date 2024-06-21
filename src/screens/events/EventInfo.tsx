@@ -302,11 +302,8 @@ const EventInfo = ({ navigation }: EventProps) => {
                         {locationName && (
                             <View className='mt-4'>
                                 <Text className={`text-lg ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>Location</Text>
-                                <View className='flex-row flew-wrap items-center'>
-                                    <Text className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {locationName}
-                                    </Text>
-                                    {geolocation && (
+                                <View className='flex-row flex-wrap items-center'>
+                                    {geolocation ? (
                                         <TouchableOpacity
                                             onPress={() => {
                                                 if (Platform.OS === 'ios') {
@@ -316,12 +313,19 @@ const EventInfo = ({ navigation }: EventProps) => {
                                                 }
                                             }}
                                         >
-                                            <Text className='underline text-primary-blue font-semibold text-md ml-4'>View in Maps</Text>
+                                            <Text className={`text-xl font-bold underline text-primary-blue`}>
+                                                {locationName}
+                                            </Text>
                                         </TouchableOpacity>
+                                    ) : (
+                                        <Text className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                            {locationName}
+                                        </Text>
                                     )}
                                 </View>
                             </View>
                         )}
+
                     </View>
 
                     {/* Description */}
