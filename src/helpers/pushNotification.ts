@@ -78,7 +78,7 @@ export const removeExpoPushToken = async () => {
   } catch (error) {
       console.error("Error removing token from Firestore: ", error);
   } finally {
-      await AsyncStorage.removeItem('@expoPushToken').catch((err) => console.error(err));
+      await AsyncStorage.removeItem('@expoPushToken').catch((err) => console.error("Issue removing expo push token locally: ", err));
   }
 }
 
