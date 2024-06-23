@@ -32,7 +32,7 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
     const fetchUserData = async () => {
         console.log("Fetching user data...");
         try {
-            const firebaseUser = await getUser(auth.currentUser?.uid!);
+            const firebaseUser = await getUser(auth.currentUser?.uid!)
             if (firebaseUser) {
                 await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
             }
@@ -41,12 +41,7 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
             }
             setUserInfo(firebaseUser);
         } catch (error) {
-            if (error instanceof Error && error.message.includes("[AsyncStorage] Passing null/undefined as value is not supported.")) {
-                console.warn("User could not be obtained in Firebase. Data was likely deleted.");
-            }
-            else {
-                console.error("Error updating user:", error);
-            }
+            console.error("Error updating user:", error);
         }
     }
 
