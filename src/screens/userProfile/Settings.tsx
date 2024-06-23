@@ -92,7 +92,8 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>)
             />
 
             <SettingsButton
-                mainText='Sign out'
+                mainText='Sign Out'
+                iconName='exit-to-app'
                 darkMode={darkMode}
                 onPress={() => signOutUser(true)}
             />
