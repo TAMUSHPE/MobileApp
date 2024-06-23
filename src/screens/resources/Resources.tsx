@@ -25,7 +25,12 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
         console.log("Fetching user data...");
         try {
             const firebaseUser = await getUser(auth.currentUser?.uid!)
-            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+            if (firebaseUser) {
+                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+            }
+            else {
+                console.warn("User data undefined. Data was likely deleted from Firebase.");
+            }
             setUserInfo(firebaseUser);
         } catch (error) {
             console.error("Error updating user:", error);
