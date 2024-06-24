@@ -21,18 +21,18 @@ import ProfessionalDevelopment from '../../assets/professional_development_commi
 export const committeeLogos = {
     professionalDevelopment: {
         LogoComponent: ProfessionalDevelopment,
-        width: 100,
-        height: 100
+        width: 80,
+        height: 80
     },
     internalAffairs: {
         LogoComponent: InternalAffairs,
-        width: 100,
-        height: 100
+        width: 80,
+        height: 80
     },
     secretary: {
         LogoComponent: Secretary,
-        width: 100,
-        height: 100
+        width: 80,
+        height: 80
     },
     treasurer: {
         LogoComponent: Treasurer,
@@ -81,9 +81,11 @@ export const committeeLogos = {
     },
 };
 
-export const getLogoComponent = (logoName: keyof typeof committeeLogos = 'default') => {
-    return committeeLogos[logoName] || committeeLogos['default'];
+export const getLogoComponent = (logoName: keyof typeof committeeLogos = 'default', color?: string) => {
+    const logo = committeeLogos[logoName] || committeeLogos['default'];
+    return { ...logo, color };
 };
+
 export type CommitteeLogosName = keyof typeof committeeLogos;
 
 

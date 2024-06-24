@@ -381,8 +381,9 @@ export const getCommittees = async (): Promise<Committee[]> => {
         const committees = snapshot.docs
             .map(doc => ({
                 firebaseDocName: doc.id,
-                ...doc.data()
-            }));
+                ...(doc.data() as Committee)
+            }))
+            .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0));
         return committees;
     } catch (err) {
         console.error(err);

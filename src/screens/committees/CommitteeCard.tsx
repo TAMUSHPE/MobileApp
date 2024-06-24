@@ -1,4 +1,4 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity, useColorScheme } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '../../context/UserContext';
 import { calculateHexLuminosity } from '../../helpers/colorUtils';
@@ -7,17 +7,19 @@ import { Images } from "../../../assets"
 import { PublicUserInfo } from '../../types/user';
 import { getPublicUserData } from '../../api/firebaseUtils';
 
-const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPress, navigation }) => {
-    const { name, color, logo, head, memberCount } = committee;
-    const { userInfo } = useContext(UserContext)!;
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) => {
+    const { name, logo, head, memberCount, isOpen, firebaseDocName } = committee;
     const { LogoComponent, height, width } = getLogoComponent(logo);
 
-    const isTextLight = (colorHex: string) => {
-        const luminosity = calculateHexLuminosity(colorHex);
-        return luminosity < 155;
-    };
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
 
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
+    const isUserInCommittee = userInfo?.publicInfo?.committees?.includes(firebaseDocName || "");
     const [localHead, setLocalHead] = useState<PublicUserInfo | null>(null);
 
     useEffect(() => {
@@ -31,60 +33,56 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPres
     }, [])
 
     return (
-        <View className='flex items-center mb-8 w-full'>
-            <TouchableOpacity
-                onPress={() => {
-                    if (navigation) {
-                        navigation.navigate("CommitteeScreen", { committee })
-                    }
-                    if (handleCardPress) {
-                        handleCardPress(committee?.firebaseDocName!)
-                    }
-                }}
-                className='flex-row w-[90%] h-28 rounded-xl'
-                style={{ backgroundColor: color }}
-            >
-                <View className='flex-1 rounded-l-xl' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
-                    <View className='items-center justify-center h-full'>
-                        <LogoComponent width={height} height={width} />
-                    </View>
+        <TouchableOpacity
+            onPress={() => { navigation.navigate("CommitteeScreen", { committee }) }}
+            className='flex-col w-full h-52 mb-11 p-2 bg-secondary-bg-light rounded-xl'
+            style={{
+                shadowColor: "#000",
+                shadowOffset: {
+                    width: 0,
+                    height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
 
-                    {localHead && (
-                        <View className='absolute left-[80%] top-[7%]'>
-                            <Image source={localHead.photoURL ? { uri: localHead.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-10 w-10 rounded-full' />
-                        </View>
-                    )}
+                elevation: 5,
+            }}
+        >
+            {/* Committee Status and Head */}
+            <View className='flex-row justify-between items-center'>
+                <View className='flex-row items-center'>
+                    <View className={`rounded-full h-3 w-3 ${isOpen ? "bg-green-1" : "bg-primary-blue"}`} />
+                    <Text className='ml-2 text-lg'>{isOpen ? "Open" : "Private"}</Text>
                 </View>
-
-                <View className='w-[70%] justify-end py-3 px-5'>
-                    <View className='justify-end flex-row'>
-                        <Text className={`font-bold text-2xl text-${isTextLight(color!) ? "white" : "black"}`}>{name}</Text>
-                    </View>
-                    <View className='justify-end flex-row'>
-                        <Text className={`font-semibold text-${isTextLight(color!) ? "white" : "black"}`}>{memberCount} Members</Text>
-                    </View>
-                </View>
-
-            </TouchableOpacity>
-            {hasPrivileges && (
-                <TouchableOpacity
-                    onPress={() => { navigation.navigate("CommitteeEditor", { committee }) }}
-                    className='absolute right-10 bg-pale-blue rounded-lg px-5 py-1 -top-3'
-                >
-                    <Text className='text-lg text-white font-semibold'>Edit</Text>
-                </TouchableOpacity>
-            )}
-        </View>
+                <Image source={localHead?.photoURL ? { uri: localHead.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-9 w-9 rounded-full' />
+            </View>
+            {/* Logo */}
+            <View className='items-center justify-center my-4 flex-1'>
+                <LogoComponent height={height * .9} width={width * .9} />
+            </View>
+            {/* Name and Membership */}
+            <View className='items-center justify-center'>
+                <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(name || "", 11)}</Text>
+                <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{memberCount} members</Text>
+            </View>
+        </TouchableOpacity>
     );
 };
 
 
 interface CommitteeCardProps {
     committee: Committee
-    navigation?: any
-    canEdit?: boolean
+    navigation: any
     handleCardPress?: (uid: string) => string | void;
 }
+
+const truncateStringWithEllipsis = (name: string, limit = 22) => {
+    if (name.length > limit) {
+        return `${name.substring(0, limit)}...`;
+    }
+    return name;
+};
+
 
 
 export default CommitteeCard;
