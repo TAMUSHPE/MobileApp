@@ -1,7 +1,7 @@
 import React from "react";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CommitteesStackParams } from '../types/navigation';
-import CommitteeScreen from "../screens/committees/Committee";
+import CommitteeInfo from "../screens/committees/CommitteeInfo";
 import PublicProfileScreen from "../screens/userProfile/PublicProfile";
 import CommitteeEditor from "../screens/committees/CommitteeEditor";
 import EventInfo from "../screens/events/EventInfo";
@@ -14,7 +14,7 @@ const CommitteesStack = () => {
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
             <Stack.Screen name="CommitteesScreen" component={CommitteesScreen} />
-            <Stack.Screen name="CommitteeScreen" component={CommitteeScreen} />
+            <Stack.Screen name="CommitteeInfo" component={CommitteeInfo} />
             <Stack.Screen name="CommitteeEditor" component={CommitteeEditor} />
 
 

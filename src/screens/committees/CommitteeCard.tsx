@@ -19,7 +19,6 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const isUserInCommittee = userInfo?.publicInfo?.committees?.includes(firebaseDocName || "");
     const [localHead, setLocalHead] = useState<PublicUserInfo | null>(null);
 
     useEffect(() => {
@@ -34,7 +33,7 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
 
     return (
         <TouchableOpacity
-            onPress={() => { navigation.navigate("CommitteeScreen", { committee }) }}
+            onPress={() => { navigation.navigate("CommitteeInfo", { committee }) }}
             className={`flex-col w-full h-52 mb-11 p-2 rounded-xl ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
             style={{
                 shadowColor: "#000",
