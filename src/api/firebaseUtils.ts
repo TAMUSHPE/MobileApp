@@ -1056,7 +1056,6 @@ export const deleteAccount = async (userId: string) => {
 };
 
 export const queryUserEventLogs = async (uid: string, limitNum: number = 3): Promise<Array<UserEventData>> => {
-    console.log(`users/${uid}/event-logs`);
     const userEventLogsCollectionRef = collection(db, `users/${uid}/event-logs`);
     const q = query(userEventLogsCollectionRef, orderBy('signInTime', 'desc'), limit(limitNum));
     const eventLogSnapshot = await getDocs(q);
