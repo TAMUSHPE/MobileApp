@@ -119,9 +119,7 @@ export type Committee = {
     head?: string;
     representatives?: string[];
     leads?: string[];
-    memberApplicationLink?: string;
-    representativeApplicationLink?: string;
-    leadApplicationLink?: string;
+    applicationLink?: string;
     logo?: keyof typeof committeeLogos;
     memberCount?: number;
     isOpen?: boolean;

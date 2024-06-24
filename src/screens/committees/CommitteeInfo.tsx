@@ -2,32 +2,27 @@ import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, useColorSc
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { collection, deleteDoc, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
-import { Octicons } from '@expo/vector-icons';
+import { Octicons, Entypo } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext';
 import { getCommitteeEvents, getPublicUserData, setPublicUserData } from '../../api/firebaseUtils';
-import { calculateHexLuminosity } from '../../helpers/colorUtils';
 import { handleLinkPress } from '../../helpers/links';
-import { Committee, getLogoComponent } from '../../types/committees';
+import { getLogoComponent } from '../../types/committees';
 import { SHPEEvent } from '../../types/events';
 import { PublicUserInfo } from '../../types/user';
-import DismissibleModal from '../../components/DismissibleModal';
 import { auth, db } from '../../config/firebaseConfig';
-import EventsList from '../../components/EventsList';
 import MembersList from '../../components/MembersList';
-import CommitteeTeamCard from './CommitteeTeamCard';
 import { RouteProp } from '@react-navigation/core';
 import { CommitteesStackParams } from '../../types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Images } from '../../../assets';
 import EventCard from '../events/EventCard';
-import InteractButton from '../../components/InteractButton';
 
 
 const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
-    const { name, logo, description, memberApplicationLink, representativeApplicationLink, leadApplicationLink, firebaseDocName, isOpen, memberCount } = initialCommittee;
+    const { name, logo, description, applicationLink, firebaseDocName, isOpen, memberCount } = initialCommittee;
     const { LogoComponent, LightLogoComponent, height, width } = getLogoComponent(logo);
 
     const insets = useSafeAreaInsets();
@@ -39,6 +34,9 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+
 
     const [events, setEvents] = useState<SHPEEvent[]>([]);
     const [localTeamMemberOnlyCount, setLocalTeamMemberOnlyCount] = useState<number>(memberCount || 0);
@@ -260,10 +258,18 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}
-                <View className='flex-row items-center'>
+                <View className='flex-row items-center justify-between'>
                     <TouchableOpacity onPress={() => navigation.goBack()} className='py-1 px-4'>
                         <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
+                    {hasPrivileges && (
+                        <TouchableOpacity
+                            onPress={() => { navigation.navigate("CommitteeEditor", { committee: initialCommittee }) }}
+                            className='items-center justify-center px-4 py-1'
+                        >
+                            <Entypo name="dots-three-vertical" size={24} color="black" />
+                        </TouchableOpacity>
+                    )}
                 </View>
 
                 {/* Logo */}
@@ -335,7 +341,17 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
                     {/* About */}
                     <View className='mt-10'>
-                        <Text className={`text-2xl font-bold mb-2 ${darkMode ? "text-white" : "text-black"}`}>About the committee</Text>
+                        <View className='mb-2'>
+                            <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>About the committee</Text>
+                            {applicationLink && (
+                                <TouchableOpacity
+                                    onPress={() => handleLinkPress(applicationLink)}
+                                >
+                                    <Text className={`text-lg text-primary-blue underline`}>View Applications</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+
                         <View
                             className={`px-3 py-2 rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                             style={{

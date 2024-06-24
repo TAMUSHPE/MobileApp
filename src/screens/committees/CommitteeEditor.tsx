@@ -18,9 +18,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
         leads: [],
         representatives: [],
         memberCount: 0,
-        memberApplicationLink: '',
-        representativeApplicationLink: '',
-        leadApplicationLink: '',
+        applicationLink: '',
         isOpen: false
     });
 
@@ -44,9 +42,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const [repsModalVisible, setRepsModalVisible] = useState(false);
     const [resetModalVisible, setResetModalVisible] = useState(false);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-    const [isMemberLinkActive, setIsMemberLinkActive] = useState<boolean>(!!committeeData?.memberApplicationLink);
-    const [isRepLinkActive, setIsRepLinkActive] = useState<boolean>(!!committeeData?.representativeApplicationLink);
-    const [isLeadLinkActive, setIsLeadLinkActive] = useState<boolean>(!!committeeData?.leadApplicationLink);
+    const [isApplicationLinkActive, setIsApplicationLinkActive] = useState<boolean>(!!committeeData?.applicationLink);
     const [isOpen, setIsOpen] = useState<boolean>(!!committeeData?.isOpen);
 
     const insets = useSafeAreaInsets();
@@ -465,46 +461,16 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                 <View className='mt-8 mx-6'>
                     <Text className='text-2xl font-bold mb-2'>Applications</Text>
                     <BubbleToggle
-                        isActive={isMemberLinkActive}
-                        onToggle={() => { setIsMemberLinkActive(!isMemberLinkActive) }}
+                        isActive={isApplicationLinkActive}
+                        onToggle={() => { setIsApplicationLinkActive(!isApplicationLinkActive) }}
                         label="Members Application Link"
                     />
-                    {isMemberLinkActive && (
+                    {isApplicationLinkActive && (
                         <TextInput
                             className='w-full rounded-md text-lg px-2 py-1 pb-2 bg-slate-300 mb-6'
-                            value={localCommitteeData.memberApplicationLink}
-                            onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, memberApplicationLink: text })}
+                            value={localCommitteeData.applicationLink}
+                            onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, applicationLink: text })}
                             placeholder="Add member application link"
-                        />
-                    )}
-
-                    {/* Representatives Application Link */}
-                    <BubbleToggle
-                        isActive={isRepLinkActive}
-                        onToggle={() => { setIsRepLinkActive(!isRepLinkActive) }}
-                        label="Representatives Application Link"
-                    />
-                    {isRepLinkActive && (
-                        <TextInput
-                            className='w-full rounded-md text-lg px-2 py-1 pb-2 bg-slate-300 mb-6'
-                            value={localCommitteeData.representativeApplicationLink}
-                            onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, representativeApplicationLink: text })}
-                            placeholder="Add representative application link"
-                        />
-                    )}
-
-                    {/* Leads Application Link */}
-                    <BubbleToggle
-                        isActive={isLeadLinkActive}
-                        onToggle={() => { setIsLeadLinkActive(!isLeadLinkActive) }}
-                        label="Leads Application Link"
-                    />
-                    {isLeadLinkActive && (
-                        <TextInput
-                            className='w-full rounded-md text-lg px-2 py-1 pb-2 bg-slate-300 mb-6'
-                            value={localCommitteeData.leadApplicationLink}
-                            onChangeText={(text) => setLocalCommitteeData({ ...localCommitteeData, leadApplicationLink: text })}
-                            placeholder="Add lead application link"
                         />
                     )}
                 </View>
@@ -515,13 +481,15 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                         onPress={async () => {
                             const updatedCommitteeData = {
                                 ...localCommitteeData,
-                                memberApplicationLink: isMemberLinkActive ? localCommitteeData.memberApplicationLink : '',
-                                representativeApplicationLink: isRepLinkActive ? localCommitteeData.representativeApplicationLink : '',
-                                leadApplicationLink: isLeadLinkActive ? localCommitteeData.leadApplicationLink : ''
+                                applicationLink: isApplicationLinkActive ? localCommitteeData.applicationLink : ''
                             };
 
                             await setCommitteeData(updatedCommitteeData);
-                            navigation.goBack();
+                            if (committeeData) {
+                                navigation.navigate('CommitteeInfo', { committee: updatedCommitteeData });
+                            } else {
+                                navigation.goBack();
+                            }
                         }}
                     >
                         <Text className='text-xl text-semibold text-white px-3 py-1'>{committeeData ? "Update Committee " : "Create Committee"}</Text>

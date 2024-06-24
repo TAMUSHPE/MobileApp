@@ -428,9 +428,7 @@ export const setCommitteeData = async (committeeData: Committee) => {
             head: committeeData.head || "",
             representatives: committeeData.representatives || [],
             leads: committeeData.leads || [],
-            memberApplicationLink: committeeData.memberApplicationLink || "",
-            representativeApplicationLink: committeeData.representativeApplicationLink || "",
-            leadApplicationLink: committeeData.leadApplicationLink || "",
+            applicationLink: committeeData.applicationLink || "",
             logo: committeeData.logo || "default",
             memberCount: committeeData.memberCount || 0,
             isOpen: committeeData.isOpen || false
@@ -449,9 +447,7 @@ export const resetCommittee = async (firebaseDocName: string) => {
         await runTransaction(db, async (transaction) => {
             transaction.update(committeeRef, {
                 memberCount: 0,
-                memberApplicationLink: '',
-                leadApplicationLink: '',
-                representativeApplicationLink: '',
+                applicationLink: '',
                 head: deleteField(),
                 leads: [],
                 representatives: []
