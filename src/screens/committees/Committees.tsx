@@ -19,7 +19,7 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
     const [loading, setLoading] = useState(true);
     const { userInfo, setUserInfo } = useContext(UserContext)!;
 
-    const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
     const fetchCommittees = async () => {
         setLoading(true);
@@ -27,7 +27,6 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
         setCommittees(response);
         setLoading(false);
     }
-
 
     const fetchUserData = async () => {
         console.log("Fetching user data...");
@@ -50,15 +49,14 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
         fetchUserData();
     }, []);
 
-    // a refetch for officer for when they update committees
     useFocusEffect(
         useCallback(() => {
-            if (isSuperUser) {
+            if (hasPrivileges) {
                 fetchCommittees();
             }
-            return () => { };
-        }, [isSuperUser])
+        }, [hasPrivileges])
     );
+
 
     return (
         <ScrollView className='pt-4'>
@@ -76,7 +74,7 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
             </SafeAreaView>
 
             <View>
-                {isSuperUser && (
+                {hasPrivileges && (
                     <View className='flex items-center w-full'>
                         <TouchableOpacity
                             onPress={() => navigation.navigate("CommitteeEditor", { committee: undefined })}

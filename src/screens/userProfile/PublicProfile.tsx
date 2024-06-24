@@ -48,7 +48,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
 
     // Data related to currently authenticated user
     const { userInfo, setUserInfo } = useContext(UserContext)!;
-    const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
     const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
@@ -265,7 +265,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                                 {points !== undefined && pointsRank && ` • rank ${pointsRank}`}
                             </Text>
                         </View>
-                        {isSuperUser &&
+                        {hasPrivileges &&
                             <View className='flex items-center justify-center'>
                                 <View style={{ flexDirection: 'row' }}>
                                     <TouchableOpacity

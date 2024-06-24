@@ -10,7 +10,7 @@ import { getPublicUserData } from '../../api/firebaseUtils';
 const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPress, navigation }) => {
     const { name, color, logo, head, memberCount } = committee;
     const { userInfo } = useContext(UserContext)!;
-    const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
     const { LogoComponent, height, width } = getLogoComponent(logo);
 
     const isTextLight = (colorHex: string) => {
@@ -66,7 +66,7 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, handleCardPres
                 </View>
 
             </TouchableOpacity>
-            {isSuperUser && (
+            {hasPrivileges && (
                 <TouchableOpacity
                     onPress={() => { navigation.navigate("CommitteeEditor", { committee }) }}
                     className='absolute right-10 bg-pale-blue rounded-lg px-5 py-1 -top-3'
