@@ -10,6 +10,18 @@ import Treasurer from '../../assets/treasurer_committee_icon.svg';
 import InternalAffairs from '../../assets/internal_affairs_committee_icon.svg';
 import Secretary from '../../assets/secretary_committee_icon.svg';
 import ProfessionalDevelopment from '../../assets/professional_development_committee_icon.svg';
+import TechnicalAffairsWhite from '../../assets/technical_affairs_icon_white.svg';
+import DefaultIconWhite from '../../assets/generic_course_icon_white.svg';
+import ScholasticWhite from '../../assets/scholastic_committee_icon_white.svg';
+import MentorSHPEWhite from '../../assets/mentorshpe_committee_icon_white.svg';
+import PresidentsWhite from '../../assets/presidents_committee_icon_white.svg';
+import PublicRelationsWhite from '../../assets/public_relations_committee_icon_white.svg';
+import JonesSHPEjrWhite from '../../assets/jones_shpe_jr_committee_white.svg';
+import TreasurerWhite from '../../assets/treasurer_committee_icon_white.svg';
+import InternalAffairsWhite from '../../assets/internal_affairs_committee_icon_white.svg';
+import SecretaryWhite from '../../assets/secretary_committee_icon_white.svg';
+import ProfessionalDevelopmentWhite from '../../assets/professional_development_committee_icon_white.svg';
+
 
 
 /**
@@ -21,71 +33,81 @@ import ProfessionalDevelopment from '../../assets/professional_development_commi
 export const committeeLogos = {
     professionalDevelopment: {
         LogoComponent: ProfessionalDevelopment,
+        LightLogoComponent: ProfessionalDevelopmentWhite,
         width: 80,
         height: 80
     },
     internalAffairs: {
         LogoComponent: InternalAffairs,
+        LightLogoComponent: InternalAffairsWhite,
         width: 80,
         height: 80
     },
     secretary: {
         LogoComponent: Secretary,
+        LightLogoComponent: SecretaryWhite,
         width: 80,
         height: 80
     },
     treasurer: {
         LogoComponent: Treasurer,
+        LightLogoComponent: TreasurerWhite,
         width: 100,
         height: 100
     },
     jonesSHPEjr: {
         LogoComponent: JonesSHPEjr,
+        LightLogoComponent: JonesSHPEjrWhite,
         width: 75,
         height: 65
     },
     publicRelations: {
         LogoComponent: PublicRelations,
+        LightLogoComponent: PublicRelationsWhite,
         width: 100,
         height: 80
     },
     scholasticCommittee: {
         LogoComponent: Scholastic,
+        LightLogoComponent: ScholasticWhite,
         width: 75,
         height: 70
     },
     presidentsCommittee: {
         LogoComponent: Presidents,
+        LightLogoComponent: PresidentsWhite,
         width: 75,
         height: 70
     },
     mentorshpeCommittee: {
         LogoComponent: MentorSHPE,
+        LightLogoComponent: MentorSHPEWhite,
         width: 70,
         height: 70
     },
     shpetinas: {
         LogoComponent: SHPEtinas,
+        LightLogoComponent: SHPEtinas,
         width: 100,
         height: 100
     },
     technicalAffairs: {
         LogoComponent: TechnicalAffairs,
+        LightLogoComponent: TechnicalAffairsWhite,
         width: 75,
         height: 80
     },
     default: {
         LogoComponent: DefaultIcon,
+        LightLogoComponent: DefaultIconWhite,
         width: 60,
         height: 60
     },
 };
 
-export const getLogoComponent = (logoName: keyof typeof committeeLogos = 'default', color?: string) => {
-    const logo = committeeLogos[logoName] || committeeLogos['default'];
-    return { ...logo, color };
+export const getLogoComponent = (logoName: keyof typeof committeeLogos = 'default') => {
+    return committeeLogos[logoName] || committeeLogos['default'];
 };
-
 export type CommitteeLogosName = keyof typeof committeeLogos;
 
 

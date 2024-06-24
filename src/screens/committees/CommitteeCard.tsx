@@ -9,7 +9,7 @@ import { getPublicUserData } from '../../api/firebaseUtils';
 
 const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) => {
     const { name, logo, head, memberCount, isOpen, firebaseDocName } = committee;
-    const { LogoComponent, height, width } = getLogoComponent(logo);
+    const { LogoComponent, LightLogoComponent, height, width } = getLogoComponent(logo);
 
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
@@ -35,7 +35,7 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
     return (
         <TouchableOpacity
             onPress={() => { navigation.navigate("CommitteeScreen", { committee }) }}
-            className='flex-col w-full h-52 mb-11 p-2 bg-secondary-bg-light rounded-xl'
+            className={`flex-col w-full h-52 mb-11 p-2 rounded-xl ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
             style={{
                 shadowColor: "#000",
                 shadowOffset: {
@@ -52,13 +52,17 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
             <View className='flex-row justify-between items-center'>
                 <View className='flex-row items-center'>
                     <View className={`rounded-full h-3 w-3 ${isOpen ? "bg-green-1" : "bg-primary-blue"}`} />
-                    <Text className='ml-2 text-lg'>{isOpen ? "Open" : "Private"}</Text>
+                    <Text className={`ml-2 text-lg ${darkMode ? "text-white" : "text-black"}`}>{isOpen ? "Open" : "Private"}</Text>
                 </View>
                 <Image source={localHead?.photoURL ? { uri: localHead.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-9 w-9 rounded-full' />
             </View>
             {/* Logo */}
             <View className='items-center justify-center my-4 flex-1'>
-                <LogoComponent height={height * .9} width={width * .9} />
+                {darkMode ?
+                    <LightLogoComponent height={height * .9} width={width * .9} />
+                    :
+                    <LogoComponent height={height * .9} width={width * .9} />
+                }
             </View>
             {/* Name and Membership */}
             <View className='items-center justify-center'>
