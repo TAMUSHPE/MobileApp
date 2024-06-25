@@ -1,12 +1,11 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme, Image, Modal } from 'react-native'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { collection, deleteDoc, doc, getDoc, getDocs, setDoc } from 'firebase/firestore';
 import { Octicons, Entypo } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext';
-import { getCommitteeEvents, getPublicUserData, setPublicUserData } from '../../api/firebaseUtils';
+import { checkCommitteeRequestStatus, getCommitteeEvents, getCommitteeMembers, getPublicUserData, removeCommitteeRequest, setPublicUserData, submitCommitteeRequest } from '../../api/firebaseUtils';
 import { handleLinkPress } from '../../helpers/links';
 import { getLogoComponent } from '../../types/committees';
 import { SHPEEvent } from '../../types/events';
@@ -18,7 +17,6 @@ import { CommitteesStackParams } from '../../types/navigation';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Images } from '../../../assets';
 import EventCard from '../events/EventCard';
-
 
 const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
@@ -36,7 +34,6 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
-
 
     const [events, setEvents] = useState<SHPEEvent[]>([]);
     const [localTeamMemberOnlyCount, setLocalTeamMemberOnlyCount] = useState<number>(memberCount || 0);
@@ -109,9 +106,8 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
             const committeeExists = userInfo?.publicInfo?.committees?.includes(firebaseDocName!);
             if (auth.currentUser && !committeeExists && !isOpen) {
-                const requestRef = doc(db, `committeeVerification/${firebaseDocName}/requests/${auth.currentUser.uid}`);
-                const requestSnapshot = await getDoc(requestRef);
-                setIsRequesting(requestSnapshot.exists());
+                const isRequest = await checkCommitteeRequestStatus(firebaseDocName!, auth.currentUser.uid);
+                setIsRequesting(isRequest);
             }
 
             setLoadingLabel(false);
@@ -150,43 +146,6 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
         fetchLocalMemberOnlyCount();
     }, [localTeamMembers])
 
-    const fetchCommitteeMembers = async (committeeFirebaseDocName: string) => {
-        // Force update only happens once
-        if (forceUpdate == 1) {
-            return;
-        }
-        setLoadingMembers(true);
-
-        const allUsersSnapshot = await await getDocs(collection(db, 'users'));
-        const committeeMembers: PublicUserInfo[] = [];
-
-        for (const userDoc of allUsersSnapshot.docs) {
-            const userData = userDoc.data();
-            if (userData.committees && userData.committees.includes(committeeFirebaseDocName)) {
-                committeeMembers.push({ ...userData, uid: userDoc.id });
-            }
-        }
-
-        setMembers(committeeMembers);
-        setLoadingMembers(false);
-        setForceUpdate(1);
-    };
-
-    const submitCommitteeRequest = useCallback(async () => {
-        if (auth.currentUser) {
-            await setDoc(doc(db, `committeeVerification/${firebaseDocName}/requests/${auth.currentUser.uid}`), {
-                uploadDate: new Date().toISOString(),
-            }, { merge: true });
-        }
-    }, [firebaseDocName]);
-
-    const removeCommitteeRequest = useCallback(async () => {
-        if (auth.currentUser) {
-            const requestDocRef = doc(db, `committeeVerification/${firebaseDocName}/requests/${auth.currentUser.uid}`);
-            await deleteDoc(requestDocRef);
-        }
-    }, [firebaseDocName]);
-
     const updateUserInfo = async (updatedCommittees: string[]) => {
         try {
             await setPublicUserData({ committees: updatedCommittees });
@@ -219,12 +178,12 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
     };
 
     const requestToJoinCommittee = async () => {
-        await submitCommitteeRequest();
+        await submitCommitteeRequest(firebaseDocName!, auth.currentUser?.uid!);
         setIsRequesting(true);
     };
 
     const cancelRequest = async () => {
-        await removeCommitteeRequest();
+        await removeCommitteeRequest(firebaseDocName!, auth.currentUser?.uid!);
         setIsRequesting(false);
     };
 
@@ -329,9 +288,17 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
                             <TouchableOpacity
                                 className='bg-primary-blue w-9 h-9 rounded-full items-center justify-center'
-                                onPress={() => {
+                                onPress={async () => {
                                     setMembersListVisible(true);
-                                    fetchCommitteeMembers(firebaseDocName!);
+                                    if (forceUpdate == 1) {
+                                        return;
+                                    }
+
+                                    setLoadingMembers(true);
+                                    const committeeMembersRes = await getCommitteeMembers(firebaseDocName!);
+                                    setMembers(committeeMembersRes);
+                                    setLoadingMembers(false);
+                                    setForceUpdate(1);
                                 }}
                             >
                                 <Text className='text-white text-lg'>+{localTeamMemberOnlyCount}</Text>

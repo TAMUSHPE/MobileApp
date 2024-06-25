@@ -1479,3 +1479,38 @@ export const getTeamMembers = async (): Promise<PublicUserInfo[]> => {
         throw new Error("Internal Server Error.");
     }
 }
+
+export const getCommitteeMembers = async (committeeFirebaseDocName: string) => {
+    const allUsersSnapshot = await getDocs(collection(db, 'users'));
+    const committeeMembers: PublicUserInfo[] = [];
+
+    for (const userDoc of allUsersSnapshot.docs) {
+        const userData = userDoc.data();
+        if (userData.committees && userData.committees.includes(committeeFirebaseDocName)) {
+            committeeMembers.push({ ...userData, uid: userDoc.id });
+        }
+    }
+
+    return committeeMembers;
+};
+
+export const checkCommitteeRequestStatus = async (firebaseDocName: string, uid: string) => {
+    const requestRef = doc(db, `committeeVerification/${firebaseDocName}/requests/${uid}`);
+    const requestSnapshot = await getDoc(requestRef);
+    return requestSnapshot.exists();
+}
+
+export const submitCommitteeRequest = async (firebaseDocName: string, uid: string) => {
+    if (auth.currentUser) {
+        await setDoc(doc(db, `committeeVerification/${firebaseDocName}/requests/${uid}`), {
+            uploadDate: new Date().toISOString(),
+        }, { merge: true });
+    }
+};
+
+export const removeCommitteeRequest = async (firebaseDocName: string, uid: string) => {
+    if (auth.currentUser) {
+        const requestDocRef = doc(db, `committeeVerification/${firebaseDocName}/requests/${uid}`);
+        await deleteDoc(requestDocRef);
+    }
+};

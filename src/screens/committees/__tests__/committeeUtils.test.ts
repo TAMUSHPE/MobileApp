@@ -2,7 +2,7 @@ import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
 import { collection, deleteDoc, doc, getDoc, getDocs, setDoc } from "firebase/firestore";
 import { Committee } from "../../../types/committees";
-import { deleteCommittee, getCommittees, resetCommittee, setCommitteeData } from "../../../api/firebaseUtils";
+import { checkCommitteeRequestStatus, deleteCommittee, getCommitteeMembers, getCommittees, removeCommitteeRequest, resetCommittee, setCommitteeData, submitCommitteeRequest } from "../../../api/firebaseUtils";
 import { User } from "../../../types/user";
 
 const testUserDataList: User[] = require("../../../api/__tests__/test_data/users.json");
@@ -177,5 +177,66 @@ describe("Delete and Reset Committee", () => {
         const userDoc = await getDoc(userRef);
         const userData = userDoc.data();
         expect(userData?.committees).not.toContain(committeeData.firebaseDocName);
+    });
+});
+
+
+describe('getCommitteeMembers', () => {
+    test('returns committee members', async () => {
+        const userRef1 = doc(db, `users/USER1`);
+        const userRef2 = doc(db, `users/USER2`);
+
+        await setDoc(userRef1, { committees: ["SampleFirebaseDocName"] });
+        await setDoc(userRef2, { committees: [] });
+
+        const members = await getCommitteeMembers("SampleFirebaseDocName");
+
+        expect(members).toHaveLength(1);
+        expect(members[0].uid).toBe("USER1");
+    });
+
+    test('returns no members if no one is part of the committee', async () => {
+        const userRef1 = doc(db, `users/USER1`);
+        const userRef2 = doc(db, `users/USER2`);
+
+        await setDoc(userRef1, { committees: [] });
+        await setDoc(userRef2, { committees: [] });
+
+        const members = await getCommitteeMembers("SampleFirebaseDocName");
+
+        expect(members).toHaveLength(0);
+    });
+});
+
+describe('Committee Request', () => {
+    test('creates a committee request', async () => {
+        await submitCommitteeRequest("SampleFirebaseDocName", "USER1");
+
+        const requestRef = doc(db, `committeeVerification/SampleFirebaseDocName/requests/USER1`);
+        const requestSnapshot = await getDoc(requestRef);
+        expect(requestSnapshot.exists()).toBe(true);
+    });
+
+    test('deletes a committee request', async () => {
+        const requestRef = doc(db, `committeeVerification/SampleFirebaseDocName/requests/USER1`);
+        await setDoc(requestRef, {});
+
+        await removeCommitteeRequest("SampleFirebaseDocName", "USER1");
+
+        const requestSnapshot = await getDoc(requestRef);
+        expect(requestSnapshot.exists()).toBe(false);
+    });
+
+    test('returns true if the request exists', async () => {
+        const requestRef = doc(db, `committeeVerification/SampleFirebaseDocName/requests/USER1`);
+        await setDoc(requestRef, {});
+
+        const result = await checkCommitteeRequestStatus("SampleFirebaseDocName", "USER1");
+        expect(result).toBe(true);
+    });
+
+    test('returns false if the request does not exist', async () => {
+        const result = await checkCommitteeRequestStatus("NonExistingFirebaseDocName", "USER1");
+        expect(result).toBe(false);
     });
 });
