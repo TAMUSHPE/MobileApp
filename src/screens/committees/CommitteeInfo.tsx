@@ -267,7 +267,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                             onPress={() => { navigation.navigate("CommitteeEditor", { committee: initialCommittee }) }}
                             className='items-center justify-center px-4 py-1'
                         >
-                            <Entypo name="dots-three-vertical" size={24} color="black" />
+                            <Entypo name="dots-three-vertical" size={24} color={darkMode ? "white" : "black"} />
                         </TouchableOpacity>
                     )}
                 </View>
