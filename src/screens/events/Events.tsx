@@ -2,10 +2,11 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, use
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Ionicons, Octicons, FontAwesome6 } from '@expo/vector-icons';
+import { Octicons, FontAwesome6 } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { UserContext } from '../../context/UserContext';
-import { getUpcomingEvents, getPastEvents } from '../../api/firebaseUtils';
+import { getUpcomingEvents, getPastEvents, getUser } from '../../api/firebaseUtils';
 import { EventsStackParams } from '../../types/navigation';
 import { EventType, SHPEEvent } from '../../types/events';
 import { Images } from '../../../assets';
@@ -13,10 +14,11 @@ import { formatTime } from '../../helpers/timeUtils';
 import EventCard from './EventCard';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/core';
+import { auth } from '../../config/firebaseConfig';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const userContext = useContext(UserContext);
-    const { userInfo } = userContext!;
+    const { userInfo, setUserInfo } = userContext!;
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
     const colorScheme = useColorScheme();
@@ -60,8 +62,25 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
         }
     };
 
+    const fetchUserData = async () => {
+        console.log("Fetching user data...");
+        try {
+            const firebaseUser = await getUser(auth.currentUser?.uid!)
+            if (firebaseUser) {
+                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+            }
+            else {
+                console.warn("User data undefined. Data was likely deleted from Firebase.");
+            }
+            setUserInfo(firebaseUser);
+        } catch (error) {
+            console.error("Error updating user:", error);
+        }
+    }
+
     useEffect(() => {
         fetchEvents();
+        fetchUserData();
     }, [])
 
     useFocusEffect(

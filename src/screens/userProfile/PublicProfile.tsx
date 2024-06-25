@@ -54,6 +54,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
 
 
     const fetchUserData = async () => {
+        console.log("Fetching user data...");
         try {
             const firebaseUser = await getUser(auth.currentUser?.uid!)
             if (firebaseUser) {
