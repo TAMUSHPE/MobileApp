@@ -24,6 +24,7 @@ module.exports = {
         "secondary-blue-1": "#468DC6",
         "secondary-blue-2": "#E8F1F8",
         "red-1": "#FF0000",
+        "green-1": "#AEF359",
       },
     },
   },

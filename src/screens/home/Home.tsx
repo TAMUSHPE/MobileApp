@@ -23,7 +23,8 @@ import OfficeSignIn from './OfficeSignIn';
  */
 const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
     const { userInfo, setUserInfo } = useContext(UserContext)!;
-    const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
+
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
     useEffect(() => {
         manageNotificationPermissions();
@@ -54,7 +55,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
             <FlickrPhotoGallery />
 
-            {isSuperUser && (
+            {hasPrivileges && (
                 <TouchableOpacity
                     className='bg-pale-blue p-2 rounded-md m-2'
                     onPress={() => navigation.navigate("AdminDashboard")}

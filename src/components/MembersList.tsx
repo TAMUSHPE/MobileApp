@@ -73,109 +73,43 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
 
     return (
         <View className='flex-1'>
-            <View className='px-4'>
-                <View className='flex-row mb-4'>
-                    <TouchableOpacity
-                        activeOpacity={1}
-                        className={`rounded-xl px-4 py-2 flex-row flex-1 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
-                        onPress={() => { inputRef.current?.focus() }}
-                        style={{
-                            shadowColor: "#000",
-                            shadowOffset: {
-                                width: 0,
-                                height: 2,
-                            },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 3.84,
-
-                            elevation: 5,
-                        }}
-                    >
-                        <View className='mr-3'>
-                            <Octicons name="search" size={24} color={darkMode ? "white" : "black"} />
-                        </View>
-                        <TextInput
-                            style={{ textAlignVertical: 'top', color: darkMode ? 'black' : 'white' }}
-                            onChangeText={(text) => {
-                                setSearch(text);
-                            }}
-                            ref={inputRef}
-                            value={search}
-                            underlineColorAndroid="transparent"
-                            placeholder="Search"
-                            placeholderTextColor={"grey"}
-                            className='flex-1 text-lg justify-center'
-                        />
-                    </TouchableOpacity>
-                    {/* <TouchableOpacity
-                        onPress={() => setShowFilterMenu(!showFilterMenu)}
-                        className='pl-4 items-center justify-center'
-                        style={{ minWidth: 45 }}
-                    >
-                        <Octicons name="filter" size={27} color="black" />
-                    </TouchableOpacity> */}
-                </View>
-
-                {/* {showFilterMenu && (
-                    <View className='flex-row py-4'>
-                        <View className='flex-1 space-y-4'>
-                            <View className='justify-start flex-row z-10'>
-                                <CustomDropDownMenu
-                                    data={classYears}
-                                    onSelect={(item) => setFilter({ ...filter, classYear: item.iso || "" })}
-                                    searchKey="year"
-                                    label="Class Year"
-                                    isOpen={openDropdown === 'year'}
-                                    onToggle={() => toggleDropdown('year')}
-                                    displayType='iso'
-                                    ref={dropDownRefYear}
-                                    disableSearch
-                                    containerClassName='mr-1'
-                                />
-                                <CustomDropDownMenu
-                                    data={MAJORS}
-                                    onSelect={(item) => setFilter({ ...filter, major: item.iso || "" })}
-                                    searchKey="major"
-                                    label="Major"
-                                    isOpen={openDropdown === 'major'}
-                                    onToggle={() => toggleDropdown('major')}
-                                    displayType='iso'
-                                    ref={dropDownRefMajor}
-                                    containerClassName='ml-1'
-                                />
-                                <TouchableOpacity
-                                    onPress={() => handleApplyFilter()}
-                                    className='items-center justify-center bg-primary-blue py-2 w-20 rounded-lg ml-3'>
-                                    <Text className='text-white font-bold text-xl'>Apply</Text>
-                                </TouchableOpacity>
-                            </View>
-                            <View className='justify-start flex-row'>
-                                <CustomDropDownMenu
-                                    data={ROLESDROPDOWN}
-                                    onSelect={(item) => setFilter({ ...filter, role: item.iso || "" })}
-                                    searchKey="role"
-                                    label="Role"
-                                    isOpen={openDropdown === 'role'}
-                                    onToggle={() => toggleDropdown('role')}
-                                    displayType='value'
-                                    ref={dropDownRefRole}
-                                    disableSearch
-                                    containerClassName='mr-2'
-                                    dropDownClassName='h-44'
-                                />
-                                <View className='w-28 mr-4'></View>
-                                <TouchableOpacity
-                                    onPress={() => handleClearFilter()}
-                                    className='items-center justify-center py-2 w-20 rounded-lg ml-3'>
-                                    <Text className='font-bold text-xl text-primary-blue'>Reset</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                )} */}
-            </View>
-
             <ScrollView className='-z-20'>
+                <View className='px-4'>
+                    <View className='flex-row mb-4'>
+                        <TouchableOpacity
+                            activeOpacity={1}
+                            className={`rounded-xl px-4 py-2 flex-row flex-1 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
+                            onPress={() => { inputRef.current?.focus() }}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+
+                                elevation: 5,
+                            }}
+                        >
+                            <View className='mr-3'>
+                                <Octicons name="search" size={24} color={darkMode ? "white" : "black"} />
+                            </View>
+                            <TextInput
+                                style={{ textAlignVertical: 'top', color: darkMode ? 'white' : 'black' }}
+                                onChangeText={(text) => {
+                                    setSearch(text);
+                                }}
+                                ref={inputRef}
+                                value={search}
+                                underlineColorAndroid="transparent"
+                                placeholder="Search"
+                                placeholderTextColor={"grey"}
+                                className='flex-1 text-lg justify-center'
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
                 <View className='px-4'>
                     {members?.map((userData, index) => {
                         if (!userData.name) {
@@ -186,11 +120,17 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
                                 key={index}
                                 userData={userData}
                                 navigation={navigation}
-                                handleCardPress={() => handleCardPress(userData.uid!)}
+                                handleCardPress={() => {
+                                    if (handleCardPress) {
+                                        handleCardPress(userData.uid!);
+                                    }
+                                }}
                             />
                         );
                     })}
                 </View>
+
+                <View className='pb-24' />
             </ScrollView>
         </View>
     )
@@ -203,9 +143,9 @@ const ROLESDROPDOWN = [
 ];
 
 export type MemberListProps = {
-    handleCardPress: (uid: string) => string | void;
+    handleCardPress?: (uid: string) => string | void;
     users: PublicUserInfo[];
-    navigation?: NativeStackNavigationProp<HomeStackParams>
+    navigation?: NativeStackNavigationProp<any>
 }
 
 

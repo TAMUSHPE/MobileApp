@@ -1,4 +1,4 @@
-import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator, Image } from 'react-native'
+import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator, useColorScheme } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useFocusEffect } from '@react-navigation/core'
 import { Octicons } from '@expo/vector-icons';
@@ -9,25 +9,30 @@ import { getCommittees, getUser } from '../../api/firebaseUtils'
 import { Committee } from "../../types/committees"
 import CommitteeCard from './CommitteeCard'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Images } from '../../../assets';
 import { CommitteesStackParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
+import { StatusBar } from 'expo-status-bar';
 
 const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams>) => {
-    const [committees, setCommittees] = useState<Committee[]>([]);
-    const [loading, setLoading] = useState(true);
-    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
 
-    const isSuperUser = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+
+    const [committees, setCommittees] = useState<Committee[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchCommittees = async () => {
-        setLoading(true);
+        setIsLoading(true);
         const response = await getCommittees();
         setCommittees(response);
-        setLoading(false);
+        setIsLoading(false);
     }
-
 
     const fetchUserData = async () => {
         console.log("Fetching user data...");
@@ -50,69 +55,63 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
         fetchUserData();
     }, []);
 
-    // a refetch for officer for when they update committees
     useFocusEffect(
         useCallback(() => {
-            if (isSuperUser) {
+            if (hasPrivileges) {
                 fetchCommittees();
             }
-            return () => { };
-        }, [isSuperUser])
+        }, [hasPrivileges])
     );
 
     return (
-        <ScrollView className='pt-4'>
-
-            <SafeAreaView className='flex-1 bg-white' edges={["top"]}>
+        <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
+            <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Header */}
-                <View className='flex-row px-5 pb-4'>
-                    <View className='flex-1 justify-center items-start'>
-                        <Image
-                            className="h-10 w-52"
-                            source={Images.LOGO_LIGHT}
-                        />
-                    </View>
+                <View className='flex-row px-4'>
+                    <Text className={`text-4xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
                 </View>
-            </SafeAreaView>
 
-            <View>
-                {isSuperUser && (
-                    <View className='flex items-center w-full'>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate("CommitteeEditor", { committee: undefined })}
-                            className='flex-row w-[90%] h-28 rounded-xl bg-[#D3D3D3]'
-                        >
-                            <View className='flex-1 rounded-l-xl' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
-                                <View className='items-center justify-center h-full'>
-                                    <View className='h-16 w-16 items-center justify-center bg-[#D9D9D9] rounded-full'>
-                                        <Octicons name="plus" size={40} color="black" />
-                                    </View>
-                                </View>
-                            </View>
 
-                            <View className='w-[70%]  justify-center items-center'>
-                                <Text className="font-bold text-xl text-black">Create a Committee</Text>
-                            </View>
-
-                        </TouchableOpacity>
+                {isLoading &&
+                    <View className='mt-10 justify-center items-center'>
+                        <ActivityIndicator size="small" />
                     </View>
-                )}
+                }
 
-                {loading && (
-                    <ActivityIndicator className='mt-8' size="large" />
-                )}
+                {/* Committees Listing */}
+                <View className='flex-row flex-wrap mt-10 mx-4 justify-between'>
+                    {committees.map((committee, index) => (
+                        <View key={index} className='w-[46%]'>
+                            <CommitteeCard committee={committee} navigation={navigation} />
+                        </View>
+                    ))}
+                </View>
 
-                <View className="mt-8" />
+                <View className='pb-24' />
+            </ScrollView>
 
-                {!loading && committees.map((committee) => (
-                    <CommitteeCard
-                        key={committee.name}
-                        committee={committee}
-                        navigation={navigation}
-                    />
-                ))}
-            </View>
-        </ScrollView>
+            {/* Create Committee */}
+            {hasPrivileges && (
+                <TouchableOpacity
+                    className='absolute bottom-0 right-0 bg-primary-blue rounded-full h-14 w-14 shadow-lg justify-center items-center m-4'
+                    style={{
+                        shadowColor: "#000",
+                        shadowOffset: {
+                            width: 0,
+                            height: 2,
+                        },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 3.84,
+
+                        elevation: 5,
+                    }}
+                    onPress={() => navigation.navigate("CommitteeEditor", { committee: undefined })}
+                >
+                    <Octicons name="plus" size={24} color="white" />
+                </TouchableOpacity>
+            )}
+        </SafeAreaView>
     )
 }
 

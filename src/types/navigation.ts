@@ -101,7 +101,7 @@ export type EventsStackParams = {
 
 export type CommitteesStackParams = {
     CommitteesScreen: undefined;
-    CommitteeScreen: { committee: Committee; };
+    CommitteeInfo: { committee: Committee; };
     CommitteeEditor: { committee?: Committee; };
 
     // Event Screens

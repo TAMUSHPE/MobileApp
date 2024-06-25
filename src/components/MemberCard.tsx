@@ -31,7 +31,16 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
     return (
         <TouchableOpacity
             className='mb-8'
-            onPress={() => handleCardPress && handleCardPress(uid!)}
+            onPress={() => {
+                if (navigation) {
+                    navigation.navigate("PublicProfile", { uid });
+                    return;
+                }
+
+                if (handleCardPress) {
+                    handleCardPress(uid!);
+                }
+            }}
             activeOpacity={!!handleCardPress ? 1 : 0.6}
         >
             <View className="flex-row">

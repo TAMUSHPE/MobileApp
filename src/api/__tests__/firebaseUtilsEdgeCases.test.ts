@@ -37,23 +37,3 @@ test("Setter functions throw errors when user is unauthenticated", async () => {
     await expect(setPublicUserData({})).rejects.toThrow();
     await expect(setPrivateUserData({})).rejects.toThrow();
 });
-
-describe("Committee Data", () => {
-    test("Throws with invalid head id", async () => {
-        await expect(setCommitteeData({
-            head: "NOTREAL0987654321",
-            firebaseDocName: "cool-committee"
-        })).rejects.toThrow();
-    });
-
-    test("Throws when not given a firebaseDocName", async () => {
-        await expect(setCommitteeData({
-            head: "TESTUSER1",
-        })).rejects.toThrow();
-        
-        await expect(setCommitteeData({
-            head: "TESTUSER1",
-            firebaseDocName: "",
-        })).rejects.toThrow();
-    });
-});

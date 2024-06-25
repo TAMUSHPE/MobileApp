@@ -140,8 +140,7 @@ describe("Committee Info", () => {
             head: "TESTUSER1",
             firebaseDocName: "DELETINGCOMMITTEE",
             name: "Bad Committee",
-            memberApplicationLink: "https://www.test.asdf/notreal",
-            leadApplicationLink: "https://coolwebsite.co.uk"
+            applicationLink: "https://www.test.asdf/notreal",
         }
 
         await setCommitteeData(committeeData);
