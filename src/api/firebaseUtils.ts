@@ -373,24 +373,6 @@ export const uploadFile = async (
     );
 };
 
-
-export const getCommittees = async (): Promise<Committee[]> => {
-    try {
-        const committeeCollectionRef = collection(db, 'committees');
-        const snapshot = await getDocs(committeeCollectionRef);
-        const committees = snapshot.docs
-            .map(doc => ({
-                firebaseDocName: doc.id,
-                ...(doc.data() as Committee)
-            }))
-            .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0));
-        return committees;
-    } catch (err) {
-        console.error(err);
-        return [];
-    }
-};
-
 export const getCommittee = async (firebaseDocName: string): Promise<Committee | null> => {
     try {
         const committeeDocRef = doc(db, 'committees', firebaseDocName);
@@ -408,85 +390,6 @@ export const getCommittee = async (firebaseDocName: string): Promise<Committee |
         return null;
     }
 }
-
-
-export const setCommitteeData = async (committeeData: Committee) => {
-    const headDocRef = doc(db, "users", committeeData.head ?? "");
-    if (committeeData.head && !(await getDoc(headDocRef)).exists()) {
-        throw new Error("Bad Head UID", { cause: `Invalid head UID: ${committeeData.head}. This user likely does not exist.` });
-    }
-
-    if (!committeeData.firebaseDocName) {
-        throw new Error("Bad Document Name", { cause: `Invalid firebaseDocName passed: '${committeeData.firebaseDocName}'. Name is falsy` });
-    }
-
-    try {
-        await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
-            name: committeeData.name || "",
-            color: committeeData.color || "#500000",
-            description: committeeData.description || "",
-            head: committeeData.head || "",
-            representatives: committeeData.representatives || [],
-            leads: committeeData.leads || [],
-            applicationLink: committeeData.applicationLink || "",
-            logo: committeeData.logo || "default",
-            memberCount: committeeData.memberCount || 0,
-            isOpen: committeeData.isOpen || false
-        }, { merge: true });
-        return true;
-    } catch (err) {
-        console.error(err);
-        return false;
-    }
-};
-
-export const resetCommittee = async (firebaseDocName: string) => {
-    const committeeRef = doc(db, 'committees', firebaseDocName);
-
-    try {
-        await runTransaction(db, async (transaction) => {
-            transaction.update(committeeRef, {
-                memberCount: 0,
-                applicationLink: '',
-                head: deleteField(),
-                leads: [],
-                representatives: []
-            });
-
-            const usersSnapshot = await getDocs(collection(db, 'users'));
-            usersSnapshot.forEach((userDoc) => {
-                const userData = userDoc.data();
-                if (Array.isArray(userData.committees) && userData.committees.includes(firebaseDocName)) {
-                    const updatedCommittees = userData.committees.filter((committee: string) => committee !== firebaseDocName);
-                    transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
-                }
-            });
-        });
-    } catch (error) {
-        console.error('Failed to reset committee:', error);
-    }
-};
-
-export const deleteCommittee = async (firebaseDocName: string) => {
-    const committeeRef = doc(db, 'committees', firebaseDocName);
-
-    try {
-        await runTransaction(db, async (transaction) => {
-            transaction.delete(committeeRef);
-
-            const usersSnapshot = await getDocs(collection(db, 'users'));
-            usersSnapshot.forEach((userDoc) => {
-                const userCommittees = userDoc.data().committees;
-                if (Array.isArray(userCommittees) && userCommittees.includes(firebaseDocName)) {
-                    const updatedCommittees = userCommittees.filter((committee) => committee !== firebaseDocName);
-                    transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
-                }
-            });
-        });
-    } catch (error) {
-        console.error('Failed to delete committee:', error);
-    }
-};
 
 export const getWatchlist = async () => {
     const docRef = doc(db, "restrictions/watchlist");
@@ -670,35 +573,6 @@ export const getMembersExcludeOfficers = async (): Promise<PublicUserInfo[]> => 
     }
 }
 
-export const getTeamMembers = async (): Promise<PublicUserInfo[]> => {
-    try {
-        const userRef = collection(db, 'users');
-        const querySnapshot = await getDocs(userRef);
-        if (querySnapshot.empty) {
-            return [];
-        }
-
-        const users = querySnapshot.docs.map((doc) => {
-            return {
-                ...doc.data(),
-                uid: doc.id
-            } as PublicUserInfo
-        });
-
-        const filteredUsers = users.filter(user =>
-            user.roles?.officer === true ||
-            user.roles?.lead === true ||
-            user.roles?.representative === true
-        );
-
-        return filteredUsers;
-
-    } catch (error) {
-        console.error("Error fetching users:", error);
-        throw new Error("Internal Server Error.");
-    }
-}
-
 export const getOfficers = async () => {
     try {
         const userQuery = query(collection(db, 'users'), where('roles.officer', '==', true));
@@ -710,59 +584,6 @@ export const getOfficers = async () => {
         return [];
     }
 };
-
-export const getRepresentatives = async (): Promise<PublicUserInfo[]> => {
-    try {
-        const userRef = collection(db, 'users');
-        const querySnapshot = await getDocs(userRef);
-        if (querySnapshot.empty) {
-            return [];
-        }
-
-        const users = querySnapshot.docs.map((doc) => {
-            return {
-                ...doc.data(),
-                uid: doc.id
-            } as PublicUserInfo
-        });
-
-        const representatives = users.filter(user => user.roles?.representative === true);
-
-        return representatives;
-
-    } catch (error) {
-        console.error("Error fetching representatives:", error);
-        throw new Error("Internal Server Error.");
-    }
-}
-
-
-export const getLeads = async (): Promise<PublicUserInfo[]> => {
-    try {
-        const userRef = collection(db, 'users');
-        const querySnapshot = await getDocs(userRef);
-        if (querySnapshot.empty) {
-            return [];
-        }
-
-        const users = querySnapshot.docs.map((doc) => {
-            return {
-                ...doc.data(),
-                uid: doc.id
-            } as PublicUserInfo
-        });
-
-        const leads = users.filter(user => user.roles?.lead === true);
-
-        return leads;
-
-    } catch (error) {
-        console.error("Error fetching leads:", error);
-        throw new Error("Internal Server Error.");
-    }
-}
-
-
 
 export const getMembersToVerify = async (): Promise<PublicUserInfo[]> => {
     const memberSHPERef = collection(db, 'memberSHPE');
@@ -942,45 +763,6 @@ export const removeFeedback = async (feedbackId: string) => {
     const feedbackDoc = doc(db, 'feedback', feedbackId);
     await deleteDoc(feedbackDoc);
 };
-
-export const getCommitteeEvents = async (committees: string[]) => {
-    try {
-        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
-        const currentTime = Timestamp.now();
-
-        const eventsRef = collection(db, 'events');
-
-        // Pre-fetching committee data to avoid duplicate calls in the loop
-        const committeesData = await Promise.all(committees.map(committee => getCommittee(committee)));
-
-        for (const committee of committees) {
-            try {
-                const committeeData = committeesData.find(data => data?.firebaseDocName === committee);
-                const eventsQuery = query(
-                    eventsRef,
-                    where("committee", "==", committee),
-                    where("endTime", ">=", currentTime)
-                );
-                const querySnapshot = await getDocs(eventsQuery);
-                querySnapshot.forEach((doc) => {
-                    const eventData = doc.data();
-                    const eventWithCommitteeData = { id: doc.id, ...eventData, committeeData: committeeData };
-
-                    // Using Map to avoid duplicates
-                    allEvents.set(doc.id, eventWithCommitteeData);
-                });
-            } catch (innerError) {
-                console.error(`Error fetching events for committee ${committee}:`, innerError);
-            }
-        }
-
-        // Convert Map values to an array
-        return Array.from(allEvents.values());
-    } catch (error) {
-        console.error("Error fetching events for user committees:", error);
-        return [];
-    }
-}
 
 const backupAndDeleteUserData = async (userId: string) => {
     const userDocRef = doc(db, `users/${userId}`);
@@ -1478,5 +1260,222 @@ export const getUserEventLog = async (eventId: string, uid: string): Promise<SHP
         return docSnap.data();
     } else {
         return null;
+    }
+}
+
+// ============================================================================
+// Committee Utilities
+// ============================================================================
+
+export const setCommitteeData = async (committeeData: Committee) => {
+    const headDocRef = doc(db, "users", committeeData.head ?? "");
+    if (committeeData.head && !(await getDoc(headDocRef)).exists()) {
+        throw new Error("Bad Head UID", { cause: `Invalid head UID: ${committeeData.head}. This user likely does not exist.` });
+    }
+
+    if (!committeeData.firebaseDocName) {
+        throw new Error("Bad Document Name", { cause: `Invalid firebaseDocName passed: '${committeeData.firebaseDocName}'. Name is falsy` });
+    }
+
+    try {
+        await setDoc(doc(db, `committees/${committeeData.firebaseDocName}`), {
+            name: committeeData.name || "",
+            color: committeeData.color || "#500000",
+            description: committeeData.description || "",
+            head: committeeData.head || "",
+            representatives: committeeData.representatives || [],
+            leads: committeeData.leads || [],
+            applicationLink: committeeData.applicationLink || "",
+            logo: committeeData.logo || "default",
+            memberCount: committeeData.memberCount || 0,
+            isOpen: committeeData.isOpen || false
+        }, { merge: true });
+        return true;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+};
+
+export const getCommittees = async (): Promise<Committee[]> => {
+    try {
+        const committeeCollectionRef = collection(db, 'committees');
+        const snapshot = await getDocs(committeeCollectionRef);
+        const committees = snapshot.docs
+            .map(doc => ({
+                firebaseDocName: doc.id,
+                ...(doc.data() as Committee)
+            }))
+            .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0));
+        return committees;
+    } catch (err) {
+        console.error(err);
+        return [];
+    }
+};
+
+export const deleteCommittee = async (firebaseDocName: string) => {
+    const committeeRef = doc(db, 'committees', firebaseDocName);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            transaction.delete(committeeRef);
+
+            const usersSnapshot = await getDocs(collection(db, 'users'));
+            usersSnapshot.forEach((userDoc) => {
+                const userCommittees = userDoc.data().committees;
+                if (Array.isArray(userCommittees) && userCommittees.includes(firebaseDocName)) {
+                    const updatedCommittees = userCommittees.filter((committee) => committee !== firebaseDocName);
+                    transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Failed to delete committee:', error);
+    }
+};
+
+export const resetCommittee = async (firebaseDocName: string) => {
+    const committeeRef = doc(db, 'committees', firebaseDocName);
+
+    try {
+        await runTransaction(db, async (transaction) => {
+            transaction.update(committeeRef, {
+                memberCount: 0,
+                applicationLink: '',
+                head: deleteField(),
+                leads: [],
+                representatives: []
+            });
+
+            const usersSnapshot = await getDocs(collection(db, 'users'));
+            usersSnapshot.forEach((userDoc) => {
+                const userData = userDoc.data();
+                if (Array.isArray(userData.committees) && userData.committees.includes(firebaseDocName)) {
+                    const updatedCommittees = userData.committees.filter((committee: string) => committee !== firebaseDocName);
+                    transaction.update(doc(db, 'users', userDoc.id), { committees: updatedCommittees });
+                }
+            });
+        });
+    } catch (error) {
+        console.error('Failed to reset committee:', error);
+    }
+};
+
+export const getCommitteeEvents = async (committees: string[]) => {
+    try {
+        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
+        const currentTime = Timestamp.now();
+
+        const eventsRef = collection(db, 'events');
+
+        // Pre-fetching committee data to avoid duplicate calls in the loop
+        const committeesData = await Promise.all(committees.map(committee => getCommittee(committee)));
+
+        for (const committee of committees) {
+            try {
+                const committeeData = committeesData.find(data => data?.firebaseDocName === committee);
+                const eventsQuery = query(
+                    eventsRef,
+                    where("committee", "==", committee),
+                    where("endTime", ">=", currentTime)
+                );
+                const querySnapshot = await getDocs(eventsQuery);
+                querySnapshot.forEach((doc) => {
+                    const eventData = doc.data();
+                    const eventWithCommitteeData = { id: doc.id, ...eventData, committeeData: committeeData };
+
+                    // Using Map to avoid duplicates
+                    allEvents.set(doc.id, eventWithCommitteeData);
+                });
+            } catch (innerError) {
+                console.error(`Error fetching events for committee ${committee}:`, innerError);
+            }
+        }
+
+        // Convert Map values to an array
+        return Array.from(allEvents.values());
+    } catch (error) {
+        console.error("Error fetching events for user committees:", error);
+        return [];
+    }
+}
+
+export const getLeads = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const querySnapshot = await getDocs(userRef);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const users = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            } as PublicUserInfo
+        });
+
+        const leads = users.filter(user => user.roles?.lead === true);
+
+        return leads;
+
+    } catch (error) {
+        console.error("Error fetching leads:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
+export const getRepresentatives = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const querySnapshot = await getDocs(userRef);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const users = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            } as PublicUserInfo
+        });
+
+        const representatives = users.filter(user => user.roles?.representative === true);
+
+        return representatives;
+
+    } catch (error) {
+        console.error("Error fetching representatives:", error);
+        throw new Error("Internal Server Error.");
+    }
+}
+
+export const getTeamMembers = async (): Promise<PublicUserInfo[]> => {
+    try {
+        const userRef = collection(db, 'users');
+        const querySnapshot = await getDocs(userRef);
+        if (querySnapshot.empty) {
+            return [];
+        }
+
+        const users = querySnapshot.docs.map((doc) => {
+            return {
+                ...doc.data(),
+                uid: doc.id
+            } as PublicUserInfo
+        });
+
+        const filteredUsers = users.filter(user =>
+            user.roles?.officer === true ||
+            user.roles?.lead === true ||
+            user.roles?.representative === true
+        );
+
+        return filteredUsers;
+
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        throw new Error("Internal Server Error.");
     }
 }

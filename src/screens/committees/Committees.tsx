@@ -1,4 +1,4 @@
-import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator, Image, useColorScheme } from 'react-native'
+import { View, ScrollView, Text, TouchableOpacity, ActivityIndicator, useColorScheme } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { useFocusEffect } from '@react-navigation/core'
 import { Octicons } from '@expo/vector-icons';
@@ -13,10 +13,10 @@ import { CommitteesStackParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 
-
 const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams>) => {
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
+
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
     const colorScheme = useColorScheme();

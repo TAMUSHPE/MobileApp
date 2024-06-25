@@ -1,7 +1,7 @@
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Pressable, Switch, FlatList, useColorScheme } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, Modal, Switch, FlatList, useColorScheme } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Octicons, FontAwesome, Entypo } from '@expo/vector-icons';
+import { Octicons, FontAwesome } from '@expo/vector-icons';
 import { deleteCommittee, getLeads, getPublicUserData, getRepresentatives, getTeamMembers, resetCommittee, setCommitteeData } from '../../api/firebaseUtils';
 import { Committee, committeeLogos, getLogoComponent } from '../../types/committees';
 import { PublicUserInfo } from '../../types/user';
@@ -19,6 +19,8 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const committeeData = route?.params?.committee;
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
+
+    const insets = useSafeAreaInsets();
 
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
@@ -54,9 +56,6 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const [repsModalVisible, setRepsModalVisible] = useState(false);
     const [resetModalVisible, setResetModalVisible] = useState(false);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-    const [showOptionMenu, setShowOptionMenu] = useState<boolean>(false);
-
-    const insets = useSafeAreaInsets();
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -104,6 +103,14 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
 
         fetchTeamUsers();
     }, [])
+
+    // Update the selected logo component whenever localCommitteeData.logo changes
+    useEffect(() => {
+        if (localCommitteeData.logo) {
+            const logoData = getLogoComponent(localCommitteeData.logo);
+            setSelectedLogoData(logoData);
+        }
+    }, [localCommitteeData.logo]);
 
     const setHeadUserData = (uid: string,) => {
         const headInfo = teamMembers.find(member => member.uid === uid);
@@ -219,15 +226,6 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
             await deleteCommittee(localCommitteeData.firebaseDocName);
         }
     };
-
-    // Update the selected logo component whenever localCommitteeData.logo changes
-    useEffect(() => {
-        if (localCommitteeData.logo) {
-            const logoData = getLogoComponent(localCommitteeData.logo);
-            setSelectedLogoData(logoData);
-        }
-    }, [localCommitteeData.logo]);
-
 
     const renderItem = ({ item }: { item: any }) => {
         const [name, logoData] = item;

@@ -1,14 +1,13 @@
 import { View, Text, Image, TouchableOpacity, useColorScheme } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '../../context/UserContext';
-import { calculateHexLuminosity } from '../../helpers/colorUtils';
 import { Committee, getLogoComponent } from "../../types/committees";
 import { Images } from "../../../assets"
 import { PublicUserInfo } from '../../types/user';
 import { getPublicUserData } from '../../api/firebaseUtils';
 
 const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) => {
-    const { name, logo, head, memberCount, isOpen, firebaseDocName } = committee;
+    const { name, logo, head, memberCount, isOpen } = committee;
     const { LogoComponent, LightLogoComponent, height, width } = getLogoComponent(logo);
 
     const userContext = useContext(UserContext);
