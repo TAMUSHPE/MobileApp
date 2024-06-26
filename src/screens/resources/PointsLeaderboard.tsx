@@ -83,6 +83,8 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
 
     useEffect(() => {
         setFetchedUsers([]);
+        setLoading(true);
+        setEndOfData(false);
         scrollViewRef.current?.scrollTo({ y: 0, animated: false });
         setLastVisible(null);
         fetchSortedUserData(30, null);
