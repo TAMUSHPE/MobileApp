@@ -882,24 +882,6 @@ export const updateLink = async (linkData: LinkData) => {
     await setDoc(linkRef, linkToSave, { merge: true });
 };
 
-
-export const fetchLink = async (linkID: string): Promise<LinkData | null> => {
-    try {
-        const linkRef = doc(db, 'links', linkID);
-        const linkDoc = await getDoc(linkRef);
-
-        if (linkDoc.exists()) {
-            return linkDoc.data() as LinkData;
-        } else {
-            console.log('No such document!');
-            return null;
-        }
-    } catch (error) {
-        console.error('Error fetching document:', error);
-        return null;
-    }
-};
-
 export const getMembers = async (): Promise<PublicUserInfo[]> => {
     try {
         const userRef = collection(db, 'users');
@@ -1512,5 +1494,26 @@ export const removeCommitteeRequest = async (firebaseDocName: string, uid: strin
     if (auth.currentUser) {
         const requestDocRef = doc(db, `committeeVerification/${firebaseDocName}/requests/${uid}`);
         await deleteDoc(requestDocRef);
+    }
+};
+
+// ============================================================================
+// Resources Utilities
+// ============================================================================
+
+export const fetchLink = async (linkID: string): Promise<LinkData | null> => {
+    try {
+        const linkRef = doc(db, 'links', linkID);
+        const linkDoc = await getDoc(linkRef);
+
+        if (linkDoc.exists()) {
+            return linkDoc.data() as LinkData;
+        } else {
+            console.log('No such document!');
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching document:', error);
+        return null;
     }
 };

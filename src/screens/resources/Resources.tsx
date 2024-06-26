@@ -1,4 +1,4 @@
-import { View, Image, ScrollView, Text, TouchableOpacity, ImageSourcePropType, ActivityIndicator } from 'react-native';
+import { View, Image, ScrollView, Text, TouchableOpacity, ImageSourcePropType, ActivityIndicator, useColorScheme } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -7,19 +7,37 @@ import { handleLinkPress } from '../../helpers/links';
 import { fetchLink, getUser } from '../../api/firebaseUtils';
 import { auth } from '../../config/firebaseConfig';
 import { ResourcesStackParams } from '../../types/navigation';
-import { Images } from '../../../assets';
 import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
 import ResumeIcon from '../../../assets/resume-icon.svg';
 import ExamIcon from '../../../assets/exam-icon.svg';
 import { UserContext } from '../../context/UserContext';
 import { LinkData } from '../../types/links';
+import { StatusBar } from 'expo-status-bar';
 
 const linkIDs = ["1", "2", "3", "4", "5"]; // First 5 links are reserved for social media links
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
-    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [links, setLinks] = useState<LinkData[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const fetchLinks = async () => {
+        const fetchedLinks = await Promise.all(
+            linkIDs.map(async (id) => {
+                const data = await fetchLink(id);
+                return data || { id, name: '', url: '', imageUrl: null };
+            })
+        );
+        setLinks(fetchedLinks);
+        setIsLoading(false)
+    };
 
     const fetchUserData = async () => {
         console.log("Fetching user data...");
@@ -37,21 +55,9 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
         }
     }
 
-    const fetchLinks = async () => {
-        const fetchedLinks = await Promise.all(
-            linkIDs.map(async (id) => {
-                const data = await fetchLink(id);
-                return data || { id, name: '', url: '', imageUrl: null };
-            })
-        );
-        setLinks(fetchedLinks);
-        setLoading(false);
-    };
-
-
     useEffect(() => {
-        fetchUserData();
         fetchLinks();
+        fetchUserData();
     }, [])
 
     const SocialMediaButton = ({ url, imageSource, bgColor = "" }: {
@@ -69,13 +75,25 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
         </TouchableOpacity>
     );
 
-    const ResourceButton = ({ title, navigateTo, IconComponent }: {
+    const ResourceButton = ({ title, subTitle, navigateTo, IconComponent }: {
         title: string;
+        subTitle: string;
         navigateTo: "PointsLeaderboard" | "TestBank" | "ResumeBank";
         IconComponent: React.ElementType;
     }) => (
         <TouchableOpacity
-            className='flex-row bg-pale-blue w-[85%] h-24 rounded-3xl mb-8'
+            className='flex-row bg-primary-blue h-24 rounded-3xl mb-8'
+            style={{
+                shadowColor: "#000",
+                shadowOffset: {
+                    width: 0,
+                    height: 2,
+                },
+                shadowOpacity: 0.25,
+                shadowRadius: 3.84,
+
+                elevation: 5,
+            }}
             onPress={() => {
                 if (!userInfo?.publicInfo?.isStudent) {
                     alert("You must be a student to access this resource.");
@@ -84,8 +102,10 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                 }
             }}
         >
-            <View className='w-[73%] flex-row items-end px-6 py-3'>
+            <View className='w-[73%] px-6 mt-4'>
                 <Text className='text-white font-bold text-2xl'>{title}</Text>
+
+                <Text className='text-white text-lg'>{subTitle}</Text>
             </View>
             <View className='flex-1 justify-center items-center rounded-r-3xl'
                 style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
@@ -95,27 +115,23 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
         </TouchableOpacity>
     );
 
-    if (loading) {
-        return (
-            <ActivityIndicator className='absolute top-0 bottom-0 left-0 right-0' size={100} />
-        );
-    }
-
     return (
-        <SafeAreaView className='flex-1 bg-white' edges={["top"]}>
-            {/* Header */}
-            <View className='flex-row px-5 pb-4'>
-                <View className='flex-1 justify-center items-start'>
-                    <Image
-                        className="h-10 w-52"
-                        source={Images.LOGO_LIGHT}
-                    />
+        <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
+            <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Header */}
+                <View className='flex-row px-4'>
+                    <Text className={`text-4xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Resources</Text>
                 </View>
-            </View>
 
-            <ScrollView >
+                {isLoading &&
+                    <View className='mt-10 justify-center items-center'>
+                        <ActivityIndicator size="small" />
+                    </View>
+                }
+
                 {/* Links */}
-                <View className='flex-row mx-2 mt-4 justify-evenly'>
+                <View className='flex-row mt-4 justify-evenly'>
                     {links.map((link, index) => (
                         <SocialMediaButton
                             key={index}
@@ -126,27 +142,27 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                 </View>
 
                 {/* Resources */}
-                <View className='flex-col mt-12 items-center'>
+                <View className='flex-col mt-14 items-center mx-4'>
                     <ResourceButton
                         title="Points Leaderboard"
+                        subTitle="Track your points and see where you stand."
                         navigateTo="PointsLeaderboard"
                         IconComponent={LeaderBoardIcon}
                     />
                     <ResourceButton
                         title="Test Bank"
+                        subTitle='Find past exams and study materials.'
                         navigateTo="TestBank"
                         IconComponent={ExamIcon}
                     />
                     <ResourceButton
                         title="Resume Bank"
+                        subTitle='Upload and explore resumes for insight'
                         navigateTo="ResumeBank"
                         IconComponent={ResumeIcon}
                     />
                 </View>
-
-
-
-                <View className='mb-12' />
+                <View className='pb-12' />
             </ScrollView>
         </SafeAreaView>
     )
