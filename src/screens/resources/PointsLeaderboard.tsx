@@ -123,7 +123,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
 
             <View
                 className='flex-row mt-4 h-14 mx-4 rounded-3xl'
-                style={{ backgroundColor: 'rgba(0.5,0.5,0.5,0.5)' }}
+                style={{ backgroundColor: darkMode ? 'rgba(125,125,125,0.5)' : 'rgba(0.5,0.5,0.5,0.5)' }}
             >
                 <TouchableOpacity
                     className={`items-center justify-center flex-1 rounded-3xl m-1 ${filter == "monthly" && "bg-primary-blue"}`}
@@ -133,7 +133,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                         setFilter("monthly")
                     }}
                 >
-                    <Text className='text-white text-2xl font-bold'>Monthly</Text>
+                    <Text className='text-white text-xl font-bold'>Monthly</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     className={`items-center justify-center flex-1 rounded-3xl m-1 ${filter == "allTime" && "bg-primary-blue"}`}
@@ -143,7 +143,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                         setFilter("allTime")
                     }}
                 >
-                    <Text className='text-white text-2xl font-bold'>All Time</Text>
+                    <Text className='text-white text-xl font-bold'>All Time</Text>
                 </TouchableOpacity>
             </View>
 
