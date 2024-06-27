@@ -130,7 +130,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
         }
     }, [query])
 
-    const handleApplyFilter = async (): Promise<void> => {
+    const handleApplyFilter = async (filter: Test | null): Promise<void> => {
         setLoading(true);
         setTestCards([])
 
@@ -185,7 +185,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                 </TouchableOpacity>
             </View>
 
-            <View className='flex-row justify-between items-center mx-4'>
+            <View className='flex-row justify-between items-center mx-4 mt-2'>
                 {filter ? (
                     <TouchableOpacity
                         className={`flex-row items-center px-3 py-2 ${darkMode ? "bg-grey-dark" : "bg-grey-light"} rounded-lg`}
@@ -227,10 +227,8 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                         </View>
                     )}
                     {!loading && testCards.length === 0 && (
-                        <View className='pb-12 items-center justify-center'>
-                            <Text>
-                                No Test Found
-                            </Text>
+                        <View className='flex justify-center items-center'>
+                            <Text className={`text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>No Test Found</Text>
                         </View>
                     )}
                 </View>
@@ -269,8 +267,12 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                                         onPress={() => {
                                             if (filter?.subject === iso) {
                                                 setFilter(null);
+                                                handleApplyFilter(null);
+                                                setShowFilterModal(false);
                                             } else {
                                                 setFilter({ ...filter, subject: iso });
+                                                handleApplyFilter({ ...filter, subject: iso });
+                                                setShowFilterModal(false);
                                             }
                                         }}
                                         className={`px-4 py-2 mr-3 mb-4 rounded-md ${filter?.subject === iso ? 'bg-primary-blue' : (darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light')}`}
@@ -291,38 +293,6 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                                 ))}
                             </View>
                         </View>
-
-                        {/* Temp removal - does not work properly until Test Bank from google sheets is fixed.*/}
-                        {/* <View className='mx-4 mt-8'>
-                            <Text className={`text-2xl font-bold mb-4 ${darkMode ? "text-white" : "text-black"}`}>Course Number</Text>
-                            <TextInput
-                                className={`text-lg p-2 rounded border border-1 border-black ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
-                                value={filter?.course}
-                                placeholder='e.g. 102'
-                                placeholderTextColor={darkMode ? "#DDD" : "#777"}
-                                onChangeText={(text) => setFilter({ ...filter, course: text })}
-                                keyboardType='ascii-capable'
-                                enterKeyHint='ent   er'
-                            />
-                        </View> */}
-
-                        <TouchableOpacity
-                            onPress={() => {
-                                handleApplyFilter()
-                                setShowFilterModal(false)
-                            }}
-                            className='items-center justify-center bg-primary-blue py-2 rounded-lg mx-4 mt-10'>
-                            <Text className='text-white font-bold text-xl'>Apply</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={() => {
-                                handleClearFilter()
-                                setShowFilterModal(false)
-                            }}
-                            className={`items-center justify-center py-2 rounded-lg mx-4 mt-4 border border-grey-dark ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
-                            <Text className={`font-bold text-xl ${darkMode ? "text-white" : "text-black"}`}>Clear</Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal>

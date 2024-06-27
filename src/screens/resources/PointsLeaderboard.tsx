@@ -128,16 +128,6 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                 style={{ backgroundColor: darkMode ? 'rgba(125,125,125,0.5)' : 'rgba(0.5,0.5,0.5,0.5)' }}
             >
                 <TouchableOpacity
-                    className={`items-center justify-center flex-1 rounded-3xl m-1 ${filter == "monthly" && "bg-primary-blue"}`}
-                    onPress={() => {
-                        setFetchedUsers([]);
-                        setLastVisible(null);
-                        setFilter("monthly")
-                    }}
-                >
-                    <Text className='text-white text-xl font-bold'>Monthly</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
                     className={`items-center justify-center flex-1 rounded-3xl m-1 ${filter == "allTime" && "bg-primary-blue"}`}
                     onPress={() => {
                         setFetchedUsers([]);
@@ -146,6 +136,17 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     }}
                 >
                     <Text className='text-white text-xl font-bold'>All Time</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    className={`items-center justify-center flex-1 rounded-3xl m-1 ${filter == "monthly" && "bg-primary-blue"}`}
+                    onPress={() => {
+                        setFetchedUsers([]);
+                        setLastVisible(null);
+                        setFilter("monthly")
+                    }}
+                >
+                    <Text className='text-white text-xl font-bold'>Monthly</Text>
                 </TouchableOpacity>
             </View>
 

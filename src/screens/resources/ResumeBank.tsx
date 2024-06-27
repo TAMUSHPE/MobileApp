@@ -45,7 +45,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
     }, [])
 
 
-    const handleApplyFilter = async () => {
+    const handleApplyFilter = async (filter: UserFilter) => {
         const filteredUsers = await fetchUsersWithPublicResumes(filter);
         setResumes(filteredUsers);
     };
@@ -104,6 +104,12 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                         </View>
                     )}
 
+                    {!loading && resumes.length === 0 && (
+                        <View className='flex justify-center items-center mt-8'>
+                            <Text className={`text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>No Resumes Found</Text>
+                        </View>
+                    )}
+
                     {resumes.map((item, index) => (
                         <ResumeCard
                             key={index}
@@ -114,6 +120,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                     ))}
                 </View>
             </ScrollView>
+
             <Modal
                 animationType="slide"
                 transparent={true}
@@ -147,8 +154,12 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                                         onPress={() => {
                                             if (filter?.major === iso) {
                                                 setFilter({ major: "", classYear: "" });
+                                                handleApplyFilter({ major: "", classYear: "" });
+                                                setShowFilterModal(false);
                                             } else {
                                                 setFilter({ ...filter, major: iso });
+                                                handleApplyFilter({ ...filter, major: iso });
+                                                setShowFilterModal(false);
                                             }
                                         }}
                                         className={`px-4 py-2 mr-3 mb-4 rounded-md ${filter?.major === iso ? 'bg-primary-blue' : (darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light')}`}
@@ -169,24 +180,6 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                                 ))}
                             </View>
                         </View>
-
-                        <TouchableOpacity
-                            onPress={() => {
-                                handleApplyFilter()
-                                setShowFilterModal(false)
-                            }}
-                            className='items-center justify-center bg-primary-blue py-2 rounded-lg mx-4 mt-10'>
-                            <Text className='text-white font-bold text-xl'>Apply</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={() => {
-                                handleClearFilter()
-                                setShowFilterModal(false)
-                            }}
-                            className={`items-center justify-center py-2 rounded-lg mx-4 mt-4 border border-grey-dark ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
-                            <Text className={`font-bold text-xl ${darkMode ? "text-white" : "text-black"}`}>Clear</Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
