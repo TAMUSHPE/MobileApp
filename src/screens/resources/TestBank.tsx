@@ -68,7 +68,6 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
 
         const limitClause = limit !== null ? `LIMIT ${limit}` : "";
         query += ` ${limitClause} OFFSET ${offset}`;
-        console.log(query, "test")
 
         return query;
 
@@ -114,7 +113,6 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
             if (!response) throw new Error("No response from Google Sheets API");
 
             const data = await prepTestSheet(response);
-            console.log(data, "data");
             setTestCards([...testCards, ...data]);
 
         } catch (error) {
@@ -122,7 +120,6 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
         } finally {
             setLoading(false);
             setQuery(undefined);
-            setFilter(null);
         }
     }
 
@@ -143,7 +140,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
         setQuery(filterQuery);
     }
 
-    const handleCLearFilter = async (): Promise<void> => {
+    const handleClearFilter = async (): Promise<void> => {
         // Reset the test bank
         setLoading(true);
         setTestCards([])
@@ -188,10 +185,19 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                 </TouchableOpacity>
             </View>
 
-            <View className='flex-row justify-end'>
+            <View className='flex-row justify-between items-center mx-4'>
+                {filter ? (
+                    <TouchableOpacity
+                        className={`flex-row items-center px-3 py-2 ${darkMode ? "bg-grey-dark" : "bg-grey-light"} rounded-lg`}
+                        onPress={() => handleClearFilter()}
+                    >
+                        <Octicons name="x" size={20} color={darkMode ? "white" : "black"} />
+                        <Text className={`ml-2 text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{filter.subject}</Text>
+                    </TouchableOpacity>
+                ) : (<View />)}
                 <TouchableOpacity
                     onPress={() => { setShowFilterModal(true) }}
-                    className='mx-4 p-2'
+                    className='mx-c4 p-2'
                 >
                     <Octicons name="filter" size={30} color={darkMode ? "white" : "black"} />
                 </TouchableOpacity>
@@ -255,7 +261,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
 
                     <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         <View>
-                            <Text className={`text-2xl font-bold mb-4 mx-4 ${darkMode ? "text-white" : "text-black"}`}>Subject</Text>
+                            <Text className={`text-2xl font-bold mb-4 mx-4 ${darkMode ? "text-white" : "text-black"}`}>Subjects</Text>
                             <View className='flex-row flex-wrap ml-4'>
                                 {SUBJECTCODES.map(({ iso }) => (
                                     <TouchableOpacity
@@ -286,6 +292,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                             </View>
                         </View>
 
+                        {/* Temp removal - does not work properly until Test Bank from google sheets is fixed.*/}
                         {/* <View className='mx-4 mt-8'>
                             <Text className={`text-2xl font-bold mb-4 ${darkMode ? "text-white" : "text-black"}`}>Course Number</Text>
                             <TextInput
@@ -310,7 +317,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
 
                         <TouchableOpacity
                             onPress={() => {
-                                handleCLearFilter()
+                                handleClearFilter()
                                 setShowFilterModal(false)
                             }}
                             className={`items-center justify-center py-2 rounded-lg mx-4 mt-4 border border-grey-dark ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
@@ -319,7 +326,6 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                     </View>
                 </View>
             </Modal>
-
         </SafeAreaView>
     )
 }
