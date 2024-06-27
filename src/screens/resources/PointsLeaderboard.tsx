@@ -1,16 +1,14 @@
-import { View, Text, ScrollView, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, TouchableOpacity } from 'react-native'
+import { View, Text, ScrollView, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, TouchableOpacity, useColorScheme } from 'react-native'
 import React, { useState, useEffect, useRef, useCallback, useContext } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { db } from "../../config/firebaseConfig"
 import { PublicUserInfo } from '../../types/user';
 import { ResourcesStackParams } from '../../types/navigation';
 import RankCard from './RankCard';
-import { collection, getDocs, limit, orderBy, query, startAfter } from 'firebase/firestore';
 import { UserContext } from '../../context/UserContext';
-import { useColorScheme } from 'react-native';
+import { getSortedUserData } from '../../api/firebaseUtils';
 
 const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
     const userContext = useContext(UserContext);
@@ -32,34 +30,6 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
     const scrollViewRef = useRef<ScrollView>(null);
 
     /**
-     * Returns a list of user data sorted by their rank.
-     */
-    const getSortedUserData = async (amount: number, lastDoc: any, filter: string): Promise<{ data: PublicUserInfo[], lastVisible: any }> => {
-        const userRef = collection(db, 'users');
-        let sortedUsersQuery;
-
-        const orderByField = filter === "allTime" ? "points" : "pointsThisMonth";
-
-        if (lastDoc) {
-            sortedUsersQuery = query(userRef, orderBy(orderByField, "desc"), startAfter(lastDoc), limit(amount));
-        } else {
-            sortedUsersQuery = query(userRef, orderBy(orderByField, "desc"), limit(amount));
-        }
-
-        const data = (await getDocs(sortedUsersQuery)).docs;
-
-        setEndOfData(data.length < amount);
-
-        return {
-            data: data.map((value) => {
-                const userData = value.data() as PublicUserInfo;
-                return { ...userData, uid: value.id };
-            }),
-            lastVisible: data.length > 0 ? data[data.length - 1] : null
-        };
-    }
-
-    /**
      * Obtains user data from firebase and appends the data to the current collection.
      */
     const fetchSortedUserData = async (amount: number, lastDoc: any) => {
@@ -68,6 +38,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
 
         getSortedUserData(amount, lastDoc, filter)
             .then(({ data, lastVisible }) => {
+                setEndOfData(data.length < amount);
                 setFetchedUsers(prevUsers => [...prevUsers, ...data]);
                 setLastVisible(lastVisible);
             })
@@ -82,12 +53,16 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
     };
 
     useEffect(() => {
-        setFetchedUsers([]);
         setLoading(true);
-        setEndOfData(false);
+
+        setFetchedUsers([]);
         scrollViewRef.current?.scrollTo({ y: 0, animated: false });
         setLastVisible(null);
+        setEndOfData(false);
+
         fetchSortedUserData(30, null);
+
+        setLoading(false);
     }, [filter]);
 
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {

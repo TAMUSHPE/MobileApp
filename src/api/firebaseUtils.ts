@@ -855,33 +855,6 @@ export const queryUserEventLogs = async (uid: string, limitNum: number = 3): Pro
     return events;
 }
 
-
-export const updateLink = async (linkData: LinkData) => {
-    const linkRef = doc(db, 'links', linkData.id);
-    let imageUrl = linkData.imageUrl || '';
-
-    // If there is an image to upload
-    if (linkData.imageUrl && linkData.imageUrl.startsWith('file://')) {
-        const imageRef = ref(storage, `links/${linkData.name}`);
-        const blob = await getBlobFromURI(linkData.imageUrl);
-
-        if (blob) {
-            await uploadBytes(imageRef, blob);
-            imageUrl = await getDownloadURL(imageRef);
-        }
-    }
-
-
-    const linkToSave: LinkData = {
-        id: linkData.id,
-        name: linkData.name,
-        url: linkData.url,
-        imageUrl: imageUrl,
-    };
-
-    await setDoc(linkRef, linkToSave, { merge: true });
-};
-
 export const getMembers = async (): Promise<PublicUserInfo[]> => {
     try {
         const userRef = collection(db, 'users');
@@ -1501,6 +1474,32 @@ export const removeCommitteeRequest = async (firebaseDocName: string, uid: strin
 // Resources Utilities
 // ============================================================================
 
+export const updateLink = async (linkData: LinkData) => {
+    const linkRef = doc(db, 'links', linkData.id);
+    let imageUrl = linkData.imageUrl || '';
+
+    // If there is an image to upload
+    if (linkData.imageUrl && linkData.imageUrl.startsWith('file://')) {
+        const imageRef = ref(storage, `links/${linkData.name}`);
+        const blob = await getBlobFromURI(linkData.imageUrl);
+
+        if (blob) {
+            await uploadBytes(imageRef, blob);
+            imageUrl = await getDownloadURL(imageRef);
+        }
+    }
+
+
+    const linkToSave: LinkData = {
+        id: linkData.id,
+        name: linkData.name,
+        url: linkData.url,
+        imageUrl: imageUrl,
+    };
+
+    await setDoc(linkRef, linkToSave, { merge: true });
+};
+
 export const fetchLink = async (linkID: string): Promise<LinkData | null> => {
     try {
         const linkRef = doc(db, 'links', linkID);
@@ -1517,3 +1516,26 @@ export const fetchLink = async (linkID: string): Promise<LinkData | null> => {
         return null;
     }
 };
+
+export const getSortedUserData = async (amount: number, lastDoc: any, filter: string): Promise<{ data: PublicUserInfo[], lastVisible: any }> => {
+    const userRef = collection(db, 'users');
+    let sortedUsersQuery;
+
+    const orderByField = filter === "allTime" ? "points" : "pointsThisMonth";
+
+    if (lastDoc) {
+        sortedUsersQuery = query(userRef, orderBy(orderByField, "desc"), startAfter(lastDoc), limit(amount));
+    } else {
+        sortedUsersQuery = query(userRef, orderBy(orderByField, "desc"), limit(amount));
+    }
+
+    const data = (await getDocs(sortedUsersQuery)).docs;
+
+    return {
+        data: data.map((value) => {
+            const userData = value.data() as PublicUserInfo;
+            return { ...userData, uid: value.id };
+        }),
+        lastVisible: data.length > 0 ? data[data.length - 1] : null
+    };
+}
