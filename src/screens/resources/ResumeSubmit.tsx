@@ -3,10 +3,9 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext'
-import { auth, db } from '../../config/firebaseConfig'
-import { setPublicUserData, uploadFile } from '../../api/firebaseUtils'
+import { auth } from '../../config/firebaseConfig'
+import { deleteUserResumeData, getResumeVerificationStatus, removeResumeVerificationDoc, setPublicUserData, uploadFile, uploadResumeVerificationDoc } from '../../api/firebaseUtils'
 import { getBlobFromURI, selectFile } from '../../api/fileSelection'
-import { deleteDoc, deleteField, doc, onSnapshot, setDoc, updateDoc } from 'firebase/firestore'
 import { CommonMimeTypes } from '../../helpers/validation'
 import { handleLinkPress } from '../../helpers/links';
 import { PublicUserInfo } from '../../types/user';
@@ -28,23 +27,19 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
     const [loading, setLoading] = useState<boolean>(false);
     const [resumeName, setResumeName] = useState<string | undefined>(undefined);
 
-    const truncateStringWithEllipsis = (name: string, limit = 10) => {
-        if (name.length > limit) {
-            return `${name.substring(0, limit)}...`;
-        }
-        return name;
-    };
-
     useEffect(() => {
-        const docRef = doc(db, `resumeVerification/${auth.currentUser?.uid}`);
-        const unsubscribe = onSnapshot(docRef, (docSnapshot) => {
-            setLoading(false);
-            setSubmittedResume(docSnapshot.exists());
-        }, (error) => {
-            console.error("Error fetching document:", error);
-            setLoading(false);
-        });
-        return unsubscribe;
+        const fetchResumeVerificationStatus = async () => {
+            setLoading(true);
+            try {
+                const status = await getResumeVerificationStatus(auth.currentUser?.uid!);
+                setSubmittedResume(status);
+            } catch (error) {
+                console.error("Error fetching document:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchResumeVerificationStatus();
     }, []);
 
     const selectResume = async () => {
@@ -94,10 +89,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
     const submitResume = useCallback(async () => {
         if (auth.currentUser) {
             try {
-                await setDoc(doc(db, `resumeVerification/${auth.currentUser?.uid}`), {
-                    uploadDate: new Date().toISOString(),
-                    resumePublicURL: userInfo?.publicInfo?.resumePublicURL
-                }, { merge: true });
+                await uploadResumeVerificationDoc(auth.currentUser.uid, userInfo?.publicInfo?.resumePublicURL!);
                 alert('Resume submission was successful! You will receive a notification when your resume is approved.');
             } catch (error) {
                 console.error('Error submitting resume: ', error);
@@ -108,8 +100,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
 
     const removeSubmittedResume = useCallback(async () => {
         if (submittedResume) {
-            const resumeVerificationDoc = doc(db, 'resumeVerification', auth.currentUser?.uid!);
-            await deleteDoc(resumeVerificationDoc);
+            await removeResumeVerificationDoc(auth.currentUser?.uid!);
             setSubmittedResume(false);
         }
     }, [submittedResume]);
@@ -207,11 +198,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                                         alert('Resume was successfully removed.');
 
                                         // Delete resume from user data in Firebase
-                                        const userDocRef = doc(db, 'users', auth.currentUser?.uid!);
-                                        await updateDoc(userDocRef, {
-                                            resumePublicURL: deleteField(),
-                                            resumeVerified: false,
-                                        });
+                                        await deleteUserResumeData(auth.currentUser?.uid!);
 
                                         // Delete resume from user data in local storage
                                         await updatePublicInfoAndPersist({
@@ -298,5 +285,11 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
     )
 }
 
+const truncateStringWithEllipsis = (name: string, limit = 10) => {
+    if (name.length > limit) {
+        return `${name.substring(0, limit)}...`;
+    }
+    return name;
+};
 
 export default ResumeSubmit

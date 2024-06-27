@@ -1539,3 +1539,29 @@ export const getSortedUserData = async (amount: number, lastDoc: any, filter: st
         lastVisible: data.length > 0 ? data[data.length - 1] : null
     };
 }
+
+export const getResumeVerificationStatus = async (uid: string): Promise<boolean> => {
+    const docRef = doc(db, `resumeVerification/${uid}`);
+    const docSnapshot = await getDoc(docRef);
+    return docSnapshot.exists();
+}
+
+export const deleteUserResumeData = async (uid: string) => {
+    const userDocRef = doc(db, 'users', uid);
+    await updateDoc(userDocRef, {
+        resumePublicURL: deleteField(),
+        resumeVerified: false,
+    });
+}
+
+export const removeResumeVerificationDoc = async (uid: string) => {
+    const resumeVerificationDoc = doc(db, 'resumeVerification', uid);
+    await deleteDoc(resumeVerificationDoc);
+}
+
+export const uploadResumeVerificationDoc = async (uid: string, url: string) => {
+    await setDoc(doc(db, `resumeVerification/${uid}`), {
+        uploadDate: new Date().toISOString(),
+        resumePublicURL: url
+    }, { merge: true });
+}
