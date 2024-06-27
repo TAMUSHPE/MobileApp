@@ -1,7 +1,7 @@
-import { deleteDoc, collection, getDocs, doc, setDoc } from "firebase/firestore";
+import { deleteDoc, collection, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
-import { fetchLink, getSortedUserData, updateLink } from "../../../api/firebaseUtils";
+import { deleteUserResumeData, fetchLink, getResumeVerificationStatus, getSortedUserData, removeResumeVerificationDoc, updateLink, uploadResumeVerificationDoc } from "../../../api/firebaseUtils";
 import { User } from "../../../types/user";
 import { LinkData } from "../../../types/links";
 
@@ -136,5 +136,63 @@ describe("fetchLink and updateLink", () => {
         const result = await fetchLink("invalidLinkID");
 
         expect(result).toBeNull();
+    });
+});
+
+describe("Resume Verification Process", () => {
+    const testUID = "testUID";
+    const testURL = "https://example.com/resume.pdf";
+
+    beforeEach(async () => {
+        await deleteDoc(doc(db, 'resumeVerification', testUID));
+        await deleteDoc(doc(db, 'users', testUID));
+    });
+
+    afterEach(async () => {
+        await deleteDoc(doc(db, 'resumeVerification', testUID));
+        await deleteDoc(doc(db, 'users', testUID));
+    });
+
+    test("getResumeVerificationStatus returns true for existing document", async () => {
+        await setDoc(doc(db, `resumeVerification/${testUID}`), { resumePublicURL: testURL });
+
+        const result = await getResumeVerificationStatus(testUID);
+        expect(result).toBe(true);
+    });
+
+    test("getResumeVerificationStatus returns false for non-existing document", async () => {
+        const result = await getResumeVerificationStatus(testUID);
+        expect(result).toBe(false);
+    });
+
+    test("deleteUserResumeData updates user document correctly", async () => {
+        await setDoc(doc(db, 'users', testUID), { resumePublicURL: testURL, resumeVerified: true });
+
+        await deleteUserResumeData(testUID);
+
+        const userDoc = await getDoc(doc(db, 'users', testUID));
+        expect(userDoc.exists()).toBe(true);
+        const userData = userDoc.data();
+        expect(userData?.resumePublicURL).toBeUndefined();
+        expect(userData?.resumeVerified).toBe(false);
+    });
+
+    test("removeResumeVerificationDoc deletes the document", async () => {
+        await setDoc(doc(db, `resumeVerification/${testUID}`), { resumePublicURL: testURL });
+
+        await removeResumeVerificationDoc(testUID);
+
+        const resumeDoc = await getDoc(doc(db, `resumeVerification/${testUID}`));
+        expect(resumeDoc.exists()).toBe(false);
+    });
+
+    test("uploadResumeVerificationDoc sets the document correctly", async () => {
+        await uploadResumeVerificationDoc(testUID, testURL);
+
+        const resumeDoc = await getDoc(doc(db, `resumeVerification/${testUID}`));
+        expect(resumeDoc.exists()).toBe(true);
+        const resumeData = resumeDoc.data();
+        expect(resumeData?.resumePublicURL).toBe(testURL);
+        expect(resumeData?.uploadDate).toBeDefined();
     });
 });
