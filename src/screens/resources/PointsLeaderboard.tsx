@@ -156,7 +156,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                 ref={scrollViewRef}
                 scrollEventThrottle={400}
             >
-                <View className={`rounded-t-2xl flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} ${fetchedUsers.length === 0 && "h-screen"}`}>
+                <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} ${fetchedUsers.length === 0 && "h-screen"}`}>
                     {!initLoading && (
                         <View>
                             {/* User Ranking */}

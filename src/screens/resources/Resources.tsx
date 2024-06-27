@@ -150,16 +150,16 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                         IconComponent={LeaderBoardIcon}
                     />
                     <ResourceButton
-                        title="Test Bank"
-                        subTitle='Find past exams and study materials.'
-                        navigateTo="TestBank"
-                        IconComponent={ExamIcon}
-                    />
-                    <ResourceButton
                         title="Resume Bank"
                         subTitle='Upload and explore resumes for insight'
                         navigateTo="ResumeBank"
                         IconComponent={ResumeIcon}
+                    />
+                    <ResourceButton
+                        title="Test Bank"
+                        subTitle='Find past exams and study materials.'
+                        navigateTo="TestBank"
+                        IconComponent={ExamIcon}
                     />
                 </View>
                 <View className='pb-12' />
