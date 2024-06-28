@@ -1,4 +1,4 @@
-import { Image, ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -8,14 +8,17 @@ import manageNotificationPermissions from '../../helpers/pushNotification';
 import { HomeStackParams } from "../../types/navigation"
 import MOTMCard from '../../components/MOTMCard';
 import FlickrPhotoGallery from '../../components/FlickrPhotoGallery';
-import Ishpe from './Ishpe';
 import { Images } from '../../../assets';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserContext } from '../../context/UserContext';
 import { isMemberVerified } from '../../helpers/membership';
 import { auth } from '../../config/firebaseConfig';
 import DismissibleModal from '../../components/DismissibleModal';
-import { fetchOfficeCount, fetchOfficerStatus, getUser, knockOnWall, updateOfficerStatus } from '../../api/firebaseUtils';
+import { fetchOfficeCount, fetchOfficerStatus, getMyEvents, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
+import { EventType, SHPEEvent } from '../../types/events';
+import EventCard from '../events/EventCard';
+import ProfileBadge from '../../components/ProfileBadge';
+import { reverseFormattedFirebaseName } from '../../types/committees';
 
 /**
  * Renders the home screen of the application.
@@ -29,6 +32,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const { userInfo, setUserInfo } = userContext!;
     const nationalExpiration = userInfo?.publicInfo?.nationalExpiration;
     const chapterExpiration = userInfo?.publicInfo?.chapterExpiration
+    const userCommittees = userInfo?.publicInfo?.committees || [];
 
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
@@ -44,6 +48,11 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const [officeHourInfoMenu, setOfficeHourInfoMenu] = useState<boolean>(false);
     const [signInConfirmMenu, setSignInConfirmMenu] = useState<boolean>(false);
     const [currentUser, setCurrentUser] = useState(auth.currentUser);
+    const [userInterests, setUserInterests] = useState<string[]>(userInfo?.publicInfo?.interests || []);
+    const [isLoading, setIsLoading] = useState<boolean>(true)
+    const [myEvents, setMyEvents] = useState<SHPEEvent[]>([]);
+    const [interestOptionsModal, setInterestOptionsModal] = useState<boolean>(false);
+    const [savedInterestLoading, setSavedInterestLoading] = useState<boolean>(false);
 
 
     useEffect(() => {
@@ -84,6 +93,127 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         }
 
     }, [currentUser]);
+
+
+    const fetchEvents = async () => {
+        try {
+            setIsLoading(true);
+
+            const events = await getMyEvents(userCommittees, userInterests, 3);
+            events.sort((a, b) => (a.startTime?.toDate().getTime() || 0) - (b.startTime?.toDate().getTime() || 0));
+            setMyEvents(events);
+        } catch (error) {
+            console.error("Error retrieving events:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchEvents();
+    }, []);
+
+    const isInterestChanged = () => {
+        if (!userInfo?.publicInfo?.interests) {
+            return userInterests.length > 0;
+        }
+
+        const originalInterests = new Set(userInfo.publicInfo.interests);
+        const currentInterests = new Set(userInterests);
+
+        if (originalInterests.size !== currentInterests.size) {
+            return true;
+        }
+
+        for (let interest of originalInterests) {
+            if (!currentInterests.has(interest)) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    const handleInterestToggle = (name: string) => {
+        setUserInterests(prevInterest => {
+            const interestedEvents = prevInterest.includes(name);
+            if (interestedEvents) {
+                return prevInterest.filter(interest => interest !== name);
+            } else {
+                return [...prevInterest, name];
+            }
+        });
+    };
+
+    const handleInterestUpdate = async () => {
+        setSavedInterestLoading(true);
+        await fetchEvents();
+
+        await setPublicUserData({
+            interests: userInterests,
+        });
+
+        // locally update user info
+        if (userInfo) {
+            const updatedUserInfo = {
+                ...userInfo,
+                publicInfo: {
+                    ...userInfo.publicInfo,
+                    interests: userInterests,
+                },
+            };
+
+            try {
+                await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
+                setUserInfo(updatedUserInfo);
+            } catch (error) {
+                console.error("Error updating user info:", error);
+            }
+        }
+
+        setSavedInterestLoading(false);
+        setInterestOptionsModal(false);
+    }
+
+    const InterestButtons = ({ interestEvent, label }: {
+        interestEvent: EventType;
+        label: string;
+    }) => {
+        const isSelected = userInterests.includes(interestEvent);
+        return (
+            <TouchableOpacity
+                onPress={() => handleInterestToggle(interestEvent)}
+                className={`justify-center items-center flex-row border py-2 px-3 mr-6 mb-4 rounded-md ${isSelected ? "border-primary-blue bg-primary-blue" : (darkMode ? "bg-secondary-bg-dark border-white" : "bg-secondary-bg-light border-black")}`}
+                style={{
+                    shadowColor: "#000",
+                    shadowOffset: {
+                        width: 0,
+                        height: 2,
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 3.84,
+                    elevation: 5,
+                }}
+            >
+                {isSelected ? (
+                    <View className='mr-2'>
+                        <Octicons name="check" size={20} color="white" />
+                    </View>
+                ) : (
+                    <View className='mr-2'>
+                        <Octicons name="check" size={20} color={"transparent"} />
+                    </View>
+                )}
+
+
+                <Text className={`text-lg ${isSelected ? "text-white" : "text-transparent"} `}>{label}</Text>
+
+                {!isSelected && (
+                    <Text className={`text-lg ${darkMode ? "absolute text-white" : "absolute text-black"}`}>{label}</Text>
+                )}
+            </TouchableOpacity>
+        );
+    }
 
     return (
         <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
@@ -246,9 +376,62 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 </View>
 
                 {/* My Events */}
-                <Ishpe navigation={navigation} />
+                <View className='mt-12'>
+                    <View className='flex-row mb-3'>
+                        <View className='flex-row ml-4 flex-1'>
+                            <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>My Events</Text>
+                            <TouchableOpacity
+                                className='px-4'
+                                onPress={() => setInterestOptionsModal(true)}
+                            >
+                                <Octicons name="gear" size={24} color={darkMode ? "white" : "black"} />
+                            </TouchableOpacity>
+                        </View>
+                        <TouchableOpacity
+                            className='px-4'
+                            onPress={() => console.log("TODO: implement navigation to events screen")}
+                        >
+                            <Text className='text-lg text-primary-blue font-semibold'>View all</Text>
+                        </TouchableOpacity>
+                    </View>
+
+
+                    {isLoading && (
+                        <ActivityIndicator size="small" className='mt-8' />
+                    )}
+                    {!isLoading && myEvents.length === 0 && (
+                        <View
+                            className={`mx-4 mt-4 p-4 rounded-md flex-row ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+
+                                elevation: 5,
+                            }}>
+                            <Text className={`text-center text-xl ${darkMode ? "text-white" : "text-black"}`}>You don't have any events. Check back later or visit the events screen to explore more options.</Text>
+                        </View>
+
+                    )}
+                    <View className='mx-4'>
+                        {!isLoading && myEvents.map((event: SHPEEvent, index) => {
+                            return (
+                                <View key={index} className={`${index > 0 && "mt-6"}`}>
+                                    <EventCard event={event} navigation={navigation} />
+                                </View>
+                            );
+                        })}
+                    </View>
+                </View>
+
                 {/* MOTM */}
-                <MOTMCard navigation={navigation} />
+                {/* <MOTMCard navigation={navigation} /> */}
+
+                <View className='pb-16' />
             </ScrollView>
 
             {officeHourInfoMenu && (
@@ -326,6 +509,114 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                             </TouchableOpacity>
                         </View>
                     </View>
+                </View>
+            </DismissibleModal>
+
+            <DismissibleModal
+                visible={interestOptionsModal}
+                setVisible={setInterestOptionsModal}
+            >
+                <View
+                    className={`flex opacity-100 rounded-md py-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    style={{ maxWidth: "95%" }}
+                >
+                    {/* Header */}
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center ml-3'>
+                            {darkMode ? (
+                                <Image
+                                    resizeMode='cover'
+                                    className="h-14 w-14"
+                                    source={Images.SHPE_WHITE}
+                                />
+                            ) : (
+                                <Image
+                                    resizeMode='cover'
+                                    className="h-14 w-14"
+                                    source={Images.SHPE_NAVY}
+                                />
+                            )}
+                            <Text className={`text-3xl font-bold ml-3 ${darkMode ? "text-white" : "text-black"}`}>My Events</Text>
+                        </View>
+                        <View>
+                            <TouchableOpacity
+                                className='px-6'
+                                onPress={() => {
+                                    setInterestOptionsModal(false)
+                                    setUserInterests(userInfo?.publicInfo?.interests || [])
+                                }}>
+                                <Octicons name="x" size={30} color={darkMode ? "white" : "black"} />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                    <Text className={`mx-4 text-lg ${darkMode ? "text-white" : "text-black"}`}>You will receive notifications for events related
+                        to your interests and committees</Text>
+
+                    {/* Interest */}
+                    <View className='mt-8 mx-4'>
+                        <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Interest</Text>
+                        <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Select the type of events you are interested in</Text>
+
+                        {/* If any additional interest are added in the future, then update manually in profile setup */}
+                        <View className='flex-row flex-wrap mt-6'>
+                            <InterestButtons interestEvent={EventType.VOLUNTEER_EVENT} label="Volunteering" />
+                            <InterestButtons interestEvent={EventType.INTRAMURAL_EVENT} label="Intramural" />
+                            <InterestButtons interestEvent={EventType.SOCIAL_EVENT} label="Socials" />
+                            <InterestButtons interestEvent={EventType.STUDY_HOURS} label="Study Hours" />
+                            <InterestButtons interestEvent={EventType.WORKSHOP} label="Workshops" />
+                        </View>
+
+                        {/* Save Changes Button */}
+                        <View>
+                            <TouchableOpacity
+                                className='w-full mt-4'
+                                onPress={async () => { handleInterestUpdate() }}
+                            >
+                                <View className={`items-center justify-center w-full bg-primary-blue rounded-md px-2 py-2 ${isInterestChanged() ? "bg-primary-blue" : (darkMode ? "bg-grey-dark" : "bg-grey-light")}`}>
+                                    {savedInterestLoading ? (
+                                        <ActivityIndicator size="small" />
+                                    ) : (
+                                        <Text className='text-white font-bold text-xl'>Save</Text>
+                                    )}
+                                </View>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {/* Committees */}
+                    <View className='mt-8 mx-4'>
+                        <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Your Committees</Text>
+                        <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Visit committees tab to join or leave a committee</Text>
+
+                        {userCommittees && userCommittees.length > 0 && (
+                            <View className='mt-2'>
+                                <View className='flex-row flex-wrap mt-2'>
+                                    {userCommittees?.map((committeeName, index) => {
+                                        return (
+                                            <View
+                                                className={`border py-2 px-3 mr-2 mb-2 rounded-md border-primary-blue ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                                                style={{
+                                                    shadowColor: "#000",
+                                                    shadowOffset: {
+                                                        width: 0,
+                                                        height: 2,
+                                                    },
+                                                    shadowOpacity: 0.25,
+                                                    shadowRadius: 3.84,
+                                                    elevation: 5,
+                                                }}
+                                                key={index}
+                                            >
+                                                <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{reverseFormattedFirebaseName(committeeName) || "Unknown"}</Text>
+                                            </View>
+                                        );
+                                    })}
+                                </View>
+                            </View>
+                        )}
+                    </View>
+
+                    <View className='pb-10' />
                 </View>
             </DismissibleModal>
         </SafeAreaView>

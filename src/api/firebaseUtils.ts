@@ -1,6 +1,6 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject, getDownloadURL, uploadBytes } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot, serverTimestamp } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot, serverTimestamp, QueryConstraint } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateFileBlob, validateTamuEmail } from "../helpers/validation";
 import { PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/user";
@@ -895,32 +895,24 @@ export const fetchEventByName = async (eventName: string): Promise<SHPEEvent | n
 
 export const getInterestsEvent = async (interests: string[]) => {
     try {
-        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
+        let allEvents = new Map<string, any>();
         const currentTime = Timestamp.now();
 
         const eventsRef = collection(db, 'events');
 
         for (const interest of interests) {
-            try {
-                const eventsQuery = query(
-                    eventsRef,
-                    where("eventType", "==", interest),
-                    where("endTime", ">=", currentTime)
-                );
-                const querySnapshot = await getDocs(eventsQuery);
-                querySnapshot.forEach((doc) => {
-                    const eventData = doc.data();
-                    const eventDataWithId = { id: doc.id, ...eventData };
 
-                    // Using Map to avoid duplicates
-                    allEvents.set(doc.id, eventDataWithId);
-                });
-            } catch (innerError) {
-                console.error(`Error fetching events for committee ${interests}:`, innerError);
-            }
+            const eventsQuery = query(
+                eventsRef,
+                where("eventType", "==", interest),
+                where("endTime", ">=", currentTime)
+            );
+            const querySnapshot = await getDocs(eventsQuery);
+            querySnapshot.forEach((doc) => {
+                allEvents.set(doc.id, doc.data());
+            });
         }
 
-        // Convert Map values to an array
         return Array.from(allEvents.values());
     } catch (error) {
         console.error("Error fetching events for user committees:", error);
@@ -1258,36 +1250,23 @@ export const resetCommittee = async (firebaseDocName: string) => {
 
 export const getCommitteeEvents = async (committees: string[]) => {
     try {
-        let allEvents = new Map<string, any>(); // Using a Map to handle uniqueness
+        let allEvents = new Map<string, any>();
         const currentTime = Timestamp.now();
 
         const eventsRef = collection(db, 'events');
 
-        // Pre-fetching committee data to avoid duplicate calls in the loop
-        const committeesData = await Promise.all(committees.map(committee => getCommittee(committee)));
-
         for (const committee of committees) {
-            try {
-                const committeeData = committeesData.find(data => data?.firebaseDocName === committee);
-                const eventsQuery = query(
-                    eventsRef,
-                    where("committee", "==", committee),
-                    where("endTime", ">=", currentTime)
-                );
-                const querySnapshot = await getDocs(eventsQuery);
-                querySnapshot.forEach((doc) => {
-                    const eventData = doc.data();
-                    const eventWithCommitteeData = { id: doc.id, ...eventData, committeeData: committeeData };
-
-                    // Using Map to avoid duplicates
-                    allEvents.set(doc.id, eventWithCommitteeData);
-                });
-            } catch (innerError) {
-                console.error(`Error fetching events for committee ${committee}:`, innerError);
-            }
+            const eventsQuery = query(
+                eventsRef,
+                where("committee", "==", committee),
+                where("endTime", ">=", currentTime)
+            );
+            const querySnapshot = await getDocs(eventsQuery);
+            querySnapshot.forEach((doc) => {
+                allEvents.set(doc.id, doc.data());
+            });
         }
 
-        // Convert Map values to an array
         return Array.from(allEvents.values());
     } catch (error) {
         console.error("Error fetching events for user committees:", error);
@@ -1586,4 +1565,54 @@ export const fetchOfficerStatus = async (uid: string) => {
 export const updateOfficerStatus = async (uid: string, signedIn: boolean) => {
     const officerDoc = doc(db, `office-hours/${uid}`);
     return setDoc(officerDoc, { signedIn: signedIn, timestamp: serverTimestamp() }, { merge: true });
+};
+
+
+export const getMyEvents = async (committees: string[], interests: string[], maxEvents?: number) => {
+    try {
+        let allEvents = new Map<string, any>();
+        const currentTime = Timestamp.now();
+
+        const eventsRef = collection(db, 'events');
+
+        const committeeQueries = committees.map(committee => {
+            const constraints: QueryConstraint[] = [
+                where("committee", "==", committee),
+                where("endTime", ">=", currentTime)
+            ];
+            if (maxEvents) {
+                constraints.push(limit(maxEvents));
+            }
+            return query(eventsRef, ...constraints);
+        });
+
+        const interestQueries = interests.map(interest => {
+            const constraints: QueryConstraint[] = [
+                where("eventType", "==", interest),
+                where("endTime", ">=", currentTime)
+            ];
+            if (maxEvents) {
+                constraints.push(limit(maxEvents));
+            }
+            return query(eventsRef, ...constraints);
+        });
+
+        const allQueries = [...committeeQueries, ...interestQueries];
+
+        const querySnapshots = await Promise.all(allQueries.map(getDocs));
+
+        querySnapshots.forEach(querySnapshot => {
+            querySnapshot.forEach(doc => {
+                if (!allEvents.has(doc.id)) {
+                    allEvents.set(doc.id, doc.data());
+                }
+            });
+        });
+
+        const allEventsArray = Array.from(allEvents.values());
+        return maxEvents ? allEventsArray.slice(0, maxEvents) : allEventsArray;
+    } catch (error) {
+        console.error("Error fetching events:", error);
+        return [];
+    }
 };
