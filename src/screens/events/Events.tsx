@@ -1,9 +1,9 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, useColorScheme } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useFocusEffect } from '@react-navigation/core';
+import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/core';
 import { Octicons, FontAwesome6 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
@@ -14,12 +14,14 @@ import { Images } from '../../../assets';
 import { formatTime } from '../../helpers/timeUtils';
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { EventsStackParams } from '../../types/navigation';
-import { EventType, SHPEEvent } from '../../types/events';
+import { EventType, ExtendedEventType, SHPEEvent } from '../../types/events';
 import EventCard from './EventCard';
 
-const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
+const Events = ({ navigation }: EventsProps) => {
+    const route = useRoute<EventsScreenRouteProp>();
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
+
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
     const colorScheme = useColorScheme();
@@ -28,7 +30,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const [todayEvents, setTodayEvents] = useState<SHPEEvent[]>([]);
     const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
     const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
-    const [selectedFilter, setSelectedFilter] = useState<ExtendedEventType | null>(null);
+    const [selectedFilter, setSelectedFilter] = useState<ExtendedEventType | null>(route.params?.filter || null);
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -333,6 +335,12 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     );
 };
 
-type ExtendedEventType = EventType | 'myEvents' | 'clubWide';
+type EventsProps = {
+    filter?: ExtendedEventType;
+    navigation: NativeStackNavigationProp<EventsStackParams>
+}
+
+type EventsScreenRouteProp = RouteProp<EventsStackParams, "EventsScreen">;
+
 
 export default Events;

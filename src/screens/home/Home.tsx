@@ -17,7 +17,6 @@ import DismissibleModal from '../../components/DismissibleModal';
 import { fetchOfficeCount, fetchOfficerStatus, getMyEvents, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
 import { EventType, SHPEEvent } from '../../types/events';
 import EventCard from '../events/EventCard';
-import ProfileBadge from '../../components/ProfileBadge';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 
 /**
@@ -340,7 +339,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                                     alert("You must be a student to knock on the wall.")
                                 }
                             }}
-                            className={`flex-1 flex-row justify-between items-center h-14 rounded-lg  ${officeCount > 0 ? "bg-primary-blue" : (darkMode ? "bg-grey-light" : "bg-grey-dark")}`}
+                            className={`flex-1 flex-row justify-between items-center h-14 rounded-lg  ${officeCount > 0 ? "bg-primary-blue" : "bg-grey-dark"}`}
                             style={{
                                 shadowColor: "#000",
                                 shadowOffset: {
@@ -356,7 +355,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                         >
                             <Text className={`text-xl text-white font-medium flex-1 text-center`}>{officeCount > 0 ? "Knock on wall" : "Unavailable"}</Text>
                             <TouchableOpacity
-                                className="border-l h-full justify-center px-3 border-white"
+                                className={`h-full justify-center px-3 rounded-r-lg`}
                                 style={{ backgroundColor: "rgba(256,256,256,0.4)" }}
                                 onPress={() => setOfficeHourInfoMenu(!officeHourInfoMenu)}
                             >
@@ -389,7 +388,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                         </View>
                         <TouchableOpacity
                             className='px-4'
-                            onPress={() => console.log("TODO: implement navigation to events screen")}
+                            onPress={() => navigation.getParent()?.navigate('EventsTab', { screen: 'EventsScreen', params: { filter: 'myEvents' } })}
                         >
                             <Text className='text-lg text-primary-blue font-semibold'>View all</Text>
                         </TouchableOpacity>
