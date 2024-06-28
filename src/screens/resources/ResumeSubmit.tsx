@@ -8,6 +8,7 @@ import { deleteUserResumeData, getResumeVerificationStatus, removeResumeVerifica
 import { getBlobFromURI, selectFile } from '../../api/fileSelection'
 import { CommonMimeTypes } from '../../helpers/validation'
 import { handleLinkPress } from '../../helpers/links';
+import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { PublicUserInfo } from '../../types/user';
 import AddFileIcon from '../../../assets/file-circle-plus-solid.svg'
 import AddFileIconWhite from '../../../assets/file-circle-plus-solid_white.svg'
@@ -281,12 +282,5 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
         </View>
     )
 }
-
-const truncateStringWithEllipsis = (name: string, limit = 10) => {
-    if (name.length > limit) {
-        return `${name.substring(0, limit)}...`;
-    }
-    return name;
-};
 
 export default ResumeSubmit

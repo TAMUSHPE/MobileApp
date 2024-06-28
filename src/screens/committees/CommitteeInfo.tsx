@@ -1,21 +1,22 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme, Image, Modal } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp } from '@react-navigation/core';
 import { Octicons, Entypo } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { UserContext } from '../../context/UserContext';
+import { auth } from '../../config/firebaseConfig';
 import { checkCommitteeRequestStatus, getCommitteeEvents, getCommitteeMembers, getPublicUserData, removeCommitteeRequest, setPublicUserData, submitCommitteeRequest } from '../../api/firebaseUtils';
+import { UserContext } from '../../context/UserContext';
+import { Images } from '../../../assets';
 import { handleLinkPress } from '../../helpers/links';
+import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { getLogoComponent } from '../../types/committees';
 import { SHPEEvent } from '../../types/events';
 import { PublicUserInfo } from '../../types/user';
-import { auth, db } from '../../config/firebaseConfig';
-import MembersList from '../../components/MembersList';
-import { RouteProp } from '@react-navigation/core';
 import { CommitteesStackParams } from '../../types/navigation';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Images } from '../../../assets';
+import MembersList from '../../components/MembersList';
 import EventCard from '../events/EventCard';
 
 const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigation }) => {
@@ -332,7 +333,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
                                 elevation: 5,
                             }}>
-                            <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(description || "", 170)}</Text>
+                            <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(description, 170)}</Text>
                         </View>
                     </View>
 
@@ -461,13 +462,5 @@ type CommitteeInfoScreenRouteProps = {
     route: RouteProp<CommitteesStackParams, 'CommitteeInfo'>;
     navigation: NativeStackNavigationProp<CommitteesStackParams, 'CommitteeInfo'>;
 };
-
-const truncateStringWithEllipsis = (name: string, limit = 22) => {
-    if (name.length > limit) {
-        return `${name.substring(0, limit)}...`;
-    }
-    return name;
-};
-
 
 export default CommitteeInfo

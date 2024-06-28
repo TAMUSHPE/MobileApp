@@ -2,19 +2,20 @@ import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, use
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Octicons, FontAwesome6 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/core';
+import { Octicons, FontAwesome6 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { UserContext } from '../../context/UserContext';
+import { StatusBar } from 'expo-status-bar';
+import { auth } from '../../config/firebaseConfig';
 import { getUpcomingEvents, getPastEvents, getUser } from '../../api/firebaseUtils';
-import { EventsStackParams } from '../../types/navigation';
-import { EventType, SHPEEvent } from '../../types/events';
+import { UserContext } from '../../context/UserContext';
 import { Images } from '../../../assets';
 import { formatTime } from '../../helpers/timeUtils';
+import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
+import { EventsStackParams } from '../../types/navigation';
+import { EventType, SHPEEvent } from '../../types/events';
 import EventCard from './EventCard';
-import { StatusBar } from 'expo-status-bar';
-import { useFocusEffect } from '@react-navigation/core';
-import { auth } from '../../config/firebaseConfig';
 
 const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const userContext = useContext(UserContext);
@@ -247,7 +248,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                                         className='absolute bottom-0 h-[70%] w-full rounded-b-lg justify-center'
                                                     >
                                                         <View className='px-4 pt-6'>
-                                                            <Text className='text-xl font-bold text-white'>{truncateStringWithEllipsis(event.name!, 20)}</Text>
+                                                            <Text className='text-xl font-bold text-white'>{truncateStringWithEllipsis(event.name, 20)}</Text>
                                                             {event.locationName ? (
                                                                 <Text className='text-md font-semibold text-white'>{truncateStringWithEllipsis(event.locationName, 24)}</Text>
                                                             ) : null}
@@ -333,13 +334,5 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
 };
 
 type ExtendedEventType = EventType | 'myEvents' | 'clubWide';
-
-const truncateStringWithEllipsis = (name: string, limit = 22) => {
-    if (name.length > limit) {
-        return `${name.substring(0, limit)}...`;
-    }
-    return name;
-};
-
 
 export default Events;

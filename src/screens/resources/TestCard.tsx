@@ -3,6 +3,7 @@ import React, { useContext } from 'react'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UserContext } from '../../context/UserContext';
 import { handleLinkPress } from '../../helpers/links';
+import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { ResourcesStackParams } from '../../types/navigation'
 import { SubjectCode, subjectIconMapping } from '../../types/testBank';
 import { Test } from '../../types/googleSheetsTypes';
@@ -84,14 +85,14 @@ const TestCard: React.FC<TestBankProps> = ({ testData }) => {
                         {professor && (
                             <View className='flex-row space-x-2'>
                                 <Text className={`text-xl font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>•</Text>
-                                <Text className={`text-xl font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>{truncateStringWithEllipsis(formatProfessor || "", 8)}</Text>
+                                <Text className={`text-xl font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>{truncateStringWithEllipsis(formatProfessor, 8)}</Text>
                             </View>
                         )}
                     </View>
 
                     <View className='flex-grow justify-end'>
                         {student && (
-                            <Text className={`text-md font-medium mt-2 ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>Provided by {truncateStringWithEllipsis(formatStudent || "", 15)}</Text>
+                            <Text className={`text-md font-medium mt-2 ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>Provided by {truncateStringWithEllipsis(formatStudent, 15)}</Text>
                         )}
                     </View>
                 </View>
@@ -104,15 +105,6 @@ type TestBankProps = {
     testData: Test;
     navigation: NativeStackNavigationProp<ResourcesStackParams>
 }
-
-const truncateStringWithEllipsis = (name: string, limit = 22) => {
-    if (name.length > limit) {
-        return `${name.substring(0, limit)}...`;
-    }
-    return name;
-};
-
-
 
 export default TestCard
 
