@@ -1248,22 +1248,31 @@ export const resetCommittee = async (firebaseDocName: string) => {
     }
 };
 
-export const getCommitteeEvents = async (committees: string[]) => {
+export const getCommitteeEvents = async (committees: string[], maxEvents?: number) => {
     try {
         let allEvents = new Map<string, any>();
         const currentTime = Timestamp.now();
-
         const eventsRef = collection(db, 'events');
+        let eventCount = 0;
 
         for (const committee of committees) {
+            if (maxEvents && eventCount >= maxEvents) break;
+
             const eventsQuery = query(
                 eventsRef,
                 where("committee", "==", committee),
-                where("endTime", ">=", currentTime)
+                where("endTime", ">=", currentTime),
+                limit(maxEvents ? maxEvents - eventCount : Infinity)
             );
+
             const querySnapshot = await getDocs(eventsQuery);
             querySnapshot.forEach((doc) => {
-                allEvents.set(doc.id, doc.data());
+                if (!allEvents.has(doc.id)) {
+                    allEvents.set(doc.id, doc.data());
+                    eventCount++;
+                }
+
+                if (maxEvents && eventCount >= maxEvents) return;
             });
         }
 
@@ -1273,6 +1282,7 @@ export const getCommitteeEvents = async (committees: string[]) => {
         return [];
     }
 }
+
 
 export const getLeads = async (): Promise<PublicUserInfo[]> => {
     try {
