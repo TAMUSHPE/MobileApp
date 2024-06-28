@@ -13,7 +13,7 @@ import { Images } from '../../../assets';
 import { handleLinkPress } from '../../helpers/links';
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { getLogoComponent } from '../../types/committees';
-import { SHPEEvent } from '../../types/events';
+import { EventType, SHPEEvent } from '../../types/events';
 import { PublicUserInfo } from '../../types/user';
 import { CommitteesStackParams } from '../../types/navigation';
 import MembersList from '../../components/MembersList';
@@ -309,7 +309,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
                     {/* About */}
                     <View className='mt-10'>
-                        <View className='mb-2'>
+                        <View className='mb-4'>
                             <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>About the committee</Text>
                             {applicationLink && (
                                 <TouchableOpacity
@@ -339,7 +339,15 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
                     {/* Upcoming Events */}
                     <View className='mt-10'>
-                        <Text className={`text-2xl font-bold mb-2 ${darkMode ? "text-white" : "text-black"}`}>Upcoming Events</Text>
+                        <View className='flex-row justify-between items-center mb-4'>
+                            <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Upcoming Events</Text>
+                            <TouchableOpacity
+                                className='px-4'
+                                onPress={() => navigation.getParent()?.navigate('EventsTab', { screen: 'EventsScreen', params: { filter: EventType.COMMITTEE_MEETING, committee: firebaseDocName } })}
+                            >
+                                <Text className='text-lg text-primary-blue font-semibold'>View all</Text>
+                            </TouchableOpacity>
+                        </View>
 
                         <View
                             className={`px-3 py-4 rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}

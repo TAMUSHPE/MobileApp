@@ -80,7 +80,7 @@ export type ResourcesStackParams = {
 }
 
 export type EventsStackParams = {
-    EventsScreen: { filter?: ExtendedEventType };
+    EventsScreen: { filter?: ExtendedEventType; committee?: string };
     PastEvents: undefined;
     UpdateEvent: { event: SHPEEvent };
     EventInfo: { event: SHPEEvent };
