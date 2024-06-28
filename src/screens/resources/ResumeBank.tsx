@@ -26,12 +26,12 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
     const [resumes, setResumes] = useState<PublicUserInfo[]>([])
     const [loading, setLoading] = useState(true);
     const [showFilterModal, setShowFilterModal] = useState<boolean>(false);
-    const [filter, setFilter] = useState<UserFilter>({ major: "", classYear: "" });
+    const [filter, setFilter] = useState<UserFilter | null>(null);
 
-    const fetchResumes = async () => {
+    const fetchResumes = async (filter: UserFilter | null) => {
         setLoading(true);
         try {
-            const data = await fetchUsersWithPublicResumes();
+            const data = await fetchUsersWithPublicResumes(filter);
             setResumes(data);
         } catch (error) {
             console.error('Error fetching resumes:', error);
@@ -41,21 +41,8 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
     }
 
     useEffect(() => {
-        fetchResumes();
+        fetchResumes(null);
     }, [])
-
-
-    const handleApplyFilter = async (filter: UserFilter) => {
-        const filteredUsers = await fetchUsersWithPublicResumes(filter);
-        setResumes(filteredUsers);
-    };
-
-
-    const handleClearFilter = async () => {
-        setFilter({ major: "", classYear: "" });
-        const filteredUsers = await fetchUsersWithPublicResumes({ major: "", classYear: "" });
-        setResumes(filteredUsers);
-    };
 
     return (
         <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
@@ -63,7 +50,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
             {/* Header */}
             <View className='flex-row items-center justify-between'>
                 <View className='absolute w-full justify-center items-center'>
-                    <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Points Leaderboard</Text>
+                    <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Resume Bank</Text>
                 </View>
                 <TouchableOpacity onPress={() => navigation.goBack()} className='py-1 px-4'>
                     <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
@@ -73,15 +60,18 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
 
             <ScrollView>
                 {/* Resume submission */}
-                <ResumeSubmit onResumesUpdate={fetchResumes} />
+                <ResumeSubmit onResumesUpdate={() => fetchResumes(filter)} />
                 <View className={` mb-4 mx-4 h-[2px] rounded-full ${darkMode ? "bg-grey-dark" : "bg-grey-light"}`} />
 
                 {/* Filter */}
                 <View className='flex-row justify-between items-center mx-4'>
-                    {filter.major && filter.major != "" ? (
+                    {filter?.major && filter.major != "" ? (
                         <TouchableOpacity
                             className={`flex-row items-center px-3 py-2 ${darkMode ? "bg-grey-dark" : "bg-grey-light"} rounded-lg`}
-                            onPress={() => handleClearFilter()}
+                            onPress={() => {
+                                setFilter(null);
+                                fetchResumes(null);
+                            }}
                         >
                             <Octicons name="x" size={20} color={darkMode ? "white" : "black"} />
                             <Text className={`ml-2 text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{filter.major}</Text>
@@ -114,7 +104,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                             key={index}
                             resumeData={item}
                             navigation={navigation}
-                            onResumeRemoved={() => fetchResumes()}
+                            onResumeRemoved={() => fetchResumes(filter)}
                         />
                     ))}
                 </View>
@@ -152,12 +142,12 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                                         key={iso}
                                         onPress={() => {
                                             if (filter?.major === iso) {
-                                                setFilter({ major: "", classYear: "" });
-                                                handleApplyFilter({ major: "", classYear: "" });
+                                                setFilter(null);
+                                                fetchResumes(null);
                                                 setShowFilterModal(false);
                                             } else {
-                                                setFilter({ ...filter, major: iso });
-                                                handleApplyFilter({ ...filter, major: iso });
+                                                setFilter({ ...filter!, major: iso });
+                                                fetchResumes({ ...filter!, major: iso });
                                                 setShowFilterModal(false);
                                             }
                                         }}

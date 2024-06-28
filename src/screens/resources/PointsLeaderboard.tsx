@@ -108,6 +108,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     onPress={() => {
                         setFetchedUsers([]);
                         setLastVisible(null);
+                        setInitLoading(true);
                         setFilter("allTime")
                     }}
                 >
@@ -119,6 +120,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     onPress={() => {
                         setFetchedUsers([]);
                         setLastVisible(null);
+                        setInitLoading(true);
                         setFilter("monthly")
                     }}
                 >
@@ -172,7 +174,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                     )}
 
                     <View className={`justify-center h-20 items-center ${fetchedUsers.length === 0 && "h-[50%]"}`}>
-                        {loading && (
+                        {(loading || initLoading) && (
                             <ActivityIndicator size={"small"} />
                         )}
                         {endOfData && (

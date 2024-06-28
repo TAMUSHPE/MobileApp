@@ -1541,16 +1541,13 @@ export const uploadResumeVerificationDoc = async (uid: string, url: string) => {
     }, { merge: true });
 }
 
-export const fetchUsersWithPublicResumes = async (filters: {
-    major?: string;
-    classYear?: string;
-} = {}) => {
+export const fetchUsersWithPublicResumes = async (filters: { major?: string; classYear?: string; } | null) => {
     try {
         let queryConstraints = [where("resumeVerified", "==", true)];
-        if (filters.major) {
+        if (filters?.major) {
             queryConstraints.push(where("major", "==", filters.major));
         }
-        if (filters.classYear) {
+        if (filters?.classYear) {
             queryConstraints.push(where("classYear", "==", filters.classYear));
         }
 
