@@ -22,10 +22,10 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const [submittedResume, setSubmittedResume] = useState(false);
-    const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
+    const [submittedResume, setSubmittedResume] = useState(false);
     const [resumeName, setResumeName] = useState<string | undefined>(undefined);
+    const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchResumeVerificationStatus = async () => {
@@ -54,20 +54,17 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
 
     const onResumeUploadSuccess = useCallback(async (URL: string) => {
         try {
-            // Remove from resume verification if submitted
             await removeSubmittedResume();
 
             // Team Members are automatically approved
             const isTeamMember = userInfo?.publicInfo?.roles?.admin || userInfo?.publicInfo?.roles?.developer || userInfo?.publicInfo?.roles?.officer || userInfo?.publicInfo?.roles?.representative || userInfo?.publicInfo?.roles?.lead;
             const resumeVerifiedStatus = isTeamMember ? true : false;
 
-            // Update user data in Firebase
             await setPublicUserData({
                 resumePublicURL: URL,
                 resumeVerified: resumeVerifiedStatus
             });
 
-            // Update user data in local storage
             await updatePublicInfoAndPersist({
                 resumePublicURL: URL,
                 resumeVerified: resumeVerifiedStatus

@@ -5,11 +5,11 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack'
 import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { fetchUsersWithPublicResumes } from '../../api/firebaseUtils'
+import { UserContext } from '../../context/UserContext';
 import { MAJORS, PublicUserInfo, UserFilter } from '../../types/user'
 import { ResourcesStackParams } from '../../types/navigation'
 import ResumeSubmit from './ResumeSubmit'
 import ResumeCard from './ResumeCard'
-import { UserContext } from '../../context/UserContext';
 
 
 const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
@@ -71,7 +71,6 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
             </View>
 
 
-            {/* User Public Resume Info */}
             <ScrollView>
                 {/* Resume submission */}
                 <ResumeSubmit onResumesUpdate={fetchResumes} />

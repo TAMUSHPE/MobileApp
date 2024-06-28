@@ -1,15 +1,15 @@
-import { View, Text, ActivityIndicator, ScrollView, NativeSyntheticEvent, NativeScrollEvent, TextInput, TouchableOpacity, useColorScheme, Modal } from 'react-native'
+import { View, Text, ActivityIndicator, ScrollView, NativeSyntheticEvent, NativeScrollEvent, TouchableOpacity, useColorScheme, Modal } from 'react-native'
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Octicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 import { GoogleSheetsIDs, queryGoogleSpreadsheet } from '../../api/fetchGoogleSheets';
+import { UserContext } from '../../context/UserContext';
 import { ResourcesStackParams } from '../../types/navigation';
 import { Test, GoogleSheetsResponse } from '../../types/googleSheetsTypes';
-import TestCard from './TestCard';
 import { SUBJECTCODES } from '../../types/testBank';
-import { UserContext } from '../../context/UserContext';
-import { StatusBar } from 'expo-status-bar';
+import TestCard from './TestCard';
 
 /**
  * Test Bank component.

@@ -1,20 +1,16 @@
 import { View, Text, TouchableOpacity, Image, ActivityIndicator, useColorScheme } from 'react-native'
 import React, { useCallback, useContext, useState } from 'react'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Octicons } from '@expo/vector-icons';
+import { removeUserResume } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
-import { db, functions } from '../../config/firebaseConfig';
-import { deleteField, doc, updateDoc } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
+import { Images } from '../../../assets';
 import { handleLinkPress } from '../../helpers/links';
 import { ResourcesStackParams } from '../../types/navigation'
-import { Images } from '../../../assets';
-import DismissibleModal from '../../components/DismissibleModal';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PublicUserInfo } from '../../types/user';
-import { removeUserResume } from '../../api/firebaseUtils';
+import DismissibleModal from '../../components/DismissibleModal';
 
 const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ resumeData, navigation, onResumeRemoved }) => {
-    // Data related to user's resume
     const { uid, photoURL, name, resumePublicURL, major, classYear, roles, nationalExpiration, chapterExpiration } = resumeData
 
     const userContext = useContext(UserContext);
@@ -81,6 +77,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
                     </View>
                 </TouchableOpacity>
             </View>
+
             {hasPrivileges && (
                 <View className='absolute -top-3 -right-3'>
                     <TouchableOpacity
@@ -104,7 +101,6 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
                         </View>
                     </View>
 
-
                     <View className='flex-row justify-around mt-8'>
                         <TouchableOpacity
                             className='w-[40%] items-center py-2 rounded-md'
@@ -121,6 +117,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
                             <Text className='font-semibold text-lg'>Cancel</Text>
                         </TouchableOpacity>
                     </View>
+
                     {loading && (
 
                         <ActivityIndicator size="small" className='mt-5' />

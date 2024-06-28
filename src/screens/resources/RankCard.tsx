@@ -1,10 +1,10 @@
 import { View, Text, TouchableOpacity, Image, useColorScheme } from 'react-native'
 import React, { useContext } from 'react'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { UserContext } from '../../context/UserContext';
 import { Images } from '../../../assets';
 import { PublicUserInfo } from '../../types/user';
 import { ResourcesStackParams } from '../../types/navigation';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { UserContext } from '../../context/UserContext';
 
 /**
  * The RankCard component displays a user's rank information.

@@ -3,16 +3,16 @@ import React, { useContext, useEffect, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { handleLinkPress } from '../../helpers/links';
-import { fetchLink, getUser } from '../../api/firebaseUtils';
+import { StatusBar } from 'expo-status-bar';
 import { auth } from '../../config/firebaseConfig';
+import { fetchLink, getUser } from '../../api/firebaseUtils';
+import { UserContext } from '../../context/UserContext';
+import { handleLinkPress } from '../../helpers/links';
 import { ResourcesStackParams } from '../../types/navigation';
+import { LinkData } from '../../types/links';
 import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
 import ResumeIcon from '../../../assets/resume-icon.svg';
 import ExamIcon from '../../../assets/exam-icon.svg';
-import { UserContext } from '../../context/UserContext';
-import { LinkData } from '../../types/links';
-import { StatusBar } from 'expo-status-bar';
 
 const linkIDs = ["1", "2", "3", "4", "5"]; // First 5 links are reserved for social media links
 
@@ -25,8 +25,8 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const [links, setLinks] = useState<LinkData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [links, setLinks] = useState<LinkData[]>([]);
 
     const fetchLinks = async () => {
         const fetchedLinks = await Promise.all(
@@ -129,7 +129,6 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                         <ActivityIndicator size="small" />
                     </View>
                 }
-
                 {/* Links */}
                 <View className='flex-row mt-4 justify-evenly'>
                     {links.map((link, index) => (

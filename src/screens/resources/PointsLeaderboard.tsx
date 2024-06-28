@@ -1,14 +1,14 @@
 import { View, Text, ScrollView, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, TouchableOpacity, useColorScheme } from 'react-native'
 import React, { useState, useEffect, useRef, useCallback, useContext } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
+import { UserContext } from '../../context/UserContext';
+import { getSortedUserData } from '../../api/firebaseUtils';
 import { PublicUserInfo } from '../../types/user';
 import { ResourcesStackParams } from '../../types/navigation';
 import RankCard from './RankCard';
-import { UserContext } from '../../context/UserContext';
-import { getSortedUserData } from '../../api/firebaseUtils';
 
 const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
     const userContext = useContext(UserContext);
@@ -19,15 +19,15 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const [fetchedUsers, setFetchedUsers] = useState<PublicUserInfo[]>([])
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const scrollViewRef = useRef<ScrollView>(null);
     const [initLoading, setInitLoading] = useState<boolean>(true);
     const [loading, setLoading] = useState<boolean>(true);
+    const [isFetching, setIsFetching] = useState(false);
+    const [fetchedUsers, setFetchedUsers] = useState<PublicUserInfo[]>([])
+    const [filter, setFilter] = useState<string>("allTime");
     const [endOfData, setEndOfData] = useState<boolean>(false);
     const [lastVisible, setLastVisible] = useState<any>(null);
-    const [filter, setFilter] = useState<string>("allTime");
-    const [isFetching, setIsFetching] = useState(false);
-    const scrollViewRef = useRef<ScrollView>(null);
 
     /**
      * Obtains user data from firebase and appends the data to the current collection.
@@ -98,6 +98,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
                 </TouchableOpacity>
             </View>
 
+            {/* Filters */}
             <View
                 className='flex-row mt-4 h-14 mx-4 rounded-3xl'
                 style={{ backgroundColor: darkMode ? 'rgba(125,125,125,0.5)' : 'rgba(0.5,0.5,0.5,0.5)' }}

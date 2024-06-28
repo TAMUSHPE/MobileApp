@@ -1,12 +1,11 @@
 import { View, Text, TouchableOpacity, useColorScheme } from 'react-native'
 import React, { useContext } from 'react'
-import { StatusBar } from 'expo-status-bar';
-import { ResourcesStackParams } from '../../types/navigation'
-import { SubjectCode, subjectIconMapping } from '../../types/testBank';
-import { handleLinkPress } from '../../helpers/links';
-import { Test } from '../../types/googleSheetsTypes';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UserContext } from '../../context/UserContext';
+import { handleLinkPress } from '../../helpers/links';
+import { ResourcesStackParams } from '../../types/navigation'
+import { SubjectCode, subjectIconMapping } from '../../types/testBank';
+import { Test } from '../../types/googleSheetsTypes';
 
 
 const TestCard: React.FC<TestBankProps> = ({ testData }) => {
