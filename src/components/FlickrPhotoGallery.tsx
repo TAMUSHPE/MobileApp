@@ -1,12 +1,20 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useState, useRef, memo } from 'react';
-import { Animated, Image, Dimensions, View, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { Animated, Image, Dimensions, View, NativeScrollEvent, NativeSyntheticEvent, useColorScheme } from 'react-native';
+import React, { useEffect, useState, useRef, memo, useContext } from 'react';
+import { UserContext } from '../context/UserContext';
 import { Images } from '../../assets';
 
 const windowWidth = Dimensions.get('window').width;
 
 
 const FlickrPhotoGallery = () => {
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [currentIndex, setCurrentIndex] = useState(1);
     const [photos, setPhotos] = useState<(FlickrPhoto | null)[]>([]);
     const [photosFetched, setPhotosFetched] = useState(false); // Add this flag
@@ -28,7 +36,6 @@ const FlickrPhotoGallery = () => {
     };
 
     const fetchPhotos = async () => {
-
         try {
             const url = `https://www.flickr.com/services/rest/?method=flickr.photosets.getPhotos&api_key=${flickerApiKey}&user_id=${flickerUserId}&photoset_id=${flickrPhotoSetId}&format=json&nojsoncallback=1`;
 
@@ -111,14 +118,10 @@ const FlickrPhotoGallery = () => {
         const photoUrl = item ? `https://live.staticflickr.com/${item.server}/${item.id}_${item.secret}_w.jpg` : null;
         return (
             <View style={{ width: windowWidth }}>
-                <LinearGradient
-                    className='absolute top-0 left-0 bottom-0 right-0'
-                    colors={['#ffffff', '#72A9BE']}
-                />
-                <View className="mt-5 pb-4 ml-7">
+                <View className="mt-5 mx-4">
                     <Image
-                        source={photoUrl ? { uri: photoUrl } : Images.CAROUSEL_1}
-                        className="h-40 w-[92%] rounded-3xl"
+                        source={photoUrl ? { uri: photoUrl } : darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
+                        className="h-40 rounded-2xl"
                     />
                 </View>
             </View>
@@ -130,12 +133,11 @@ const FlickrPhotoGallery = () => {
     if (!photosFetched) {
         return (
             <View style={{ width: windowWidth }}>
-                <LinearGradient
-                    className='absolute top-0 left-0 bottom-0 right-0'
-                    colors={['#ffffff', '#72A9BE']}
-                />
-                <View className="mt-5 pb-4 ml-7">
-                    <Image source={Images.CAROUSEL_1} className="h-40 w-[92%] rounded-3xl" />
+                <View className="mt-5 mx-4">
+                    <Image
+                        resizeMode='contain'
+                        source={darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
+                        className="h-40 rounded-2xl" />
                 </View>
             </View>
         );

@@ -97,10 +97,6 @@ export interface MemberStatus {
     timestamp: Timestamp | FieldValue;
 }
 
-export interface OfficerStatus extends MemberStatus {
-    signedIn: boolean;
-}
-
 
 export type UserFilter = {
     classYear: string,

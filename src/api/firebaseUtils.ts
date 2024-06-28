@@ -1,9 +1,9 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject, getDownloadURL, uploadBytes } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot, serverTimestamp } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateFileBlob, validateTamuEmail } from "../helpers/validation";
-import { OfficerStatus, PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/user";
+import { PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/user";
 import { Committee } from "../types/committees";
 import { SHPEEvent, EventLogStatus, UserEventData, SHPEEventLog } from "../types/events";
 import * as Location from 'expo-location';
@@ -654,42 +654,6 @@ export const isUsernameUnique = async (username: string): Promise<boolean> => {
         return false; // handle error appropriately
     }
 };
-
-export const fetchOfficerStatus = async (uid: string) => {
-    try {
-        const officerStatusRef = doc(db, `/office-hours/officers-status/officers/${uid}`);
-        const docSnap = await getDoc(officerStatusRef);
-
-        if (docSnap.exists()) {
-            return docSnap.data();
-        } else {
-            return null;
-        }
-    } catch (err) {
-        console.error("Error fetching officer status:", err);
-        return null;
-    }
-};
-
-export const addOfficeHourLog = async (data: OfficerStatus) => {
-    const userDocCollection = collection(db, 'office-hours/officer-log/log');
-    await addDoc(userDocCollection, data);
-};
-
-export const updateOfficerStatus = async (data: OfficerStatus) => {
-    const officerDoc = doc(db, `office-hours/officers-status/officers/${data.uid}`);
-    return setDoc(officerDoc, { signedIn: data.signedIn }, { merge: true });
-};
-
-export const incrementOfficeCount = async () => {
-    const officeCountRef = doc(db, 'office-hours/officer-count');
-    await updateDoc(officeCountRef, { "zachary-office": increment(1) });
-}
-
-export const decrementOfficeCount = async () => {
-    const officeCountRef = doc(db, 'office-hours/officer-count');
-    await updateDoc(officeCountRef, { "zachary-office": increment(-1) });
-}
 
 export const submitFeedback = async (feedback: string, userInfo: User) => {
     try {
@@ -1575,4 +1539,51 @@ export const removeUserResume = async (uid: string) => {
         uid: uid,
         type: "removed",
     });
+};
+
+// ============================================================================
+// Home Utilities
+// ============================================================================
+
+export const fetchOfficeCount = async (): Promise<number> => {
+    try {
+        const officeHoursCollection = collection(db, 'office-hours');
+        const q = query(officeHoursCollection, where('signedIn', '==', true));
+        const querySnapshot = await getDocs(q);
+
+        return querySnapshot.size || 0;
+    } catch (error) {
+        console.error("Error fetching office count:", error);
+        return 0;
+    }
+};
+
+export const knockOnWall = async (uid: string, userData: PublicUserInfo) => {
+    try {
+        const sendNotificationOfficeHours = httpsCallable(functions, 'sendNotificationOfficeHours');
+        await sendNotificationOfficeHours({ userData });
+    } catch (err) {
+        console.error("Error sending knock:", err);
+    }
+};
+
+export const fetchOfficerStatus = async (uid: string) => {
+    try {
+        const officerStatusRef = doc(db, `office-hours/${uid}`);
+        const docSnap = await getDoc(officerStatusRef);
+
+        if (docSnap.exists()) {
+            return docSnap.data();
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error("Error fetching officer status:", err);
+        return null;
+    }
+};
+
+export const updateOfficerStatus = async (uid: string, signedIn: boolean) => {
+    const officerDoc = doc(db, `office-hours/${uid}`);
+    return setDoc(officerDoc, { signedIn: signedIn, timestamp: serverTimestamp() }, { merge: true });
 };

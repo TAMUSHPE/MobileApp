@@ -25,5 +25,6 @@ export const Images = {
     SHPE_NAVY: require("./SHPE_NAVY.png"),
     SHPE_NAVY_HORIZ: require("./SHPE_NAVY_Horizontal.png"),
     SHPE_NAVY_HEADER: require("./SHPE_NAVY_Header.png"),
+    SHPE_WHITE_HEADER: require("./SHPE_WHITE_Header.png"),
     SHPE_WHITE: require("./SHPE_WHITE.png"),
 };
