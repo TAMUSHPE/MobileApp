@@ -1,17 +1,17 @@
 import { View, Text, TouchableOpacity, Image, ActivityIndicator, useColorScheme } from 'react-native'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useState } from 'react'
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
 import { db, functions } from '../../config/firebaseConfig';
 import { deleteField, doc, updateDoc } from 'firebase/firestore';
 import { httpsCallable } from 'firebase/functions';
-import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
 import { handleLinkPress } from '../../helpers/links';
 import { ResourcesStackParams } from '../../types/navigation'
 import { Images } from '../../../assets';
 import DismissibleModal from '../../components/DismissibleModal';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { PublicUserInfo } from '../../types/user';
+import { removeUserResume } from '../../api/firebaseUtils';
 
 const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ resumeData, navigation, onResumeRemoved }) => {
     // Data related to user's resume
@@ -35,22 +35,15 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
 
     const removeResume = async () => {
         setLoading(true);
-        const userDocRef = doc(db, 'users', uid!);
-
-        await updateDoc(userDocRef, {
-            resumePublicURL: deleteField(),
-            resumeVerified: false,
-        });
-
-
-        const sendNotificationToMember = httpsCallable(functions, 'sendNotificationResumeConfirm');
-        await sendNotificationToMember({
-            uid: uid,
-            type: "removed",
-        });
-        setLoading(false);
-        setConfirmVisible(false);
-        onResumeRemoved();
+        try {
+            await removeUserResume(uid!);
+            onResumeRemoved();
+        } catch (error) {
+            console.error("Error removing resume:", error);
+        } finally {
+            setLoading(false);
+            setConfirmVisible(false);
+        }
     };
 
     return (

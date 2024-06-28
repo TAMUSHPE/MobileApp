@@ -1,7 +1,7 @@
 import { deleteDoc, collection, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
-import { deleteUserResumeData, fetchLink, getResumeVerificationStatus, getSortedUserData, removeResumeVerificationDoc, updateLink, uploadResumeVerificationDoc } from "../../../api/firebaseUtils";
+import { deleteUserResumeData, fetchLink, fetchUsersWithPublicResumes, getResumeVerificationStatus, getSortedUserData, removeResumeVerificationDoc, removeUserResume, updateLink, uploadResumeVerificationDoc } from "../../../api/firebaseUtils";
 import { User } from "../../../types/user";
 import { LinkData } from "../../../types/links";
 
@@ -194,5 +194,90 @@ describe("Resume Verification Process", () => {
         const resumeData = resumeDoc.data();
         expect(resumeData?.resumePublicURL).toBe(testURL);
         expect(resumeData?.uploadDate).toBeDefined();
+    });
+});
+
+describe("fetchUsersWithPublicResumes", () => {
+    const users = [
+        { uid: "user1", resumeVerified: true, major: "CSCE", classYear: "2023" },
+        { uid: "user2", resumeVerified: true, major: "MEEN", classYear: "2024" },
+        { uid: "user3", resumeVerified: false, major: "CSCE", classYear: "2023" },
+        { uid: "user4", resumeVerified: true, major: "CSCE", classYear: "2024" },
+    ];
+
+    beforeEach(async () => {
+        // Clean up any existing data
+        const usersRef = collection(db, 'users');
+        const querySnapshot = await getDocs(usersRef);
+        for (const userDoc of querySnapshot.docs) {
+            await deleteDoc(doc(db, 'users', userDoc.id));
+        }
+
+        // Create test user data
+        for (const user of users) {
+            await setDoc(doc(db, "users", user.uid), user);
+        }
+    });
+
+    afterEach(async () => {
+        // Clean up any remaining data
+        const usersRef = collection(db, 'users');
+        const querySnapshot = await getDocs(usersRef);
+        for (const userDoc of querySnapshot.docs) {
+            await deleteDoc(doc(db, 'users', userDoc.id));
+        }
+    });
+
+    test("fetches all users with verified resumes", async () => {
+        const result = await fetchUsersWithPublicResumes();
+        expect(result.length).toBe(3);
+        expect(result.some(user => user.uid === "user1")).toBe(true);
+        expect(result.some(user => user.uid === "user2")).toBe(true);
+        expect(result.some(user => user.uid === "user4")).toBe(true);
+    });
+
+    test("fetches users with verified resumes filtered by major", async () => {
+        const result = await fetchUsersWithPublicResumes({ major: "CSCE" });
+        expect(result.length).toBe(2);
+        expect(result.some(user => user.uid === "user1")).toBe(true);
+        expect(result.some(user => user.uid === "user4")).toBe(true);
+    });
+
+    test("fetches users with verified resumes filtered by class year", async () => {
+        const result = await fetchUsersWithPublicResumes({ classYear: "2024" });
+        expect(result.length).toBe(2);
+        expect(result.some(user => user.uid === "user2")).toBe(true);
+        expect(result.some(user => user.uid === "user4")).toBe(true);
+    });
+
+    test("fetches users with verified resumes filtered by major and class year", async () => {
+        const result = await fetchUsersWithPublicResumes({ major: "CSCE", classYear: "2024" });
+        expect(result.length).toBe(1);
+        expect(result.some(user => user.uid === "user4")).toBe(true);
+    });
+
+    test("returns empty array if no users match the filters", async () => {
+        const result = await fetchUsersWithPublicResumes({ major: "ME", classYear: "2025" });
+        expect(result.length).toBe(0);
+    });
+});
+
+
+describe("removeUserResume", () => {
+    const uid = "testUID";
+    const userDocRef = doc(db, 'users', uid);
+
+
+    test("removes resume fields from user document", async () => {
+        await setDoc(userDocRef, { resumePublicURL: "resume.pdf", resumeVerified: true });
+        await removeUserResume(uid);
+
+        const userDoc = await getDoc(userDocRef);
+        expect(userDoc.exists()).toBe(true);
+        const userData = userDoc.data();
+        expect(userData?.resumePublicURL).toBeUndefined();
+        expect(userData?.resumeVerified).toBe(false);
+
+        await deleteDoc(userDocRef);
     });
 });

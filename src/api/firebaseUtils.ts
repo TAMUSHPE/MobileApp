@@ -373,23 +373,6 @@ export const uploadFile = async (
     );
 };
 
-export const getCommittee = async (firebaseDocName: string): Promise<Committee | null> => {
-    try {
-        const committeeDocRef = doc(db, 'committees', firebaseDocName);
-        const docSnap = await getDoc(committeeDocRef);
-        if (docSnap.exists()) {
-            return {
-                firebaseDocName: docSnap.id,
-                ...docSnap.data()
-            };
-        } else {
-            return null;
-        }
-    } catch (err) {
-        console.error(err);
-        return null;
-    }
-}
 
 export const getWatchlist = async () => {
     const docRef = doc(db, "restrictions/watchlist");
@@ -671,32 +654,6 @@ export const isUsernameUnique = async (username: string): Promise<boolean> => {
         return false; // handle error appropriately
     }
 };
-
-
-export const fetchUsersWithPublicResumes = async (filters: {
-    major?: string;
-    classYear?: string;
-} = {}) => {
-    try {
-        let queryConstraints = [where("resumeVerified", "==", true)];
-        if (filters.major) {
-            queryConstraints.push(where("major", "==", filters.major));
-        }
-        if (filters.classYear) {
-            queryConstraints.push(where("classYear", "==", filters.classYear));
-        }
-
-        const querySnapshot = await getDocs(query(collection(db, 'users'), ...queryConstraints));
-
-        const usersArray = querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
-
-        return usersArray;
-    } catch (error) {
-        console.error("Error fetching users:", error);
-        return [];
-    }
-};
-
 
 export const fetchOfficerStatus = async (uid: string) => {
     try {
@@ -1252,6 +1209,24 @@ export const setCommitteeData = async (committeeData: Committee) => {
     }
 };
 
+export const getCommittee = async (firebaseDocName: string): Promise<Committee | null> => {
+    try {
+        const committeeDocRef = doc(db, 'committees', firebaseDocName);
+        const docSnap = await getDoc(committeeDocRef);
+        if (docSnap.exists()) {
+            return {
+                firebaseDocName: docSnap.id,
+                ...docSnap.data()
+            };
+        } else {
+            return null;
+        }
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
 export const getCommittees = async (): Promise<Committee[]> => {
     try {
         const committeeCollectionRef = collection(db, 'committees');
@@ -1565,3 +1540,42 @@ export const uploadResumeVerificationDoc = async (uid: string, url: string) => {
         resumePublicURL: url
     }, { merge: true });
 }
+
+export const fetchUsersWithPublicResumes = async (filters: {
+    major?: string;
+    classYear?: string;
+} = {}) => {
+    try {
+        let queryConstraints = [where("resumeVerified", "==", true)];
+        if (filters.major) {
+            queryConstraints.push(where("major", "==", filters.major));
+        }
+        if (filters.classYear) {
+            queryConstraints.push(where("classYear", "==", filters.classYear));
+        }
+
+        const querySnapshot = await getDocs(query(collection(db, 'users'), ...queryConstraints));
+
+        const usersArray = querySnapshot.docs.map(doc => ({ ...doc.data(), uid: doc.id }));
+
+        return usersArray;
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        return [];
+    }
+};
+
+export const removeUserResume = async (uid: string) => {
+    const userDocRef = doc(db, 'users', uid);
+
+    await updateDoc(userDocRef, {
+        resumePublicURL: deleteField(),
+        resumeVerified: false,
+    });
+
+    const sendNotificationToMember = httpsCallable(functions, 'sendNotificationResumeConfirm');
+    await sendNotificationToMember({
+        uid: uid,
+        type: "removed",
+    });
+};
