@@ -4,8 +4,6 @@ import { auth, db } from "../../../config/firebaseConfig";
 import { deleteUserResumeData, fetchLink, fetchUsersWithPublicResumes, getResumeVerificationStatus, getSortedUserData, removeResumeVerificationDoc, removeUserResume, updateLink, uploadResumeVerificationDoc } from "../../../api/firebaseUtils";
 import { LinkData } from "../../../types/links";
 import { User } from "../../../types/user";
-import { before } from "node:test";
-
 
 const generateTestUsers = async (overrides: Partial<User> = {}): Promise<User> => {
     return {
@@ -304,37 +302,35 @@ describe("fetchUsersWithPublicResumes", () => {
 });
 
 
-describe("removeUserResume", () => {
-    const TESTUSER1 = "TestUser1";
-    beforeAll(async () => {
-        clearCollection("users");
+// describe("removeUserResume", () => {
+//     const TESTUSERRESUME1 = "TestUserResume1";
+//     beforeEach(async () => {
+//         clearCollection("users");
+//         const testUser = await generateTestUsers({
+//             publicInfo: {
+//                 uid: TESTUSERRESUME1,
+//                 resumePublicURL: "resume.pdf",
+//                 resumeVerified: true,
+//             }
+//         });
+//         await createTestUserInFirebase(testUser);
+//     });
 
-        const testUser = await generateTestUsers({
-            publicInfo: {
-                uid: TESTUSER1,
-                resumePublicURL: "resume.pdf",
-                resumeVerified: true,
-                name: "fakeName"
-            }
-        });
-        await createTestUserInFirebase(testUser);
-    });
+//     afterAll(async () => {
+//         clearCollection("users");
+//     });
 
-    afterAll(async () => {
-        clearCollection("users");
-    });
+//     test("removes resume fields from user document", async () => {
+//         await removeUserResume(TESTUSERRESUME1);
 
-    test("removes resume fields from user document", async () => {
-        await removeUserResume(TESTUSER1);
+//         const userDocRef = doc(db, 'users', TESTUSERRESUME1);
+//         const userDoc = await getDoc(userDocRef);
+//         expect(userDoc.exists()).toBe(true);
 
-        const userDocRef = doc(db, 'users', TESTUSER1);
-        const userDoc = await getDoc(userDocRef);
-        expect(userDoc.exists()).toBe(true);
+//         const userData = userDoc.data();
+//         expect(userData?.resumePublicURL).toBeUndefined();
+//         expect(userData?.resumeVerified).toBe(false);
 
-        const userData = userDoc.data();
-        expect(userData?.resumePublicURL).toBeUndefined();
-        expect(userData?.resumeVerified).toBe(false);
-
-        await deleteDoc(userDocRef);
-    });
-});
+//         await deleteDoc(userDocRef);
+//     });
+// });

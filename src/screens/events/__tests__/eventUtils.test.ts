@@ -396,12 +396,12 @@ describe("Update Events", () => {
 describe("Destroy Event Function", () => {
     beforeAll(async () => {
         await clearCollection("users");
-        await clearCollection("events")
+        await clearCollection("events");
     });
 
     afterAll(async () => {
         await clearCollection("users");
-        await clearCollection("events")
+        await clearCollection("events");
     });
 
     test("Delete an existing event", async () => {
