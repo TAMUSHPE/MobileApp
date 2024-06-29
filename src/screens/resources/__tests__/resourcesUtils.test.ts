@@ -229,7 +229,7 @@ describe("fetchUsersWithPublicResumes", () => {
     });
 
     test("fetches all users with verified resumes", async () => {
-        const result = await fetchUsersWithPublicResumes();
+        const result = await fetchUsersWithPublicResumes(null);
         expect(result.length).toBe(3);
         expect(result.some(user => user.uid === "user1")).toBe(true);
         expect(result.some(user => user.uid === "user2")).toBe(true);
@@ -264,7 +264,7 @@ describe("fetchUsersWithPublicResumes", () => {
 
 
 describe("removeUserResume", () => {
-    const uid = "testUID";
+    const uid = "testUID123";
     const userDocRef = doc(db, 'users', uid);
 
 

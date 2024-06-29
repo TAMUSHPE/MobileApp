@@ -1,7 +1,7 @@
 import { Timestamp, GeoPoint, deleteDoc, doc, collection, getDocs, getDoc, setDoc } from "firebase/firestore";
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
-import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, signInToEvent, getAttendanceNumber, getUserEventLog, fetchEventByName, getInterestsEvent } from "../../../api/firebaseUtils";
+import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, signInToEvent, getAttendanceNumber, getUserEventLog, fetchEventByName } from "../../../api/firebaseUtils";
 import { EventLogStatus, EventType, SHPEEvent } from "../../../types/events";
 
 const generateTestEvent = (overrides: Partial<SHPEEvent> = {}): SHPEEvent => {
@@ -142,35 +142,6 @@ describe("Various Fetch events", () => {
 
         await deleteDoc(doc(db, "events", eventId!));
     });
-
-    test("fetches events for given interests", async () => {
-        const interests = ['Test Type 1', 'Test Type 2'];
-        const event1 = generateTestEvent({ eventType: 'Test Type 1' as EventType });
-        const event2 = generateTestEvent({ eventType: 'Test Type 2' as EventType });
-        const eventId1 = await createEvent(event1);
-        const eventId2 = await createEvent(event2);
-        expect(eventId1).not.toBeNull();
-        expect(eventId2).not.toBeNull();
-
-        const events = await getInterestsEvent(interests);
-        expect(events.length).toBe(2);
-
-        const fetchedEvent1 = events.find(e => e.id === eventId1);
-        const fetchedEvent2 = events.find(e => e.id === eventId2);
-        expect(fetchedEvent1).toMatchObject(event1);
-        expect(fetchedEvent2).toMatchObject(event2);
-
-        await deleteDoc(doc(db, "events", eventId1!));
-        await deleteDoc(doc(db, "events", eventId2!));
-    });
-
-    test("returns an empty array if no events found for interests", async () => {
-        const interests = ['Non-existent Type'];
-
-        const events = await getInterestsEvent(interests);
-        expect(events.length).toBe(0);
-    });
-
 
     test("Fetch past events with limit", async () => {
         const event = generateTestEvent({

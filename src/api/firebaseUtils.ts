@@ -893,33 +893,6 @@ export const fetchEventByName = async (eventName: string): Promise<SHPEEvent | n
     }
 };
 
-export const getInterestsEvent = async (interests: string[]) => {
-    try {
-        let allEvents = new Map<string, any>();
-        const currentTime = Timestamp.now();
-
-        const eventsRef = collection(db, 'events');
-
-        for (const interest of interests) {
-
-            const eventsQuery = query(
-                eventsRef,
-                where("eventType", "==", interest),
-                where("endTime", ">=", currentTime)
-            );
-            const querySnapshot = await getDocs(eventsQuery);
-            querySnapshot.forEach((doc) => {
-                allEvents.set(doc.id, doc.data());
-            });
-        }
-
-        return Array.from(allEvents.values());
-    } catch (error) {
-        console.error("Error fetching events for user committees:", error);
-        return [];
-    }
-}
-
 /**
  * Creates a new SHPE event document in firestore
  * @param event Object with event details
