@@ -75,7 +75,7 @@ describe("Get Committees", () => {
     });
 
     test("Get committees with data", async () => {
-        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocRefTest = doc(db, "users", "TESTUSER10");
         const userDocTest = await getDoc(userDocRefTest);
 
         if (!userDocTest.exists()) {
@@ -83,7 +83,7 @@ describe("Get Committees", () => {
         } else {
             await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
         }
-        const committeeData = await generateTestCommittee({ head: "TESTUSER1123" });
+        const committeeData = await generateTestCommittee({ head: "TESTUSER10" });
         await setCommitteeData(committeeData);
 
         const committees = await getCommittees();
