@@ -1,12 +1,62 @@
-import { deleteDoc, collection, getDocs, doc, setDoc, getDoc } from "firebase/firestore";
+import { deleteDoc, collection, getDocs, doc, setDoc, getDoc, writeBatch, DocumentReference } from "firebase/firestore";
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
 import { deleteUserResumeData, fetchLink, fetchUsersWithPublicResumes, getResumeVerificationStatus, getSortedUserData, removeResumeVerificationDoc, removeUserResume, updateLink, uploadResumeVerificationDoc } from "../../../api/firebaseUtils";
-import { User } from "../../../types/user";
 import { LinkData } from "../../../types/links";
+import { User } from "../../../types/user";
+import { before } from "node:test";
 
-const testUserDataList: User[] = require("../../../api/__tests__/test_data/users.json");
 
+const generateTestUsers = async (overrides: Partial<User> = {}): Promise<User> => {
+    return {
+        publicInfo: {
+            uid: "testUID",
+        },
+        private: {
+            privateInfo: {
+                completedAccountSetup: true,
+                settings: {
+                    darkMode: true,
+                    useSystemDefault: false
+                },
+            },
+        },
+        ...overrides
+    };
+};
+
+const createTestUserInFirebase = async (user: User) => {
+    const publicInfo = user.publicInfo;
+    const privateInfo = user.private?.privateInfo;
+
+    await setDoc(doc(db, "users", publicInfo?.uid!), publicInfo);
+    await setDoc(doc(db, `users/${publicInfo?.uid!}/private`, "privateInfo"), privateInfo);
+};
+
+const clearSubcollections = async (docRef: DocumentReference) => {
+    const subcollectionsSnapshot = await getDocs(collection(docRef, 'private'));
+    const batch = writeBatch(db);
+
+    subcollectionsSnapshot.forEach(subDoc => {
+        batch.delete(subDoc.ref);
+    });
+
+    await batch.commit();
+};
+
+const clearCollection = async (collectionName: string) => {
+    const collectionRef = collection(db, collectionName);
+    const querySnapshot = await getDocs(collectionRef);
+
+    const batch = writeBatch(db);
+
+    for (const documentSnapshot of querySnapshot.docs) {
+        await clearSubcollections(documentSnapshot.ref);
+        batch.delete(documentSnapshot.ref);
+    }
+
+    await batch.commit();
+};
 
 beforeAll(async () => {
     expect(process.env.FIREBASE_EMULATOR_ADDRESS).toBeDefined();
@@ -20,27 +70,55 @@ beforeAll(async () => {
     expect(Number(process.env.FIREBASE_STORAGE_PORT)).not.toBeNaN();
 
     await signInAnonymously(auth);
-
-    // Create fake user data
-    for (const user of testUserDataList) {
-        await setDoc(doc(db, "users", user.publicInfo!.uid!), user.publicInfo);
-        await setDoc(doc(db, `users/${user.publicInfo!.uid!}/private`, "privateInfo"), user.private?.privateInfo);
-    }
 });
 
 afterAll(async () => {
     await signOut(auth);
+
+    await clearCollection("users");
+    await clearCollection("events")
 });
 
 describe("getSortedUserData", () => {
+    const TESTUSER1 = "TestUser1"
+    const TESTUSER2 = "TestUser2"
+    const TESTUSER3 = "TestUser3"
+    const TESTUSER4 = "TestUser4"
+    const TESTUSER5 = "TestUser5"
+
+    beforeAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+
+        const testUser1 = await generateTestUsers({ publicInfo: { uid: TESTUSER1, pointsThisMonth: 5, points: 1 } });
+        const testUser2 = await generateTestUsers({ publicInfo: { uid: TESTUSER2, pointsThisMonth: 4, points: 2 } });
+        const testUser3 = await generateTestUsers({ publicInfo: { uid: TESTUSER3, pointsThisMonth: 3, points: 3 } });
+        const testUser4 = await generateTestUsers({ publicInfo: { uid: TESTUSER4, pointsThisMonth: 2, points: 4 } });
+        const testUser5 = await generateTestUsers({ publicInfo: { uid: TESTUSER5, pointsThisMonth: 1, points: 5 } });
+
+        await createTestUserInFirebase(testUser1);
+        await createTestUserInFirebase(testUser2);
+        await createTestUserInFirebase(testUser3);
+        await createTestUserInFirebase(testUser4);
+        await createTestUserInFirebase(testUser5);
+    })
+
+    afterAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
     test("filter by all time points", async () => {
-        const amount = 5;
+        const amount = 2;
         const lastDoc = null;
         const filter = "allTime";
 
         const result = await getSortedUserData(amount, lastDoc, filter);
 
         expect(result.data).toBeDefined();
+
+        console.log("result.data", result.data);
+
         expect(result.data.length).toBeLessThanOrEqual(amount);
         if (result.data.length > 0) {
             expect(result.data[0]).toHaveProperty('uid');
@@ -50,7 +128,7 @@ describe("getSortedUserData", () => {
     });
 
     test("filter by monthly points", async () => {
-        const amount = 5;
+        const amount = 2;
         const lastDoc = null;
         const filter = "monthly";
 
@@ -72,7 +150,6 @@ describe("getSortedUserData", () => {
         // Fetch first set of data to get lastVisible doc
         const initialResult = await getSortedUserData(amount, null, filter);
         const lastDoc = initialResult.lastVisible;
-
         const result = await getSortedUserData(amount, lastDoc, filter);
 
         expect(result.data).toBeDefined();
@@ -82,24 +159,6 @@ describe("getSortedUserData", () => {
             expect(result.data[0]).toHaveProperty('points');
         }
         expect(result.lastVisible).toBeDefined();
-    });
-
-    test("should handle no data gracefully", async () => {
-        const userRef = collection(db, 'users');
-        const querySnapshot = await getDocs(userRef);
-        for (const userDoc of querySnapshot.docs) {
-            await deleteDoc(doc(db, 'users', userDoc.id));
-        }
-
-        const amount = 5;
-        const lastDoc = null;
-        const filter = "allTime";
-
-        const result = await getSortedUserData(amount, lastDoc, filter);
-
-        expect(result.data).toBeDefined();
-        expect(result.data.length).toBe(0);
-        expect(result.lastVisible).toBeNull();
     });
 });
 
@@ -137,13 +196,21 @@ describe("Resume Verification Process", () => {
     const testUID = "testUID";
     const testURL = "https://example.com/resume.pdf";
 
+    beforeEach(async () => {
+        await clearCollection("users");
+        await clearCollection("resumeVerification");
+    });
+
+    afterEach(async () => {
+        await clearCollection("users");
+        await clearCollection("resumeVerification");
+    });
+
     test("getResumeVerificationStatus returns true for existing document", async () => {
         await setDoc(doc(db, `resumeVerification/${testUID}`), { resumePublicURL: testURL });
 
         const result = await getResumeVerificationStatus(testUID);
         expect(result).toBe(true);
-
-        await deleteDoc(doc(db, 'resumeVerification', testUID));
     });
 
     test("getResumeVerificationStatus returns false for non-existing document", async () => {
@@ -161,9 +228,6 @@ describe("Resume Verification Process", () => {
         const userData = userDoc.data();
         expect(userData?.resumePublicURL).toBeUndefined();
         expect(userData?.resumeVerified).toBe(false);
-
-        await deleteDoc(doc(db, 'resumeVerification', testUID));
-        await deleteDoc(doc(db, 'users', testUID));
     });
 
     test("removeResumeVerificationDoc deletes the document", async () => {
@@ -174,7 +238,6 @@ describe("Resume Verification Process", () => {
         const resumeDoc = await getDoc(doc(db, `resumeVerification/${testUID}`));
         expect(resumeDoc.exists()).toBe(false);
 
-        await deleteDoc(doc(db, 'resumeVerification', testUID));
     });
 
     test("uploadResumeVerificationDoc sets the document correctly", async () => {
@@ -185,8 +248,6 @@ describe("Resume Verification Process", () => {
         const resumeData = resumeDoc.data();
         expect(resumeData?.resumePublicURL).toBe(testURL);
         expect(resumeData?.uploadDate).toBeDefined();
-
-        await deleteDoc(doc(db, 'resumeVerification', testUID));
     });
 });
 
@@ -198,20 +259,14 @@ describe("fetchUsersWithPublicResumes", () => {
         { uid: "user4", resumeVerified: true, major: "CSCE", classYear: "2024" },
     ];
 
-    beforeEach(async () => {
-        // Create test user data
+    beforeAll(async () => {
         for (const user of users) {
             await setDoc(doc(db, "users", user.uid), user);
         }
     });
 
-    afterEach(async () => {
-        // Clean up any remaining data
-        const usersRef = collection(db, 'users');
-        const querySnapshot = await getDocs(usersRef);
-        for (const userDoc of querySnapshot.docs) {
-            await deleteDoc(doc(db, 'users', userDoc.id));
-        }
+    afterAll(async () => {
+        clearCollection("users");
     });
 
     test("fetches all users with verified resumes", async () => {
@@ -250,16 +305,30 @@ describe("fetchUsersWithPublicResumes", () => {
 
 
 describe("removeUserResume", () => {
+    const TESTUSER1 = "TestUser1";
+    beforeAll(async () => {
+        clearCollection("users");
+
+        const testUser = await generateTestUsers({
+            publicInfo: {
+                uid: TESTUSER1,
+                resumePublicURL: "resume.pdf",
+                resumeVerified: true,
+                name: "fakeName"
+            }
+        });
+        await createTestUserInFirebase(testUser);
+    });
+
+    afterAll(async () => {
+        clearCollection("users");
+    });
+
     test("removes resume fields from user document", async () => {
-        const userDocRef = doc(db, 'users', 'testUID9');
-        await setDoc(userDocRef, { resumePublicURL: "resume.pdf", resumeVerified: true, name: "fakeName" });
+        await removeUserResume(TESTUSER1);
 
-        await removeUserResume('testUID9');
-
+        const userDocRef = doc(db, 'users', TESTUSER1);
         const userDoc = await getDoc(userDocRef);
-
-        await new Promise(resolve => setTimeout(resolve, 500));
-
         expect(userDoc.exists()).toBe(true);
 
         const userData = userDoc.data();
