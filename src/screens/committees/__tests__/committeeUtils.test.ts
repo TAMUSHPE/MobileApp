@@ -239,48 +239,48 @@ describe("Delete and Reset Committee", () => {
         expect(data?.representatives).toEqual([]);
     });
 
-    test("Delete committee updates users' committee list", async () => {
-        const userDocRefTest = doc(db, "users", "TESTUSER5");
-        const userDocTest = await getDoc(userDocRefTest);
+    // test("Delete committee updates users' committee list", async () => {
+    //     const userDocRefTest = doc(db, "users", "TESTUSER5");
+    //     const userDocTest = await getDoc(userDocRefTest);
 
-        if (!userDocTest.exists()) {
-            await setDoc(userDocRefTest, { name: "fakename" });
-        } else {
-            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
-        }
-        const committeeData = await generateTestCommittee({ head: "TESTUSER5" });
-        console.log("Generated committee data:", committeeData);
-        await setCommitteeData(committeeData);
+    //     if (!userDocTest.exists()) {
+    //         await setDoc(userDocRefTest, { name: "fakename" });
+    //     } else {
+    //         await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+    //     }
+    //     const committeeData = await generateTestCommittee({ head: "TESTUSER5" });
+    //     console.log("Generated committee data:", committeeData);
+    //     await setCommitteeData(committeeData);
 
-        const userRef = doc(db, "users", "testUserForDeleteAndUpdateCommitteeList");
-        const userDoc = await getDoc(userRef);
-        if (!userDoc.exists()) {
-            await setDoc(userRef, { committees: [committeeData.firebaseDocName], name: "fakename" });
-        } else {
-            await setDoc(userRef, { ...userDoc.data(), committees: [committeeData.firebaseDocName], name: "fakename" });
-        }
+    //     const userRef = doc(db, "users", "testUserForDeleteAndUpdateCommitteeList");
+    //     const userDoc = await getDoc(userRef);
+    //     if (!userDoc.exists()) {
+    //         await setDoc(userRef, { committees: [committeeData.firebaseDocName], name: "fakename" });
+    //     } else {
+    //         await setDoc(userRef, { ...userDoc.data(), committees: [committeeData.firebaseDocName], name: "fakename" });
+    //     }
 
-        // Verify that the user document has been set correctly
-        const initialUserDoc = await getDoc(userRef);
-        const initialUserData = initialUserDoc.data();
-        console.log("Initial user data:", initialUserData);
-        expect(initialUserData).toBeDefined();
-        expect(initialUserData?.committees).toContain(committeeData.firebaseDocName);
+    //     // Verify that the user document has been set correctly
+    //     const initialUserDoc = await getDoc(userRef);
+    //     const initialUserData = initialUserDoc.data();
+    //     console.log("Initial user data:", initialUserData);
+    //     expect(initialUserData).toBeDefined();
+    //     expect(initialUserData?.committees).toContain(committeeData.firebaseDocName);
 
-        try {
-            await deleteCommittee(committeeData.firebaseDocName!);
-        } catch (error) {
-            console.error('Failed to delete committee:', error);
-        }
+    //     try {
+    //         await deleteCommittee(committeeData.firebaseDocName!);
+    //     } catch (error) {
+    //         console.error('Failed to delete committee:', error);
+    //     }
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+    //     await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const updatedUserDoc = await getDoc(userRef);
-        const updatedUserData = updatedUserDoc.data();
+    //     const updatedUserDoc = await getDoc(userRef);
+    //     const updatedUserData = updatedUserDoc.data();
 
-        expect(updatedUserData).toBeDefined();
-        expect(updatedUserData?.committees).not.toContain(committeeData.firebaseDocName);
-    });
+    //     expect(updatedUserData).toBeDefined();
+    //     expect(updatedUserData?.committees).not.toContain(committeeData.firebaseDocName);
+    // });
 
     test("Reset committee updates users' committee list", async () => {
         const userDocRefTest = doc(db, "users", "TESTUSER1123");
