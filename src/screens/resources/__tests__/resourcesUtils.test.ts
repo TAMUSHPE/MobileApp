@@ -257,6 +257,9 @@ describe("removeUserResume", () => {
         await removeUserResume('testUID9');
 
         const userDoc = await getDoc(userDocRef);
+
+        await new Promise(resolve => setTimeout(resolve, 500));
+
         expect(userDoc.exists()).toBe(true);
 
         const userData = userDoc.data();

@@ -95,7 +95,7 @@ describe("Get Committees", () => {
     });
 
     test("Get committees sorted by memberCount", async () => {
-        const userDocRefTest = doc(db, "users", "TESTUSER4");
+        const userDocRefTest = doc(db, "users", "TESTUSER499");
         const userDocTest = await getDoc(userDocRefTest);
 
         if (!userDocTest.exists()) {
@@ -104,8 +104,8 @@ describe("Get Committees", () => {
             await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
         }
 
-        const committeeData1 = await generateTestCommittee({ firebaseDocName: "committee1", memberCount: 5, head: "TESTUSER4" });
-        const committeeData2 = await generateTestCommittee({ firebaseDocName: "committee2", memberCount: 15, head: "TESTUSER4" });
+        const committeeData1 = await generateTestCommittee({ firebaseDocName: "committee1", memberCount: 5, head: "TESTUSER499" });
+        const committeeData2 = await generateTestCommittee({ firebaseDocName: "committee2", memberCount: 15, head: "TESTUSER499" });
 
         await setCommitteeData(committeeData1);
         await setCommitteeData(committeeData2);
@@ -261,10 +261,10 @@ describe("Delete and Reset Committee", () => {
 
         await deleteCommittee(committeeData.firebaseDocName!);
 
-        // Add a delay to ensure Firestore consistency
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        const updatedUserDoc = await getDoc(userRef);
+        const updatedUserDoc = await getDoc(doc(db, "users", "testUserForDeleteAndUpdateCommitteeList"));
+        await new Promise(resolve => setTimeout(resolve, 500));
         const updatedUserData = updatedUserDoc.data();
 
         expect(updatedUserData).toBeDefined();
