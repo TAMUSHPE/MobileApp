@@ -261,10 +261,9 @@ describe("Delete and Reset Committee", () => {
 
         await deleteCommittee(committeeData.firebaseDocName!);
 
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const updatedUserDoc = await getDoc(doc(db, "users", "testUserForDeleteAndUpdateCommitteeList"));
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const updatedUserDoc = await getDoc(userRef);
         const updatedUserData = updatedUserDoc.data();
 
         expect(updatedUserData).toBeDefined();
