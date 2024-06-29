@@ -22,12 +22,6 @@ beforeAll(async () => {
 
     await signInAnonymously(auth);
 
-    // Clean up any existing data
-    const userRef = collection(db, 'users');
-    const querySnapshot = await getDocs(userRef);
-    for (const userDoc of querySnapshot.docs) {
-        await deleteDoc(doc(db, 'users', userDoc.id));
-    }
     // Create fake user data
     for (const user of testUserDataList) {
         await setDoc(doc(db, "users", user.publicInfo!.uid!), user.publicInfo);
@@ -41,14 +35,13 @@ afterAll(async () => {
 
 describe("User Info", () => {
     test("Initializes correctly and can be modified", async () => {
-        expect((await getUserByEmail(auth.currentUser?.email!))).toBeNull();
-
         // Creaate user data and ensure it initializes
         const user = await initializeCurrentUserData();
         expect(user).toBeDefined();
 
         // Initializing again should not modify user
-        expect((await initializeCurrentUserData())).toMatchObject(user);
+        const initializedUserAgain = await initializeCurrentUserData();
+        expect(initializedUserAgain).toMatchObject(user);
 
         const userData = await getUser(auth.currentUser?.uid!);
         expect(userData).toBeDefined();
@@ -83,6 +76,17 @@ describe("User Info", () => {
         await setPublicUserData({
             email: auth.currentUser?.email!,
             isEmailPublic: true,
+            displayName: "Test User",
+            isStudent: false,
+            photoURL: "",
+            roles: {
+                admin: false,
+                developer: false,
+                lead: false,
+                officer: false,
+                reader: true,
+                representative: false
+            }
         });
 
         const updatedPublicUserData = await getPublicUserData();

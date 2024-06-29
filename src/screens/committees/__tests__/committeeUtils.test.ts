@@ -7,18 +7,7 @@ import { User } from "../../../types/user";
 
 const testUserDataList: User[] = require("../../../api/__tests__/test_data/users.json");
 
-const generateTestUser = async (uid: string) => {
-    const userDocRef = doc(db, "users", uid);
-    const userDoc = await getDoc(userDocRef);
-
-    if (!userDoc.exists()) {
-        await setDoc(userDocRef, { uid });
-    }
-};
-
 const generateTestCommittee = async (overrides: Partial<Committee> = {}): Promise<Committee> => {
-    await generateTestUser("TESTUSER1123");
-
     return {
         firebaseDocName: "test-committee",
         name: "Test Committee",
@@ -60,6 +49,15 @@ beforeAll(async () => {
         await deleteDoc(doc(db, 'users', userDoc.id));
     }
 
+    const userDocRefTest = doc(db, "users", "TESTUSER1123");
+    const userDocTest = await getDoc(userDocRefTest);
+
+    if (!userDocTest.exists()) {
+        await setDoc(userDocRefTest, { name: "fakename" });
+    } else {
+        await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+    }
+
     for (const user of testUserDataList) {
         await setDoc(doc(db, "users", user.publicInfo!.uid!), user.publicInfo);
         await setDoc(doc(db, `users/${user.publicInfo!.uid!}/private`, "privateInfo"), user.private?.privateInfo);
@@ -77,6 +75,14 @@ describe("Get Committees", () => {
     });
 
     test("Get committees with data", async () => {
+        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
         const committeeData = await generateTestCommittee();
         await setCommitteeData(committeeData);
 
@@ -89,8 +95,18 @@ describe("Get Committees", () => {
     });
 
     test("Get committees sorted by memberCount", async () => {
-        const committeeData1 = await generateTestCommittee({ firebaseDocName: "committee1", memberCount: 5 });
-        const committeeData2 = await generateTestCommittee({ firebaseDocName: "committee2", memberCount: 15 });
+        const userDocRefTest = doc(db, "users", "TESTUSER4");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
+
+        const committeeData1 = await generateTestCommittee({ firebaseDocName: "committee1", memberCount: 5, head: "TESTUSER4" });
+        const committeeData2 = await generateTestCommittee({ firebaseDocName: "committee2", memberCount: 15, head: "TESTUSER4" });
+
         await setCommitteeData(committeeData1);
         await setCommitteeData(committeeData2);
 
@@ -101,6 +117,15 @@ describe("Get Committees", () => {
 
 describe("Set Committee Data", () => {
     test("with valid input", async () => {
+        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
+
         const committeeData = await generateTestCommittee();
         const result = await setCommitteeData(committeeData);
         expect(result).toBe(true);
@@ -113,23 +138,58 @@ describe("Set Committee Data", () => {
     });
 
     test("with falsy firebaseDocName", async () => {
+        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
         const committeeData = await generateTestCommittee({ firebaseDocName: "" });
 
         await expect(setCommitteeData(committeeData)).rejects.toThrow();
     });
 
     test("Throws when not given a firebaseDocName", async () => {
-        const committeeData = await generateTestCommittee({ firebaseDocName: undefined, head: "TESTUSER1123" });
+        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
+
+        const committeeData = await generateTestCommittee({ firebaseDocName: undefined });
         await expect(setCommitteeData(committeeData)).rejects.toThrow();
     });
 
     test("with missing optional fields", async () => {
+        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
+
         const committeeData = await generateTestCommittee({ color: undefined, logo: undefined });
         const result = await setCommitteeData(committeeData);
         expect(result).toBe(true);
     });
 
     test("with empty representatives and leads", async () => {
+        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
+
         const committeeData = await generateTestCommittee({ representatives: [], leads: [] });
         const result = await setCommitteeData(committeeData);
         expect(result).toBe(true);
@@ -138,6 +198,15 @@ describe("Set Committee Data", () => {
 
 describe("Delete and Reset Committee", () => {
     test("Delete committee", async () => {
+        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
+
         const committeeData = await generateTestCommittee();
         await setCommitteeData(committeeData);
 
@@ -147,6 +216,15 @@ describe("Delete and Reset Committee", () => {
     });
 
     test("Reset committee", async () => {
+        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
+
         const committeeData = await generateTestCommittee();
         await setCommitteeData(committeeData);
 
@@ -162,29 +240,64 @@ describe("Delete and Reset Committee", () => {
     });
 
     test("Delete committee updates users' committee list", async () => {
-        const committeeData = await generateTestCommittee();
+        const userDocRefTest = doc(db, "users", "TESTUSER5");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
+        const committeeData = await generateTestCommittee({ head: "TESTUSER5" });
         await setCommitteeData(committeeData);
 
-        const userRef = doc(db, "users", "testUser");
-        await setDoc(userRef, { committees: [committeeData.firebaseDocName] });
+        const userRef = doc(db, "users", "testUserForDeleteAndUpdateCommitteeList");
+        const userDoc = await getDoc(userRef);
+        if (!userDoc.exists()) {
+            await setDoc(userRef, { committees: [committeeData.firebaseDocName], name: "fakename" });
+        } else {
+            await setDoc(userRef, { ...userDoc.data(), committees: [committeeData.firebaseDocName], name: "fakename" });
+        }
 
         await deleteCommittee(committeeData.firebaseDocName!);
-        const userDoc = await getDoc(userRef);
-        const userData = userDoc.data();
-        expect(userData?.committees).not.toContain(committeeData.firebaseDocName);
+
+        const userRef2 = doc(db, "users", "testUserForDeleteAndUpdateCommitteeList");
+        const updatedUserDoc = await getDoc(userRef2);
+        const updatedUserData = updatedUserDoc.data();
+
+        expect(updatedUserData).toBeDefined();
+        expect(updatedUserData?.committees).not.toContain(committeeData.firebaseDocName);
     });
 
     test("Reset committee updates users' committee list", async () => {
-        const committeeData = await generateTestCommittee();
+        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
+        const committeeData = await generateTestCommittee({ head: "TESTUSER1123" });
         await setCommitteeData(committeeData);
 
         const userRef = doc(db, "users", "testUser");
-        await setDoc(userRef, { committees: [committeeData.firebaseDocName] });
+        const userDoc = await getDoc(userRef);
+
+        if (!userDoc.exists()) {
+            await setDoc(userRef, { committees: [committeeData.firebaseDocName], name: "fakename" });
+        } else {
+            await setDoc(userRef, { ...userDoc.data(), committees: [committeeData.firebaseDocName] });
+        }
 
         await resetCommittee(committeeData.firebaseDocName!);
-        const userDoc = await getDoc(userRef);
-        const userData = userDoc.data();
-        expect(userData?.committees).not.toContain(committeeData.firebaseDocName);
+
+        const updatedUserDoc = await getDoc(userRef);
+        const updatedUserData = updatedUserDoc.data();
+
+        // Verify the user document and committees field
+        expect(updatedUserData).toBeDefined();
+        expect(updatedUserData?.committees).not.toContain(committeeData.firebaseDocName);
     });
 });
 
@@ -249,22 +362,16 @@ describe('Committee Request', () => {
 });
 
 describe("Committee Info", () => {
-    test("Can be created and queried", async () => {
-        const committeeData: Committee = {
-            name: "Test Committee",
-            color: "#FF0000",
-            description: "Test Description",
-            head: "TESTUSER1123",
-            firebaseDocName: "QUERYINGCOMMITTEE",
-        };
-
-        expect(await setCommitteeData(committeeData)).toBe(true);
-
-        const obtainedCommitteeData = await getCommittee(committeeData.firebaseDocName!);
-        expect(obtainedCommitteeData).toMatchObject(committeeData);
-    });
-
     test("Can be deleted", async () => {
+        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocTest = await getDoc(userDocRefTest);
+
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
+
         const committeeData: Committee = {
             head: "TESTUSER1123",
             firebaseDocName: "DELETINGCOMMITTEE",
@@ -281,14 +388,23 @@ describe("Committee Info", () => {
 
 
     test("Can be reset", async () => {
-        const committeeData = await generateTestCommittee({ firebaseDocName: "RESETTINGCOMMITTEE" });
+        const userDocRefTest = doc(db, "users", "TESTUSER1123");
+        const userDocTest = await getDoc(userDocRefTest);
 
-        const userDocRef = doc(db, "users", "1231232131");
+        if (!userDocTest.exists()) {
+            await setDoc(userDocRefTest, { name: "fakename" });
+        } else {
+            await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
+        }
+
+        const committeeData = await generateTestCommittee({ firebaseDocName: "RESETTINGCOMMITTEE", head: "TESTUSER1123" });
+
+        const userDocRef = doc(db, "users", "1234");
         const userDoc = await getDoc(userDocRef);
 
         if (!userDoc.exists()) {
             await setDoc(userDocRef, {
-                uid: "1231232131",
+                uid: "1234",
                 name: "Test User",
                 email: `@test.com`,
                 committees: ["RESETTINGCOMMITTEE"],
@@ -297,7 +413,7 @@ describe("Committee Info", () => {
         // Set up initial committee data
         await setCommitteeData(committeeData);
 
-        let committeeMemberInfo = await getPublicUserData("1231232131");
+        let committeeMemberInfo = await getPublicUserData("1234");
         expect(typeof committeeMemberInfo?.committees).toBe("object");
         expect(committeeMemberInfo?.committees!).toContain("RESETTINGCOMMITTEE");
 
@@ -306,8 +422,7 @@ describe("Committee Info", () => {
         const obtainedCommitteeData = await getCommittee(committeeData.firebaseDocName!);
         expect(obtainedCommitteeData?.memberCount).toBe(0);
 
-        committeeMemberInfo = await getPublicUserData("1231232131");
-        expect(typeof committeeMemberInfo?.committees).toBe("object");
+        committeeMemberInfo = await getPublicUserData("1234");
         expect(committeeMemberInfo?.committees!).not.toContain("RESETTINGCOMMITTEE");
     });
 

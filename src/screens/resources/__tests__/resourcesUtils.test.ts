@@ -21,12 +21,6 @@ beforeAll(async () => {
 
     await signInAnonymously(auth);
 
-    // Clean up any existing data
-    const userRef = collection(db, 'users');
-    const querySnapshot = await getDocs(userRef);
-    for (const userDoc of querySnapshot.docs) {
-        await deleteDoc(doc(db, 'users', userDoc.id));
-    }
     // Create fake user data
     for (const user of testUserDataList) {
         await setDoc(doc(db, "users", user.publicInfo!.uid!), user.publicInfo);
@@ -143,21 +137,13 @@ describe("Resume Verification Process", () => {
     const testUID = "testUID";
     const testURL = "https://example.com/resume.pdf";
 
-    beforeEach(async () => {
-        await deleteDoc(doc(db, 'resumeVerification', testUID));
-        await deleteDoc(doc(db, 'users', testUID));
-    });
-
-    afterEach(async () => {
-        await deleteDoc(doc(db, 'resumeVerification', testUID));
-        await deleteDoc(doc(db, 'users', testUID));
-    });
-
     test("getResumeVerificationStatus returns true for existing document", async () => {
         await setDoc(doc(db, `resumeVerification/${testUID}`), { resumePublicURL: testURL });
 
         const result = await getResumeVerificationStatus(testUID);
         expect(result).toBe(true);
+
+        await deleteDoc(doc(db, 'resumeVerification', testUID));
     });
 
     test("getResumeVerificationStatus returns false for non-existing document", async () => {
@@ -175,6 +161,9 @@ describe("Resume Verification Process", () => {
         const userData = userDoc.data();
         expect(userData?.resumePublicURL).toBeUndefined();
         expect(userData?.resumeVerified).toBe(false);
+
+        await deleteDoc(doc(db, 'resumeVerification', testUID));
+        await deleteDoc(doc(db, 'users', testUID));
     });
 
     test("removeResumeVerificationDoc deletes the document", async () => {
@@ -184,6 +173,8 @@ describe("Resume Verification Process", () => {
 
         const resumeDoc = await getDoc(doc(db, `resumeVerification/${testUID}`));
         expect(resumeDoc.exists()).toBe(false);
+
+        await deleteDoc(doc(db, 'resumeVerification', testUID));
     });
 
     test("uploadResumeVerificationDoc sets the document correctly", async () => {
@@ -194,6 +185,8 @@ describe("Resume Verification Process", () => {
         const resumeData = resumeDoc.data();
         expect(resumeData?.resumePublicURL).toBe(testURL);
         expect(resumeData?.uploadDate).toBeDefined();
+
+        await deleteDoc(doc(db, 'resumeVerification', testUID));
     });
 });
 
@@ -206,13 +199,6 @@ describe("fetchUsersWithPublicResumes", () => {
     ];
 
     beforeEach(async () => {
-        // Clean up any existing data
-        const usersRef = collection(db, 'users');
-        const querySnapshot = await getDocs(usersRef);
-        for (const userDoc of querySnapshot.docs) {
-            await deleteDoc(doc(db, 'users', userDoc.id));
-        }
-
         // Create test user data
         for (const user of users) {
             await setDoc(doc(db, "users", user.uid), user);
