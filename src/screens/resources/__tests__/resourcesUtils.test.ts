@@ -255,7 +255,7 @@ describe("removeUserResume", () => {
 
 
     test("removes resume fields from user document", async () => {
-        await setDoc(userDocRef, { resumePublicURL: "resume.pdf", resumeVerified: true });
+        await setDoc(userDocRef, { resumePublicURL: "resume.pdf", resumeVerified: true, name: "fakeName" });
         await removeUserResume(uid);
 
         const userDoc = await getDoc(userDocRef);

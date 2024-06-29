@@ -83,7 +83,7 @@ describe("Get Committees", () => {
         } else {
             await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
         }
-        const committeeData = await generateTestCommittee();
+        const committeeData = await generateTestCommittee({ head: "TESTUSER1123" });
         await setCommitteeData(committeeData);
 
         const committees = await getCommittees();
@@ -261,8 +261,10 @@ describe("Delete and Reset Committee", () => {
 
         await deleteCommittee(committeeData.firebaseDocName!);
 
-        const userRef2 = doc(db, "users", "testUserForDeleteAndUpdateCommitteeList");
-        const updatedUserDoc = await getDoc(userRef2);
+        // Add a delay to ensure Firestore consistency
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const updatedUserDoc = await getDoc(userRef);
         const updatedUserData = updatedUserDoc.data();
 
         expect(updatedUserData).toBeDefined();
