@@ -249,6 +249,7 @@ describe("Delete and Reset Committee", () => {
             await setDoc(userDocRefTest, { ...userDocTest.data(), name: "fakename" });
         }
         const committeeData = await generateTestCommittee({ head: "TESTUSER5" });
+        console.log("Generated committee data:", committeeData);
         await setCommitteeData(committeeData);
 
         const userRef = doc(db, "users", "testUserForDeleteAndUpdateCommitteeList");
@@ -259,7 +260,18 @@ describe("Delete and Reset Committee", () => {
             await setDoc(userRef, { ...userDoc.data(), committees: [committeeData.firebaseDocName], name: "fakename" });
         }
 
-        await deleteCommittee(committeeData.firebaseDocName!);
+        // Verify that the user document has been set correctly
+        const initialUserDoc = await getDoc(userRef);
+        const initialUserData = initialUserDoc.data();
+        console.log("Initial user data:", initialUserData);
+        expect(initialUserData).toBeDefined();
+        expect(initialUserData?.committees).toContain(committeeData.firebaseDocName);
+
+        try {
+            await deleteCommittee(committeeData.firebaseDocName!);
+        } catch (error) {
+            console.error('Failed to delete committee:', error);
+        }
 
         await new Promise(resolve => setTimeout(resolve, 1000));
 
