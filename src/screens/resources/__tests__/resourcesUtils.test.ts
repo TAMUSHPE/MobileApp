@@ -250,16 +250,15 @@ describe("fetchUsersWithPublicResumes", () => {
 
 
 describe("removeUserResume", () => {
-    const uid = "testUID123";
-    const userDocRef = doc(db, 'users', uid);
-
-
     test("removes resume fields from user document", async () => {
+        const userDocRef = doc(db, 'users', 'testUID9');
         await setDoc(userDocRef, { resumePublicURL: "resume.pdf", resumeVerified: true, name: "fakeName" });
-        await removeUserResume(uid);
+
+        await removeUserResume('testUID9');
 
         const userDoc = await getDoc(userDocRef);
         expect(userDoc.exists()).toBe(true);
+
         const userData = userDoc.data();
         expect(userData?.resumePublicURL).toBeUndefined();
         expect(userData?.resumeVerified).toBe(false);
