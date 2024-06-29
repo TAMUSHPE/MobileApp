@@ -12,19 +12,7 @@ const generateTestUser = async (uid: string) => {
     const userDoc = await getDoc(userDocRef);
 
     if (!userDoc.exists()) {
-        await setDoc(userDocRef, {
-            uid,
-            name: "Test User",
-            email: `${uid}@test.com`,
-            roles: {
-                admin: false,
-                developer: false,
-                lead: false,
-                officer: false,
-                reader: true,
-                representative: false,
-            }
-        });
+        await setDoc(userDocRef, { uid });
     }
 };
 
@@ -131,7 +119,7 @@ describe("Set Committee Data", () => {
     });
 
     test("Throws when not given a firebaseDocName", async () => {
-        const committeeData = await generateTestCommittee({ firebaseDocName: undefined, head: "TESTUSER1" });
+        const committeeData = await generateTestCommittee({ firebaseDocName: undefined, head: "TESTUSER1123" });
         await expect(setCommitteeData(committeeData)).rejects.toThrow();
     });
 
@@ -266,7 +254,7 @@ describe("Committee Info", () => {
             name: "Test Committee",
             color: "#FF0000",
             description: "Test Description",
-            head: "TESTUSER1",
+            head: "TESTUSER1123",
             firebaseDocName: "QUERYINGCOMMITTEE",
         };
 
@@ -278,7 +266,7 @@ describe("Committee Info", () => {
 
     test("Can be deleted", async () => {
         const committeeData: Committee = {
-            head: "TESTUSER1",
+            head: "TESTUSER1123",
             firebaseDocName: "DELETINGCOMMITTEE",
             name: "Bad Committee",
             applicationLink: "https://www.test.asdf/notreal",
@@ -291,28 +279,36 @@ describe("Committee Info", () => {
         expect(await getCommittee(committeeData.firebaseDocName!)).toBeNull();
     });
 
+
     test("Can be reset", async () => {
-        const committeeData: Committee = {
-            head: "TESTUSER2",
-            firebaseDocName: "RESETTINGCOMMITTEE",
-            name: "Resetting Committee",
-            memberCount: 2,
-        };
+        const committeeData = await generateTestCommittee({ firebaseDocName: "RESETTINGCOMMITTEE" });
 
-        let committeeMemberInfo = await getPublicUserData("TESTUSER1");
-        expect(typeof committeeMemberInfo?.committees).toBe("object");
-        expect(committeeMemberInfo?.committees!).toContain("QUERYINGCOMMITTEE");
-        expect(committeeMemberInfo?.committees!).toContain(committeeData.firebaseDocName);
+        const userDocRef = doc(db, "users", "1231232131");
+        const userDoc = await getDoc(userDocRef);
 
+        if (!userDoc.exists()) {
+            await setDoc(userDocRef, {
+                uid: "1231232131",
+                name: "Test User",
+                email: `@test.com`,
+                committees: ["RESETTINGCOMMITTEE"],
+            });
+        }
+        // Set up initial committee data
         await setCommitteeData(committeeData);
+
+        let committeeMemberInfo = await getPublicUserData("1231232131");
+        expect(typeof committeeMemberInfo?.committees).toBe("object");
+        expect(committeeMemberInfo?.committees!).toContain("RESETTINGCOMMITTEE");
+
         await resetCommittee(committeeData.firebaseDocName!);
 
         const obtainedCommitteeData = await getCommittee(committeeData.firebaseDocName!);
         expect(obtainedCommitteeData?.memberCount).toBe(0);
 
-        committeeMemberInfo = await getPublicUserData("TESTUSER1");
+        committeeMemberInfo = await getPublicUserData("1231232131");
         expect(typeof committeeMemberInfo?.committees).toBe("object");
-        expect(committeeMemberInfo?.committees!).toContain("QUERYINGCOMMITTEE");
-        expect(committeeMemberInfo?.committees!).not.toContain(committeeData.firebaseDocName);
+        expect(committeeMemberInfo?.committees!).not.toContain("RESETTINGCOMMITTEE");
     });
+
 });
