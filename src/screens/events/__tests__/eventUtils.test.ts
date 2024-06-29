@@ -1,8 +1,8 @@
-import { Timestamp, GeoPoint, deleteDoc, doc, collection, getDocs, getDoc, setDoc } from "firebase/firestore";
+import { Timestamp, GeoPoint, deleteDoc, doc, collection, getDocs, getDoc, setDoc, DocumentReference, writeBatch } from "firebase/firestore";
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
-import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, signInToEvent, getAttendanceNumber, getUserEventLog, fetchEventByName } from "../../../api/firebaseUtils";
-import { EventLogStatus, EventType, SHPEEvent } from "../../../types/events";
+import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, getAttendanceNumber, getUserEventLog, fetchEventByName } from "../../../api/firebaseUtils";
+import { EventType, SHPEEvent } from "../../../types/events";
 
 const generateTestEvent = (overrides: Partial<SHPEEvent> = {}): SHPEEvent => {
     const currentTime = new Date();
@@ -32,6 +32,30 @@ const generateTestEvent = (overrides: Partial<SHPEEvent> = {}): SHPEEvent => {
     };
 };
 
+const clearSubcollections = async (docRef: DocumentReference) => {
+    const subcollectionsSnapshot = await getDocs(collection(docRef, 'private'));
+    const batch = writeBatch(db);
+
+    subcollectionsSnapshot.forEach(subDoc => {
+        batch.delete(subDoc.ref);
+    });
+
+    await batch.commit();
+};
+
+const clearCollection = async (collectionName: string) => {
+    const collectionRef = collection(db, collectionName);
+    const querySnapshot = await getDocs(collectionRef);
+
+    const batch = writeBatch(db);
+
+    for (const documentSnapshot of querySnapshot.docs) {
+        await clearSubcollections(documentSnapshot.ref);
+        batch.delete(documentSnapshot.ref);
+    }
+
+    await batch.commit();
+};
 
 beforeAll(async () => {
     expect(process.env.FIREBASE_EMULATOR_ADDRESS).toBeDefined();
@@ -45,20 +69,26 @@ beforeAll(async () => {
     expect(Number(process.env.FIREBASE_STORAGE_PORT)).not.toBeNaN();
 
     await signInAnonymously(auth);
-
-    // Clear events collection
-    const eventsRef = collection(db, "events");
-    const eventsSnapshot = await getDocs(eventsRef);
-    for (const doc of eventsSnapshot.docs) {
-        await deleteDoc(doc.ref);
-    }
 });
 
 afterAll(async () => {
     await signOut(auth);
+
+    await clearCollection("users");
+    await clearCollection("events")
 });
 
 describe("Create events", () => {
+    beforeAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
+    afterAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
     test("Handle empty events collection", async () => {
         const upcomingEvents = await getUpcomingEvents();
         expect(upcomingEvents.length).toBe(0);
@@ -87,6 +117,16 @@ describe("Create events", () => {
 });
 
 describe("Various Fetch events", () => {
+    beforeAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
+    afterAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
     test("Fetch existing event", async () => {
         const event = generateTestEvent();
         const eventId = await createEvent(event as SHPEEvent);
@@ -278,6 +318,16 @@ describe("Various Fetch events", () => {
 });
 
 describe("Update Events", () => {
+    beforeAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
+    afterAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
     test("Update an existing event with valid data", async () => {
         const event = generateTestEvent();
         const eventId = await createEvent(event as SHPEEvent);
@@ -344,6 +394,16 @@ describe("Update Events", () => {
 
 
 describe("Destroy Event Function", () => {
+    beforeAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
+    afterAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
     test("Delete an existing event", async () => {
         const event = generateTestEvent();
         const eventId = await createEvent(event as SHPEEvent);
@@ -397,6 +457,16 @@ describe("Destroy Event Function", () => {
 });
 
 describe("Event Attendance and Logs", () => {
+    beforeAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
+    afterAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
     test("Get attendance numbers for an event", async () => {
         const event = generateTestEvent();
         const eventId = await createEvent(event as SHPEEvent);
