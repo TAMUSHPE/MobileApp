@@ -3,10 +3,37 @@ import { deleteCommittee, getCommittee, getPrivateUserData, getPublicUserData, g
 import { auth, db, storage } from "../../config/firebaseConfig";
 import { PrivateUserInfo, PublicUserInfo, User } from "../../types/user";
 import { validateTamuEmail } from "../../helpers";
-import { collection, deleteDoc, doc, getDocs, setDoc } from "firebase/firestore";
+import { DocumentReference, collection, deleteDoc, doc, getDocs, setDoc, writeBatch } from "firebase/firestore";
 import { Committee } from "../../types/committees";
+import { clear } from "node:console";
 
 const testUserDataList: User[] = require("./test_data/users.json");
+
+const clearSubcollections = async (docRef: DocumentReference) => {
+    const subcollectionsSnapshot = await getDocs(collection(docRef, 'private'));
+    const batch = writeBatch(db);
+
+    subcollectionsSnapshot.forEach(subDoc => {
+        batch.delete(subDoc.ref);
+    });
+
+    await batch.commit();
+};
+
+const clearCollection = async (collectionName: string) => {
+    const collectionRef = collection(db, collectionName);
+    const querySnapshot = await getDocs(collectionRef);
+
+    const batch = writeBatch(db);
+
+    for (const documentSnapshot of querySnapshot.docs) {
+        await clearSubcollections(documentSnapshot.ref);
+        batch.delete(documentSnapshot.ref);
+    }
+
+    await batch.commit();
+};
+
 
 beforeAll(async () => {
     // Check testing environment
@@ -31,6 +58,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await signOut(auth);
+    clearCollection("users");
 });
 
 describe("User Info", () => {

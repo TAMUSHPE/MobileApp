@@ -149,21 +149,23 @@ describe("Get Committees", () => {
 describe("Set Committee Data", () => {
     const HEADUSER = "HeadUser1";
 
+    // Utility function to create user in Firestore
+    const createHeadUser = async () => {
+        const user = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
+        await createTestUserInFirebase(user);
+
+        const userDocRef = doc(db, "users", HEADUSER);
+        const userDoc = await getDoc(userDocRef);
+        if (!userDoc.exists()) {
+            throw new Error(`Failed to create user with UID: ${HEADUSER}`);
+        }
+        console.log(`User with UID: ${HEADUSER} created successfully`);
+    };
+
     beforeAll(async () => {
         await clearCollection("users");
         await clearCollection("committees");
-
-        // Create HEADUSER
-        const headUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
-        await createTestUserInFirebase(headUser);
-
-        // Verify HEADUSER creation
-        const headUserDocRef = doc(db, "users", HEADUSER);
-        const headUserDoc = await getDoc(headUserDocRef);
-        if (!headUserDoc.exists()) {
-            throw new Error(`Failed to create head user with UID: ${HEADUSER}`);
-        }
-        console.log(`Head user with UID: ${HEADUSER} created successfully`);
+        await createHeadUser();
     });
 
     afterAll(async () => {
@@ -172,16 +174,7 @@ describe("Set Committee Data", () => {
     });
 
     beforeEach(async () => {
-        // Ensure HEADUSER is present before each test
-        const headUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
-        await createTestUserInFirebase(headUser);
-
-        const headUserDocRef = doc(db, "users", HEADUSER);
-        const headUserDoc = await getDoc(headUserDocRef);
-        if (!headUserDoc.exists()) {
-            throw new Error(`Failed to create head user with UID: ${HEADUSER}`);
-        }
-        console.log(`Head user with UID: ${HEADUSER} verified before each test`);
+        await createHeadUser();
     });
 
     test("with valid input", async () => {
