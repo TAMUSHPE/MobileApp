@@ -2,8 +2,6 @@ import { Image, Text, TouchableOpacity, View, useColorScheme } from 'react-nativ
 import React, { useContext, useEffect, useState } from 'react'
 import { MemberCardProp } from '../types/navigation'
 import { Images } from '../../assets'
-import TwitterSvg from './TwitterSvg'
-import { getBadgeColor, isMemberVerified } from '../helpers/membership'
 import { UserContext } from '../context/UserContext'
 
 const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation, displayPoints }) => {
@@ -16,17 +14,7 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration, pointsThisMonth } = userData
-    const isOfficer = roles ? roles.officer : false;
-
-    const [isVerified, setIsVerified] = useState<boolean>(false);
-    let badgeColor = getBadgeColor(isOfficer!, isVerified);
-
-    useEffect(() => {
-        if (nationalExpiration && chapterExpiration) {
-            setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
-        }
-    }, [nationalExpiration, chapterExpiration])
+    const { name, uid, displayName, photoURL, pointsThisMonth } = userData
 
     return (
         <TouchableOpacity
@@ -51,10 +39,8 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
                 />
                 <View className='ml-2 my-1'>
                     <View>
-                        <View className="flex-row items-center">
-                            <Text className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-black'}`}>{name}</Text>
-                            {(isOfficer || isVerified) && <TwitterSvg color={badgeColor} className="ml-2" />}
-                        </View>
+                        <Text className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-black'}`}>{name}</Text>
+
                         <Text className={`text-md ${darkMode ? 'text-grey-light' : 'text-grey'}`}>{displayName}</Text>
                         {displayPoints && pointsThisMonth?.valueOf && (
                             <Text className={darkMode ? 'text-white' : 'text-black'}>{parseFloat(pointsThisMonth.toFixed(3))} pts</Text>

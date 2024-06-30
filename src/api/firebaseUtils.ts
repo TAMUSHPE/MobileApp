@@ -151,62 +151,52 @@ export const getUserByEmail = async (email: string): Promise<{ userData: PublicU
     }
 }
 
-type FetchMembersOptions = {
-    lastUserSnapshot?: QueryDocumentSnapshot<DocumentData> | null,
-    isOfficer?: boolean,
-    numLimit?: number | null,
-    filter: UserFilter,
-};
+enum FilterRole {
+    OFFICER = "Officer",
+    REPRESENTATIVE = "Representative",
+    LEAD = "Lead",
+}
 
-export const getUserForMemberList = async (options: FetchMembersOptions): Promise<{ members: QueryDocumentSnapshot<DocumentData, DocumentData>[] | never[]; lastSnapshot: QueryDocumentSnapshot<DocumentData, DocumentData> | null; hasMoreUser: boolean; }> => {
-    const {
-        lastUserSnapshot,
-        numLimit = null,
-        filter,
-    } = options;
-    let userQuery: Query<DocumentData, DocumentData> = collection(db, 'users');
+export const getUserForMemberList = async (
+    numLimit: number,
+    startAfterDoc: QueryDocumentSnapshot<DocumentData> | null,
+    selectedFilter: FilterRole | null,
+    setEndOfData?: (endOfData: boolean) => void
+) => {
+    const usersRef = collection(db, 'users');
+    let q;
 
-    if (filter.classYear != "") {
-        userQuery = query(userQuery, where("classYear", "==", filter.classYear));
-    }
+    const filters = {
+        [FilterRole.OFFICER]: 'roles.officer',
+        [FilterRole.REPRESENTATIVE]: 'roles.representative',
+        [FilterRole.LEAD]: 'roles.lead',
+    };
 
-    if (filter.major != "") {
-        const majorUpper = filter.major.toUpperCase();
-        userQuery = query(userQuery, where("major", "==", majorUpper));
-    }
-
-    userQuery = query(userQuery, where("roles.officer", "==", false));
-
-    if (filter.role && filter.role !== "") {
-        const roleQuery = `roles.${filter.role}`;
-        userQuery = query(userQuery, where(roleQuery, "==", true));
-    }
-
-    // Limit the number of results
-    if (numLimit !== null) {
-        userQuery = query(userQuery, limit(numLimit));
-    }
-
-    // Start after the last retrieved document
-    if (lastUserSnapshot) {
-        userQuery = query(userQuery, startAfter(lastUserSnapshot));
+    if (selectedFilter) {
+        q = startAfterDoc
+            ? query(usersRef, where(filters[selectedFilter], '==', true), orderBy('name', 'asc'), startAfter(startAfterDoc), limit(numLimit))
+            : query(usersRef, where(filters[selectedFilter], '==', true), orderBy('name', 'asc'), limit(numLimit));
+    } else {
+        q = startAfterDoc
+            ? query(usersRef, orderBy('name', 'asc'), startAfter(startAfterDoc), limit(numLimit))
+            : query(usersRef, orderBy('name', 'asc'), limit(numLimit));
     }
 
     try {
-        const snapshot = await getDocs(userQuery);
-        const hasMoreUser = numLimit !== null ? snapshot.docs.length >= numLimit : false;
+        const querySnapshot = await getDocs(q);
+        const members = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-        return {
-            members: snapshot.docs,
-            lastSnapshot: snapshot.docs[snapshot.docs.length - 1],
-            hasMoreUser
-        };
+        if (setEndOfData && querySnapshot.docs.length < numLimit) {
+            setEndOfData(true);
+        }
+
+        const lastVisibleDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+        return { members, lastVisibleDoc };
     } catch (error) {
-        console.error("Error fetching users:", error);
-        return { members: [], lastSnapshot: null, hasMoreUser: false };
+        console.error('Error fetching users:', error);
+        return { members: [], lastVisibleDoc: null };
     }
 };
-
 
 /**
  * Appends an Expo push token to the current user's private data.
