@@ -444,7 +444,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 setVisible={setKnockOnWallConfirmMenu}
             >
                 <View className={`flex opacity-100 rounded-md p-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
-                    <Octicons name="bell" size={24} color={darkMode ? "white" : "dark"} />
+                    <Octicons name="bell" size={24} color={darkMode ? "white" : "black"} />
 
                     <View className='flex items-center w-[80%] mt-4'>
                         <Text className={`text-center text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>Are you sure you want to notify the signed-in officers?</Text>
@@ -456,7 +456,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                                 }}
                                 className='flex-1'
                             >
-                                <Text className='text-xl font-bold py-3 px-8'>Cancel</Text>
+                                <Text className={`text-xl font-bold py-3 px-8 ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
@@ -480,7 +480,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 setVisible={setSignInConfirmMenu}
             >
                 <View className={`flex opacity-100 rounded-md p-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
-                    <Octicons name="bell" size={24} color={darkMode ? "white" : "dark"} />
+                    <Octicons name="bell" size={24} color={darkMode ? "white" : "black"} />
 
                     <View className='flex items-center w-[80%] mt-4'>
                         <Text className={`text-center text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>{isSignedIn ? "Are you sure you want to sign out?" : "You will receive notifications from members. Are you sure you want to sign in?"}</Text>
@@ -488,11 +488,11 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                         <View className="flex-row mt-8">
                             <TouchableOpacity
                                 onPress={async () => {
-                                    setKnockOnWallConfirmMenu(false)
+                                    setSignInConfirmMenu(false)
                                 }}
                                 className='flex-1'
                             >
-                                <Text className='text-xl font-bold py-3 px-8'>Cancel</Text>
+                                <Text className={`text-xl font-bold py-3 px-8 ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
