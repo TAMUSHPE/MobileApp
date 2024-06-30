@@ -250,7 +250,7 @@ export const initializeCurrentUserData = async (): Promise<User> => {
         completedAccountSetup: false,
         settings: {
             darkMode: false,
-            useSystemDefault: true,
+            useSystemDefault: false,
         },
         expirationDate: Timestamp.fromDate(oneWeekFromNow),
         email: auth.currentUser?.email ?? "",
