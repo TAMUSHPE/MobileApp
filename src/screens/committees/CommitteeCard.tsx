@@ -49,20 +49,18 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
         >
             {/* Committee Status and Head */}
             <View className='flex-row justify-between items-center'>
-                <View className='flex-row items-center'>
-                    <View className={`rounded-full h-3 w-3 ${isOpen ? "bg-green-1" : "bg-primary-blue"}`} />
-                    <Text className={`ml-2 text-lg ${darkMode ? "text-white" : "text-black"}`}>{isOpen ? "Open" : "Private"}</Text>
-                </View>
+                <View className='flex-row items-center'></View>
                 <Image source={localHead?.photoURL ? { uri: localHead.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-9 w-9 rounded-full' />
             </View>
             {/* Logo */}
-            <View className='items-center justify-center my-4 flex-1'>
+            <View className='items-center justify-center flex-1'>
                 {darkMode ?
                     <LightLogoComponent height={height * .9} width={width * .9} />
                     :
                     <LogoComponent height={height * .9} width={width * .9} />
                 }
             </View>
+
             {/* Name and Membership */}
             <View className='items-center justify-center'>
                 <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(name, 11)}</Text>

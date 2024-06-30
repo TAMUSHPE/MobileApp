@@ -361,7 +361,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                             >
                                 <View>
                                     {officeHourInfoMenu && (
-                                        <View className={`absolute rounded-md z-20 border w-44 right-0 top-12 px-4 py-2  ${darkMode ? "bg-secondary-bg-dark border-grey-dark" : "bg-secondary-bg-light border-grey-light"}`}
+                                        <View className={`absolute rounded-md z-20 border w-44 right-0 top-12 px-3 py-2  ${darkMode ? "bg-secondary-bg-dark border-grey-dark" : "bg-secondary-bg-light border-grey-light"}`}
                                         >
                                             <Text className={`text-xl font-medium ${darkMode ? "text-white" : "text-black"}`}>Notify an officer in Zach 450 for assistance.</Text>
                                         </View>
@@ -375,7 +375,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 </View>
 
                 {/* My Events */}
-                <View className='mt-12'>
+                <View className='mt-12 -z-10'>
                     <View className='flex-row mb-3'>
                         <View className='flex-row ml-4 flex-1'>
                             <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>My Events</Text>

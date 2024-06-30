@@ -46,7 +46,7 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
             <View>
                 <Text className={`text-2xl font-bold mb-3 ${darkMode ? "text-white" : "text-black"}`}>Member of the Month</Text>
 
-                <View className={`flex-row rounded-md ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                <View className={`flex-row rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                     style={{
                         shadowColor: "#000",
                         shadowOffset: {
@@ -58,20 +58,16 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
                         elevation: 5,
                     }}
                 >
-                    <View>
-                        <Image
-                            className="flex w-32 h-32 rounded-xl"
-                            defaultSource={Images.DEFAULT_USER_PICTURE}
-                            source={MOTM?.photoURL ? { uri: MOTM?.photoURL as string } : Images.DEFAULT_USER_PICTURE}
-                        />
-                    </View>
+                    <Image
+                        className="flex w-32 h-32 rounded-l-lg"
+                        defaultSource={Images.DEFAULT_USER_PICTURE}
+                        source={MOTM?.photoURL ? { uri: MOTM?.photoURL as string } : Images.DEFAULT_USER_PICTURE}
+                    />
                     <View className='mx-3 my-2 flex-1'>
                         <Text className={`font-semibold text-2xl ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(MOTM?.name, 15)}</Text>
                         <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(MOTM?.bio, 80)}</Text>
                     </View>
                 </View>
-
-
             </View>
         </TouchableOpacity>
     )
