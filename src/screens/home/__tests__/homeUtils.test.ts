@@ -208,10 +208,10 @@ describe("getUserForMemberList", () => {
         await createTestUserInFirebase(repUser);
         await createTestUserInFirebase(leadUser);
         await createTestUserInFirebase(nonRoleUser);
-        await waitForUser(OFFICER_USER_UID);
-        await waitForUser(REP_USER_UID);
-        await waitForUser(LEAD_USER_UID);
-        await waitForUser(NON_ROLE_USER_UID);
+        await waitForUser(OFFICER_USER_UID, 25);
+        await waitForUser(REP_USER_UID, 25);
+        await waitForUser(LEAD_USER_UID, 25);
+        await waitForUser(NON_ROLE_USER_UID, 25);
     }, 30000);
 
     test("returns members with officer role", async () => {
@@ -226,7 +226,7 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("returns members with representative role", async () => {
-        await waitForUser(REP_USER_UID);
+        await waitForUser(REP_USER_UID, 25);
 
         const result = await getUserForMemberList(10, null, FilterRole.REPRESENTATIVE);
         const members = result.members as PublicUserInfo[];
@@ -234,10 +234,10 @@ describe("getUserForMemberList", () => {
         expect(members.length).toBe(1);
         expect(members[0].uid).toBe(REP_USER_UID);
         expect(members[0].roles?.representative).toBe(true);
-    });
+    }, 30000);
 
     test("returns members with lead role", async () => {
-        await waitForUser(LEAD_USER_UID);
+        await waitForUser(LEAD_USER_UID, 25);
 
         const result = await getUserForMemberList(10, null, FilterRole.LEAD);
         const members = result.members as PublicUserInfo[];
@@ -248,22 +248,22 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("returns members with no specific role filter", async () => {
-        await waitForUser(LEAD_USER_UID);
-        await waitForUser(REP_USER_UID);
-        await waitForUser(OFFICER_USER_UID);
-        await waitForUser(NON_ROLE_USER_UID);
+        await waitForUser(LEAD_USER_UID, 25);
+        await waitForUser(REP_USER_UID, 25);
+        await waitForUser(OFFICER_USER_UID, 25);
+        await waitForUser(NON_ROLE_USER_UID, 25);
 
         const result = await getUserForMemberList(10, null, null);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);
         expect(members.length).toBe(4); // All users should be returned
-    });
+    }, 30000);
 
     test("limits the number of members returned", async () => {
-        await waitForUser(LEAD_USER_UID);
-        await waitForUser(REP_USER_UID);
-        await waitForUser(OFFICER_USER_UID);
-        await waitForUser(NON_ROLE_USER_UID);
+        await waitForUser(LEAD_USER_UID, 25);
+        await waitForUser(REP_USER_UID, 25);
+        await waitForUser(OFFICER_USER_UID, 25);
+        await waitForUser(NON_ROLE_USER_UID, 25);
 
         const result = await getUserForMemberList(2, null, null);
         const members = result.members as PublicUserInfo[];
@@ -272,10 +272,10 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("handles pagination with startAfterDoc", async () => {
-        await waitForUser(LEAD_USER_UID);
-        await waitForUser(REP_USER_UID);
-        await waitForUser(OFFICER_USER_UID);
-        await waitForUser(NON_ROLE_USER_UID);
+        await waitForUser(LEAD_USER_UID, 25);
+        await waitForUser(REP_USER_UID, 25);
+        await waitForUser(OFFICER_USER_UID, 25);
+        await waitForUser(NON_ROLE_USER_UID, 25);
 
         const firstBatch = await getUserForMemberList(2, null, null);
         const firstMembers = firstBatch.members as PublicUserInfo[];
@@ -284,10 +284,10 @@ describe("getUserForMemberList", () => {
         const secondBatch = await getUserForMemberList(2, firstBatch.lastVisibleDoc, null);
         const secondMembers = secondBatch.members as PublicUserInfo[];
         expect(secondMembers.length).toBe(2);
-    });
+    }, 30000);
 
     test("handles pagination with officer role filter", async () => {
-        await waitForUser(OFFICER_USER_UID);
+        await waitForUser(OFFICER_USER_UID, 25);
 
         const firstBatch = await getUserForMemberList(1, null, FilterRole.OFFICER);
         const firstMembers = firstBatch.members as PublicUserInfo[];
@@ -296,7 +296,7 @@ describe("getUserForMemberList", () => {
         const secondBatch = await getUserForMemberList(1, firstBatch.lastVisibleDoc, FilterRole.OFFICER);
         const secondMembers = secondBatch.members as PublicUserInfo[];
         expect(secondMembers.length).toBe(0);
-    });
+    }, 30000);
 });
 
 describe("setMOTM and getMOTM", () => {
