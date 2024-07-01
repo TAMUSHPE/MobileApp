@@ -3,7 +3,7 @@ import { auth, db } from "../../../config/firebaseConfig";
 import { DocumentReference, GeoPoint, Timestamp, collection, deleteDoc, doc, getDoc, getDocs, setDoc, writeBatch } from "firebase/firestore";
 import { Committee } from "../../../types/committees";
 import { checkCommitteeRequestStatus, deleteCommittee, getCommittee, getCommitteeEvents, getCommitteeMembers, getCommittees, getLeads, getPublicUserData, getRepresentatives, getTeamMembers, removeCommitteeRequest, resetCommittee, setCommitteeData, submitCommitteeRequest } from "../../../api/firebaseUtils";
-import { User } from "../../../types/user";
+import { PublicUserInfo, User } from "../../../types/user";
 import { EventType, SHPEEvent } from "../../../types/events";
 
 
@@ -98,12 +98,12 @@ const userExists = async (uid: string) => {
     return userDoc.exists();
 };
 
-const waitForUser = async (uid: string, maxRetries: number = 16, interval: number = 500) => {
+const waitForUser = async (uid: string, maxRetries: number = 16, interval: number = 500, userData?: PublicUserInfo) => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         if (await userExists(uid)) {
             return true;
         }
-        await createTestUserInFirebase({ publicInfo: { uid: uid } }, 4);
+        await createTestUserInFirebase({ publicInfo: userData ? (userData) : ({ uid: uid }) }, 4);
         await new Promise(resolve => setTimeout(resolve, interval));
     }
     throw new Error(`User with UID: ${uid} does not exist after ${maxRetries} attempts`);
@@ -221,7 +221,8 @@ describe("Set Committee Data", () => {
     beforeEach(async () => {
         const headUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
         await createTestUserInFirebase(headUser);
-    })
+        await waitForUser(HEADUSER, 30);
+    }, 30000)
 
     afterAll(async () => {
         await clearCollection("users");
@@ -260,8 +261,8 @@ describe("Set Committee Data", () => {
     }, 30000);
 
     test("with empty representatives and leads", async () => {
+        await waitForUser(HEADUSER, 25);
         const committeeData = await generateTestCommittee({ head: HEADUSER, representatives: [], leads: [] });
-        await waitForUser(HEADUSER);
         const result = await setCommitteeData(committeeData);
         expect(result).toBe(true);
     }, 30000);
