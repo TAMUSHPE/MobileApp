@@ -219,6 +219,7 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("returns members with officer role", async () => {
+        await waitForUser(OFFICER_USER_UID);
         const result = await getUserForMemberList(10, null, FilterRole.OFFICER);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);
@@ -228,6 +229,8 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("returns members with representative role", async () => {
+        await waitForUser(REP_USER_UID);
+
         const result = await getUserForMemberList(10, null, FilterRole.REPRESENTATIVE);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);
@@ -237,6 +240,8 @@ describe("getUserForMemberList", () => {
     });
 
     test("returns members with lead role", async () => {
+        await waitForUser(LEAD_USER_UID);
+
         const result = await getUserForMemberList(10, null, FilterRole.LEAD);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);
@@ -270,6 +275,8 @@ describe("getUserForMemberList", () => {
     });
 
     test("handles pagination with officer role filter", async () => {
+        await waitForUser(OFFICER_USER_UID);
+
         const firstBatch = await getUserForMemberList(1, null, FilterRole.OFFICER);
         const firstMembers = firstBatch.members as PublicUserInfo[];
         expect(firstMembers.length).toBe(1);
