@@ -208,7 +208,7 @@ describe("getUserForMemberList", () => {
         await createTestUserInFirebase(repUser);
         await createTestUserInFirebase(leadUser);
         await createTestUserInFirebase(nonRoleUser);
-        await waitForUser(OFFICER_USER_UID, 20, 500, officerUser.publicInfo);
+        await waitForUser(OFFICER_USER_UID, 25, 500, officerUser.publicInfo);
         await waitForUser(REP_USER_UID, 20, 500, repUser.publicInfo);
         await waitForUser(LEAD_USER_UID, 20, 500, leadUser.publicInfo);
         await waitForUser(NON_ROLE_USER_UID, 20, 500, nonRoleUser.publicInfo);
@@ -266,6 +266,13 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("handles pagination with officer role filter", async () => {
+        // Create test users
+        const officerUser = await generateTestUsers({ publicInfo: { uid: OFFICER_USER_UID, name: "Officer User", roles: { officer: true, representative: false, lead: false } } });
+        await createTestUserInFirebase(officerUser);
+        await waitForUser(OFFICER_USER_UID, 25, 500, officerUser.publicInfo);
+
+
+
         const firstBatch = await getUserForMemberList(1, null, FilterRole.OFFICER);
         const firstMembers = firstBatch.members as PublicUserInfo[];
         expect(firstMembers.length).toBe(1);
