@@ -251,6 +251,11 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("returns members with no specific role filter", async () => {
+        await waitForUser(LEAD_USER_UID);
+        await waitForUser(REP_USER_UID);
+        await waitForUser(OFFICER_USER_UID);
+        await waitForUser(NON_ROLE_USER_UID);
+
         const result = await getUserForMemberList(10, null, null);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);
@@ -258,6 +263,11 @@ describe("getUserForMemberList", () => {
     });
 
     test("limits the number of members returned", async () => {
+        await waitForUser(LEAD_USER_UID);
+        await waitForUser(REP_USER_UID);
+        await waitForUser(OFFICER_USER_UID);
+        await waitForUser(NON_ROLE_USER_UID);
+
         const result = await getUserForMemberList(2, null, null);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);
@@ -265,6 +275,11 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("handles pagination with startAfterDoc", async () => {
+        await waitForUser(LEAD_USER_UID);
+        await waitForUser(REP_USER_UID);
+        await waitForUser(OFFICER_USER_UID);
+        await waitForUser(NON_ROLE_USER_UID);
+
         const firstBatch = await getUserForMemberList(2, null, null);
         const firstMembers = firstBatch.members as PublicUserInfo[];
         expect(firstMembers.length).toBe(2);
