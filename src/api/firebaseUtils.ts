@@ -761,7 +761,7 @@ export const getUserEventLog = async (eventId: string, uid: string): Promise<SHP
     }
 }
 
-export const queryUserEventLogs = async (uid: string, limitNum: number = 3): Promise<Array<UserEventData>> => {
+export const getUserEventLogs = async (uid: string, limitNum: number = 3): Promise<Array<UserEventData>> => {
     const userEventLogsCollectionRef = collection(db, `users/${uid}/event-logs`);
     const q = query(userEventLogsCollectionRef, orderBy('signInTime', 'desc'), limit(limitNum));
     const eventLogSnapshot = await getDocs(q);
@@ -909,12 +909,20 @@ export const getCommitteeEvents = async (committees: string[], maxEvents?: numbe
         for (const committee of committees) {
             if (maxEvents && eventCount >= maxEvents) break;
 
-            const eventsQuery = query(
+            let eventsQuery = query(
                 eventsRef,
                 where("committee", "==", committee),
-                where("endTime", ">=", currentTime),
-                limit(maxEvents ? maxEvents - eventCount : Infinity)
+                where("endTime", ">=", currentTime)
             );
+
+            if (maxEvents) {
+                eventsQuery = query(
+                    eventsRef,
+                    where("committee", "==", committee),
+                    where("endTime", ">=", currentTime),
+                    limit(maxEvents - eventCount)
+                );
+            }
 
             const querySnapshot = await getDocs(eventsQuery);
             querySnapshot.forEach((doc) => {

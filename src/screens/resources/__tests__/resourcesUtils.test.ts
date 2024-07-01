@@ -301,6 +301,7 @@ describe("fetchUsersWithPublicResumes", () => {
     });
 });
 
+// This test is disabled because there is some odd behavior with user doc being prematurely deleted after "removeUserResume" is called
 
 // describe("removeUserResume", () => {
 //     const TESTUSERRESUME1 = "TestUserResume1";

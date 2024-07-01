@@ -1,9 +1,11 @@
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
-import { DocumentReference, collection, deleteDoc, doc, getDoc, getDocs, setDoc, writeBatch } from "firebase/firestore";
+import { DocumentReference, GeoPoint, Timestamp, collection, deleteDoc, doc, getDoc, getDocs, setDoc, writeBatch } from "firebase/firestore";
 import { Committee } from "../../../types/committees";
-import { checkCommitteeRequestStatus, deleteCommittee, getCommittee, getCommitteeMembers, getCommittees, getPublicUserData, removeCommitteeRequest, resetCommittee, setCommitteeData, submitCommitteeRequest } from "../../../api/firebaseUtils";
+import { checkCommitteeRequestStatus, deleteCommittee, getCommittee, getCommitteeEvents, getCommitteeMembers, getCommittees, getPublicUserData, removeCommitteeRequest, resetCommittee, setCommitteeData, submitCommitteeRequest } from "../../../api/firebaseUtils";
 import { User } from "../../../types/user";
+import { EventType, SHPEEvent } from "../../../types/events";
+
 
 const generateTestCommittee = async (overrides: Partial<Committee> = {}): Promise<Committee> => {
     return {
@@ -17,6 +19,34 @@ const generateTestCommittee = async (overrides: Partial<Committee> = {}): Promis
         logo: "default",
         memberCount: 10,
         isOpen: true,
+        ...overrides
+    };
+};
+
+const generateTestEvent = (overrides: Partial<SHPEEvent> = {}): SHPEEvent => {
+    const currentTime = new Date();
+    const startTime = Timestamp.fromDate(currentTime);
+    const endTime = Timestamp.fromDate(new Date(currentTime.getTime() + 3600 * 1000)); // 1 hour in the future
+
+    return {
+        committee: "app-devs",
+        coverImageURI: null,
+        creator: "sampleUID",
+        description: "Test Description",
+        endTime: endTime,
+        endTimeBuffer: 600000,
+        eventType: EventType.INTRAMURAL_EVENT,
+        general: true,
+        geofencingRadius: 100,
+        geolocation: new GeoPoint(30.621160236499136, -96.3403560168198),
+        hiddenEvent: false,
+        locationName: "Test",
+        name: "Test Event",
+        nationalConventionEligible: true,
+        notificationSent: true,
+        signInPoints: 3,
+        startTime: startTime,
+        startTimeBuffer: 600000,
         ...overrides
     };
 };
@@ -494,5 +524,49 @@ describe("Committee Info", () => {
         console.log("CommitteeMemberInfo after reset:", committeeMemberInfo);
         expect(committeeMemberInfo).toBeDefined();
         expect(committeeMemberInfo?.committees!).not.toContain(SAMPLEFIREBASEDOCNAMERESET);
+    });
+});
+
+
+describe("getCommitteeEvents", () => {
+    const committee1 = "committee1";
+    const committee2 = "committee2";
+    const committee3 = "committee3";
+
+    beforeEach(async () => {
+        await clearCollection("events");
+
+
+
+    });
+
+    test("should fetch events for given committees", async () => {
+        const event1 = generateTestEvent({ committee: committee1 });
+        const event2 = generateTestEvent({ committee: committee2 });
+
+
+        await setDoc(doc(collection(db, "events")), event1);
+        await setDoc(doc(collection(db, "events")), event2);
+
+        const events = await getCommitteeEvents([committee1, committee2]);
+
+        expect(events.length).toBe(2);
+    });
+
+    test("with maxEvents limit", async () => {
+        const event3 = generateTestEvent({ committee: committee3 });
+        const event4 = generateTestEvent({ committee: committee3 });
+
+        await setDoc(doc(collection(db, "events")), event3);
+        await setDoc(doc(collection(db, "events")), event4);
+        const events = await getCommitteeEvents([committee3], 1);
+
+        expect(events.length).toBe(1);
+    });
+
+    test("should return an empty array if no events are found", async () => {
+        const events = await getCommitteeEvents(["nonExistentCommittee"]);
+
+        expect(events.length).toBe(0);
     });
 });
