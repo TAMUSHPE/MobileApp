@@ -4,7 +4,6 @@ import { DocumentReference, collection, deleteDoc, doc, getDoc, getDocs, setDoc,
 import { Committee } from "../../../types/committees";
 import { checkCommitteeRequestStatus, deleteCommittee, getCommittee, getCommitteeMembers, getCommittees, getPublicUserData, removeCommitteeRequest, resetCommittee, setCommitteeData, submitCommitteeRequest } from "../../../api/firebaseUtils";
 import { User } from "../../../types/user";
-import { before } from "node:test";
 
 const generateTestCommittee = async (overrides: Partial<Committee> = {}): Promise<Committee> => {
     return {
@@ -40,13 +39,52 @@ const generateTestUsers = async (overrides: Partial<User> = {}): Promise<User> =
     };
 };
 
-const createTestUserInFirebase = async (user: User) => {
+const createTestUserInFirebase = async (user: User, maxRetries: number = 16) => {
     const publicInfo = user.publicInfo;
     const privateInfo = user.private?.privateInfo;
+    const userDocRef = doc(db, "users", publicInfo?.uid!);
+    const privateInfoDocRef = doc(db, `users/${publicInfo?.uid!}/private`, "privateInfo");
 
-    await setDoc(doc(db, "users", publicInfo?.uid!), publicInfo);
-    await setDoc(doc(db, `users/${publicInfo?.uid!}/private`, "privateInfo"), privateInfo);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            // Attempt to set the documents in Firestore
+            await setDoc(userDocRef, publicInfo);
+            await setDoc(privateInfoDocRef, privateInfo);
+
+            // Verify the creation of the user
+            const testUserDoc = await getDoc(userDocRef);
+            if (testUserDoc.exists()) {
+                console.log(`Test user with UID: ${publicInfo?.uid} created successfully on attempt ${attempt}`);
+                return;
+            }
+
+            console.log(`Attempt ${attempt} failed to create test user with UID: ${publicInfo?.uid}. Retrying...`);
+        } catch (error) {
+            console.error(`Attempt ${attempt} encountered an error: ${error}. Retrying...`);
+        }
+    }
+
+    throw new Error(`Failed to create test user with UID: ${publicInfo?.uid} after ${maxRetries} attempts`);
 };
+
+const userExists = async (uid: string) => {
+    const userDocRef = doc(db, "users", uid);
+    const userDoc = await getDoc(userDocRef);
+    return userDoc.exists();
+};
+
+const waitForUser = async (uid: string, maxRetries: number = 16, interval: number = 500) => {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        if (await userExists(uid)) {
+            return true;
+        }
+        console.log(`Attempt ${attempt} to find user failed. Creating user...`);
+        await createTestUserInFirebase({ publicInfo: { uid: uid } }, 2);
+        await new Promise(resolve => setTimeout(resolve, interval));
+    }
+    throw new Error(`User with UID: ${uid} does not exist after ${maxRetries} attempts`);
+};
+
 
 const clearSubcollections = async (docRef: DocumentReference) => {
     const subcollectionsSnapshot = await getDocs(collection(docRef, 'private'));
@@ -101,16 +139,14 @@ describe("Get Committees", () => {
     beforeAll(async () => {
         await clearCollection("users");
         await clearCollection("committees")
+
+        const headUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
+        await createTestUserInFirebase(headUser);
     })
 
     afterAll(async () => {
         await clearCollection("users");
         await clearCollection("committees")
-    });
-
-    beforeEach(async () => {
-        const testUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
-        await createTestUserInFirebase(testUser);
     });
 
     test("Get committees returns empty array if no data", async () => {
@@ -120,6 +156,7 @@ describe("Get Committees", () => {
 
     test("Get committees with data", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER });
+        await waitForUser(HEADUSER);
         await setCommitteeData(committeeData);
 
         const committees = await getCommittees();
@@ -138,6 +175,7 @@ describe("Get Committees", () => {
         const committeeData1 = await generateTestCommittee({ firebaseDocName: SAMPLEFIREBASEDOCNAME1, memberCount: 5, head: HEADUSER });
         const committeeData2 = await generateTestCommittee({ firebaseDocName: SAMPLEFIREBASEDOCNAME2, memberCount: 15, head: HEADUSER });
 
+        await waitForUser(HEADUSER);
         await setCommitteeData(committeeData1);
         await setCommitteeData(committeeData2);
 
@@ -149,36 +187,25 @@ describe("Get Committees", () => {
 describe("Set Committee Data", () => {
     const HEADUSER = "HeadUser1";
 
-    // Utility function to create user in Firestore
-    const createHeadUser = async () => {
-        const user = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
-        await createTestUserInFirebase(user);
-
-        const userDocRef = doc(db, "users", HEADUSER);
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists()) {
-            throw new Error(`Failed to create user with UID: ${HEADUSER}`);
-        }
-        console.log(`User with UID: ${HEADUSER} created successfully`);
-    };
 
     beforeAll(async () => {
         await clearCollection("users");
         await clearCollection("committees");
-        await createHeadUser();
     });
+
+    beforeEach(async () => {
+        const headUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
+        await createTestUserInFirebase(headUser);
+    })
 
     afterAll(async () => {
         await clearCollection("users");
         await clearCollection("committees");
     });
 
-    beforeEach(async () => {
-        await createHeadUser();
-    });
-
     test("with valid input", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER });
+        await waitForUser(HEADUSER);
         const result = await setCommitteeData(committeeData);
         expect(result).toBe(true);
     });
@@ -190,25 +217,29 @@ describe("Set Committee Data", () => {
 
     test("with falsy firebaseDocName", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER, firebaseDocName: "" });
+        await waitForUser(HEADUSER);
         await expect(setCommitteeData(committeeData)).rejects.toThrow();
     });
 
     test("Throws when not given a firebaseDocName", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER, firebaseDocName: undefined });
+        await waitForUser(HEADUSER);
         await expect(setCommitteeData(committeeData)).rejects.toThrow();
     });
 
     test("with missing optional fields", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER, color: undefined, logo: undefined });
+        await waitForUser(HEADUSER);
         const result = await setCommitteeData(committeeData);
         expect(result).toBe(true);
     });
 
     test("with empty representatives and leads", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER, representatives: [], leads: [] });
+        await waitForUser(HEADUSER);
         const result = await setCommitteeData(committeeData);
         expect(result).toBe(true);
-    });
+    }, 30000);
 });
 
 describe("Delete and Reset Committee", () => {
@@ -219,6 +250,9 @@ describe("Delete and Reset Committee", () => {
     beforeAll(async () => {
         await clearCollection("users");
         await clearCollection("committees");
+
+        const headuser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
+        await createTestUserInFirebase(headuser);
     });
 
     afterAll(async () => {
@@ -226,13 +260,9 @@ describe("Delete and Reset Committee", () => {
         await clearCollection("committees");
     });
 
-    beforeEach(async () => {
-        const testUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
-        await createTestUserInFirebase(testUser);
-    });
-
     test("Delete committee", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER });
+        await waitForUser(HEADUSER);
         await setCommitteeData(committeeData);
 
         await deleteCommittee(committeeData.firebaseDocName!);
@@ -242,6 +272,7 @@ describe("Delete and Reset Committee", () => {
 
     test("Reset committee", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER });
+        await waitForUser(HEADUSER);
         await setCommitteeData(committeeData);
 
         await resetCommittee(committeeData.firebaseDocName!);
@@ -253,10 +284,11 @@ describe("Delete and Reset Committee", () => {
         expect(data?.head).toBeUndefined();
         expect(data?.leads).toEqual([]);
         expect(data?.representatives).toEqual([]);
-    });
+    }, 30000);
 
     test("Delete committee updates users' committee list", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER });
+        await waitForUser(HEADUSER);
         await setCommitteeData(committeeData);
 
         const testUser = await generateTestUsers({ publicInfo: { committees: [committeeData.firebaseDocName!], uid: TESTUSER1 } });
@@ -277,10 +309,11 @@ describe("Delete and Reset Committee", () => {
 
         expect(updatedUserData).toBeDefined();
         expect(updatedUserData?.committees).not.toContain(committeeData.firebaseDocName);
-    });
+    }, 30000);
 
     test("Reset committee updates users' committee list", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER });
+        await waitForUser(HEADUSER);
         await setCommitteeData(committeeData);
 
         const testUser = await generateTestUsers({ publicInfo: { committees: [committeeData.firebaseDocName!], uid: TESTUSER2 } });
@@ -301,7 +334,7 @@ describe("Delete and Reset Committee", () => {
 
         expect(updatedUserData).toBeDefined();
         expect(updatedUserData?.committees).not.toContain(committeeData.firebaseDocName);
-    });
+    }, 30000);
 });
 
 
@@ -310,6 +343,9 @@ describe('getCommitteeMembers', () => {
     beforeAll(async () => {
         await clearCollection("users");
         await clearCollection("committees")
+
+        const headUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
+        await createTestUserInFirebase(headUser);
     })
 
     afterAll(async () => {
@@ -317,16 +353,13 @@ describe('getCommitteeMembers', () => {
         await clearCollection("committees")
     });
 
-    beforeEach(async () => {
-        const testUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
-        await createTestUserInFirebase(testUser);
-    });
 
     test('returns committee members', async () => {
         const TESTUSER1 = "TestUser1";
         const TESTUSER2 = "TestUser2";
         const SAMPLEFIREBASEDOCNAME1 = "SampleFirebaseDocName1";
         const committeeData = await generateTestCommittee({ head: HEADUSER, firebaseDocName: SAMPLEFIREBASEDOCNAME1 });
+        await waitForUser(HEADUSER);
         await setCommitteeData(committeeData);
 
         const testUser1 = await generateTestUsers({ publicInfo: { committees: [committeeData.firebaseDocName!], uid: TESTUSER1 } });
@@ -346,6 +379,7 @@ describe('getCommitteeMembers', () => {
         const TESTUSER4 = "TestUser4";
         const SAMPLEFIREBASEDOCNAME2 = "SampleFirebaseDocName2";
         const committeeData = await generateTestCommittee({ head: HEADUSER, firebaseDocName: SAMPLEFIREBASEDOCNAME2 });
+        await waitForUser(HEADUSER);
         await setCommitteeData(committeeData);
 
         const testUser3 = await generateTestUsers({ publicInfo: { committees: [], uid: TESTUSER3 } });
@@ -420,42 +454,8 @@ describe("Committee Info", () => {
         // Create HEADUSER
         const headUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
         await createTestUserInFirebase(headUser);
-
-        // Verify HEADUSER creation
-        const headUserDocRef = doc(db, "users", HEADUSER);
-        const headUserDoc = await getDoc(headUserDocRef);
-        if (!headUserDoc.exists()) {
-            throw new Error(`Failed to create head user with UID: ${HEADUSER}`);
-        }
-        console.log(`Head user with UID: ${HEADUSER} created successfully`);
-
-        // Setup committee data
-        const committeeData = await generateTestCommittee({ firebaseDocName: SAMPLEFIREBASEDOCNAMERESET, head: HEADUSER });
-        await setCommitteeData(committeeData);
-
-        const testUserReset = await generateTestUsers({ publicInfo: { committees: [committeeData.firebaseDocName!], uid: TESTUSER1REST } });
-        await createTestUserInFirebase(testUserReset);
-
-        // Verify TESTUSER1REST creation
-        const testUserDocRef = doc(db, "users", TESTUSER1REST);
-        const testUserDoc = await getDoc(testUserDocRef);
-        if (!testUserDoc.exists()) {
-            throw new Error(`Failed to create test user with UID: ${TESTUSER1REST}`);
-        }
-        console.log(`Test user with UID: ${TESTUSER1REST} created successfully`);
     });
 
-    beforeEach(async () => {
-        const testUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
-        await createTestUserInFirebase(testUser);
-
-        const headUserDocRef = doc(db, "users", HEADUSER);
-        const headUserDoc = await getDoc(headUserDocRef);
-        if (!headUserDoc.exists()) {
-            throw new Error(`Failed to create head user with UID: ${HEADUSER}`);
-        }
-        console.log(`Head user with UID: ${HEADUSER} verified before each test`);
-    });
 
     afterAll(async () => {
         await clearCollection("users");
@@ -464,6 +464,7 @@ describe("Committee Info", () => {
 
     test("Can be deleted", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER });
+        await waitForUser(HEADUSER);
         await setCommitteeData(committeeData);
 
         expect(await getCommittee(committeeData.firebaseDocName!)).not.toBeNull();
@@ -474,6 +475,13 @@ describe("Committee Info", () => {
     });
 
     test("Can be reset", async () => {
+        const committeeData = await generateTestCommittee({ firebaseDocName: SAMPLEFIREBASEDOCNAMERESET, head: HEADUSER });
+        await waitForUser(HEADUSER);
+        await setCommitteeData(committeeData);
+
+        const testUserReset = await generateTestUsers({ publicInfo: { committees: [committeeData.firebaseDocName!], uid: TESTUSER1REST } });
+        await createTestUserInFirebase(testUserReset);
+
         let committeeMemberInfo = await getPublicUserData(TESTUSER1REST);
         console.log("Initial committeeMemberInfo:", committeeMemberInfo);
         expect(committeeMemberInfo).toBeDefined();

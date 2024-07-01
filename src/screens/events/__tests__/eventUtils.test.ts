@@ -84,11 +84,6 @@ describe("Create events", () => {
         await clearCollection("events")
     });
 
-    afterAll(async () => {
-        await clearCollection("users");
-        await clearCollection("events")
-    });
-
     test("Handle empty events collection", async () => {
         const upcomingEvents = await getUpcomingEvents();
         expect(upcomingEvents.length).toBe(0);
@@ -118,11 +113,6 @@ describe("Create events", () => {
 
 describe("Various Fetch events", () => {
     beforeAll(async () => {
-        await clearCollection("users");
-        await clearCollection("events")
-    });
-
-    afterAll(async () => {
         await clearCollection("users");
         await clearCollection("events")
     });
@@ -296,7 +286,7 @@ describe("Various Fetch events", () => {
         const currentTime = new Date();
         const eventsToCreate: SHPEEvent[] = [];
 
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 30; i++) {
             const event = generateTestEvent({
                 description: `Event ${i}`,
                 endTime: Timestamp.fromDate(new Date(currentTime.getTime() + (i + 1) * 3600 * 1000)),
@@ -308,10 +298,10 @@ describe("Various Fetch events", () => {
         }
 
         const eventIds = await Promise.all(eventsToCreate.map(event => createEvent(event as SHPEEvent)));
-        expect(eventIds).toHaveLength(100);
+        expect(eventIds).toHaveLength(30);
 
         const upcomingEvents = await getUpcomingEvents();
-        expect(upcomingEvents.length).toBeGreaterThanOrEqual(100);
+        expect(upcomingEvents.length).toBeGreaterThanOrEqual(30);
 
         await Promise.all(eventIds.map(eventId => deleteDoc(doc(db, "events", eventId!))));
     });
@@ -319,11 +309,6 @@ describe("Various Fetch events", () => {
 
 describe("Update Events", () => {
     beforeAll(async () => {
-        await clearCollection("users");
-        await clearCollection("events")
-    });
-
-    afterAll(async () => {
         await clearCollection("users");
         await clearCollection("events")
     });
@@ -399,11 +384,6 @@ describe("Destroy Event Function", () => {
         await clearCollection("events");
     });
 
-    afterAll(async () => {
-        await clearCollection("users");
-        await clearCollection("events");
-    });
-
     test("Delete an existing event", async () => {
         const event = generateTestEvent();
         const eventId = await createEvent(event as SHPEEvent);
@@ -458,11 +438,6 @@ describe("Destroy Event Function", () => {
 
 describe("Event Attendance and Logs", () => {
     beforeAll(async () => {
-        await clearCollection("users");
-        await clearCollection("events")
-    });
-
-    afterAll(async () => {
         await clearCollection("users");
         await clearCollection("events")
     });

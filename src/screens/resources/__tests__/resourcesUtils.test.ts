@@ -74,8 +74,8 @@ afterAll(async () => {
     await signOut(auth);
 
     await clearCollection("users");
-    await clearCollection("events")
-});
+    await clearCollection("events");
+}, 30000);
 
 describe("getSortedUserData", () => {
     const TESTUSER1 = "TestUser1"
