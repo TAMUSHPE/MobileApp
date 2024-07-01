@@ -38,11 +38,8 @@ const createTestUserInFirebase = async (user: User, maxRetries: number = 16) => 
             // Verify the creation of the user
             const testUserDoc = await getDoc(userDocRef);
             if (testUserDoc.exists()) {
-                console.log(`Test user with UID: ${publicInfo?.uid} created successfully on attempt ${attempt}`);
                 return;
             }
-
-            console.log(`Attempt ${attempt} failed to create test user with UID: ${publicInfo?.uid}. Retrying...`);
         } catch (error) {
             console.error(`Attempt ${attempt} encountered an error: ${error}. Retrying...`);
         }
@@ -60,8 +57,7 @@ const waitForUser = async (uid: string, maxRetries: number = 16, interval: numbe
         if (await userExists(uid)) {
             return true;
         }
-        console.log(`Attempt ${attempt} to find user failed. Creating user...`);
-        await createTestUserInFirebase({ publicInfo: { uid: uid } }, 2);
+        await createTestUserInFirebase({ publicInfo: { uid: uid } }, 4);
         await new Promise(resolve => setTimeout(resolve, interval));
     }
     throw new Error(`User with UID: ${uid} does not exist after ${maxRetries} attempts`);
@@ -219,7 +215,8 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("returns members with officer role", async () => {
-        await waitForUser(OFFICER_USER_UID);
+        await waitForUser(OFFICER_USER_UID, 25);
+
         const result = await getUserForMemberList(10, null, FilterRole.OFFICER);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);

@@ -84,11 +84,8 @@ const createTestUserInFirebase = async (user: User, maxRetries: number = 20) => 
             // Verify the creation of the user
             const testUserDoc = await getDoc(userDocRef);
             if (testUserDoc.exists()) {
-                console.log(`Test user with UID: ${publicInfo?.uid} created successfully on attempt ${attempt}`);
                 return;
             }
-
-            console.log(`Attempt ${attempt} failed to create test user with UID: ${publicInfo?.uid}. Retrying...`);
         } catch (error) {
             console.error(`Attempt ${attempt} encountered an error: ${error}. Retrying...`);
         }
@@ -106,8 +103,7 @@ const waitForUser = async (uid: string, maxRetries: number = 16, interval: numbe
         if (await userExists(uid)) {
             return true;
         }
-        console.log(`Attempt ${attempt} to find user failed. Creating user...`);
-        await createTestUserInFirebase({ publicInfo: { uid: uid } }, 2);
+        await createTestUserInFirebase({ publicInfo: { uid: uid } }, 4);
         await new Promise(resolve => setTimeout(resolve, interval));
     }
     throw new Error(`User with UID: ${uid} does not exist after ${maxRetries} attempts`);
@@ -326,7 +322,6 @@ describe("Delete and Reset Committee", () => {
         const userRef = doc(db, "users", TESTUSER1);
         const initialUserDoc = await getDoc(userRef);
         const initialUserData = initialUserDoc.data();
-        console.log("Initial user data:", initialUserData);
         expect(initialUserData).toBeDefined();
         expect(initialUserData?.committees).toContain(committeeData.firebaseDocName);
 
@@ -334,7 +329,6 @@ describe("Delete and Reset Committee", () => {
 
         const updatedUserDoc = await getDoc(userRef);
         const updatedUserData = updatedUserDoc.data();
-        console.log("Updated user data after delete:", updatedUserData);
 
         expect(updatedUserData).toBeDefined();
         expect(updatedUserData?.committees).not.toContain(committeeData.firebaseDocName);
@@ -351,7 +345,6 @@ describe("Delete and Reset Committee", () => {
         const userRef = doc(db, "users", TESTUSER2);
         const initialUserDoc = await getDoc(userRef);
         const initialUserData = initialUserDoc.data();
-        console.log("Initial user data:", initialUserData);
         expect(initialUserData).toBeDefined();
         expect(initialUserData?.committees).toContain(committeeData.firebaseDocName);
 
@@ -359,7 +352,6 @@ describe("Delete and Reset Committee", () => {
 
         const updatedUserDoc = await getDoc(userRef);
         const updatedUserData = updatedUserDoc.data();
-        console.log("Updated user data after reset:", updatedUserData);
 
         expect(updatedUserData).toBeDefined();
         expect(updatedUserData?.committees).not.toContain(committeeData.firebaseDocName);
@@ -512,7 +504,6 @@ describe("Committee Info", () => {
         await createTestUserInFirebase(testUserReset);
 
         let committeeMemberInfo = await getPublicUserData(TESTUSER1REST);
-        console.log("Initial committeeMemberInfo:", committeeMemberInfo);
         expect(committeeMemberInfo).toBeDefined();
         expect(committeeMemberInfo?.committees!).toContain(SAMPLEFIREBASEDOCNAMERESET);
 
@@ -522,7 +513,6 @@ describe("Committee Info", () => {
         expect(obtainedCommitteeData?.memberCount).toBeGreaterThanOrEqual(0);
 
         committeeMemberInfo = await getPublicUserData(TESTUSER1REST);
-        console.log("CommitteeMemberInfo after reset:", committeeMemberInfo);
         expect(committeeMemberInfo).toBeDefined();
         expect(committeeMemberInfo?.committees!).not.toContain(SAMPLEFIREBASEDOCNAMERESET);
     });

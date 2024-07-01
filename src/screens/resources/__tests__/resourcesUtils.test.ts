@@ -115,8 +115,6 @@ describe("getSortedUserData", () => {
 
         expect(result.data).toBeDefined();
 
-        console.log("result.data", result.data);
-
         expect(result.data.length).toBeLessThanOrEqual(amount);
         if (result.data.length > 0) {
             expect(result.data[0]).toHaveProperty('uid');
