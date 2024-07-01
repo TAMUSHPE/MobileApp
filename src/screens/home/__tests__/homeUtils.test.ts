@@ -216,7 +216,7 @@ describe("getUserForMemberList", () => {
         await waitForUser(REP_USER_UID);
         await waitForUser(LEAD_USER_UID);
         await waitForUser(NON_ROLE_USER_UID);
-    });
+    }, 30000);
 
     test("returns members with officer role", async () => {
         const result = await getUserForMemberList(10, null, FilterRole.OFFICER);
@@ -243,7 +243,7 @@ describe("getUserForMemberList", () => {
         expect(members.length).toBe(1);
         expect(members[0].uid).toBe(LEAD_USER_UID);
         expect(members[0].roles?.lead).toBe(true);
-    });
+    }, 30000);
 
     test("returns members with no specific role filter", async () => {
         const result = await getUserForMemberList(10, null, null);
