@@ -3,59 +3,7 @@ import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
 import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, getAttendanceNumber, getUserEventLog, fetchEventByName, getMyEvents } from "../../../api/firebaseUtils";
 import { EventType, SHPEEvent } from "../../../types/events";
-
-const generateTestEvent = (overrides: Partial<SHPEEvent> = {}): SHPEEvent => {
-    const currentTime = new Date();
-    const startTime = Timestamp.fromDate(currentTime);
-    const endTime = Timestamp.fromDate(new Date(currentTime.getTime() + 3600 * 1000));
-
-    return {
-        committee: "app-devs",
-        coverImageURI: null,
-        creator: "sampleUID",
-        description: "Test Description",
-        endTime: endTime,
-        endTimeBuffer: 600000,
-        eventType: EventType.INTRAMURAL_EVENT,
-        general: true,
-        geofencingRadius: 100,
-        geolocation: new GeoPoint(30.621160236499136, -96.3403560168198),
-        hiddenEvent: false,
-        locationName: "Test",
-        name: "Test Event",
-        nationalConventionEligible: true,
-        notificationSent: true,
-        signInPoints: 3,
-        startTime: startTime,
-        startTimeBuffer: 600000,
-        ...overrides
-    };
-};
-
-const clearSubcollections = async (docRef: DocumentReference) => {
-    const subcollectionsSnapshot = await getDocs(collection(docRef, 'private'));
-    const batch = writeBatch(db);
-
-    subcollectionsSnapshot.forEach(subDoc => {
-        batch.delete(subDoc.ref);
-    });
-
-    await batch.commit();
-};
-
-const clearCollection = async (collectionName: string) => {
-    const collectionRef = collection(db, collectionName);
-    const querySnapshot = await getDocs(collectionRef);
-
-    const batch = writeBatch(db);
-
-    for (const documentSnapshot of querySnapshot.docs) {
-        await clearSubcollections(documentSnapshot.ref);
-        batch.delete(documentSnapshot.ref);
-    }
-
-    await batch.commit();
-};
+import { clearCollection, generateTestEvent } from "../../../helpers/unitTestUtils";
 
 beforeAll(async () => {
     expect(process.env.FIREBASE_EMULATOR_ADDRESS).toBeDefined();

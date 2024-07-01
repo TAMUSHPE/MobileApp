@@ -4,57 +4,7 @@ import { auth, db } from "../../../config/firebaseConfig";
 import { deleteUserResumeData, fetchLink, fetchUsersWithPublicResumes, getResumeVerificationStatus, getSortedUserData, removeResumeVerificationDoc, removeUserResume, updateLink, uploadResumeVerificationDoc } from "../../../api/firebaseUtils";
 import { LinkData } from "../../../types/links";
 import { User } from "../../../types/user";
-
-const generateTestUsers = async (overrides: Partial<User> = {}): Promise<User> => {
-    return {
-        publicInfo: {
-            uid: "testUID",
-        },
-        private: {
-            privateInfo: {
-                completedAccountSetup: true,
-                settings: {
-                    darkMode: true,
-                    useSystemDefault: false
-                },
-            },
-        },
-        ...overrides
-    };
-};
-
-const createTestUserInFirebase = async (user: User) => {
-    const publicInfo = user.publicInfo;
-    const privateInfo = user.private?.privateInfo;
-
-    await setDoc(doc(db, "users", publicInfo?.uid!), publicInfo);
-    await setDoc(doc(db, `users/${publicInfo?.uid!}/private`, "privateInfo"), privateInfo);
-};
-
-const clearSubcollections = async (docRef: DocumentReference) => {
-    const subcollectionsSnapshot = await getDocs(collection(docRef, 'private'));
-    const batch = writeBatch(db);
-
-    subcollectionsSnapshot.forEach(subDoc => {
-        batch.delete(subDoc.ref);
-    });
-
-    await batch.commit();
-};
-
-const clearCollection = async (collectionName: string) => {
-    const collectionRef = collection(db, collectionName);
-    const querySnapshot = await getDocs(collectionRef);
-
-    const batch = writeBatch(db);
-
-    for (const documentSnapshot of querySnapshot.docs) {
-        await clearSubcollections(documentSnapshot.ref);
-        batch.delete(documentSnapshot.ref);
-    }
-
-    await batch.commit();
-};
+import { clearCollection, createTestUserInFirebase, generateTestUsers } from "../../../helpers/unitTestUtils";
 
 beforeAll(async () => {
     expect(process.env.FIREBASE_EMULATOR_ADDRESS).toBeDefined();
