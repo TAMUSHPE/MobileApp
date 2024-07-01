@@ -170,6 +170,7 @@ describe("Get Committees", () => {
 
         const headUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
         await createTestUserInFirebase(headUser);
+        await waitForUser(HEADUSER);
     })
 
     afterAll(async () => {
@@ -184,7 +185,7 @@ describe("Get Committees", () => {
 
     test("Get committees with data", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER });
-        await waitForUser(HEADUSER);
+        await waitForUser(HEADUSER, 25);
         await setCommitteeData(committeeData);
 
         const committees = await getCommittees();
@@ -195,7 +196,7 @@ describe("Get Committees", () => {
             expect(committees[0]).toHaveProperty("firebaseDocName");
             expect(committees[0]).toHaveProperty("name");
         }
-    });
+    }, 30000);
 
     test("Get committees sorted by memberCount", async () => {
         const SAMPLEFIREBASEDOCNAME1 = "SampleFirebaseDocName1";
