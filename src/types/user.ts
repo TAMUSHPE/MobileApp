@@ -104,6 +104,12 @@ export type UserFilter = {
     role?: string
 }
 
+export enum FilterRole {
+    OFFICER = "Officer",
+    REPRESENTATIVE = "Representative",
+    LEAD = "Lead",
+}
+
 const generateClassYears = (): { year: string }[] => {
     const currentYear = new Date().getFullYear();
     const years = [];

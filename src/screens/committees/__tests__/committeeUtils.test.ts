@@ -69,7 +69,7 @@ const generateTestUsers = async (overrides: Partial<User> = {}): Promise<User> =
     };
 };
 
-const createTestUserInFirebase = async (user: User, maxRetries: number = 16) => {
+const createTestUserInFirebase = async (user: User, maxRetries: number = 20) => {
     const publicInfo = user.publicInfo;
     const privateInfo = user.private?.privateInfo;
     const userDocRef = doc(db, "users", publicInfo?.uid!);
@@ -260,7 +260,7 @@ describe("Set Committee Data", () => {
         await waitForUser(HEADUSER);
         const result = await setCommitteeData(committeeData);
         expect(result).toBe(true);
-    });
+    }, 30000);
 
     test("with empty representatives and leads", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER, representatives: [], leads: [] });

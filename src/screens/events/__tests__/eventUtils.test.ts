@@ -1,7 +1,7 @@
 import { Timestamp, GeoPoint, deleteDoc, doc, collection, getDocs, getDoc, setDoc, DocumentReference, writeBatch } from "firebase/firestore";
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
-import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, getAttendanceNumber, getUserEventLog, fetchEventByName } from "../../../api/firebaseUtils";
+import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, getAttendanceNumber, getUserEventLog, fetchEventByName, getMyEvents } from "../../../api/firebaseUtils";
 import { EventType, SHPEEvent } from "../../../types/events";
 
 const generateTestEvent = (overrides: Partial<SHPEEvent> = {}): SHPEEvent => {
@@ -504,3 +504,47 @@ describe("Event Attendance and Logs", () => {
         await destroyEvent(eventId!);
     });
 });
+
+describe("getMyEvents", () => {
+    const COMMITTEE_1 = "committee1";
+    const COMMITTEE_2 = "committee2";
+    const INTEREST_1 = EventType.INTRAMURAL_EVENT;
+    const INTEREST_2 = EventType.GENERAL_MEETING;
+
+    beforeAll(async () => {
+        await clearCollection("events");
+
+        // Generate test events
+        const event1 = generateTestEvent({ committee: COMMITTEE_1, eventType: INTEREST_1 });
+        const event2 = generateTestEvent({ committee: COMMITTEE_1, eventType: INTEREST_2 });
+        const event3 = generateTestEvent({ committee: COMMITTEE_2, eventType: INTEREST_1 });
+        const event4 = generateTestEvent({ committee: COMMITTEE_2, eventType: INTEREST_2 });
+
+        await setDoc(doc(db, "events", "event1"), event1);
+        await setDoc(doc(db, "events", "event2"), event2);
+        await setDoc(doc(db, "events", "event3"), event3);
+        await setDoc(doc(db, "events", "event4"), event4);
+    });
+
+    test("returns events matching committees and interests", async () => {
+        const events = await getMyEvents([COMMITTEE_1], [INTEREST_1]);
+        expect(Array.isArray(events)).toBe(true);
+        expect(events.length).toBe(3);
+
+        const eventNames = events.map(event => event.name);
+        expect(eventNames).toContain("Test Event");
+    });
+
+    test("limits the number of events returned", async () => {
+        const events = await getMyEvents([COMMITTEE_1, COMMITTEE_2], [INTEREST_1, INTEREST_2], 2);
+        expect(Array.isArray(events)).toBe(true);
+        expect(events.length).toBe(2);
+    });
+
+    test("returns an empty array if no matching events", async () => {
+        const events = await getMyEvents(["nonexistentCommittee"], ["nonexistentInterest"]);
+        expect(Array.isArray(events)).toBe(true);
+        expect(events.length).toBe(0);
+    });
+});
+

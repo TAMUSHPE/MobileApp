@@ -3,7 +3,7 @@ import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteO
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot, serverTimestamp, QueryConstraint } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateFileBlob, validateTamuEmail } from "../helpers/validation";
-import { PrivateUserInfo, PublicUserInfo, Roles, User, UserFilter } from "../types/user";
+import { PrivateUserInfo, PublicUserInfo, Roles, User, FilterRole } from "../types/user";
 import { Committee } from "../types/committees";
 import { SHPEEvent, EventLogStatus, UserEventData, SHPEEventLog } from "../types/events";
 import * as Location from 'expo-location';
@@ -1286,11 +1286,6 @@ export const getMyEvents = async (committees: string[], interests: string[], max
     }
 };
 
-enum FilterRole {
-    OFFICER = "Officer",
-    REPRESENTATIVE = "Representative",
-    LEAD = "Lead",
-}
 
 export const getUserForMemberList = async (
     numLimit: number,
@@ -1340,9 +1335,16 @@ export const setMOTM = async (member: PublicUserInfo) => {
         }, { merge: true });
 
         const pastMembersRef = doc(db, "member-of-the-month", "past-members");
+
+        const pastMembersDoc = await getDoc(pastMembersRef);
+        if (!pastMembersDoc.exists()) {
+            await setDoc(pastMembersRef, { members: [] });
+        }
+
         await updateDoc(pastMembersRef, {
             members: arrayUnion(member.uid)
         });
+
         return true;
     } catch (err) {
         console.error(err);
