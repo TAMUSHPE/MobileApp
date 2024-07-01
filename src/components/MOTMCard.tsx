@@ -38,13 +38,13 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
 
 
     return (
-        <TouchableOpacity
-            className='mx-4 mt-10'
-            onPress={() => {
-                navigation?.navigate("PublicProfile", { uid: MOTM?.uid });
-            }}>
-            <View>
-                <Text className={`text-2xl font-bold mb-3 ${darkMode ? "text-white" : "text-black"}`}>Member of the Month</Text>
+        <View className="mx-4 mt-10 ">
+            <Text className={`text-2xl font-bold mb-3 ${darkMode ? "text-white" : "text-black"}`}>Member of the Month</Text>
+            <TouchableOpacity
+                className=''
+                onPress={() => {
+                    navigation?.navigate("PublicProfile", { uid: MOTM?.uid });
+                }}>
 
                 <View className={`flex-row rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                     style={{
@@ -68,8 +68,8 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
                         <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(MOTM?.bio, 80)}</Text>
                     </View>
                 </View>
-            </View>
-        </TouchableOpacity>
+            </TouchableOpacity>
+        </View>
     )
 }
 

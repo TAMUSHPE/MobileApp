@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackParams } from '../../types/navigation';
-import { fetchEventByName, getMembers } from '../../api/firebaseUtils';
+import { fetchEventByName, getUsers } from '../../api/firebaseUtils';
 import { PublicUserInfo } from '../../types/user';
 import MemberCardMultipleSelect from '../../components/MemberCardMultipleSelect';
 import { SHPEEvent } from '../../types/events';
@@ -29,7 +29,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
         const fetchMembers = async () => {
             setLoading(true);
             try {
-                const fetchedMembers: PublicUserInfo[] = await getMembers();
+                const fetchedMembers: PublicUserInfo[] = await getUsers();
                 const extendedMembers = fetchedMembers.map(member => ({
                     ...member,
                     selected: false,
