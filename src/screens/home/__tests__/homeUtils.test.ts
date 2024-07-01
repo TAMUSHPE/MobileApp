@@ -52,12 +52,12 @@ const userExists = async (uid: string) => {
     return userDoc.exists();
 };
 
-const waitForUser = async (uid: string, maxRetries: number = 16, interval: number = 500) => {
+const waitForUser = async (uid: string, maxRetries: number = 16, interval: number = 500, userData?: PublicUserInfo) => {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         if (await userExists(uid)) {
             return true;
         }
-        await createTestUserInFirebase({ publicInfo: { uid: uid } }, 4);
+        await createTestUserInFirebase({ publicInfo: userData ? (userData) : ({ uid: uid }) }, 4);
         await new Promise(resolve => setTimeout(resolve, interval));
     }
     throw new Error(`User with UID: ${uid} does not exist after ${maxRetries} attempts`);
@@ -208,15 +208,13 @@ describe("getUserForMemberList", () => {
         await createTestUserInFirebase(repUser);
         await createTestUserInFirebase(leadUser);
         await createTestUserInFirebase(nonRoleUser);
-        await waitForUser(OFFICER_USER_UID, 25);
-        await waitForUser(REP_USER_UID, 25);
-        await waitForUser(LEAD_USER_UID, 25);
-        await waitForUser(NON_ROLE_USER_UID, 25);
+        await waitForUser(OFFICER_USER_UID, 20, 500, officerUser.publicInfo);
+        await waitForUser(REP_USER_UID, 20, 500, repUser.publicInfo);
+        await waitForUser(LEAD_USER_UID, 20, 500, leadUser.publicInfo);
+        await waitForUser(NON_ROLE_USER_UID, 20, 500, nonRoleUser.publicInfo);
     }, 30000);
 
     test("returns members with officer role", async () => {
-        await waitForUser(OFFICER_USER_UID, 25);
-
         const result = await getUserForMemberList(10, null, FilterRole.OFFICER);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);
@@ -226,8 +224,6 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("returns members with representative role", async () => {
-        await waitForUser(REP_USER_UID, 25);
-
         const result = await getUserForMemberList(10, null, FilterRole.REPRESENTATIVE);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);
@@ -237,8 +233,6 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("returns members with lead role", async () => {
-        await waitForUser(LEAD_USER_UID, 25);
-
         const result = await getUserForMemberList(10, null, FilterRole.LEAD);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);
@@ -248,11 +242,6 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("returns members with no specific role filter", async () => {
-        await waitForUser(LEAD_USER_UID, 25);
-        await waitForUser(REP_USER_UID, 25);
-        await waitForUser(OFFICER_USER_UID, 25);
-        await waitForUser(NON_ROLE_USER_UID, 25);
-
         const result = await getUserForMemberList(10, null, null);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);
@@ -260,11 +249,6 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("limits the number of members returned", async () => {
-        await waitForUser(LEAD_USER_UID, 25);
-        await waitForUser(REP_USER_UID, 25);
-        await waitForUser(OFFICER_USER_UID, 25);
-        await waitForUser(NON_ROLE_USER_UID, 25);
-
         const result = await getUserForMemberList(2, null, null);
         const members = result.members as PublicUserInfo[];
         expect(Array.isArray(members)).toBe(true);
@@ -272,11 +256,6 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("handles pagination with startAfterDoc", async () => {
-        await waitForUser(LEAD_USER_UID, 25);
-        await waitForUser(REP_USER_UID, 25);
-        await waitForUser(OFFICER_USER_UID, 25);
-        await waitForUser(NON_ROLE_USER_UID, 25);
-
         const firstBatch = await getUserForMemberList(2, null, null);
         const firstMembers = firstBatch.members as PublicUserInfo[];
         expect(firstMembers.length).toBe(2);
@@ -287,8 +266,6 @@ describe("getUserForMemberList", () => {
     }, 30000);
 
     test("handles pagination with officer role filter", async () => {
-        await waitForUser(OFFICER_USER_UID, 25);
-
         const firstBatch = await getUserForMemberList(1, null, FilterRole.OFFICER);
         const firstMembers = firstBatch.members as PublicUserInfo[];
         expect(firstMembers.length).toBe(1);
