@@ -1,31 +1,43 @@
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, Alert, TextInput } from 'react-native'
-import React, { useContext, useEffect, useRef, useState } from 'react'
+import { View, Text, TouchableOpacity, ScrollView, Alert, useColorScheme, Image, ActivityIndicator } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
 import { UserContext } from '../../context/UserContext';
 import { auth, db } from '../../config/firebaseConfig';
 import { getBlobFromURI, selectFile } from '../../api/fileSelection';
-import { Timestamp, doc, onSnapshot, setDoc } from "firebase/firestore";
+import { Timestamp, deleteDoc, doc, onSnapshot, setDoc } from "firebase/firestore";
 import { CommonMimeTypes } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
-import { formatExpirationDate, isMemberVerified } from '../../helpers/membership';
 import UploadIcon from '../../../assets/upload-solid.svg';
+import { formatExpirationDate, isMemberVerified } from '../../helpers/membership';
 import { FontAwesome } from '@expo/vector-icons';
-import { darkMode } from '../../../tailwind.config';
+import { Octicons } from '@expo/vector-icons';
 import DismissibleModal from '../../components/DismissibleModal';
 import { Pressable } from 'react-native';
 import { LinkData } from '../../types/links';
 import { fetchLink, uploadFile } from '../../api/firebaseUtils';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { HomeStackParams } from '../../types/navigation';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Images } from '../../../assets';
 
 const linkIDs = ["6", "7"]; // ids reserved for TAMU and SHPE National links
 
-const MemberSHPE = () => {
-    const { userInfo } = useContext(UserContext)!;
+const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
     const { nationalExpiration, chapterExpiration } = userInfo?.publicInfo!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [uploadedNational, setUploadedNational] = useState(false)
     const [uploadedChapter, setUploadedChapter] = useState(false)
+    const [showShirtModal, setShowShirtModal] = useState<boolean>(false);
+    const [shirtSize, setShirtSize] = useState<string | undefined>(undefined);
     const [isVerified, setIsVerified] = useState(false)
-    const [loading, setLoading] = useState(false)
-    const [updatingSizes, setUpdatingSizes] = useState<boolean>(false);
+    const [loading, setLoading] = useState(true)
     const [links, setLinks] = useState<LinkData[]>([]);
 
     const tamuLink = links.find(link => link.id === "6");
@@ -54,6 +66,7 @@ const MemberSHPE = () => {
     useEffect(() => {
         const unsubscribe = () => {
             if (auth.currentUser) {
+                setLoading(true);
                 const docRef = doc(db, `memberSHPE/${auth.currentUser?.uid}`);
                 const unsubscribe = onSnapshot(docRef, (doc) => {
                     if (doc.exists()) {
@@ -66,7 +79,7 @@ const MemberSHPE = () => {
                         }
                     }
                 });
-
+                setLoading(false);
                 return unsubscribe;
             }
         }
@@ -107,6 +120,10 @@ const MemberSHPE = () => {
             nationalURL: URL
         }, { merge: true });
         setLoading(false);
+
+        if (uploadedChapter) {
+            alert("You have successfully uploaded both receipts. Your membership is in-review.");
+        }
     };
 
     const onChapterUploadSuccess = async (URL: string) => {
@@ -134,19 +151,104 @@ const MemberSHPE = () => {
 
 
         setLoading(false);
+
+        if (uploadedNational) {
+            alert("You have successfully uploaded both receipts. Your membership is in-review.");
+        }
     };
 
-    const [showShirtModal, setShowShirtModal] = useState<boolean>(false);
-    const [shirtSize, setShirtSize] = useState<string | undefined>(undefined);
 
-    const ShirtSize = ({ size, isActive, onToggle }: {
+    const handleSubmitShirt = async () => {
+        if (!shirtSize) {
+            Alert.alert("Missing Shirt Size", "You must enter a shirt size");
+            return;
+        }
+
+        const document = await selectDocument();
+        if (document) {
+            setLoading(true);
+            const path = `user-docs/${auth.currentUser?.uid}/$-verification`;
+            const onSuccess = onChapterUploadSuccess;
+            uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
+        }
+
+        setShowShirtModal(false);
+    };
+
+    const handleRetractNational = async () => {
+        if (uploadedNational) {
+            Alert.alert(
+                "Confirm Retraction",
+                "Are you sure you want to retract your National membership document?",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                        text: "Yes, Retract",
+                        onPress: async () => {
+                            setLoading(true);
+                            const docRef = doc(db, `memberSHPE/${auth.currentUser?.uid}`);
+                            if (!uploadedChapter) {
+                                // Delete the entire document if chapter is not uploaded
+                                await deleteDoc(docRef);
+                            } else {
+                                await setDoc(docRef, {
+                                    nationalURL: '',
+                                    nationalUploadDate: null,
+                                    nationalExpiration: null
+                                }, { merge: true });
+                            }
+                            setLoading(false);
+                            setUploadedNational(false);
+                            Alert.alert("National Membership Retracted", "Your national membership document has been successfully retracted.");
+                        }
+                    }
+                ]
+            );
+        }
+    };
+
+    const handleRetractChapter = async () => {
+        if (uploadedChapter) {
+            Alert.alert(
+                "Confirm Retraction",
+                "Are you sure you want to retract your Chapter membership document?",
+                [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                        text: "Yes, Retract",
+                        onPress: async () => {
+                            setLoading(true);
+                            const docRef = doc(db, `memberSHPE/${auth.currentUser?.uid}`);
+                            if (!uploadedNational) {
+                                // Delete the entire document if national is not uploaded
+                                await deleteDoc(docRef);
+                            } else {
+                                await setDoc(docRef, {
+                                    chapterURL: '',
+                                    chapterUploadDate: null,
+                                    chapterExpiration: null,
+                                    shirtSize: null
+                                }, { merge: true });
+                            }
+                            await deleteDoc(doc(db, `shirt-sizes/${auth.currentUser?.uid}`));
+                            setLoading(false);
+                            setUploadedChapter(false);
+                            Alert.alert("Chapter Membership Retracted", "Your chapter membership document and shirt size have been successfully retracted.");
+                        }
+                    }
+                ]
+            );
+        }
+    };
+
+    const ShirtSizeButton = ({ size, isActive, onToggle }: {
         size: string,
         isActive: boolean,
         onToggle: () => void,
     }) => {
         return (
             <Pressable onPress={onToggle} className='flex-row items-center py-1 mb-3'>
-                <View className={`w-7 h-7 mr-3 rounded-full border ${isActive && "bg-black"}`} />
+                <View className={`w-7 h-7 mr-3 rounded-full border ${darkMode ? "border-white" : "border-black"} ${isActive && (darkMode ? "bg-white" : "bg-black")}`} />
                 <Text className={`${darkMode ? "text-white" : "text-black"} text-lg`}>{size}</Text>
             </Pressable>
         );
@@ -154,217 +256,241 @@ const MemberSHPE = () => {
 
 
     return (
-        <ScrollView>
-            {/* Not Verified Member */}
-            <SafeAreaView className='border-b pb-4' edges={['top']}>
+        <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
+            <ScrollView>
+                {/* Header */}
+                <View className='flex-row items-center justify-between mb-3'>
+                    <View className='absolute w-full justify-center items-center'>
+                        <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>MemberSHPE</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => navigation.goBack()} className='py-1 px-4'>
+                        <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
+                    </TouchableOpacity>
+                </View>
+
+
                 {!isVerified && (
-                    <View className='mt-5'>
-                        <View className='px-8'>
-                            <Text className='text-3xl font-semibold'>Become a Member!</Text>
-                            <Text className='text-gray-500 text-lg font-semibold'>Follow the instructions below and upload the necessary screenshot.</Text>
-                        </View>
-                        <View className='flex-row mt-10 justify-around px-2'>
-                            <TouchableOpacity
-                                className={`px-3 py-2 rounded-lg items-center ${uploadedChapter ? "bg-gray-500" : "bg-maroon"}`}
-                                onPress={() => uploadDocument('chapter')}
-                                disabled={uploadedChapter}
-                            >
-                                <View className='flex-row'>
-                                    <UploadIcon width={20} height={20} />
-                                    <Text className="text-white font-semibold text-lg ml-3">TAMU Chapter</Text>
-                                </View>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                className={`px-3 py-2 rounded-lg items-center ${uploadedNational ? "bg-gray-500" : "bg-pale-orange"}`}
-                                onPress={() => uploadDocument('national')}
-                                disabled={uploadedNational}
-                            >
-                                <View className='flex-row'>
-                                    <UploadIcon width={20} height={20} />
-                                    <Text className="text-white font-semibold text-lg ml-3">SHPE National</Text>
-                                </View>
-                            </TouchableOpacity>
-                        </View>
-
-                        {loading && (
-                            <View className='items-center mt-2'>
-                                <ActivityIndicator size="small" />
-                            </View>
-                        )}
-                        {uploadedChapter && uploadedNational && (
-                            <View className='items-center mt-2'>
-                                <Text className='font-semibold text-gray-500'>Your submission is in-review</Text>
-                            </View>
-                        )}
-                    </View>
-                )}
-
-                {/* Verified Member */}
-                {isVerified && (
-                    <View className='flex-row px-8 mt-5'>
-                        <View className='w-[50%]'>
-                            <Text className='font-bold text-maroon'>TAMU Chapter Membership Expiration</Text>
-                            <Text className='font-bold text-maroon mt-3'>
-                                {userInfo?.publicInfo?.chapterExpiration ? formatExpirationDate(userInfo.publicInfo.chapterExpiration) : ''}
-                            </Text>
-                        </View>
-                        <View className='w-[50%]'>
-                            <Text className='font-bold text-pale-orange text-right'>SHPE National Membership Expiration</Text>
-                            <Text className='font-bold text-pale-orange text-right mt-3'>
-                                {userInfo?.publicInfo?.nationalExpiration ? formatExpirationDate(userInfo.publicInfo.nationalExpiration) : ''}
-                            </Text>
-                        </View>
-                    </View>
-                )}
-            </SafeAreaView>
-
-            {/* TAMU Chapter Instructions */}
-            <View className='mx-6 mt-8 bg-white shadow-md shadow-slate-300 px-4 py-3 rounded-lg border-4 border-maroon'>
-                <Text className='font-bold text-xl text-maroon mb-2'>TAMU Chapter</Text>
-                <View className='space-y-1'>
-                    <View className='flex-row'>
-                        <Text className='text-md font-bold'>1. Pay $20 to cover your</Text>
-                        <TouchableOpacity
-                            onPress={() => handleLinkPress(tamuLink?.url || "")}
-                        >
-                            <Text className='text-md font-bold text-blue-400'> #TAMUSHPE </Text>
-                        </TouchableOpacity>
-                        <Text className='text-md font-bold'>t-shirt</Text>
-
-                    </View>
-                    <Text className='text-md font-bold'>2. Take a screenshot of the receipt </Text>
-
-                </View>
-            </View>
-
-            {/* National Chapter Instructions */}
-            <View className='mx-6 mt-8 bg-white shadow-md shadow-slate-300 px-4 py-3 rounded-lg border-4 border-pale-orange'>
-                <Text className='font-bold text-xl text-pale-orange mb-2'>National Chapter</Text>
-                <View className='space-y-1'>
-                    <View className='flex-row'>
-                        <Text className='text-md font-bold'>1. Create </Text>
-                        <TouchableOpacity
-                            onPress={() => handleLinkPress(nationalsLink?.url || "")}
-                        >
-                            <Text className='text-md font-bold text-blue-400'>SHPE National Account </Text>
-                        </TouchableOpacity>
-                    </View>
-                    <Text className='text-md font-bold'>2. Select "Join/Renew Membership", choose Region 5 and Texas A&M University</Text>
-                    <Text className='text-md font-bold'>3. Complete Account Info, verify Educational Info</Text>
-                    <Text className='text-md font-bold'>4. Agree to Code of Ethics, add Membership to cart</Text>
-                    <Text className='text-md font-bold'>5. Pay for membership</Text>
-                    <Text className='text-md font-bold'>6. Take a screenshot of the receipt</Text>
-                </View>
-            </View>
-
-            {/* Upload Document */}
-            <View className='mx-6 mt-8 bg-white shadow-md shadow-slate-300 px-4 py-3 rounded-lg'>
-                <Text className='font-bold text-xl mb-2'>Submit</Text>
-                <View className='space-y-1'>
-                    <Text className='text-md font-bold'>1. Upload T-shirt receipt to TAMU Chapter button above</Text>
-                    <Text className='text-md font-bold'>2. Upload SHPE National Membership to National Chapter button above</Text>
-                    <Text className='text-md font-bold'>3. Make sure notification is on and wait to be approved</Text>
-                    <Text className='text-md font-bold'>4. If you're not verified after receiving the notification, refresh your profile or contact an officer </Text>
-                </View>
-            </View>
-
-            <View className='mb-20'></View>
-
-            <DismissibleModal
-                visible={showShirtModal}
-                setVisible={setShowShirtModal}
-            >
-                <View
-                    className='flex opacity-100 bg-white rounded-md px-6 pt-6'
-                    style={{ minWidth: 300 }}
-                >
-                    {/* Title */}
-                    <View className='flex-row items-center mb-4'>
-                        <FontAwesome name="user" color="black" size={30} />
-                        <Text className='text-2xl font-semibold ml-2'>Shirt Selection</Text>
-                    </View>
-
-                    {/* Position Custom Title */}
-                    <View>
-                        <Text className='text-lg font-semibold mb-2'>Select T-Shirt Size</Text>
-                    </View>
-
-                    {/* Position Selection */}
-                    <View>
-                        <ShirtSize
-                            size="XS"
-                            isActive={shirtSize === "XS"}
-                            onToggle={() => setShirtSize(shirtSize === 'XS' ? undefined : 'XS')}
-                        />
-                        <ShirtSize
-                            size="S"
-                            isActive={shirtSize === "S"}
-                            onToggle={() => setShirtSize(shirtSize === 'S' ? undefined : 'S')}
-                        />
-                        <ShirtSize
-                            size="M"
-                            isActive={shirtSize === "M"}
-                            onToggle={() => setShirtSize(shirtSize === 'M' ? undefined : 'M')}
-                        />
-                        <ShirtSize
-                            size="L"
-                            isActive={shirtSize === "L"}
-                            onToggle={() => setShirtSize(shirtSize === 'L' ? undefined : 'L')}
-                        />
-                        <ShirtSize
-                            size="XL"
-                            isActive={shirtSize === "XL"}
-                            onToggle={() => setShirtSize(shirtSize === 'XL' ? undefined : 'XL')}
-                        />
-                    </View>
-
-                    {/* Action Buttons */}
-                    <View className="flex-row justify-between items-center my-6 mx-5">
-                        <TouchableOpacity
-                            onPress={async () => {
-
-                                // checks if has role but no custom title
-                                if (!(shirtSize === "XS" || shirtSize === "S" || shirtSize === "M" || shirtSize === "L" || shirtSize === "XL")) {
-                                    Alert.alert("Missing Shrit Size", "You must enter a shirt size ");
-                                    return;
-                                }
-
-                                setUpdatingSizes(true);
-                                if (shirtSize) {
-                                    const document = await selectDocument();
-                                    if (document) {
-                                        setLoading(true);
-                                        const path = `user-docs/${auth.currentUser?.uid}/$-verification`;
-                                        const onSuccess = onChapterUploadSuccess;
-                                        uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
-                                    }
-                                }
-
-                                setUpdatingSizes(false);
-                                setShowShirtModal(false);
+                    <View className="mx-4">
+                        <View
+                            className={`px-4 py-6 rounded-lg mb-10 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
                             }}
-                            className="bg-pale-blue rounded-lg justify-center items-center px-4 py-1"
                         >
-                            <Text className='text-xl font-bold text-white px-2'>Done</Text>
-                        </TouchableOpacity>
+                            <View className='flex-row items-center'>
+                                <View className={`rounded-full h-8 w-8 border-2 items-center justify-center ${darkMode ? "border-white" : "border-black"} `}>
+                                    <Text className={`font-bold text-lg ${darkMode ? "text-white" : "text-black"}`}>1</Text>
+                                </View>
+
+                                <Text className={`text-2xl font-bold ml-2 ${darkMode ? "text-white" : "text-black"}`}>Join Texas A&M Chapter</Text>
+                            </View>
+
+                            <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>
+                                Pay the <TouchableOpacity onPress={() => handleLinkPress((tamuLink?.url || ""))}>
+                                    <Text className='text-primary-blue font-bold text-xl' style={{ lineHeight: 0 }}>chapter dues</Text>
+                                </TouchableOpacity>, which include a t-shirt. Be sure to take a screenshot of your <Text className='font-bold'>receipt</Text> and upload it below.
+                            </Text>
 
 
-                        <TouchableOpacity
-                            onPress={async () => {
-                                setShirtSize(shirtSize)
-                                setShowShirtModal(false)
-                            }} >
-                            <Text className='text-xl font-bold px-4 py-1'>Cancel</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity
+                                className={`px-3 py-2 rounded-lg items-center mt-8 ${uploadedChapter ? "bg-grey-dark" : "bg-primary-blue"}`}
+                                onPress={() => uploadedChapter ? handleRetractChapter() : uploadDocument('chapter')}
+                            >
+                                {loading ?
+                                    <ActivityIndicator size="small" color="#fff" />
+                                    :
+                                    <View className='flex-row'>
+                                        <UploadIcon width={20} height={20} />
+                                        <Text className="text-white font-semibold text-lg ml-3">{uploadedChapter ? "Remove" : "Upload"} Receipt</Text>
+                                    </View>
+                                }
+                            </TouchableOpacity>
+
+                        </View>
+
+                        <View
+                            className={`px-4 py-6 rounded-lg mb-10 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
+                        >
+                            <View className='flex-row items-center'>
+                                <View className={`rounded-full h-8 w-8 border-2 items-center justify-center ${darkMode ? "border-white" : "border-black"} `}>
+                                    <Text className={`font-bold text-lg ${darkMode ? "text-white" : "text-black"}`}>2</Text>
+                                </View>
+
+                                <Text className={`text-2xl font-bold ml-2 ${darkMode ? "text-white" : "text-black"}`}>Join SHPE National Chapter</Text>
+                            </View>
+
+                            <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>
+                                1. Create a <TouchableOpacity onPress={() => handleLinkPress((tamuLink?.url || ""))}>
+                                    <Text className='text-primary-blue font-bold text-xl' style={{ lineHeight: 0 }}>national account</Text>
+                                </TouchableOpacity>
+                            </Text>
+                            <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>2. Select the "Join Membership" or "Renew Membership" tab.</Text>
+                            <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>3. Choose the appropriate membership type.</Text>
+                            <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>4. Select <Text className="font-bold">Region 5</Text> and Texas A&M University, College Station. </Text>
+                            <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>5. Pay the membership dues, take a screenshot of your <Text className='font-bold'>receipt</Text>, and upload it below.</Text>
+
+                            <TouchableOpacity
+                                className={`px-3 py-2 rounded-lg items-center mt-8 ${uploadedNational ? "bg-grey-dark" : "bg-primary-blue"}`}
+                                onPress={() => uploadedNational ? handleRetractNational() : uploadDocument('national')}
+                            >
+                                {loading ?
+                                    <ActivityIndicator size="small" color="#fff" />
+                                    :
+                                    <View className='flex-row'>
+                                        <UploadIcon width={20} height={20} />
+                                        <Text className="text-white font-semibold text-lg ml-3">{uploadedNational ? "Remove" : "Upload"} Receipt</Text>
+                                    </View>
+                                }
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                    {updatingSizes && <ActivityIndicator className='mb-4' size={30} />}
-                </View>
-            </DismissibleModal>
-
-        </ScrollView>
+                )}
 
 
+                {isVerified && (
+                    <View className='mx-4'>
+                        <View
+                            className={`px-4 py-6 rounded-lg mb-10 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
+                        >
+                            <View className='flex-1'>
+                                <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>TAMU SHPE Membership</Text>
+                            </View>
+                            <View className='flex-row justify-between'>
+                                <View className='justify-end'>
+                                    <Text className={`text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>
+                                        Expires {userInfo?.publicInfo?.chapterExpiration ? formatExpirationDate(userInfo.publicInfo.chapterExpiration) : ''}
+                                    </Text>
+                                </View>
+                                {darkMode ? (
+                                    <Image
+                                        className="flex h-32 w-32 rounded-lg"
+                                        resizeMode='cover'
+                                        source={Images.TAMU_WHITE}
+                                    />
+                                ) : (
+                                    <Image
+                                        className="flex h-28 w-28 rounded-lg mt-2"
+                                        resizeMode='cover'
+                                        source={Images.TAMU_MAROON}
+                                    />
+                                )}
+                            </View>
+                        </View>
+
+                        <View
+                            className={`px-4 py-6 rounded-lg mb-10 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
+                        >
+                            <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>SHPE National Membership</Text>
+                            <View className='flex-row justify-between'>
+                                <View className='justify-end'>
+                                    <Text className={`text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>
+                                        Expires {userInfo?.publicInfo?.nationalExpiration ? formatExpirationDate(userInfo.publicInfo.nationalExpiration) : ''}
+                                    </Text>
+                                </View>
+                                {darkMode ? (
+                                    <Image
+                                        className="flex h-32 w-32 rounded-lg"
+                                        resizeMode='cover'
+                                        source={Images.SHPE_WHITE}
+                                    />
+                                ) : (
+                                    <Image
+                                        className="flex h-28 w-28 rounded-lg mt-2"
+                                        resizeMode='cover'
+                                        source={Images.SHPE_LOGO}
+                                    />
+                                )}
+                            </View>
+                        </View>
+                    </View>
+                )}
+
+                <DismissibleModal
+                    visible={showShirtModal}
+                    setVisible={setShowShirtModal}
+                >
+                    <View
+                        className={`flex opacity-100 rounded-md p-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                        style={{ minWidth: 300 }}
+                    >
+                        {/* Title */}
+                        <View className='flex-row items-center mb-4'>
+                            <FontAwesome name="user" color={darkMode ? "white" : "black"} size={30} />
+                            <Text className={`text-2xl font-semibold ml-2 ${darkMode ? "text-white" : "text-black"}`}>Shirt Selection</Text>
+                        </View>
+
+                        {/* Position Selection */}
+                        <View>
+                            {["XS", "S", "M", "L", "XL"].map((size) => (
+                                <ShirtSizeButton
+                                    key={size}
+                                    size={size}
+                                    isActive={shirtSize === size}
+                                    onToggle={() => setShirtSize(shirtSize === size ? undefined : size)}
+                                />
+                            ))}
+                        </View>
+
+                        {/* Action Buttons */}
+                        <View className="flex-row mt-8">
+                            <TouchableOpacity
+                                onPress={() => setShowShirtModal(false)}
+                                className='flex-1'
+                            >
+                                <Text className={`text-xl font-bold py-3 px-8 ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={() => handleSubmitShirt()}
+                                className="flex-1 bg-primary-blue rounded-xl justify-center items-center"
+                            >
+                                <Text className='text-xl font-bold text-white px-8'>Done</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </DismissibleModal>
+
+            </ScrollView>
+
+        </SafeAreaView>
 
     )
 }
