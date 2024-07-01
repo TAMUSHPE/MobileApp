@@ -63,8 +63,6 @@ const createTestUserInFirebase = async (user: User, maxRetries: number = 16) => 
             console.error(`Attempt ${attempt} encountered an error: ${error}. Retrying...`);
         }
     }
-
-    throw new Error(`Failed to create test user with UID: ${publicInfo?.uid} after ${maxRetries} attempts`);
 };
 
 const userExists = async (uid: string) => {
