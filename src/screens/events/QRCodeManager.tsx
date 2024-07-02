@@ -151,7 +151,7 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                                 </TouchableOpacity>
                             </View>
                         )}
-                        {loading && <ActivityIndicator size="large" color={darkMode ? "#fff" : "#0000ff"} />}
+                        {loading && <ActivityIndicator size="small" color={darkMode ? "#fff" : "#0000ff"} />}
                     </View>
                 </View>
 

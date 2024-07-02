@@ -305,7 +305,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                                 onPress={() => uploadedChapter ? handleRetractChapter() : uploadDocument('chapter')}
                             >
                                 {loading ?
-                                    <ActivityIndicator size="small" color="#fff" />
+                                    <ActivityIndicator size="small" />
                                     :
                                     <View className='flex-row'>
                                         <UploadIcon width={20} height={20} />
@@ -352,7 +352,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                                 onPress={() => uploadedNational ? handleRetractNational() : uploadDocument('national')}
                             >
                                 {loading ?
-                                    <ActivityIndicator size="small" color="#fff" />
+                                    <ActivityIndicator size="small" />
                                     :
                                     <View className='flex-row'>
                                         <UploadIcon width={20} height={20} />
