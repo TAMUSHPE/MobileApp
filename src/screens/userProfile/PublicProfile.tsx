@@ -1,5 +1,5 @@
 import { View, Text, ActivityIndicator, Image, Alert, TouchableOpacity, Pressable, TextInput, ScrollView, useColorScheme } from 'react-native';
-import React, { useState, useEffect, useContext, useCallback } from 'react';
+import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp, useFocusEffect } from '@react-navigation/core';;
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,7 +17,7 @@ import { Images } from '../../../assets';
 import ProfileBadge from '../../components/ProfileBadge';
 import DismissibleModal from '../../components/DismissibleModal';
 import { UserEventData } from '../../types/events';
-import { Timestamp } from 'firebase/firestore';
+import { DocumentSnapshot, Timestamp } from 'firebase/firestore';
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 import { formatDate, formatDateWithYear } from '../../helpers/timeUtils';
@@ -47,6 +47,8 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
     const [loading, setLoading] = useState<boolean>(true);
     const [updatingRoles, setUpdatingRoles] = useState<boolean>(false);
     const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
+    const [endOfData, setEndOfData] = useState(false);
+    const lastVisibleRef = useRef<DocumentSnapshot | null>(null);
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
@@ -67,20 +69,17 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
             }
         }
 
-        const fetchUserEventLogs = async () => {
-            if (auth.currentUser?.uid) {
-                try {
-                    const data = await getUserEventLogs(auth.currentUser?.uid);
-                    setEvents(data);
-                } catch (error) {
-                    console.error('Error fetching user event logs:', error);
-                }
-            }
+        const fetchInitialEventLogs = async () => {
+            setEvents([]);
+            const { events: initialEvents, lastVisibleDoc } = await getUserEventLogs(auth.currentUser?.uid!, 3, null, setEndOfData);
+            setEvents(initialEvents);
+            lastVisibleRef.current = lastVisibleDoc;
         };
+
 
         if (isCurrentUser) {
             fetchUserData();
-            fetchUserEventLogs();
+            fetchInitialEventLogs();
         }
     }, [isCurrentUser])
 

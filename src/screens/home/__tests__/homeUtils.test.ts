@@ -125,9 +125,9 @@ describe("getUserForMemberList", () => {
         await createTestUserInFirebase(leadUser);
         await createTestUserInFirebase(nonRoleUser);
         await waitForUser(OFFICER_USER_UID, 25, 500, officerUser.publicInfo);
-        await waitForUser(REP_USER_UID, 20, 500, repUser.publicInfo);
-        await waitForUser(LEAD_USER_UID, 20, 500, leadUser.publicInfo);
-        await waitForUser(NON_ROLE_USER_UID, 20, 500, nonRoleUser.publicInfo);
+        await waitForUser(REP_USER_UID, 25, 500, repUser.publicInfo);
+        await waitForUser(LEAD_USER_UID, 25, 500, leadUser.publicInfo);
+        await waitForUser(NON_ROLE_USER_UID, 25, 500, nonRoleUser.publicInfo);
     }, 30000);
 
     test("returns members with officer role", async () => {

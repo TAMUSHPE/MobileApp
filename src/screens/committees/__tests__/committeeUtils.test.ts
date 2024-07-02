@@ -1,10 +1,7 @@
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
-import { DocumentReference, GeoPoint, Timestamp, collection, deleteDoc, doc, getDoc, getDocs, setDoc, writeBatch } from "firebase/firestore";
-import { Committee } from "../../../types/committees";
+import { collection, doc, getDoc, setDoc } from "firebase/firestore";
 import { checkCommitteeRequestStatus, deleteCommittee, getCommittee, getCommitteeEvents, getCommitteeMembers, getCommittees, getLeads, getPublicUserData, getRepresentatives, getTeamMembers, removeCommitteeRequest, resetCommittee, setCommitteeData, submitCommitteeRequest } from "../../../api/firebaseUtils";
-import { PublicUserInfo, User } from "../../../types/user";
-import { EventType, SHPEEvent } from "../../../types/events";
 import { clearCollection, createTestUserInFirebase, generateTestCommittee, generateTestEvent, generateTestUsers, waitForUser } from "../../../helpers/unitTestUtils";
 
 
@@ -73,7 +70,7 @@ describe("Get Committees", () => {
         const committeeData1 = await generateTestCommittee({ firebaseDocName: SAMPLEFIREBASEDOCNAME1, memberCount: 5, head: HEADUSER });
         const committeeData2 = await generateTestCommittee({ firebaseDocName: SAMPLEFIREBASEDOCNAME2, memberCount: 15, head: HEADUSER });
 
-        await waitForUser(HEADUSER);
+        await waitForUser(HEADUSER, 25);
         await setCommitteeData(committeeData1);
         await setCommitteeData(committeeData2);
 
@@ -359,7 +356,7 @@ describe("Committee Info", () => {
 
     test("Can be deleted", async () => {
         const committeeData = await generateTestCommittee({ head: HEADUSER });
-        await waitForUser(HEADUSER);
+        await waitForUser(HEADUSER, 25);
         await setCommitteeData(committeeData);
 
         expect(await getCommittee(committeeData.firebaseDocName!)).not.toBeNull();
@@ -514,6 +511,7 @@ describe("getTeamMembers", () => {
     test("returns only users with officer, lead, or representative roles", async () => {
         const teamMembers = await getTeamMembers();
         expect(Array.isArray(teamMembers)).toBe(true);
+        console.log("Team Member UIDs:", teamMembers.map(member => member.uid));
         expect(teamMembers.length).toBe(3);
 
         const teamMemberUIDs = teamMembers.map(member => member.uid);

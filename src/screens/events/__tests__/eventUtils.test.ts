@@ -1,9 +1,9 @@
-import { Timestamp, GeoPoint, deleteDoc, doc, collection, getDocs, getDoc, setDoc, DocumentReference, writeBatch } from "firebase/firestore";
+import { Timestamp, GeoPoint, deleteDoc, doc, getDoc, setDoc, collection, getFirestore, getDocs, query } from "firebase/firestore";
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
-import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, getAttendanceNumber, getUserEventLog, fetchEventByName, getMyEvents } from "../../../api/firebaseUtils";
+import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, getAttendanceNumber, getUserEventLog, fetchEventByName, getMyEvents, getUserEventLogs } from "../../../api/firebaseUtils";
 import { EventType, SHPEEvent } from "../../../types/events";
-import { clearCollection, generateTestEvent } from "../../../helpers/unitTestUtils";
+import { clearCollection, createTestUserInFirebase, generateTestEvent, generateTestUsers } from "../../../helpers/unitTestUtils";
 
 beforeAll(async () => {
     expect(process.env.FIREBASE_EMULATOR_ADDRESS).toBeDefined();
@@ -493,6 +493,106 @@ describe("getMyEvents", () => {
         const events = await getMyEvents(["nonexistentCommittee"], ["nonexistentInterest"]);
         expect(Array.isArray(events)).toBe(true);
         expect(events.length).toBe(0);
+    });
+});
+
+describe("Fetch user event logs with pagination", () => {
+    const testUsers = ["TestUser1", "TestUser2", "TestUser3", "NoEventUser"];
+
+    const clearCollectionUserLog = async (collectionPath: string) => {
+        const collectionRef = collection(db, collectionPath);
+        const q = query(collectionRef);
+        const snapshot = await getDocs(q);
+
+        for (const docSnapshot of snapshot.docs) {
+            const subCollectionPaths = (await getDocs(query(collection(docSnapshot.ref, 'event-logs')))).docs.map(doc => doc.ref.path);
+            for (const subCollectionPath of subCollectionPaths) {
+                await clearCollectionUserLog(subCollectionPath);
+            }
+            await deleteDoc(docSnapshot.ref);
+        }
+    };
+
+    beforeAll(async () => {
+        for (const user of testUsers) {
+            await clearCollectionUserLog(`users/${user}/event-logs`);
+        }
+    });
+
+    afterAll(async () => {
+        for (const user of testUsers) {
+            await clearCollectionUserLog(`users/${user}/event-logs`);
+        }
+    });
+    test("Fetch user event logs with limit", async () => {
+        const TESTUSER1 = "TestUser1";
+
+        for (let i = 0; i < 5; i++) {
+            const event = generateTestEvent();
+            const eventId = await createEvent(event as SHPEEvent);
+            await setDoc(doc(db, `users/${TESTUSER1}/event-logs`, eventId!), {
+                signInTime: Timestamp.fromDate(new Date(Date.now() - (i + 1) * 3600 * 1000)),
+                verified: true,
+                points: 10
+            });
+        }
+        const { events, lastVisibleDoc } = await getUserEventLogs(TESTUSER1, 3);
+        expect(events.length).toBe(3);
+        expect(lastVisibleDoc).not.toBeNull();
+    });
+
+    test("Fetch next page of user event logs", async () => {
+        const TESTUSER2 = "TestUser2";
+        for (let i = 0; i < 5; i++) {
+            const event = generateTestEvent();
+            const eventId = await createEvent(event as SHPEEvent);
+            await setDoc(doc(db, `users/${TESTUSER2}/event-logs`, eventId!), {
+                signInTime: Timestamp.fromDate(new Date(Date.now() - (i + 1) * 3600 * 1000)),
+                verified: true,
+                points: 10
+            });
+        }
+
+        // Fetch first page
+        const { events: firstPageEvents, lastVisibleDoc: firstPageLastVisible } = await getUserEventLogs(TESTUSER2, 3);
+        expect(firstPageEvents.length).toBe(3);
+        expect(firstPageLastVisible).not.toBeNull();
+
+        // Fetch second page
+        const { events: secondPageEvents, lastVisibleDoc: secondPageLastVisible } = await getUserEventLogs(TESTUSER2, 3, firstPageLastVisible);
+        expect(secondPageEvents.length).toBe(2);
+        expect(secondPageLastVisible).not.toBeNull();
+    });
+
+    test("Set end of data flag correctly", async () => {
+        const TESTUSER3 = "TestUser3";
+
+        for (let i = 0; i < 5; i++) {
+            const event = generateTestEvent();
+            const eventId = await createEvent(event as SHPEEvent);
+            await setDoc(doc(db, `users/${TESTUSER3}/event-logs`, eventId!), {
+                signInTime: Timestamp.fromDate(new Date(Date.now() - (i + 1) * 3600 * 1000)),
+                verified: true,
+                points: 10
+            });
+        }
+
+        let endOfData = false;
+
+        const { events, lastVisibleDoc } = await getUserEventLogs(TESTUSER3, 10, null, (end) => endOfData = end);
+        expect(events.length).toBe(5);
+        expect(lastVisibleDoc).not.toBeNull();
+        expect(endOfData).toBe(true);
+    });
+
+    test("Handle user with no event logs", async () => {
+        const NOEVENTUSER = "NoEventUser";
+        const noEventUser = await generateTestUsers({ publicInfo: { uid: NOEVENTUSER } });
+        await createTestUserInFirebase(noEventUser);
+
+        const { events, lastVisibleDoc } = await getUserEventLogs(NOEVENTUSER, 3);
+        expect(events.length).toBe(0);
+        expect(lastVisibleDoc).toBeNull(); // No documents, should be null
     });
 });
 
