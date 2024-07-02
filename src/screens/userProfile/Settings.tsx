@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated, useColorScheme } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -30,7 +30,13 @@ import * as Clipboard from 'expo-clipboard';
  * Settings entrance screen which has a search function and paths to every other settings screen
  */
 const SettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, signOutUser } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo, signOutUser } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const { name, roles, photoURL, chapterExpiration, nationalExpiration } = userInfo?.publicInfo ?? {};
     const isOfficer = roles ? roles.officer : false;
@@ -43,8 +49,6 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>)
             setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
         }
     }, [nationalExpiration, chapterExpiration])
-
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     return (
         <ScrollView
@@ -107,7 +111,14 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>)
  * These changes are synced in firebase.
  */
 const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [loading, setLoading] = useState<boolean>(false);
     const [image, setImage] = useState<Blob | null>(null);
     const [showSaveButton, setShowSaveButton] = useState<boolean>(false);
@@ -141,8 +152,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
     const [showBioModal, setShowBioModal] = useState<boolean>(false);
     const [showAcademicInfoModal, setShowAcademicInfoModal] = useState<boolean>(false);
     const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
-
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     useEffect(() => {
         const fetchCommitteeData = async () => {
@@ -618,12 +627,17 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
  * These changes are synced in firebase.
  */
 const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [loading, setLoading] = useState<boolean>(false);
     const [darkModeToggled, setDarkModeToggled] = useState<boolean>(userInfo?.private?.privateInfo?.settings?.darkMode ?? false);
     const [systemDefaultToggled, setSystemDefaultToggled] = useState<boolean>(userInfo?.private?.privateInfo?.settings?.useSystemDefault ?? false);
-
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode
 
     return (
         <ScrollView
@@ -713,8 +727,14 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
  * These changes will go through firebase where an email will be sent to the user. 
  */
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, setUserInfo, signOutUser } = useContext(UserContext)!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const deleteConfirmationText = "DELETECONFIRM";
 
     const [deleteText, setDeleteText] = useState('');
@@ -851,10 +871,16 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
 };
 
 const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
-    const [feedback, setFeedback] = useState('');
-    const { userInfo } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
 
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
+
+    const [feedback, setFeedback] = useState('');
 
     const handleFeedbackSubmit = async () => {
         const response = await submitFeedback(feedback, userInfo!);
@@ -892,11 +918,15 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStack
 };
 
 const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [activeQuestion, setActiveQuestion] = useState<number | null>(null);
-    const { userInfo } = useContext(UserContext)!;
-
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
-
 
     const toggleQuestion = (questionNumber: number) => {
         if (activeQuestion === questionNumber) {
@@ -975,8 +1005,14 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParam
  */
 const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const pkg: any = require("../../../package.json");
-    const { userInfo } = useContext(UserContext)!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
 
     return (
         <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>

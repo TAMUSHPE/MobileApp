@@ -10,11 +10,18 @@ import MemberSHPE from "../screens/home/MemberSHPE";
 import UpdateEvent from "../screens/events/UpdateEvent";
 import EventInfo from "../screens/events/EventInfo";
 import QRCodeManager from "../screens/events/QRCodeManager";
+import { useColorScheme } from "react-native";
 
 const UserProfileStack = () => {
     const Stack = createNativeStackNavigator<UserProfileStackParams>();
-    const { userInfo } = useContext(UserContext)!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
 
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
