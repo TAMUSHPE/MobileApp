@@ -1,21 +1,22 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme, Image, Modal } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp } from '@react-navigation/core';
 import { Octicons, Entypo } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { UserContext } from '../../context/UserContext';
+import { auth } from '../../config/firebaseConfig';
 import { checkCommitteeRequestStatus, getCommitteeEvents, getCommitteeMembers, getPublicUserData, removeCommitteeRequest, setPublicUserData, submitCommitteeRequest } from '../../api/firebaseUtils';
-import { handleLinkPress } from '../../helpers/links';
-import { getLogoComponent } from '../../types/committees';
-import { SHPEEvent } from '../../types/events';
-import { PublicUserInfo } from '../../types/user';
-import { auth, db } from '../../config/firebaseConfig';
-import MembersList from '../../components/MembersList';
-import { RouteProp } from '@react-navigation/core';
-import { CommitteesStackParams } from '../../types/navigation';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { UserContext } from '../../context/UserContext';
 import { Images } from '../../../assets';
+import { handleLinkPress } from '../../helpers/links';
+import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
+import { getLogoComponent } from '../../types/committees';
+import { EventType, SHPEEvent } from '../../types/events';
+import { PublicUserInfo } from '../../types/user';
+import { CommitteesStackParams } from '../../types/navigation';
+import MembersList from '../../components/MembersList';
 import EventCard from '../events/EventCard';
 
 const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigation }) => {
@@ -55,7 +56,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
     useEffect(() => {
         const fetchEvents = async () => {
             setEventLoading(true);
-            const response = await getCommitteeEvents([firebaseDocName!]);
+            const response = await getCommitteeEvents([firebaseDocName!], 3);
             setEvents(response);
             setEventLoading(false);
         }
@@ -308,7 +309,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
                     {/* About */}
                     <View className='mt-10'>
-                        <View className='mb-2'>
+                        <View className='mb-4'>
                             <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>About the committee</Text>
                             {applicationLink && (
                                 <TouchableOpacity
@@ -332,13 +333,21 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
                                 elevation: 5,
                             }}>
-                            <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(description || "", 170)}</Text>
+                            <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(description, 170)}</Text>
                         </View>
                     </View>
 
                     {/* Upcoming Events */}
                     <View className='mt-10'>
-                        <Text className={`text-2xl font-bold mb-2 ${darkMode ? "text-white" : "text-black"}`}>Upcoming Events</Text>
+                        <View className='flex-row justify-between items-center mb-4'>
+                            <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Upcoming Events</Text>
+                            <TouchableOpacity
+                                className='px-4'
+                                onPress={() => navigation.getParent()?.navigate('EventsTab', { screen: 'EventsScreen', params: { filter: EventType.COMMITTEE_MEETING, committee: firebaseDocName } })}
+                            >
+                                <Text className='text-lg text-primary-blue font-semibold'>View all</Text>
+                            </TouchableOpacity>
+                        </View>
 
                         <View
                             className={`px-3 py-4 rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
@@ -461,13 +470,5 @@ type CommitteeInfoScreenRouteProps = {
     route: RouteProp<CommitteesStackParams, 'CommitteeInfo'>;
     navigation: NativeStackNavigationProp<CommitteesStackParams, 'CommitteeInfo'>;
 };
-
-const truncateStringWithEllipsis = (name: string, limit = 22) => {
-    if (name.length > limit) {
-        return `${name.substring(0, limit)}...`;
-    }
-    return name;
-};
-
 
 export default CommitteeInfo

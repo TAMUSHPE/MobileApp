@@ -9,6 +9,7 @@ import { getPastEvents } from '../../api/firebaseUtils';
 import EventCard from './EventCard';
 import { UserContext } from '../../context/UserContext';
 import { StatusBar } from 'expo-status-bar';
+import { useFocusEffect } from '@react-navigation/core';
 
 const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const userContext = useContext(UserContext);
@@ -17,6 +18,8 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
     const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -32,17 +35,27 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
         setLoading(false);
     };
 
-    useEffect(() => {
-        const fetchInitialEvents = async () => {
-            setLoading(true);
-            const { events, lastVisibleDoc } = await getPastEvents(8, null, setEndOfData);
-            setPastEvents(events);
-            lastVisibleRef.current = lastVisibleDoc;
-            setLoading(false);
-        };
+    const fetchInitialEvents = async () => {
+        setPastEvents([]);
+        setLoading(true);
+        const { events, lastVisibleDoc } = await getPastEvents(8, null, setEndOfData);
+        setPastEvents(events);
+        lastVisibleRef.current = lastVisibleDoc;
+        setLoading(false);
+    };
 
+    useEffect(() => {
         fetchInitialEvents();
     }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (hasPrivileges) {
+                fetchInitialEvents();
+            }
+        }, [hasPrivileges])
+    );
+
 
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
         const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {

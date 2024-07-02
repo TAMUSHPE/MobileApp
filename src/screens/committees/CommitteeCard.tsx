@@ -1,10 +1,11 @@
 import { View, Text, Image, TouchableOpacity, useColorScheme } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react'
-import { UserContext } from '../../context/UserContext';
-import { Committee, getLogoComponent } from "../../types/committees";
-import { Images } from "../../../assets"
-import { PublicUserInfo } from '../../types/user';
 import { getPublicUserData } from '../../api/firebaseUtils';
+import { UserContext } from '../../context/UserContext';
+import { Images } from "../../../assets"
+import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
+import { Committee, getLogoComponent } from "../../types/committees";
+import { PublicUserInfo } from '../../types/user';
 
 const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) => {
     const { name, logo, head, memberCount, isOpen } = committee;
@@ -48,23 +49,21 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
         >
             {/* Committee Status and Head */}
             <View className='flex-row justify-between items-center'>
-                <View className='flex-row items-center'>
-                    <View className={`rounded-full h-3 w-3 ${isOpen ? "bg-green-1" : "bg-primary-blue"}`} />
-                    <Text className={`ml-2 text-lg ${darkMode ? "text-white" : "text-black"}`}>{isOpen ? "Open" : "Private"}</Text>
-                </View>
+                <View className='flex-row items-center'></View>
                 <Image source={localHead?.photoURL ? { uri: localHead.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-9 w-9 rounded-full' />
             </View>
             {/* Logo */}
-            <View className='items-center justify-center my-4 flex-1'>
+            <View className='items-center justify-center flex-1'>
                 {darkMode ?
                     <LightLogoComponent height={height * .9} width={width * .9} />
                     :
                     <LogoComponent height={height * .9} width={width * .9} />
                 }
             </View>
+
             {/* Name and Membership */}
             <View className='items-center justify-center'>
-                <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(name || "", 11)}</Text>
+                <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(name, 11)}</Text>
                 <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{memberCount} members</Text>
             </View>
         </TouchableOpacity>
@@ -77,14 +76,5 @@ interface CommitteeCardProps {
     navigation: any
     handleCardPress?: (uid: string) => string | void;
 }
-
-const truncateStringWithEllipsis = (name: string, limit = 22) => {
-    if (name.length > limit) {
-        return `${name.substring(0, limit)}...`;
-    }
-    return name;
-};
-
-
 
 export default CommitteeCard;

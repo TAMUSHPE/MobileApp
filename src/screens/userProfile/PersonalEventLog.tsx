@@ -6,7 +6,7 @@ import { Octicons } from '@expo/vector-icons';
 import { Timestamp } from 'firebase/firestore';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
-import { queryUserEventLogs } from '../../api/firebaseUtils';
+import { getUserEventLogs } from '../../api/firebaseUtils';
 import { UserEventData } from '../../types/events';
 import { UserProfileStackParams } from '../../types/navigation';
 
@@ -21,7 +21,7 @@ const PersonalEventLog = ({ navigation }: NativeStackScreenProps<UserProfileStac
     const fetchUserEventLogs = async () => {
       if (auth.currentUser?.uid) {
         try {
-          const data = await queryUserEventLogs(auth.currentUser?.uid);
+          const data = await getUserEventLogs(auth.currentUser?.uid);
           setEvents(data);
         } catch (error) {
           console.error('Error fetching user event logs:', error);

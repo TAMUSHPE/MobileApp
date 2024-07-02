@@ -1,15 +1,15 @@
-import { View, Text, ActivityIndicator, ScrollView, NativeSyntheticEvent, NativeScrollEvent, TextInput, TouchableOpacity } from 'react-native'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { View, Text, ActivityIndicator, ScrollView, NativeSyntheticEvent, NativeScrollEvent, TouchableOpacity, useColorScheme, Modal } from 'react-native'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Octicons } from '@expo/vector-icons';
+import { StatusBar } from 'expo-status-bar';
 import { GoogleSheetsIDs, queryGoogleSpreadsheet } from '../../api/fetchGoogleSheets';
+import { UserContext } from '../../context/UserContext';
 import { ResourcesStackParams } from '../../types/navigation';
 import { Test, GoogleSheetsResponse } from '../../types/googleSheetsTypes';
-import DismissibleModal from '../../components/DismissibleModal';
-import TestCard from './TestCard';
-import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
 import { SUBJECTCODES } from '../../types/testBank';
+import TestCard from './TestCard';
 
 /**
  * Test Bank component.
@@ -18,18 +18,24 @@ import { SUBJECTCODES } from '../../types/testBank';
  * @param props - React navigation properties.
  */
 const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
+    const insets = useSafeAreaInsets();
+
     const [testCards, setTestCards] = useState<Test[]>([])
-    const [loading, setLoading] = useState(true);
-    const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [filter, setFilter] = useState<Test | null>(null);
     const [query, setQuery] = useState<string | undefined>(undefined);
-    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const [showFilterModal, setShowFilterModal] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [endOfData, setEndOfData] = useState(false);
-    const [infoVisible, setInfoVisible] = useState(false);
-    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-    const dropDownRefSubject = useRef<CustomDropDownMethods>(null);
+    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-    /** On mount, load attempt to load the first 20 tests */
     useEffect(() => {
         const initialQuery = createQuery(20, 0, filter);
         setQuery(initialQuery)
@@ -55,12 +61,6 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
             const courseWithoutSpaces = filter?.course.replace(/\s+/g, '');
             conditions.push(`LOWER(B) CONTAINS '${courseWithoutSpaces.toLowerCase()}'`)
         }
-        if (filter?.professor) {
-            conditions.push(`LOWER(G) CONTAINS '${filter?.professor.toLowerCase()}'`)
-        }
-        if (filter?.student) {
-            conditions.push(`LOWER(H) CONTAINS '${filter?.student.toLowerCase()}'`)
-        }
 
         if (conditions.length > 0) {
             query += ` WHERE ${conditions.join(' AND ')}`;
@@ -71,6 +71,21 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
 
         return query;
 
+    }
+
+    const normalizeData = (entry: any): Test => {
+        return {
+            subject: entry.c[0]?.v?.toString() ?? '',
+            course: entry.c[1]?.f ?? '',
+            semester: entry.c[2]?.v?.toString() ?? '',
+            year: entry.c[3]?.v?.toString() ?? '',
+            testType: entry.c[4]?.v?.toString() ?? '',
+            typeNumber: entry.c[5]?.f ?? '',
+            professor: entry.c[6]?.v?.toString() ?? '',
+            student: entry.c[7]?.v?.toString() ?? '',
+            grade: entry.c[8]?.v?.toString() ?? '',
+            testURL: entry.c[9]?.v ?? '',
+        };
     }
 
     /**
@@ -85,44 +100,27 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
             setEndOfData(true);
             return [];
         }
-        const testsDataPromises = dataRow
+        const testsData = dataRow
             .filter(entry => entry.c[0] && entry.c[1])
-            .map(async (entry, index) => {
-                return {
-                    subject: entry.c[0]?.v,
-                    course: entry.c[1]?.f,
-                    semester: entry.c[2]?.v,
-                    year: entry.c[3]?.v,
-                    testType: entry.c[4]?.v,
-                    typeNumber: entry.c[5]?.f,
-                    professor: entry.c[6]?.v,
-                    student: entry.c[7]?.v,
-                    grade: entry.c[8]?.v,
-                    testURL: entry.c[9]?.v,
-                };
-            });
+            .map(normalizeData);
 
-        return await Promise.all(testsDataPromises);
+        return testsData;
     }
 
     const queryAndSetTests = async (query: string) => {
-        queryGoogleSpreadsheet(GoogleSheetsIDs.TEST_BANK_ID, query, "Database")
-            .then(response => {
-                setLoading(true);
-                return prepTestSheet(response!)
-            }).then(data => {
-                setTestCards([...testCards, ...data]);
-            })
-            .catch(error => {
-                console.error("Failed to fetch data:", error);
-            }).finally(() => {
-                setLoading(false);
+        try {
+            const response = await queryGoogleSpreadsheet(GoogleSheetsIDs.TEST_BANK_ID, query, "Database");
+            if (!response) throw new Error("No response from Google Sheets API");
 
-                // Reset the query and filter
-                setQuery(undefined);
-                setFilter(null);
+            const data = await prepTestSheet(response);
+            setTestCards([...testCards, ...data]);
 
-            })
+        } catch (error) {
+            console.error("Failed to fetch data:", error);
+        } finally {
+            setLoading(false);
+            setQuery(undefined);
+        }
     }
 
     /** When the query changes, fetch the data from the Google Spreadsheet. */
@@ -132,21 +130,18 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
         }
     }, [query])
 
-    const handleApplyFilter = async (): Promise<void> => {
-        // Reset the test bank
+    const handleApplyFilter = async (filter: Test | null): Promise<void> => {
         setLoading(true);
         setTestCards([])
 
-        // If no filter is applied, rest the query to fetch the first 50 tests
-        // If filter is applied, fetch all tests that match the filter
+        // Apply the filter
         const filterQuery = filter === null ? createQuery(20, 0, {}) : createQuery(null, 0, filter);
         setEndOfData(true);
         setQuery(filterQuery);
     }
 
-    const handleCLearFilter = async (): Promise<void> => {
+    const handleClearFilter = async (): Promise<void> => {
         // Reset the test bank
-        handleClearAllSelections();
         setLoading(true);
         setTestCards([])
         setFilter(null)
@@ -154,19 +149,6 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
         const initialQuery = createQuery(20, 0, null);
         setQuery(initialQuery)
     }
-
-    const handleClearAllSelections = () => {
-        dropDownRefSubject.current?.clearSelection();
-    };
-
-    const toggleDropdown = (dropdownKey: string) => {
-        if (openDropdown === dropdownKey) {
-            setOpenDropdown(null);
-        } else {
-            setOpenDropdown(dropdownKey);
-        }
-    };
-
 
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
         const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
@@ -184,150 +166,137 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
         }
 
         debounceTimer.current = setTimeout(() => {
-            const loadMoreTestsQuery = createQuery(20, testCards.length, filter);
+            const loadMoreTestsQuery = createQuery(15, testCards.length, filter);
             setQuery(loadMoreTestsQuery);
             debounceTimer.current = null;
         }, 300);
     }, [filter, endOfData, testCards.length, setQuery]);
 
     return (
-        <View className='flex-1 bg-pale-blue'>
+        <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
             {/* Header */}
-            <SafeAreaView edges={['top']} >
-                <View className='flex-row justify-between items-center mx-5 mt-1'>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Octicons name="chevron-left" size={30} color="white" />
-                    </TouchableOpacity>
-                    <Text className='text-2xl font-semibold text-white'>Test Bank</Text>
-
-                    <TouchableOpacity onPress={() => setInfoVisible(true)}>
-                        <Octicons name="info" size={25} color="white" />
-                    </TouchableOpacity>
+            <View className='flex-row items-center justify-between'>
+                <View className='absolute w-full justify-center items-center'>
+                    <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Test Bank</Text>
                 </View>
-            </SafeAreaView>
-
-            <View className='bg-[#F9F9F9] mt-12 rounded-t-2xl flex-1'>
-                <View className='flex-row justify-start'>
-                    <TouchableOpacity
-                        onPress={() => setShowFilterMenu(!showFilterMenu)}
-                        className='my-2 mx-4 p-2'
-                    >
-                        {showFilterMenu ? (
-                            <View className='flex-row items-center space-x-4'>
-                                <Octicons name="x" className='bg-red-600' size={30} color="black" />
-                                <Text className='font-semibold text-xl'>Filters</Text>
-                            </View>
-                        ) : (
-                            <Octicons name="filter" className='bg-blue' size={30} color="black" />
-                        )}
-                    </TouchableOpacity>
-                </View>
-
-                {showFilterMenu && (
-                    <View className='flex-row px-4'>
-                        <View className='flex-1 space-y-4'>
-                            <View className='justify-start flex-row z-10'>
-                                <CustomDropDownMenu
-                                    data={SUBJECTCODES}
-                                    onSelect={(item) => setFilter({ ...filter, subject: item.iso || "" })}
-                                    searchKey="subject"
-                                    label="Subject"
-                                    isOpen={openDropdown === 'subject'}
-                                    onToggle={() => toggleDropdown('subject')}
-                                    displayType='iso'
-                                    ref={dropDownRefSubject}
-                                    containerClassName='mr-1'
-                                />
-                                <TextInput
-                                    value={filter?.course}
-                                    onChangeText={(text) => setFilter({ ...filter, course: text })}
-                                    placeholder="Course"
-                                    className='flex-1 bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-1 ml-1'
-                                />
-                                <TouchableOpacity
-                                    onPress={() => handleApplyFilter()}
-                                    className='items-center justify-center bg-pale-blue py-2 w-20 rounded-lg ml-3'>
-                                    <Text className='text-white font-bold text-xl'>Apply</Text>
-                                </TouchableOpacity>
-                            </View>
-                            <View className='justify-start flex-row'>
-                                <TextInput
-                                    value={filter?.professor}
-                                    onChangeText={(text) => setFilter({ ...filter, professor: text })}
-                                    placeholder="Professor"
-                                    className='flex-1 bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 mr-1'
-                                />
-                                <TextInput
-                                    value={filter?.student}
-                                    onChangeText={(text) => setFilter({ ...filter, student: text })}
-                                    placeholder="Student"
-                                    className='flex-1 bg-white border-gray-400 font-semibold border rounded-md text-xl w-28 py-1 pl-2 ml-1'
-                                />
-                                <TouchableOpacity
-                                    onPress={() => handleCLearFilter()}
-                                    className='items-center justify-center py-2 w-20 rounded-lg ml-3'>
-                                    <Text className='font-bold text-xl text-pale-blue'>Rest</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                )}
-
-                <ScrollView className='mt-4 -z-10'>
-                    {testCards.slice(3).map((testData, index) => (
-                        <View key={index}>
-                            {(testData.course && testData.subject) && (
-                                <TestCard testData={testData} navigation={navigation} />
-                            )}
-                        </View>
-                    ))}
-
-                    <View className='mt-12'>
-                        {loading && (
-                            <ActivityIndicator className="pb-12" size={"large"} />
-                        )}
-                        {endOfData && (
-                            <View className='pb-12 items-center justify-center'>
-                                <Text>
-                                    End of Test Bank
-                                </Text>
-                            </View>
-                        )}
-                    </View>
-                </ScrollView>
+                <TouchableOpacity onPress={() => navigation.goBack()} className='py-1 px-4'>
+                    <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
+                </TouchableOpacity>
             </View>
 
-            <DismissibleModal
-                visible={infoVisible}
-                setVisible={setInfoVisible}
+            <View className='flex-row justify-between items-center mx-4 mt-2'>
+                {filter ? (
+                    <TouchableOpacity
+                        className={`flex-row items-center px-3 py-2 ${darkMode ? "bg-grey-dark" : "bg-grey-light"} rounded-lg`}
+                        onPress={() => handleClearFilter()}
+                    >
+                        <Octicons name="x" size={20} color={darkMode ? "white" : "black"} />
+                        <Text className={`ml-2 text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{filter.subject}</Text>
+                    </TouchableOpacity>
+                ) : (<View />)}
+                <TouchableOpacity
+                    onPress={() => { setShowFilterModal(true) }}
+                    className='mx-c4 p-2'
+                >
+                    <Octicons name="filter" size={30} color={darkMode ? "white" : "black"} />
+                </TouchableOpacity>
+            </View>
+
+            <ScrollView
+                className='mt-4 -z-10'
+                onScroll={handleScroll}
             >
-                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'
-                    style={{ minWidth: 325 }}>
-                    <View className='flex-row items-center justify-between'>
-                        <View className='flex-row items-center'>
-                            <Octicons name="info" size={24} color="black" />
-                            <Text className='text-2xl font-semibold ml-2'>Resume FAQ</Text>
+                {testCards.map((testData, index) => (
+                    <View key={index}>
+                        {(testData.course && testData.subject) && (
+                            <TestCard testData={testData} navigation={navigation} />
+                        )}
+                    </View>
+                ))}
+
+                <View className='mt-12'>
+                    {loading && (
+                        <ActivityIndicator className="pb-12" size={"small"} />
+                    )}
+                    {(!loading && testCards.length != 0 && endOfData) && (
+                        <View className='pb-12 items-center justify-center'>
+                            <Text>
+                                End of Test Bank
+                            </Text>
                         </View>
-                        <View>
-                            <TouchableOpacity onPress={() => setInfoVisible(false)}>
-                                <Octicons name="x" size={24} color="black" />
-                            </TouchableOpacity>
+                    )}
+                    {!loading && testCards.length === 0 && (
+                        <View className='flex justify-center items-center'>
+                            <Text className={`text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>No Test Found</Text>
                         </View>
-                    </View>
-
-                    <View>
-                        <Text className='text-xl font-semibold'>What is the Test Bank?</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>Test Bank is...</Text>
-                    </View>
-
-                    <View>
-                        <Text className='text-xl font-semibold'>Earning Points with Test Bank</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>Ways to earn points...</Text>
-                    </View>
-
+                    )}
                 </View>
-            </DismissibleModal>
-        </View>
+            </ScrollView>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={showFilterModal}
+                onRequestClose={() => { setShowFilterModal(false); }}
+            >
+                <View
+                    style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                >
+                    <View className='flex-row items-center h-10 mb-4'>
+                        <View className='w-screen absolute'>
+                            <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>Select Filter</Text>
+                        </View>
+
+                        <TouchableOpacity
+                            className='px-4'
+                            onPress={() => setShowFilterModal(false)}
+                        >
+                            <Octicons name="x" size={26} color={darkMode ? "white" : "black"} />
+                        </TouchableOpacity>
+                    </View>
+
+                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                        <View>
+                            <Text className={`text-2xl font-bold mb-4 mx-4 ${darkMode ? "text-white" : "text-black"}`}>Subjects</Text>
+                            <View className='flex-row flex-wrap ml-4'>
+                                {SUBJECTCODES.map(({ iso }) => (
+                                    <TouchableOpacity
+                                        key={iso}
+                                        onPress={() => {
+                                            if (filter?.subject === iso) {
+                                                setFilter(null);
+                                                handleApplyFilter(null);
+                                                setShowFilterModal(false);
+                                            } else {
+                                                setFilter({ ...filter, subject: iso });
+                                                handleApplyFilter({ ...filter, subject: iso });
+                                                setShowFilterModal(false);
+                                            }
+                                        }}
+                                        className={`px-4 py-2 mr-3 mb-4 rounded-md ${filter?.subject === iso ? 'bg-primary-blue' : (darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light')}`}
+
+                                        style={{
+                                            shadowColor: "#000",
+                                            shadowOffset: {
+                                                width: 0,
+                                                height: 2,
+                                            },
+                                            shadowOpacity: 0.25,
+                                            shadowRadius: 3.84,
+                                            elevation: 5,
+                                        }}
+                                    >
+                                        <Text className={`text-lg font-semibold ${filter?.subject === iso ? "text-white" : (darkMode ? 'text-white' : 'text-black')}`}>{iso}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+        </SafeAreaView>
     )
 }
 

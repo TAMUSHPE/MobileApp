@@ -3,7 +3,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RouteProp } from '@react-navigation/native';
 import { Committee } from "./committees";
 import { PublicUserInfo } from "./user";
-import { SHPEEvent } from "./events";
+import { ExtendedEventType, SHPEEvent } from "./events";
 
 export type AuthStackParams = {
     LoginScreen: undefined;
@@ -80,7 +80,7 @@ export type ResourcesStackParams = {
 }
 
 export type EventsStackParams = {
-    EventsScreen: undefined;
+    EventsScreen: { filter?: ExtendedEventType; committee?: string };
     PastEvents: undefined;
     UpdateEvent: { event: SHPEEvent };
     EventInfo: { event: SHPEEvent };

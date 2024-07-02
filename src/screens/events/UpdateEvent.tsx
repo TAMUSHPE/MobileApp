@@ -159,7 +159,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     const handleDestroyEvent = async () => {
         const isDeleted = await destroyEvent(event.id!);
         if (isDeleted) {
-            navigation.navigate("EventsScreen")
+            navigation.navigate("EventsScreen", {})
         } else {
             console.log("Failed to delete the event.");
         }

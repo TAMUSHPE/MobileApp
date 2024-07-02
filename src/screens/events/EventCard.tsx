@@ -2,8 +2,9 @@ import { View, Text, TouchableOpacity, Image, useColorScheme } from 'react-nativ
 import React, { useContext } from 'react'
 import { FontAwesome6 } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext'
-import { formatDate } from '../../helpers/timeUtils'
 import { Images } from '../../../assets'
+import { formatDate } from '../../helpers/timeUtils'
+import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { SHPEEvent } from '../../types/events'
 
 const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any }) => {
@@ -40,7 +41,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
             />
 
             <View className='flex-1 px-4 justify-center' >
-                <Text className={`text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(event.name!)}</Text>
+                <Text className={`text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(event.name)}</Text>
                 {event.locationName ? (
                     <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(event.locationName)}</Text>
                 ) : null}
@@ -61,12 +62,5 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
         </TouchableOpacity>
     )
 }
-
-const truncateStringWithEllipsis = (name: string, limit = 22) => {
-    if (name.length > limit) {
-        return `${name.substring(0, limit)}...`;
-    }
-    return name;
-};
 
 export default EventCard

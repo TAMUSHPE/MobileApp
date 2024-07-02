@@ -392,6 +392,11 @@ export enum EventType {
 }
 
 /**
+ * Extended event type to include 'myEvents' and 'clubWide' for filtering
+ */
+export type ExtendedEventType = EventType | 'myEvents' | 'clubWide';
+
+/**
  * Status of an event that user attempts to sign in to or out of
  */
 export enum EventLogStatus {

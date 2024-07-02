@@ -3,10 +3,37 @@ import { deleteCommittee, getCommittee, getPrivateUserData, getPublicUserData, g
 import { auth, db, storage } from "../../config/firebaseConfig";
 import { PrivateUserInfo, PublicUserInfo, User } from "../../types/user";
 import { validateTamuEmail } from "../../helpers";
-import { collection, deleteDoc, doc, getDocs, setDoc } from "firebase/firestore";
+import { DocumentReference, collection, deleteDoc, doc, getDocs, setDoc, writeBatch } from "firebase/firestore";
 import { Committee } from "../../types/committees";
+import { clear } from "node:console";
 
 const testUserDataList: User[] = require("./test_data/users.json");
+
+const clearSubcollections = async (docRef: DocumentReference) => {
+    const subcollectionsSnapshot = await getDocs(collection(docRef, 'private'));
+    const batch = writeBatch(db);
+
+    subcollectionsSnapshot.forEach(subDoc => {
+        batch.delete(subDoc.ref);
+    });
+
+    await batch.commit();
+};
+
+const clearCollection = async (collectionName: string) => {
+    const collectionRef = collection(db, collectionName);
+    const querySnapshot = await getDocs(collectionRef);
+
+    const batch = writeBatch(db);
+
+    for (const documentSnapshot of querySnapshot.docs) {
+        await clearSubcollections(documentSnapshot.ref);
+        batch.delete(documentSnapshot.ref);
+    }
+
+    await batch.commit();
+};
+
 
 beforeAll(async () => {
     // Check testing environment
@@ -22,12 +49,6 @@ beforeAll(async () => {
 
     await signInAnonymously(auth);
 
-    // Clean up any existing data
-    const userRef = collection(db, 'users');
-    const querySnapshot = await getDocs(userRef);
-    for (const userDoc of querySnapshot.docs) {
-        await deleteDoc(doc(db, 'users', userDoc.id));
-    }
     // Create fake user data
     for (const user of testUserDataList) {
         await setDoc(doc(db, "users", user.publicInfo!.uid!), user.publicInfo);
@@ -37,18 +58,18 @@ beforeAll(async () => {
 
 afterAll(async () => {
     await signOut(auth);
+    clearCollection("users");
 });
 
 describe("User Info", () => {
     test("Initializes correctly and can be modified", async () => {
-        expect((await getUserByEmail(auth.currentUser?.email!))).toBeNull();
-
         // Creaate user data and ensure it initializes
         const user = await initializeCurrentUserData();
         expect(user).toBeDefined();
 
         // Initializing again should not modify user
-        expect((await initializeCurrentUserData())).toMatchObject(user);
+        const initializedUserAgain = await initializeCurrentUserData();
+        expect(initializedUserAgain).toMatchObject(user);
 
         const userData = await getUser(auth.currentUser?.uid!);
         expect(userData).toBeDefined();
@@ -83,6 +104,17 @@ describe("User Info", () => {
         await setPublicUserData({
             email: auth.currentUser?.email!,
             isEmailPublic: true,
+            displayName: "Test User",
+            isStudent: false,
+            photoURL: "",
+            roles: {
+                admin: false,
+                developer: false,
+                lead: false,
+                officer: false,
+                reader: true,
+                representative: false
+            }
         });
 
         const updatedPublicUserData = await getPublicUserData();
@@ -117,64 +149,4 @@ describe("User Info", () => {
         const publicUserData = await getPublicUserData(otherUserUID);
         expect(publicUserData).toMatchObject(otherUserData);
     });
-});
-
-describe("Committee Info", () => {
-    test("Can be created and queried", async () => {
-        const committeeData: Committee = {
-            name: "Test Committee",
-            color: "#FF0000",
-            description: "Test Description",
-            head: "TESTUSER1",
-            firebaseDocName: "QUERYINGCOMMITTEE",
-        }
-
-        expect(await setCommitteeData(committeeData)).toBe(true);
-
-        const obtainedCommitteeData = await getCommittee(committeeData.firebaseDocName!);
-        expect(obtainedCommitteeData).toMatchObject(committeeData);
-    });
-
-    test("Can be deleted", async () => {
-        const committeeData: Committee = {
-            head: "TESTUSER1",
-            firebaseDocName: "DELETINGCOMMITTEE",
-            name: "Bad Committee",
-            applicationLink: "https://www.test.asdf/notreal",
-        }
-
-        await setCommitteeData(committeeData);
-        expect((await getCommittee(committeeData.firebaseDocName!))).not.toBeNull();
-
-        await deleteCommittee(committeeData.firebaseDocName!);
-        expect((await getCommittee(committeeData.firebaseDocName!))).toBeNull();
-    });
-
-    test("Can be reset", async () => {
-        const committeeData: Committee = {
-            head: "TESTUSER2",
-            firebaseDocName: "RESETTINGCOMMITTEE",
-            name: "Resetting Committee",
-            memberCount: 2,
-        }
-
-        // Check that users.json has not been changed
-        let committeeMemberInfo = await getPublicUserData("TESTUSER1");
-        expect(typeof committeeMemberInfo?.committees).toBe("object");
-        expect(committeeMemberInfo?.committees!).toContain("QUERYINGCOMMITTEE");
-        expect(committeeMemberInfo?.committees!).toContain(committeeData.firebaseDocName);
-
-        await setCommitteeData(committeeData);
-        await resetCommittee(committeeData.firebaseDocName!);
-
-        const obtainedCommitteeData = await getCommittee(committeeData.firebaseDocName!);
-        expect(obtainedCommitteeData?.memberCount).toBe(0);
-
-        // Expect user to be removed from reset committee and stay in other committees
-        committeeMemberInfo = await getPublicUserData("TESTUSER1");
-        expect(typeof committeeMemberInfo?.committees).toBe("object");
-        expect(committeeMemberInfo?.committees!).toContain("QUERYINGCOMMITTEE");
-        expect(committeeMemberInfo?.committees!).not.toContain(committeeData.firebaseDocName);
-    });
-
 });

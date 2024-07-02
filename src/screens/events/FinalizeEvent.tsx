@@ -165,7 +165,7 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                     label='Create'
                     onPress={async () => {
                         await createEvent(event);
-                        navigation.navigate("EventsScreen");
+                        navigation.navigate("EventsScreen", {});
                     }}
                 />
             </View>

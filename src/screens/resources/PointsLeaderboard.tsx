@@ -1,75 +1,69 @@
-import { View, Text, ScrollView, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, Image, TouchableOpacity } from 'react-native'
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { View, Text, ScrollView, NativeScrollEvent, NativeSyntheticEvent, ActivityIndicator, TouchableOpacity, useColorScheme } from 'react-native'
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react'
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Octicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
-import { auth, db } from "../../config/firebaseConfig"
-import { getPublicUserData } from '../../api/firebaseUtils'
-import { RankChange, PublicUserInfo } from '../../types/user';
+import { UserContext } from '../../context/UserContext';
+import { getSortedUserData } from '../../api/firebaseUtils';
+import { PublicUserInfo } from '../../types/user';
 import { ResourcesStackParams } from '../../types/navigation';
-import { Images } from '../../../assets';
-import DismissibleModal from '../../components/DismissibleModal';
 import RankCard from './RankCard';
-import { collection, getDocs, limit, orderBy, query, startAt, where } from 'firebase/firestore';
 
 const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>) => {
-    const [fetchedUsers, setFetchedUsers] = useState<PublicUserInfo[]>([])
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+    const scrollViewRef = useRef<ScrollView>(null);
     const [initLoading, setInitLoading] = useState<boolean>(true);
     const [loading, setLoading] = useState<boolean>(true);
+    const [isFetching, setIsFetching] = useState(false);
+    const [fetchedUsers, setFetchedUsers] = useState<PublicUserInfo[]>([])
+    const [filter, setFilter] = useState<string>("allTime");
     const [endOfData, setEndOfData] = useState<boolean>(false);
-    const [infoVisible, setInfoVisible] = useState<boolean>(false);
-
-    /**
-     * userPoints obtained from google sheets
-     * userRank and rankChange are directly obtain from firebase
-     * (this also means that rankChange is only obtain if user exist on firebase)
-     * This method may be changed in the future
-     */
-    const [currentUserInfo, setCurrentUserInfo] = useState<PublicUserInfo>();
-
-    /**
-     * Returns a list of user data sorted by their rank.
-     */
-    const getSortedUserData = async (amount: number, offset: number): Promise<PublicUserInfo[]> => {
-        const userRef = collection(db, 'users');
-        const sortedUsersQuery = query(userRef, orderBy("pointsRank", "asc"), limit(amount), startAt(offset));
-        const data = (await getDocs(sortedUsersQuery)).docs;
-
-        setEndOfData(data.length < amount);
-
-        return data.map((value) => {
-            return value.data();
-        });
-    }
+    const [lastVisible, setLastVisible] = useState<any>(null);
 
     /**
      * Obtains user data from firebase and appends the data to the current collection.
      */
-    const queryAndSetRanks = async (amount: number, offset: number) => {
-        getSortedUserData(amount, offset)
-            .then(data => {
-                setFetchedUsers([...fetchedUsers, ...data]);
+    const fetchSortedUserData = async (amount: number, lastDoc: any) => {
+        if (isFetching) return;
+        setIsFetching(true);
+
+        getSortedUserData(amount, lastDoc, filter)
+            .then(({ data, lastVisible }) => {
+                setEndOfData(data.length < amount);
+                setFetchedUsers(prevUsers => [...prevUsers, ...data]);
+                setLastVisible(lastVisible);
             })
             .catch(error => {
                 console.error("Failed to fetch data:", error);
-            }).finally(() => {
+            })
+            .finally(() => {
                 setLoading(false);
                 setInitLoading(false);
-            })
-    }
+                setIsFetching(false);
+            });
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            getPublicUserData(auth?.currentUser?.uid!).then(user => {
-                setCurrentUserInfo(user);
-            }).then(() => {
-                queryAndSetRanks(100, 0);
-            })
-        }
-        fetchData();
-    }, []);
+        setLoading(true);
+
+        setFetchedUsers([]);
+        scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+        setLastVisible(null);
+        setEndOfData(false);
+
+        fetchSortedUserData(30, null);
+
+        setLoading(false);
+    }, [filter]);
 
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
         const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
@@ -77,7 +71,7 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
             return layoutMeasurement.height + contentOffset.y >= contentSize.height - paddingToBottom;
         };
 
-        if (!isCloseToBottom(nativeEvent) || endOfData) return;
+        if (!isCloseToBottom(nativeEvent) || endOfData || isFetching) return;
 
         setLoading(true);
 
@@ -86,208 +80,113 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
         }
 
         debounceTimer.current = setTimeout(() => {
-            const offset = fetchedUsers.length;
-            queryAndSetRanks(50, offset);
+            fetchSortedUserData(20, lastVisible);
             debounceTimer.current = null;
         }, 300);
-    }, [fetchedUsers, endOfData]);
+    }, [fetchedUsers, endOfData, lastVisible, isFetching]);
 
     return (
-        <SafeAreaView className="bg-pale-blue h-full" edges={["top"]} >
-            <StatusBar style="light" />
+        <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
             {/* Header */}
-            <View className='flex-row items-center h-10'>
-                <View className='pl-6'>
-                    <TouchableOpacity activeOpacity={1} className="px-2" onPress={() => navigation.goBack()}>
-                        <Octicons name="chevron-left" size={30} color="white" />
-                    </TouchableOpacity>
+            <View className='flex-row items-center justify-between'>
+                <View className='absolute w-full justify-center items-center'>
+                    <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Points Leaderboard</Text>
                 </View>
-                <View className='flex-1 items-center'>
-                    <Text className="text-2xl font-bold text-white">Points Leaderboard</Text>
-                </View>
-                <View className="pr-4">
-                    <TouchableOpacity activeOpacity={1} onPress={() => setInfoVisible(true)}>
-                        <Octicons name="info" size={25} color="white" />
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity onPress={() => navigation.goBack()} className='py-1 px-4'>
+                    <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
+                </TouchableOpacity>
             </View>
+
+            {/* Filters */}
+            <View
+                className='flex-row mt-4 h-14 mx-4 rounded-3xl'
+                style={{ backgroundColor: darkMode ? 'rgba(125,125,125,0.5)' : 'rgba(0.5,0.5,0.5,0.5)' }}
+            >
+                <TouchableOpacity
+                    className={`items-center justify-center flex-1 rounded-3xl m-1 ${filter == "allTime" && "bg-primary-blue"}`}
+                    onPress={() => {
+                        setFetchedUsers([]);
+                        setLastVisible(null);
+                        setInitLoading(true);
+                        setFilter("allTime")
+                    }}
+                >
+                    <Text className='text-white text-xl font-bold'>All Time</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    className={`items-center justify-center flex-1 rounded-3xl m-1 ${filter == "monthly" && "bg-primary-blue"}`}
+                    onPress={() => {
+                        setFetchedUsers([]);
+                        setLastVisible(null);
+                        setInitLoading(true);
+                        setFilter("monthly")
+                    }}
+                >
+                    <Text className='text-white text-xl font-bold'>Monthly</Text>
+                </TouchableOpacity>
+            </View>
+
             <View className='pb-4' />
 
             <ScrollView
                 onScroll={handleScroll}
+                ref={scrollViewRef}
                 scrollEventThrottle={400}
-                bounces={false}
             >
-                {/* Top 3 */}
-                <View className='h-64 flex-row justify-between pt-5 mx-10'>
-                    <View>
-                        <TouchableOpacity
-                            className='border-gray-400 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'
-                            disabled={fetchedUsers[1]?.uid === undefined}
-                            onPress={() => { navigation.navigate("PublicProfile", { uid: fetchedUsers[1]?.uid! }) }}
-                        >
-                            <View className='justify-center items-center h-full'>
-                                <Image
-                                    className="w-20 h-20 rounded-full justify-center"
-                                    defaultSource={Images.DEFAULT_USER_PICTURE}
-                                    source={fetchedUsers[1]?.photoURL ? { uri: fetchedUsers[1].photoURL } : Images.DEFAULT_USER_PICTURE}
-                                />
-                            </View>
-                            <View className='absolute w-full items-center'>
-                                <View className='w-8 h-8 bg-gray-400 items-center justify-center rounded-full translate-y-3'>
-                                    <Text className='text-xl text-white'>2</Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                        <View className='mt-4 w-[100px]'>
-                            <Text className='text-center text-xl font-bold text-white '>{fetchedUsers[1]?.name}</Text>
-                        </View>
-                    </View>
-
-                    <View>
-                        <TouchableOpacity
-                            className='border-yellow-400 border-8 justify-end rounded-full h-[92px] w-[92px]'
-                            disabled={fetchedUsers[0]?.uid === undefined}
-                            onPress={() => { navigation.navigate("PublicProfile", { uid: fetchedUsers[0]?.uid! }) }}
-                        >
-                            <View className='justify-center items-center h-full'>
-                                <Image
-                                    className="w-20 h-20 rounded-full justify-center"
-                                    defaultSource={Images.DEFAULT_USER_PICTURE}
-                                    source={fetchedUsers[0]?.photoURL ? { uri: fetchedUsers[0].photoURL } : Images.DEFAULT_USER_PICTURE}
-                                />
-                            </View>
-
-                            <View className='absolute w-full items-center'>
-                                <View className='w-8 h-8 bg-yellow-400 items-center justify-center rounded-full translate-y-3'>
-                                    <Text className='text-xl text-white'>1</Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                        <View className='mt-4 w-[100px]'>
-                            <Text className='text-center text-xl font-bold text-white'>{fetchedUsers[0]?.name}</Text>
-                        </View>
-                    </View>
-
-                    <View>
-                        <TouchableOpacity
-                            className='border-amber-700 border-8 justify-end mt-9 rounded-full h-[92px] w-[92px]'
-                            disabled={fetchedUsers[2]?.uid === undefined}
-                            onPress={() => { navigation.navigate("PublicProfile", { uid: fetchedUsers[2]?.uid! }) }}
-                        >
-                            <View className='justify-center items-center h-full'>
-                                <Image
-                                    className="w-20 h-20 rounded-full justify-center"
-                                    defaultSource={Images.DEFAULT_USER_PICTURE}
-                                    source={fetchedUsers[2]?.photoURL ? { uri: fetchedUsers[2].photoURL } : Images.DEFAULT_USER_PICTURE}
-                                />
-                            </View>
-
-                            <View className='absolute w-full items-center'>
-                                <View className='w-8 h-8 bg-amber-700 items-center justify-center rounded-full translate-y-3'>
-                                    <Text className='text-xl text-white'>3</Text>
-                                </View>
-                            </View>
-                        </TouchableOpacity>
-                        <View className='mt-4 w-[100px]'>
-                            <Text className='text-center text-xl font-bold text-white'>{fetchedUsers[2]?.name}</Text>
-                        </View>
-                    </View>
-
-                </View>
-
-                <View className={`bg-[#F9F9F9] rounded-t-2xl flex-1 ${fetchedUsers.length === 0 && "h-screen"}`}>
-                    {/* User Ranking */}
+                <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} ${fetchedUsers.length === 0 && "h-screen"}`}>
                     {!initLoading && (
                         <View>
-                            {currentUserInfo?.pointsRank === undefined ? (
-                                <View className='flex-col h-20 mx-4 px-4 mt-8 rounded-xl items-center justify-center'
-                                    style={{ backgroundColor: colorMapping[currentUserInfo?.rankChange ?? "same"] }}>
-                                    <Text className='text-xl font-medium'>You are unranked</Text>
+                            {/* User Ranking */}
+                            {filter == "allTime" && (
+                                <View>
+                                    {userInfo?.publicInfo?.pointsRank === undefined ? (
+                                        <View className='flex-col h-20 mx-4 px-4 mt-8 rounded-xl items-center justify-center'>
+                                            <Text className='text-xl font-medium'>You are not ranked</Text>
+                                        </View>
+                                    ) : (
+                                        userInfo?.publicInfo?.points ? (
+                                            <RankCard key="userCard" userData={userInfo.publicInfo} navigation={navigation} rank={userInfo.publicInfo.pointsRank} />
+                                        ) : (
+                                            <View className='flex-col h-20 mx-4 px-4 mt-8 rounded-xl items-center justify-center'>
+                                                <Text className='text-xl font-medium'>You don't have any points</Text>
+                                            </View>
+                                        )
+                                    )}
+
+                                    <View className={` mb-2 mt-8 mx-4 h-[2px] rounded-full ${darkMode ? "bg-grey-dark" : "bg-grey-light"}`} />
                                 </View>
-                            ) : (
-                                currentUserInfo?.points ? (
-                                    <RankCard key="userCard" userData={currentUserInfo} navigation={navigation} />
-                                ) : (
-                                    <View className='flex-col h-20 mx-4 px-4 mt-8 rounded-xl items-center justify-center'
-                                        style={{ backgroundColor: colorMapping[currentUserInfo?.rankChange ?? "same"] }}>
-                                        <Text className='text-xl font-medium'>You don't have any points</Text>
-                                    </View>
-                                )
+
                             )}
+
+                            {/* Leaderboard */}
+                            {fetchedUsers.map((userData, index) => (
+                                <RankCard
+                                    key={index}
+                                    userData={userData}
+                                    navigation={navigation}
+                                    rank={filter === "allTime" ? userData.pointsRank! : index + 1}
+                                    monthlyPoints={filter === "monthly" ? userData.pointsThisMonth : undefined}
+                                />
+                            ))}
                         </View>
                     )}
 
-                    {/* Leaderboard */}
-                    <View className='bg-gray-300 mb-2 m-black mt-8 mx-8 h-1 rounded-full' />
-                    {fetchedUsers.map((userData, index) => (
-                        <RankCard key={index + 3} userData={userData} navigation={navigation} />
-                    ))}
                     <View className={`justify-center h-20 items-center ${fetchedUsers.length === 0 && "h-[50%]"}`}>
-                        {loading && (
-                            <ActivityIndicator size={"large"} />
+                        {(loading || initLoading) && (
+                            <ActivityIndicator size={"small"} />
                         )}
                         {endOfData && (
                             <View className='pb-6 items-center justify-center'>
-                                <Text>
-                                    No more ranked users
-                                </Text>
+                                <Text className={`text-lg font-semibold ${darkMode ? "text-white" : "text-black"}`}>No more ranked users</Text>
                             </View>
                         )}
                     </View>
                 </View>
             </ScrollView>
-
-            <DismissibleModal
-                visible={infoVisible}
-                setVisible={setInfoVisible}
-            >
-
-                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6'
-                    style={{ minWidth: 325 }}>
-                    <View className='flex-row items-center justify-between'>
-                        <View className='flex-row items-center'>
-                            <Octicons name="info" size={24} color="black" />
-                            <Text className='text-2xl font-semibold ml-2'>Points FAQ</Text>
-                        </View>
-                        <View>
-                            <TouchableOpacity onPress={() => setInfoVisible(false)}>
-                                <Octicons name="x" size={24} color="black" />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    <View>
-                        <Text className='text-xl font-semibold'>What are MemberSHPE points?</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>MemberSHPE Points are .....</Text>
-                    </View>
-
-                    <View>
-                        <Text className='text-xl font-semibold'>How to earn points?</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+1 Upload Old Exam</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+2 Upload Old Exam w/ A</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+1 General Meetings & Events</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+1 Wear SHPE gear</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+2 Community Service per hour</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+1 #WearItWednesday Post</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+1 Fitness Friday</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+3 Professional Workshop</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+2 Academic Workshop</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+1 Academic Social</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+2 General Meeting Sign Out</Text>
-                        <Text className='text-lg font-semibold text-gray-400'>+4 Election</Text>
-                    </View>
-
-                </View>
-            </DismissibleModal>
-        </SafeAreaView >
+        </SafeAreaView>
     )
 }
-
-const colorMapping: Record<RankChange, string> = {
-    "increased": "#AEF359",
-    "same": "#aFaFaF",
-    "decreased": "#B22222"
-};
 
 export default PointsLeaderboard;

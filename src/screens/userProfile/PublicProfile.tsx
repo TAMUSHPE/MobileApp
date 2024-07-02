@@ -9,7 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
-import { getCommittees, getPublicUserData, getUser, queryUserEventLogs, setUserRoles } from '../../api/firebaseUtils';
+import { getCommittees, getPublicUserData, getUser, getUserEventLogs, setUserRoles } from '../../api/firebaseUtils';
 import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
 import { handleLinkPress } from '../../helpers/links';
 import { UserProfileStackParams } from '../../types/navigation';
@@ -112,7 +112,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
         const fetchUserEventLogs = async () => {
             if (auth.currentUser?.uid) {
                 try {
-                    const data = await queryUserEventLogs(auth.currentUser?.uid);
+                    const data = await getUserEventLogs(auth.currentUser?.uid);
                     setEvents(data);
                 } catch (error) {
                     console.error('Error fetching user event logs:', error);

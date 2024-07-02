@@ -1,35 +1,44 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, useColorScheme } from 'react-native'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Octicons, FontAwesome6 } from '@expo/vector-icons';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/core';
+import { Octicons, FontAwesome6 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { StatusBar } from 'expo-status-bar';
+import { auth } from '../../config/firebaseConfig';
+import { getUpcomingEvents, getPastEvents, getUser, getCommittees } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
-import { getUpcomingEvents, getPastEvents, getUser } from '../../api/firebaseUtils';
-import { EventsStackParams } from '../../types/navigation';
-import { EventType, SHPEEvent } from '../../types/events';
 import { Images } from '../../../assets';
 import { formatTime } from '../../helpers/timeUtils';
+import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
+import { EventsStackParams } from '../../types/navigation';
+import { EventType, ExtendedEventType, SHPEEvent } from '../../types/events';
 import EventCard from './EventCard';
-import { StatusBar } from 'expo-status-bar';
-import { useFocusEffect } from '@react-navigation/core';
-import { auth } from '../../config/firebaseConfig';
+import { Committee } from '../../types/committees';
 
-const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
+const Events = ({ navigation }: EventsProps) => {
+    const route = useRoute<EventsScreenRouteProp>();
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
+
+
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
+    const filterScrollViewRef = useRef<ScrollView>(null);
+    const committeeScrollViewRef = useRef<ScrollView>(null);
+
+    const [isLoading, setIsLoading] = useState(true);
     const [todayEvents, setTodayEvents] = useState<SHPEEvent[]>([]);
     const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
     const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
-    const [selectedFilter, setSelectedFilter] = useState<ExtendedEventType | null>(null);
-
-    const [isLoading, setIsLoading] = useState(true);
+    const [selectedFilter, setSelectedFilter] = useState<ExtendedEventType | null>(route.params?.filter || null);
+    const [committees, setCommittees] = useState<Committee[]>([]);
+    const [selectedCommittee, setSelectedCommittee] = useState<string | null>(route.params?.committee || null);
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
@@ -78,10 +87,39 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
         }
     }
 
+    const fetchCommittees = async () => {
+        const committeeData = await getCommittees();
+        setCommittees(committeeData);
+    };
+
+
     useEffect(() => {
         fetchEvents();
         fetchUserData();
+        fetchCommittees();
     }, [])
+
+    useEffect(() => {
+        if (route.params?.filter !== undefined) {
+            setSelectedFilter(route.params.filter);
+
+            const filterIndex = ["myEvents", "clubWide", ...Object.values(EventType)].indexOf(route.params.filter);
+            if (filterIndex !== -1 && filterScrollViewRef.current) {
+                const scrollPosition = filterIndex * 115;
+                filterScrollViewRef.current.scrollTo({ x: scrollPosition, animated: true });
+            }
+        }
+
+        if (route.params?.committee !== undefined) {
+            setSelectedCommittee(route.params.committee);
+
+            const committeeIndex = committees.findIndex(committee => committee.firebaseDocName === route.params.committee);
+            if (committeeIndex !== -1 && committeeScrollViewRef.current) {
+                const scrollPosition = committeeIndex * 100;
+                committeeScrollViewRef.current.scrollTo({ x: scrollPosition, animated: true });
+            }
+        }
+    }, [route.params, committees]);
 
     useFocusEffect(
         useCallback(() => {
@@ -91,16 +129,42 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
         }, [hasPrivileges])
     );
 
-    const handleFilterSelect = (filter: ExtendedEventType) => {
+    const handleFilterSelect = (filter?: ExtendedEventType, committee?: string) => {
+        // Deselect committee when the same committee is selected
+        if (committee) {
+            if (selectedCommittee === committee) {
+                setSelectedCommittee(null);
+                if (!selectedFilter) {
+                    setSelectedFilter(null);
+                }
+            } else {
+                setSelectedCommittee(committee);
+                if (selectedFilter !== EventType.COMMITTEE_MEETING) {
+                    setSelectedFilter(EventType.COMMITTEE_MEETING);
+                }
+            }
+            return;
+        }
+
+        // Deselect "Committee Meetings" when no committee is selected
+        if (filter === EventType.COMMITTEE_MEETING && selectedFilter === EventType.COMMITTEE_MEETING) {
+            setSelectedFilter(null);
+            setSelectedCommittee(null);
+            return;
+        }
+
+        // Handle other filters
         if (selectedFilter === filter) {
             setSelectedFilter(null);
+            setSelectedCommittee(null);
         } else {
-            setSelectedFilter(filter);
+            setSelectedFilter(filter!);
+            setSelectedCommittee(null);
         }
     };
 
     const filteredEvents = (events: SHPEEvent[]): SHPEEvent[] => {
-        // If no filter is selected, filter out hidden events
+        // If no filter is selected, filter out hidden events and committee meetings
         if (!selectedFilter) {
             return events.filter(event =>
                 (event.eventType !== EventType.COMMITTEE_MEETING || event.general) &&
@@ -108,23 +172,30 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
             );
         }
 
-        // Custom filter logic
         if (selectedFilter === 'myEvents') {
             return events.filter(event =>
-                userInfo?.publicInfo?.committees?.includes(event.committee || '') ||
-                userInfo?.publicInfo?.interests?.includes(event.eventType || '')
+                (userInfo?.publicInfo?.committees?.includes(event.committee || '') ||
+                    userInfo?.publicInfo?.interests?.includes(event.eventType || '')) &&
+                !event.hiddenEvent
             );
         }
-        if (selectedFilter === 'clubWide') {
-            return events.filter(event => event.general);
-        }
 
+        if (selectedFilter === 'clubWide') {
+            return events.filter(event => event.general && !event.hiddenEvent);
+        }
         // Show hidden events for "Custom Event" filter
         if (selectedFilter === 'Custom Event') {
             return events.filter(event => event.eventType === selectedFilter);
         }
 
-        // Filter other events, excluding hidden ones
+        if (selectedFilter === EventType.COMMITTEE_MEETING) {
+            return events.filter(event =>
+                event.eventType === EventType.COMMITTEE_MEETING &&
+                (selectedCommittee ? event.committee === selectedCommittee : true) &&
+                !event.hiddenEvent
+            );
+        }
+
         return events.filter(event => event.eventType === selectedFilter && !event.hiddenEvent);
     };
 
@@ -138,7 +209,12 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                 </View>
 
                 {/* Filters */}
-                <ScrollView bounces={false} horizontal={true} className='pt-3 pb-2' showsHorizontalScrollIndicator={false}>
+                <ScrollView
+                    className='pt-3 pb-2'
+                    showsHorizontalScrollIndicator={false}
+                    horizontal={true}
+                    ref={filterScrollViewRef}
+                >
                     <View className='flex-row px-4 space-x-3'>
                         <TouchableOpacity
                             className={`flex-row items-center justify-center rounded-md py-2 px-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${selectedFilter === "myEvents" && 'bg-primary-blue border-primary-blue'}`}
@@ -199,6 +275,34 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                     </View>
                 </ScrollView>
 
+                {/* Additional Committee Filter */}
+                {selectedFilter === EventType.COMMITTEE_MEETING && (
+                    <ScrollView horizontal={true} className='pt-3 pb-2' showsHorizontalScrollIndicator={false} ref={committeeScrollViewRef}>
+                        <View className='flex-row px-4 space-x-3'>
+                            {committees.map(committee => (
+                                <TouchableOpacity
+                                    key={committee.firebaseDocName}
+                                    className={`flex-row items-center justify-center rounded-md py-2 px-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${selectedCommittee === committee.firebaseDocName && 'bg-primary-blue border-primary-blue'}`}
+                                    style={{
+                                        shadowColor: "#000",
+                                        shadowOffset: {
+                                            width: 0,
+                                            height: 2,
+                                        },
+                                        shadowOpacity: 0.25,
+                                        shadowRadius: 3.84,
+
+                                        elevation: 5,
+                                    }}
+                                    onPress={() => handleFilterSelect(undefined, committee.firebaseDocName)}
+                                >
+                                    <Text className={`font-bold ${selectedCommittee === committee.firebaseDocName ? 'text-white' : `${darkMode ? "text-white" : "text-black"}`}`}>{committee.name}</Text>
+                                </TouchableOpacity>
+                            ))}
+                        </View>
+                    </ScrollView>
+                )}
+
                 {isLoading &&
                     <View className='mt-10 justify-center items-center'>
                         <ActivityIndicator size="small" />
@@ -247,7 +351,7 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                                         className='absolute bottom-0 h-[70%] w-full rounded-b-lg justify-center'
                                                     >
                                                         <View className='px-4 pt-6'>
-                                                            <Text className='text-xl font-bold text-white'>{truncateStringWithEllipsis(event.name!, 20)}</Text>
+                                                            <Text className='text-xl font-bold text-white'>{truncateStringWithEllipsis(event.name, 20)}</Text>
                                                             {event.locationName ? (
                                                                 <Text className='text-md font-semibold text-white'>{truncateStringWithEllipsis(event.locationName, 24)}</Text>
                                                             ) : null}
@@ -296,10 +400,11 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
                                         })}
                                     </View>
                                 )}
-
-                                <TouchableOpacity onPress={() => navigation.navigate("PastEvents")}>
-                                    <Text className='text-xl text-primary-blue mt-8 underline'>View more</Text>
-                                </TouchableOpacity>
+                                {!selectedFilter && (
+                                    <TouchableOpacity onPress={() => navigation.navigate("PastEvents")}>
+                                        <Text className='text-xl text-primary-blue mt-8 underline'>View more</Text>
+                                    </TouchableOpacity>
+                                )}
                             </View>
                         )}
                     </View>
@@ -332,14 +437,13 @@ const Events = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     );
 };
 
-type ExtendedEventType = EventType | 'myEvents' | 'clubWide';
+type EventsProps = {
+    filter?: ExtendedEventType;
+    committee?: string;
+    navigation: NativeStackNavigationProp<EventsStackParams>
+}
 
-const truncateStringWithEllipsis = (name: string, limit = 22) => {
-    if (name.length > limit) {
-        return `${name.substring(0, limit)}...`;
-    }
-    return name;
-};
+type EventsScreenRouteProp = RouteProp<EventsStackParams, "EventsScreen">;
 
 
 export default Events;

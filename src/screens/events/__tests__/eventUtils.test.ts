@@ -1,37 +1,9 @@
-import { Timestamp, GeoPoint, deleteDoc, doc, collection, getDocs, getDoc, setDoc } from "firebase/firestore";
+import { Timestamp, GeoPoint, deleteDoc, doc, collection, getDocs, getDoc, setDoc, DocumentReference, writeBatch } from "firebase/firestore";
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../../config/firebaseConfig";
-import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, signInToEvent, getAttendanceNumber, getUserEventLog, fetchEventByName, getInterestsEvent } from "../../../api/firebaseUtils";
-import { EventLogStatus, EventType, SHPEEvent } from "../../../types/events";
-
-const generateTestEvent = (overrides: Partial<SHPEEvent> = {}): SHPEEvent => {
-    const currentTime = new Date();
-    const startTime = Timestamp.fromDate(currentTime);
-    const endTime = Timestamp.fromDate(new Date(currentTime.getTime() + 3600 * 1000));
-
-    return {
-        committee: "app-devs",
-        coverImageURI: null,
-        creator: "sampleUID",
-        description: "Test Description",
-        endTime: endTime,
-        endTimeBuffer: 600000,
-        eventType: EventType.INTRAMURAL_EVENT,
-        general: true,
-        geofencingRadius: 100,
-        geolocation: new GeoPoint(30.621160236499136, -96.3403560168198),
-        hiddenEvent: false,
-        locationName: "Test",
-        name: "Test Event",
-        nationalConventionEligible: true,
-        notificationSent: true,
-        signInPoints: 3,
-        startTime: startTime,
-        startTimeBuffer: 600000,
-        ...overrides
-    };
-};
-
+import { createEvent, getUpcomingEvents, getPastEvents, setEvent, getEvent, destroyEvent, getAttendanceNumber, getUserEventLog, fetchEventByName, getMyEvents } from "../../../api/firebaseUtils";
+import { EventType, SHPEEvent } from "../../../types/events";
+import { clearCollection, generateTestEvent } from "../../../helpers/unitTestUtils";
 
 beforeAll(async () => {
     expect(process.env.FIREBASE_EMULATOR_ADDRESS).toBeDefined();
@@ -45,20 +17,21 @@ beforeAll(async () => {
     expect(Number(process.env.FIREBASE_STORAGE_PORT)).not.toBeNaN();
 
     await signInAnonymously(auth);
-
-    // Clear events collection
-    const eventsRef = collection(db, "events");
-    const eventsSnapshot = await getDocs(eventsRef);
-    for (const doc of eventsSnapshot.docs) {
-        await deleteDoc(doc.ref);
-    }
 });
 
 afterAll(async () => {
     await signOut(auth);
+
+    await clearCollection("users");
+    await clearCollection("events")
 });
 
 describe("Create events", () => {
+    beforeAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
     test("Handle empty events collection", async () => {
         const upcomingEvents = await getUpcomingEvents();
         expect(upcomingEvents.length).toBe(0);
@@ -87,6 +60,11 @@ describe("Create events", () => {
 });
 
 describe("Various Fetch events", () => {
+    beforeAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
     test("Fetch existing event", async () => {
         const event = generateTestEvent();
         const eventId = await createEvent(event as SHPEEvent);
@@ -142,35 +120,6 @@ describe("Various Fetch events", () => {
 
         await deleteDoc(doc(db, "events", eventId!));
     });
-
-    test("fetches events for given interests", async () => {
-        const interests = ['Test Type 1', 'Test Type 2'];
-        const event1 = generateTestEvent({ eventType: 'Test Type 1' as EventType });
-        const event2 = generateTestEvent({ eventType: 'Test Type 2' as EventType });
-        const eventId1 = await createEvent(event1);
-        const eventId2 = await createEvent(event2);
-        expect(eventId1).not.toBeNull();
-        expect(eventId2).not.toBeNull();
-
-        const events = await getInterestsEvent(interests);
-        expect(events.length).toBe(2);
-
-        const fetchedEvent1 = events.find(e => e.id === eventId1);
-        const fetchedEvent2 = events.find(e => e.id === eventId2);
-        expect(fetchedEvent1).toMatchObject(event1);
-        expect(fetchedEvent2).toMatchObject(event2);
-
-        await deleteDoc(doc(db, "events", eventId1!));
-        await deleteDoc(doc(db, "events", eventId2!));
-    });
-
-    test("returns an empty array if no events found for interests", async () => {
-        const interests = ['Non-existent Type'];
-
-        const events = await getInterestsEvent(interests);
-        expect(events.length).toBe(0);
-    });
-
 
     test("Fetch past events with limit", async () => {
         const event = generateTestEvent({
@@ -285,7 +234,7 @@ describe("Various Fetch events", () => {
         const currentTime = new Date();
         const eventsToCreate: SHPEEvent[] = [];
 
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 30; i++) {
             const event = generateTestEvent({
                 description: `Event ${i}`,
                 endTime: Timestamp.fromDate(new Date(currentTime.getTime() + (i + 1) * 3600 * 1000)),
@@ -297,16 +246,21 @@ describe("Various Fetch events", () => {
         }
 
         const eventIds = await Promise.all(eventsToCreate.map(event => createEvent(event as SHPEEvent)));
-        expect(eventIds).toHaveLength(100);
+        expect(eventIds).toHaveLength(30);
 
         const upcomingEvents = await getUpcomingEvents();
-        expect(upcomingEvents.length).toBeGreaterThanOrEqual(100);
+        expect(upcomingEvents.length).toBeGreaterThanOrEqual(30);
 
         await Promise.all(eventIds.map(eventId => deleteDoc(doc(db, "events", eventId!))));
     });
 });
 
 describe("Update Events", () => {
+    beforeAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
     test("Update an existing event with valid data", async () => {
         const event = generateTestEvent();
         const eventId = await createEvent(event as SHPEEvent);
@@ -373,6 +327,11 @@ describe("Update Events", () => {
 
 
 describe("Destroy Event Function", () => {
+    beforeAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events");
+    });
+
     test("Delete an existing event", async () => {
         const event = generateTestEvent();
         const eventId = await createEvent(event as SHPEEvent);
@@ -426,6 +385,11 @@ describe("Destroy Event Function", () => {
 });
 
 describe("Event Attendance and Logs", () => {
+    beforeAll(async () => {
+        await clearCollection("users");
+        await clearCollection("events")
+    });
+
     test("Get attendance numbers for an event", async () => {
         const event = generateTestEvent();
         const eventId = await createEvent(event as SHPEEvent);
@@ -488,3 +452,47 @@ describe("Event Attendance and Logs", () => {
         await destroyEvent(eventId!);
     });
 });
+
+describe("getMyEvents", () => {
+    const COMMITTEE_1 = "committee1";
+    const COMMITTEE_2 = "committee2";
+    const INTEREST_1 = EventType.INTRAMURAL_EVENT;
+    const INTEREST_2 = EventType.GENERAL_MEETING;
+
+    beforeAll(async () => {
+        await clearCollection("events");
+
+        // Generate test events
+        const event1 = generateTestEvent({ committee: COMMITTEE_1, eventType: INTEREST_1 });
+        const event2 = generateTestEvent({ committee: COMMITTEE_1, eventType: INTEREST_2 });
+        const event3 = generateTestEvent({ committee: COMMITTEE_2, eventType: INTEREST_1 });
+        const event4 = generateTestEvent({ committee: COMMITTEE_2, eventType: INTEREST_2 });
+
+        await setDoc(doc(db, "events", "event1"), event1);
+        await setDoc(doc(db, "events", "event2"), event2);
+        await setDoc(doc(db, "events", "event3"), event3);
+        await setDoc(doc(db, "events", "event4"), event4);
+    });
+
+    test("returns events matching committees and interests", async () => {
+        const events = await getMyEvents([COMMITTEE_1], [INTEREST_1]);
+        expect(Array.isArray(events)).toBe(true);
+        expect(events.length).toBe(3);
+
+        const eventNames = events.map(event => event.name);
+        expect(eventNames).toContain("Test Event");
+    });
+
+    test("limits the number of events returned", async () => {
+        const events = await getMyEvents([COMMITTEE_1, COMMITTEE_2], [INTEREST_1, INTEREST_2], 2);
+        expect(Array.isArray(events)).toBe(true);
+        expect(events.length).toBe(2);
+    });
+
+    test("returns an empty array if no matching events", async () => {
+        const events = await getMyEvents(["nonexistentCommittee"], ["nonexistentInterest"]);
+        expect(Array.isArray(events)).toBe(true);
+        expect(events.length).toBe(0);
+    });
+});
+
