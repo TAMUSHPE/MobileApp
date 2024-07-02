@@ -7,6 +7,9 @@ import { UserProfileStackParams } from "../types/navigation";
 import { auth } from "../config/firebaseConfig";
 import PersonalEventLog from "../screens/userProfile/PersonalEventLog";
 import MemberSHPE from "../screens/home/MemberSHPE";
+import UpdateEvent from "../screens/events/UpdateEvent";
+import EventInfo from "../screens/events/EventInfo";
+import QRCodeManager from "../screens/events/QRCodeManager";
 
 const UserProfileStack = () => {
     const Stack = createNativeStackNavigator<UserProfileStackParams>();
@@ -30,6 +33,11 @@ const UserProfileStack = () => {
             >
                 <Stack.Screen name="ProfileSettingsScreen" component={ProfileSettingsScreen} options={{ title: "Profile Settings" }} />
             </Stack.Group>
+
+            {/* Event Screens */}
+            <Stack.Screen name="UpdateEvent" component={UpdateEvent} />
+            <Stack.Screen name="EventInfo" component={EventInfo} />
+            <Stack.Screen name="QRCode" component={QRCodeManager} />
         </Stack.Navigator>
     );
 };

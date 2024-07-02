@@ -364,9 +364,8 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                     </View>
                 )}
 
-
                 {isVerified && (
-                    <View className='mx-4'>
+                    <View className='mx-4 mt-8'>
                         <View
                             className={`px-4 py-6 rounded-lg mb-10 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                             style={{
@@ -442,54 +441,52 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                         </View>
                     </View>
                 )}
-
-                <DismissibleModal
-                    visible={showShirtModal}
-                    setVisible={setShowShirtModal}
-                >
-                    <View
-                        className={`flex opacity-100 rounded-md p-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
-                        style={{ minWidth: 300 }}
-                    >
-                        {/* Title */}
-                        <View className='flex-row items-center mb-4'>
-                            <FontAwesome name="user" color={darkMode ? "white" : "black"} size={30} />
-                            <Text className={`text-2xl font-semibold ml-2 ${darkMode ? "text-white" : "text-black"}`}>Shirt Selection</Text>
-                        </View>
-
-                        {/* Position Selection */}
-                        <View>
-                            {["XS", "S", "M", "L", "XL"].map((size) => (
-                                <ShirtSizeButton
-                                    key={size}
-                                    size={size}
-                                    isActive={shirtSize === size}
-                                    onToggle={() => setShirtSize(shirtSize === size ? undefined : size)}
-                                />
-                            ))}
-                        </View>
-
-                        {/* Action Buttons */}
-                        <View className="flex-row mt-8">
-                            <TouchableOpacity
-                                onPress={() => setShowShirtModal(false)}
-                                className='flex-1'
-                            >
-                                <Text className={`text-xl font-bold py-3 px-8 ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity
-                                onPress={() => handleSubmitShirt()}
-                                className="flex-1 bg-primary-blue rounded-xl justify-center items-center"
-                            >
-                                <Text className='text-xl font-bold text-white px-8'>Done</Text>
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </DismissibleModal>
-
             </ScrollView>
 
+            <DismissibleModal
+                visible={showShirtModal}
+                setVisible={setShowShirtModal}
+            >
+                <View
+                    className={`flex opacity-100 rounded-md p-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    style={{ minWidth: 300 }}
+                >
+                    {/* Title */}
+                    <View className='flex-row items-center mb-4'>
+                        <FontAwesome name="user" color={darkMode ? "white" : "black"} size={30} />
+                        <Text className={`text-2xl font-semibold ml-2 ${darkMode ? "text-white" : "text-black"}`}>Shirt Selection</Text>
+                    </View>
+
+                    {/* Position Selection */}
+                    <View>
+                        {["XS", "S", "M", "L", "XL"].map((size) => (
+                            <ShirtSizeButton
+                                key={size}
+                                size={size}
+                                isActive={shirtSize === size}
+                                onToggle={() => setShirtSize(shirtSize === size ? undefined : size)}
+                            />
+                        ))}
+                    </View>
+
+                    {/* Action Buttons */}
+                    <View className="flex-row mt-8">
+                        <TouchableOpacity
+                            onPress={() => setShowShirtModal(false)}
+                            className='flex-1'
+                        >
+                            <Text className={`text-xl font-bold py-3 px-8 ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            onPress={() => handleSubmitShirt()}
+                            className="flex-1 bg-primary-blue rounded-xl justify-center items-center"
+                        >
+                            <Text className='text-xl font-bold text-white px-8'>Done</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </DismissibleModal>
         </SafeAreaView>
 
     )
