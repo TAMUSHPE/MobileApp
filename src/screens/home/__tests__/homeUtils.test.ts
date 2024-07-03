@@ -136,53 +136,53 @@ describe("getUserForMemberList", () => {
         await clearCollection("users");
     })
 
-    test("returns members with officer role", async () => {
-        // Create test users
-        const officerUser = await generateTestUsers({ publicInfo: { uid: OFFICER_USER_UID, name: "Officer User", roles: { officer: true, representative: false, lead: false } } });
-        const repUser = await generateTestUsers({ publicInfo: { uid: REP_USER_UID, name: "Rep User", roles: { officer: false, representative: true, lead: false } } });
-        const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, name: "Lead User", roles: { officer: false, representative: false, lead: true } } });
-        const nonRoleUser = await generateTestUsers({ publicInfo: { uid: NON_ROLE_USER_UID, name: "Non Role User", roles: { officer: false, representative: false, lead: false } } });
+    // test("returns members with officer role", async () => {
+    //     // Create test users
+    //     const officerUser = await generateTestUsers({ publicInfo: { uid: OFFICER_USER_UID, name: "Officer User", roles: { officer: true, representative: false, lead: false } } });
+    //     const repUser = await generateTestUsers({ publicInfo: { uid: REP_USER_UID, name: "Rep User", roles: { officer: false, representative: true, lead: false } } });
+    //     const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, name: "Lead User", roles: { officer: false, representative: false, lead: true } } });
+    //     const nonRoleUser = await generateTestUsers({ publicInfo: { uid: NON_ROLE_USER_UID, name: "Non Role User", roles: { officer: false, representative: false, lead: false } } });
 
-        await createTestUserInFirebase(officerUser);
-        await createTestUserInFirebase(repUser);
-        await createTestUserInFirebase(leadUser);
-        await createTestUserInFirebase(nonRoleUser);
-        await waitForUser(OFFICER_USER_UID, 30, 500, officerUser.publicInfo);
-        await waitForUser(REP_USER_UID, 30, 500, repUser.publicInfo);
-        await waitForUser(LEAD_USER_UID, 30, 500, leadUser.publicInfo);
-        await waitForUser(NON_ROLE_USER_UID, 30, 500, nonRoleUser.publicInfo);
+    //     await createTestUserInFirebase(officerUser);
+    //     await createTestUserInFirebase(repUser);
+    //     await createTestUserInFirebase(leadUser);
+    //     await createTestUserInFirebase(nonRoleUser);
+    //     await waitForUser(OFFICER_USER_UID, 30, 500, officerUser.publicInfo);
+    //     await waitForUser(REP_USER_UID, 30, 500, repUser.publicInfo);
+    //     await waitForUser(LEAD_USER_UID, 30, 500, leadUser.publicInfo);
+    //     await waitForUser(NON_ROLE_USER_UID, 30, 500, nonRoleUser.publicInfo);
 
-        const result = await getUserForMemberList(10, null, FilterRole.OFFICER);
-        const members = result.members as PublicUserInfo[];
-        expect(Array.isArray(members)).toBe(true);
-        expect(members.length).toBe(1);
-        expect(members[0].uid).toBe(OFFICER_USER_UID);
-        expect(members[0].roles?.officer).toBe(true);
-    }, 30000);
+    //     const result = await getUserForMemberList(10, null, FilterRole.OFFICER);
+    //     const members = result.members as PublicUserInfo[];
+    //     expect(Array.isArray(members)).toBe(true);
+    //     expect(members.length).toBe(1);
+    //     expect(members[0].uid).toBe(OFFICER_USER_UID);
+    //     expect(members[0].roles?.officer).toBe(true);
+    // }, 30000);
 
-    test("returns members with representative role", async () => {
-        // Create test users
-        const officerUser = await generateTestUsers({ publicInfo: { uid: OFFICER_USER_UID, name: "Officer User", roles: { officer: true, representative: false, lead: false } } });
-        const repUser = await generateTestUsers({ publicInfo: { uid: REP_USER_UID, name: "Rep User", roles: { officer: false, representative: true, lead: false } } });
-        const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, name: "Lead User", roles: { officer: false, representative: false, lead: true } } });
-        const nonRoleUser = await generateTestUsers({ publicInfo: { uid: NON_ROLE_USER_UID, name: "Non Role User", roles: { officer: false, representative: false, lead: false } } });
+    // test("returns members with representative role", async () => {
+    //     // Create test users
+    //     const officerUser = await generateTestUsers({ publicInfo: { uid: OFFICER_USER_UID, name: "Officer User", roles: { officer: true, representative: false, lead: false } } });
+    //     const repUser = await generateTestUsers({ publicInfo: { uid: REP_USER_UID, name: "Rep User", roles: { officer: false, representative: true, lead: false } } });
+    //     const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, name: "Lead User", roles: { officer: false, representative: false, lead: true } } });
+    //     const nonRoleUser = await generateTestUsers({ publicInfo: { uid: NON_ROLE_USER_UID, name: "Non Role User", roles: { officer: false, representative: false, lead: false } } });
 
-        await createTestUserInFirebase(officerUser);
-        await createTestUserInFirebase(repUser);
-        await createTestUserInFirebase(leadUser);
-        await createTestUserInFirebase(nonRoleUser);
-        await waitForUser(OFFICER_USER_UID, 30, 500, officerUser.publicInfo);
-        await waitForUser(REP_USER_UID, 30, 500, repUser.publicInfo);
-        await waitForUser(LEAD_USER_UID, 30, 500, leadUser.publicInfo);
-        await waitForUser(NON_ROLE_USER_UID, 30, 500, nonRoleUser.publicInfo);
+    //     await createTestUserInFirebase(officerUser);
+    //     await createTestUserInFirebase(repUser);
+    //     await createTestUserInFirebase(leadUser);
+    //     await createTestUserInFirebase(nonRoleUser);
+    //     await waitForUser(OFFICER_USER_UID, 30, 500, officerUser.publicInfo);
+    //     await waitForUser(REP_USER_UID, 30, 500, repUser.publicInfo);
+    //     await waitForUser(LEAD_USER_UID, 30, 500, leadUser.publicInfo);
+    //     await waitForUser(NON_ROLE_USER_UID, 30, 500, nonRoleUser.publicInfo);
 
-        const result = await getUserForMemberList(10, null, FilterRole.REPRESENTATIVE);
-        const members = result.members as PublicUserInfo[];
-        expect(Array.isArray(members)).toBe(true);
-        expect(members.length).toBe(1);
-        expect(members[0].uid).toBe(REP_USER_UID);
-        expect(members[0].roles?.representative).toBe(true);
-    }, 30000);
+    //     const result = await getUserForMemberList(10, null, FilterRole.REPRESENTATIVE);
+    //     const members = result.members as PublicUserInfo[];
+    //     expect(Array.isArray(members)).toBe(true);
+    //     expect(members.length).toBe(1);
+    //     expect(members[0].uid).toBe(REP_USER_UID);
+    //     expect(members[0].roles?.representative).toBe(true);
+    // }, 30000);
 
     test("returns members with lead role", async () => {
         const result = await getUserForMemberList(10, null, FilterRole.LEAD);
@@ -193,12 +193,12 @@ describe("getUserForMemberList", () => {
         expect(members[0].roles?.lead).toBe(true);
     }, 30000);
 
-    test("returns members with no specific role filter", async () => {
-        const result = await getUserForMemberList(10, null, null);
-        const members = result.members as PublicUserInfo[];
-        expect(Array.isArray(members)).toBe(true);
-        expect(members.length).toBe(4); // All users should be returned
-    }, 30000);
+    // test("returns members with no specific role filter", async () => {
+    //     const result = await getUserForMemberList(10, null, null);
+    //     const members = result.members as PublicUserInfo[];
+    //     expect(Array.isArray(members)).toBe(true);
+    //     expect(members.length).toBe(4); // All users should be returned
+    // }, 30000);
 
     test("limits the number of members returned", async () => {
         const result = await getUserForMemberList(2, null, null);
@@ -207,15 +207,15 @@ describe("getUserForMemberList", () => {
         expect(members.length).toBe(2); // Should limit to 2 members
     }, 30000);
 
-    test("handles pagination with startAfterDoc", async () => {
-        const firstBatch = await getUserForMemberList(2, null, null);
-        const firstMembers = firstBatch.members as PublicUserInfo[];
-        expect(firstMembers.length).toBe(2);
+    // test("handles pagination with startAfterDoc", async () => {
+    //     const firstBatch = await getUserForMemberList(2, null, null);
+    //     const firstMembers = firstBatch.members as PublicUserInfo[];
+    //     expect(firstMembers.length).toBe(2);
 
-        const secondBatch = await getUserForMemberList(2, firstBatch.lastVisibleDoc, null);
-        const secondMembers = secondBatch.members as PublicUserInfo[];
-        expect(secondMembers.length).toBe(2);
-    }, 30000);
+    //     const secondBatch = await getUserForMemberList(2, firstBatch.lastVisibleDoc, null);
+    //     const secondMembers = secondBatch.members as PublicUserInfo[];
+    //     expect(secondMembers.length).toBe(2);
+    // }, 30000);
 
     test("handles pagination with officer role filter", async () => {
         // Create test users

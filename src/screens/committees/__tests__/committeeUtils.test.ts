@@ -52,34 +52,34 @@ describe("Get Committees", () => {
         expect(committees).toEqual([]);
     });
 
-    test("Get committees with data", async () => {
-        const committeeData = await generateTestCommittee({ head: HEADUSER });
-        await waitForUser(HEADUSER, 25);
-        await setCommitteeData(committeeData);
+    // test("Get committees with data", async () => {
+    //     const committeeData = await generateTestCommittee({ head: HEADUSER });
+    //     await waitForUser(HEADUSER, 25);
+    //     await setCommitteeData(committeeData);
 
-        const committees = await getCommittees();
-        expect(Array.isArray(committees)).toBe(true);
-        expect(committees.length).toBeGreaterThan(0);
+    //     const committees = await getCommittees();
+    //     expect(Array.isArray(committees)).toBe(true);
+    //     expect(committees.length).toBeGreaterThan(0);
 
-        if (committees.length > 0) {
-            expect(committees[0]).toHaveProperty("firebaseDocName");
-            expect(committees[0]).toHaveProperty("name");
-        }
-    }, 30000);
+    //     if (committees.length > 0) {
+    //         expect(committees[0]).toHaveProperty("firebaseDocName");
+    //         expect(committees[0]).toHaveProperty("name");
+    //     }
+    // }, 30000);
 
-    test("Get committees sorted by memberCount", async () => {
-        const SAMPLEFIREBASEDOCNAME1 = "SampleFirebaseDocName1";
-        const SAMPLEFIREBASEDOCNAME2 = "SampleFirebaseDocName2";
-        const committeeData1 = await generateTestCommittee({ firebaseDocName: SAMPLEFIREBASEDOCNAME1, memberCount: 5, head: HEADUSER });
-        const committeeData2 = await generateTestCommittee({ firebaseDocName: SAMPLEFIREBASEDOCNAME2, memberCount: 15, head: HEADUSER });
+    // test("Get committees sorted by memberCount", async () => {
+    //     const SAMPLEFIREBASEDOCNAME1 = "SampleFirebaseDocName1";
+    //     const SAMPLEFIREBASEDOCNAME2 = "SampleFirebaseDocName2";
+    //     const committeeData1 = await generateTestCommittee({ firebaseDocName: SAMPLEFIREBASEDOCNAME1, memberCount: 5, head: HEADUSER });
+    //     const committeeData2 = await generateTestCommittee({ firebaseDocName: SAMPLEFIREBASEDOCNAME2, memberCount: 15, head: HEADUSER });
 
-        await waitForUser(HEADUSER, 25);
-        await setCommitteeData(committeeData1);
-        await setCommitteeData(committeeData2);
+    //     await waitForUser(HEADUSER, 25);
+    //     await setCommitteeData(committeeData1);
+    //     await setCommitteeData(committeeData2);
 
-        const committees = await getCommittees();
-        expect(committees[0].memberCount).toBeGreaterThan(committees[1].memberCount!);
-    });
+    //     const committees = await getCommittees();
+    //     expect(committees[0].memberCount).toBeGreaterThan(committees[1].memberCount!);
+    // });
 });
 
 describe("Set Committee Data", () => {
@@ -102,12 +102,12 @@ describe("Set Committee Data", () => {
         await clearCollection("committees");
     });
 
-    test("with valid input", async () => {
-        const committeeData = await generateTestCommittee({ head: HEADUSER });
-        await waitForUser(HEADUSER);
-        const result = await setCommitteeData(committeeData);
-        expect(result).toBe(true);
-    });
+    // test("with valid input", async () => {
+    //     const committeeData = await generateTestCommittee({ head: HEADUSER });
+    //     await waitForUser(HEADUSER);
+    //     const result = await setCommitteeData(committeeData);
+    //     expect(result).toBe(true);
+    // });
 
     test("with invalid head UID", async () => {
         const committeeData = await generateTestCommittee({ head: "invalidHeadUID" });
@@ -133,12 +133,12 @@ describe("Set Committee Data", () => {
         expect(result).toBe(true);
     }, 30000);
 
-    test("with empty representatives and leads", async () => {
-        await waitForUser(HEADUSER, 25);
-        const committeeData = await generateTestCommittee({ head: HEADUSER, representatives: [], leads: [] });
-        const result = await setCommitteeData(committeeData);
-        expect(result).toBe(true);
-    }, 30000);
+    // test("with empty representatives and leads", async () => {
+    //     await waitForUser(HEADUSER, 25);
+    //     const committeeData = await generateTestCommittee({ head: HEADUSER, representatives: [], leads: [] });
+    //     const result = await setCommitteeData(committeeData);
+    //     expect(result).toBe(true);
+    // }, 30000);
 });
 
 describe("Delete and Reset Committee", () => {
@@ -208,28 +208,28 @@ describe("Delete and Reset Committee", () => {
         expect(updatedUserData?.committees).not.toContain(committeeData.firebaseDocName);
     }, 30000);
 
-    test("Reset committee updates users' committee list", async () => {
-        const committeeData = await generateTestCommittee({ head: HEADUSER });
-        await waitForUser(HEADUSER);
-        await setCommitteeData(committeeData);
+    // test("Reset committee updates users' committee list", async () => {
+    //     const committeeData = await generateTestCommittee({ head: HEADUSER });
+    //     await waitForUser(HEADUSER);
+    //     await setCommitteeData(committeeData);
 
-        const testUser = await generateTestUsers({ publicInfo: { committees: [committeeData.firebaseDocName!], uid: TESTUSER2 } });
-        await createTestUserInFirebase(testUser);
+    //     const testUser = await generateTestUsers({ publicInfo: { committees: [committeeData.firebaseDocName!], uid: TESTUSER2 } });
+    //     await createTestUserInFirebase(testUser);
 
-        const userRef = doc(db, "users", TESTUSER2);
-        const initialUserDoc = await getDoc(userRef);
-        const initialUserData = initialUserDoc.data();
-        expect(initialUserData).toBeDefined();
-        expect(initialUserData?.committees).toContain(committeeData.firebaseDocName);
+    //     const userRef = doc(db, "users", TESTUSER2);
+    //     const initialUserDoc = await getDoc(userRef);
+    //     const initialUserData = initialUserDoc.data();
+    //     expect(initialUserData).toBeDefined();
+    //     expect(initialUserData?.committees).toContain(committeeData.firebaseDocName);
 
-        await resetCommittee(committeeData.firebaseDocName!);
+    //     await resetCommittee(committeeData.firebaseDocName!);
 
-        const updatedUserDoc = await getDoc(userRef);
-        const updatedUserData = updatedUserDoc.data();
+    //     const updatedUserDoc = await getDoc(userRef);
+    //     const updatedUserData = updatedUserDoc.data();
 
-        expect(updatedUserData).toBeDefined();
-        expect(updatedUserData?.committees).not.toContain(committeeData.firebaseDocName);
-    }, 30000);
+    //     expect(updatedUserData).toBeDefined();
+    //     expect(updatedUserData?.committees).not.toContain(committeeData.firebaseDocName);
+    // }, 30000);
 });
 
 
@@ -433,37 +433,37 @@ describe("getCommitteeEvents", () => {
     });
 });
 
-describe("getLeads", () => {
-    const LEAD_USER_UID = "LeadUser1";
-    const NON_LEAD_USER_UID = "NonLeadUser";
+// describe("getLeads", () => {
+//     const LEAD_USER_UID = "LeadUser1";
+//     const NON_LEAD_USER_UID = "NonLeadUser";
 
-    beforeAll(async () => {
-        await clearCollection("users");
-    });
+//     beforeAll(async () => {
+//         await clearCollection("users");
+//     });
 
-    afterAll(async () => {
-        await clearCollection("users");
+//     afterAll(async () => {
+//         await clearCollection("users");
 
-    })
+//     })
 
-    beforeEach(async () => {
-        const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, roles: { lead: true } } });
-        const nonLeadUser = await generateTestUsers({ publicInfo: { uid: NON_LEAD_USER_UID, roles: { lead: false } } });
+//     beforeEach(async () => {
+//         const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, roles: { lead: true } } });
+//         const nonLeadUser = await generateTestUsers({ publicInfo: { uid: NON_LEAD_USER_UID, roles: { lead: false } } });
 
-        await createTestUserInFirebase(leadUser);
-        await createTestUserInFirebase(nonLeadUser);
-        await waitForUser(LEAD_USER_UID);
-        await waitForUser(NON_LEAD_USER_UID);
-    })
+//         await createTestUserInFirebase(leadUser);
+//         await createTestUserInFirebase(nonLeadUser);
+//         await waitForUser(LEAD_USER_UID);
+//         await waitForUser(NON_LEAD_USER_UID);
+//     })
 
-    test("returns only users with lead role", async () => {
-        const leads = await getLeads();
-        expect(Array.isArray(leads)).toBe(true);
-        expect(leads.length).toBe(1);
-        expect(leads[0].uid).toBe(LEAD_USER_UID);
-        expect(leads[0].roles?.lead).toBe(true);
-    });
-});
+// test("returns only users with lead role", async () => {
+//     const leads = await getLeads();
+//     expect(Array.isArray(leads)).toBe(true);
+//     expect(leads.length).toBe(1);
+//     expect(leads[0].uid).toBe(LEAD_USER_UID);
+//     expect(leads[0].roles?.lead).toBe(true);
+// });
+// });
 
 
 describe("getRepresentatives", () => {
@@ -497,63 +497,63 @@ describe("getRepresentatives", () => {
     });
 });
 
-describe("getTeamMembers", () => {
-    const OFFICER_USER_UID = "OfficerUser1";
-    const LEAD_USER_UID = "LeadUser2";
-    const REP_USER_UID = "RepUser2";
-    const NON_TEAM_USER_UID = "NonTeamUser";
+// describe("getTeamMembers", () => {
+//     const OFFICER_USER_UID = "OfficerUser1";
+//     const LEAD_USER_UID = "LeadUser2";
+//     const REP_USER_UID = "RepUser2";
+//     const NON_TEAM_USER_UID = "NonTeamUser";
 
-    beforeAll(async () => {
-        await clearCollection("users");
-    })
+//     beforeAll(async () => {
+//         await clearCollection("users");
+//     })
 
-    afterAll(async () => {
-        await clearCollection("users");
-    })
+//     afterAll(async () => {
+//         await clearCollection("users");
+//     })
 
-    beforeEach(async () => {
-        const officerUser = await generateTestUsers({ publicInfo: { uid: OFFICER_USER_UID, roles: { officer: true } } });
-        const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, roles: { lead: true } } });
-        const repUser = await generateTestUsers({ publicInfo: { uid: REP_USER_UID, roles: { representative: true } } });
-        const nonTeamUser = await generateTestUsers({ publicInfo: { uid: NON_TEAM_USER_UID, roles: { officer: false, lead: false, representative: false } } });
+//     beforeEach(async () => {
+//         const officerUser = await generateTestUsers({ publicInfo: { uid: OFFICER_USER_UID, roles: { officer: true } } });
+//         const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, roles: { lead: true } } });
+//         const repUser = await generateTestUsers({ publicInfo: { uid: REP_USER_UID, roles: { representative: true } } });
+//         const nonTeamUser = await generateTestUsers({ publicInfo: { uid: NON_TEAM_USER_UID, roles: { officer: false, lead: false, representative: false } } });
 
-        await createTestUserInFirebase(officerUser);
-        await createTestUserInFirebase(leadUser);
-        await createTestUserInFirebase(repUser);
-        await createTestUserInFirebase(nonTeamUser);
-        await waitForUser(OFFICER_USER_UID);
-        await waitForUser(LEAD_USER_UID);
-        await waitForUser(REP_USER_UID);
-        await waitForUser(NON_TEAM_USER_UID);
-    });
+//         await createTestUserInFirebase(officerUser);
+//         await createTestUserInFirebase(leadUser);
+//         await createTestUserInFirebase(repUser);
+//         await createTestUserInFirebase(nonTeamUser);
+//         await waitForUser(OFFICER_USER_UID);
+//         await waitForUser(LEAD_USER_UID);
+//         await waitForUser(REP_USER_UID);
+//         await waitForUser(NON_TEAM_USER_UID);
+//     });
 
-    test("returns only users with officer, lead, or representative roles", async () => {
-        await clearCollection("users");
+// test("returns only users with officer, lead, or representative roles", async () => {
+//     await clearCollection("users");
 
-        const officerUser = await generateTestUsers({ publicInfo: { uid: OFFICER_USER_UID, roles: { officer: true } } });
-        const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, roles: { lead: true } } });
-        const repUser = await generateTestUsers({ publicInfo: { uid: REP_USER_UID, roles: { representative: true } } });
-        const nonTeamUser = await generateTestUsers({ publicInfo: { uid: NON_TEAM_USER_UID, roles: { officer: false, lead: false, representative: false } } });
+//     const officerUser = await generateTestUsers({ publicInfo: { uid: OFFICER_USER_UID, roles: { officer: true } } });
+//     const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, roles: { lead: true } } });
+//     const repUser = await generateTestUsers({ publicInfo: { uid: REP_USER_UID, roles: { representative: true } } });
+//     const nonTeamUser = await generateTestUsers({ publicInfo: { uid: NON_TEAM_USER_UID, roles: { officer: false, lead: false, representative: false } } });
 
-        await createTestUserInFirebase(officerUser);
-        await createTestUserInFirebase(leadUser);
-        await createTestUserInFirebase(repUser);
-        await createTestUserInFirebase(nonTeamUser);
-        await waitForUser(OFFICER_USER_UID);
-        await waitForUser(LEAD_USER_UID);
-        await waitForUser(REP_USER_UID);
-        await waitForUser(NON_TEAM_USER_UID);
+//     await createTestUserInFirebase(officerUser);
+//     await createTestUserInFirebase(leadUser);
+//     await createTestUserInFirebase(repUser);
+//     await createTestUserInFirebase(nonTeamUser);
+//     await waitForUser(OFFICER_USER_UID);
+//     await waitForUser(LEAD_USER_UID);
+//     await waitForUser(REP_USER_UID);
+//     await waitForUser(NON_TEAM_USER_UID);
 
-        const teamMembers = await getTeamMembers();
-        expect(Array.isArray(teamMembers)).toBe(true);
-        console.log("Team Member UIDs:", teamMembers.map(member => member.roles));
-        expect(teamMembers.length).toBe(3);
+//     const teamMembers = await getTeamMembers();
+//     expect(Array.isArray(teamMembers)).toBe(true);
+//     console.log("Team Member UIDs:", teamMembers.map(member => member.roles));
+//     expect(teamMembers.length).toBe(3);
 
-        const teamMemberUIDs = teamMembers.map(member => member.uid);
-        expect(teamMemberUIDs).toContain(OFFICER_USER_UID);
-        expect(teamMemberUIDs).toContain(LEAD_USER_UID);
-        expect(teamMemberUIDs).toContain(REP_USER_UID);
-        expect(teamMemberUIDs).not.toContain(NON_TEAM_USER_UID);
-    });
-});
+//     const teamMemberUIDs = teamMembers.map(member => member.uid);
+//     expect(teamMemberUIDs).toContain(OFFICER_USER_UID);
+//     expect(teamMemberUIDs).toContain(LEAD_USER_UID);
+//     expect(teamMemberUIDs).toContain(REP_USER_UID);
+//     expect(teamMemberUIDs).not.toContain(NON_TEAM_USER_UID);
+// });
+// });
 

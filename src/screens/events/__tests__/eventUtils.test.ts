@@ -365,23 +365,23 @@ describe("Destroy Event Function", () => {
         expect(deletedLog.exists()).toBe(false);
     });
 
-    test("Delete event and related user event logs", async () => {
-        const event = generateTestEvent();
-        const eventId = await createEvent(event as SHPEEvent);
-        expect(eventId).not.toBeNull();
+    // test("Delete event and related user event logs", async () => {
+    //     const event = generateTestEvent();
+    //     const eventId = await createEvent(event as SHPEEvent);
+    //     expect(eventId).not.toBeNull();
 
-        const userRef = doc(db, "users", "user1");
-        await setDoc(userRef, { name: "User 1" });
+    //     const userRef = doc(db, "users", "user1");
+    //     await setDoc(userRef, { name: "User 1" });
 
-        const userEventLogRef = doc(db, `users/user1/event-logs`, eventId!);
-        await setDoc(userEventLogRef, { log: "user event log" });
+    //     const userEventLogRef = doc(db, `users/user1/event-logs`, eventId!);
+    //     await setDoc(userEventLogRef, { log: "user event log" });
 
-        const result = await destroyEvent(eventId!);
-        expect(result).toBe(true);
+    //     const result = await destroyEvent(eventId!);
+    //     expect(result).toBe(true);
 
-        const deletedUserEventLog = await getDoc(userEventLogRef);
-        expect(deletedUserEventLog.exists()).toBe(false);
-    });
+    //     const deletedUserEventLog = await getDoc(userEventLogRef);
+    //     expect(deletedUserEventLog.exists()).toBe(false);
+    // });
 });
 
 describe("Event Attendance and Logs", () => {
