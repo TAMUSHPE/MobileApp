@@ -14,6 +14,8 @@ import { AuthStackParams } from "../../types/navigation";
 import { Images } from "../../../assets";
 import TextInputWithFloatingTitle from "../../components/TextInputWithFloatingTitle";
 import InteractButton from "../../components/InteractButton";
+import { LinearGradient } from "expo-linear-gradient";
+import { KeyboardAwareScrollView } from "@pietile-native-kit/keyboard-aware-scrollview";
 
 
 const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
@@ -104,88 +106,106 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-dark-navy">
-            <View className='pl-6 mt-2'>
-                <TouchableOpacity
-                    className="pr-4" onPress={() => navigation.navigate("LoginScreen")}
-                    activeOpacity={1}
-                >
-                    <Octicons name="chevron-left" size={30} color="white" />
-                </TouchableOpacity>
-            </View>
+        <LinearGradient
+            colors={['#191740', '#413CA6']}
+            className="flex-1"
+        >
+            <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
+                <SafeAreaView className="flex-1 h-screen">
+                    {/* Header */}
+                    <View className='px-4 mt-5'>
+                        <TouchableOpacity
+                            onPress={() => navigation.navigate("LoginScreen")}
+                            activeOpacity={1}
+                        >
+                            <Octicons name="chevron-left" size={30} color="white" />
+                        </TouchableOpacity>
+                    </View>
 
-            <View className="flex-col items-center my-8 mb-11">
-                <Image
-                    className="flex-row h-20 w-20 mb-3"
-                    source={Images.SHPE_LOGO}
-                />
-            </View>
-            <View className="flex items-center">
-                <View className="flex-col w-[80%]">
-                    <Text className="text-white font-bold text-3xl mb-3">Guest Login</Text>
-                    <KeyboardAvoidingView className="flex-col my-2">
+                    <View className="items-center">
+                        <Image
+                            className="flex-row h-20 w-20 mt-2 mb-14"
+                            source={Images.SHPE_LOGO}
+                        />
+                    </View>
+
+                    <View className="items-center mx-8">
+                        <Text className="text-white text-center text-4xl font-bold">Guest Login</Text>
+                    </View>
+
+
+                    <View className="mx-8 mt-10">
                         <TextInputWithFloatingTitle
-                            setTextFunction={(text: string) => setEmail(text)}
+                            setTextFunction={(text: string) => {
+                                setError("")
+                                setEmail(text)
+                            }}
                             inputValue={email}
                             title='Email'
                             placeholderText='Email'
+                            placeHolderColor="white"
                             titleStartY={20}
-                            titleEndY={0}
+                            titleEndY={-5}
                             maxCharacters={64}
-                            blurTitleClassName='text-white text-md'
-                            focusTitleClassName='text-gray-300 text-sm ml-1'
-                            textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
+                            blurTitleClassName='text-xl'
+                            focusTitleClassName='text-white text-xl ml-1'
+                            textInputClassName="text-xl text-white border-2 border-white rounded-lg pl-2 h-14"
                         />
 
-                        <View className="mt-4" >
-                            <TextInputWithFloatingTitle
-                                setTextFunction={(text: string) => setPassword(text)}
-                                inputValue={password}
-                                title='Password'
-                                placeholderText='Password'
-                                titleStartY={20}
-                                titleEndY={0}
-                                maxCharacters={64}
-                                secureTextEntry
-                                blurTitleClassName='text-white text-md'
-                                focusTitleClassName='text-gray-300 text-sm ml-1'
-                                textInputClassName="bg-[#e4e4e4] border-2 border-gray-300 rounded-lg pr-10 pl-1 py-2"
-                            />
-                        </View>
-                    </KeyboardAvoidingView>
-                    <View className="flex-col">
+                        <TextInputWithFloatingTitle
+                            setTextFunction={(text: string) => {
+                                setError("")
+                                setPassword(text)
+                            }}
+                            inputValue={password}
+                            title='Password'
+                            placeholderText='Password'
+                            placeHolderColor="white"
+                            titleStartY={20}
+                            titleEndY={-5}
+                            maxCharacters={64}
+                            secureTextEntry
+                            componentClassName="mt-4"
+                            blurTitleClassName='text-xl'
+                            focusTitleClassName='text-white text-xl ml-1'
+                            textInputClassName="text-xl text-white border-2 border-white rounded-lg pl-2 h-14"
+                        />
+
                         <TouchableOpacity
                             className="pr-4" onPress={() => navigation.navigate("GuestRecoveryAccount")}
                             activeOpacity={1}
                         >
-                            <Text className="text-slate-400 text-xl">Forgot Your Password?</Text>
+                            <Text className="text-grey-light text-lg mt-2">Forgot Your Password?</Text>
                         </TouchableOpacity>
+
                         <InteractButton
                             onPress={() => emailSignIn()}
                             label="Login"
-                            buttonClassName="justify-center items-center bg-continue-dark mt-5 rounded-xl py-2"
-                            textClassName="text-white font-bold text-xl"
-                            underlayColor="#A22E2B"
+                            buttonClassName="justify-center items-center bg-primary-orange mt-8 rounded-xl h-14"
+                            textClassName="text-white font-semibold text-2xl"
+                            underlayColor="#EF9260"
                         />
-                        {error && <Text style={{ color: 'red' }} className="text-center mt-2">{error}</Text>}
-                        {loading && <ActivityIndicator className="mt-4" size={"large"} />}
-
+                        {error && <Text className="text-center mt-2 text-red-1 text-lg">{error}</Text>}
+                        {loading && (
+                            <ActivityIndicator className="mt-4" size="small" />
+                        )}
                     </View>
-                </View>
-            </View>
-            <View className="flex-1 justify-end items-center">
-                <View className="flex-row items-center">
-                    <Text className="text-slate-400 text-lg">Don't have an account?</Text>
-                    <TouchableOpacity
-                        className="items-center"
-                        onPress={() => navigation.navigate("RegisterScreen")}
-                        activeOpacity={1}
-                    >
-                        <Text className="text-pale-orange text-lg ml-1">Sign up</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </SafeAreaView>
+
+                    <View className="mx-8 flex-1 justify-end items-center">
+                        <View className="flex-row items-center">
+                            <Text className="text-grey-light text-lg">Don't have a guest account?</Text>
+                            <TouchableOpacity
+                                className="items-center"
+                                onPress={() => navigation.navigate("RegisterScreen")}
+                                activeOpacity={1}
+                            >
+                                <Text className="text-primary-orange text-lg ml-1">Sign up</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </SafeAreaView>
+            </KeyboardAwareScrollView>
+        </LinearGradient>
     );
 };
 

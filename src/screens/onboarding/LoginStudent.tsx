@@ -15,6 +15,7 @@ import { initializeCurrentUserData } from "../../api/firebaseUtils";
 import { AuthStackParams } from "../../types/navigation";
 import { Images } from "../../../assets";
 import InteractButton from "../../components/InteractButton";
+import { LinearGradient } from "expo-linear-gradient";
 
 const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [loading, setLoading] = useState<boolean>(false);
@@ -107,59 +108,66 @@ const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) =
     }
 
     return (
-        <SafeAreaView className="flex-1 bg-dark-navy h-screen">
-            <View className='pl-6 mt-2'>
-                <TouchableOpacity
-                    className="pr-4" onPress={() => navigation.navigate("LoginScreen")}
-                    activeOpacity={1}
-                >
-                    <Octicons name="chevron-left" size={30} color="white" />
-                </TouchableOpacity>
-            </View>
+        <LinearGradient
+            colors={['#191740', '#413CA6']}
+            className="flex-1"
+        >
 
-            <View className="flex-col items-center my-8 pb-15">
-                <Image
-                    className="flex-row h-20 w-20 mb-3"
-                    source={Images.SHPE_LOGO}
-                />
-            </View>
-            <View className="items-center pb-40">
-                <View className="flex-col w-4/5">
-                    <Text className="text-white font-bold text-3xl">Student Login</Text>
-                    <Text className="text-pale-orange text-lg">Sign in using tamu.edu email</Text>
-
-                    <View className="flex-col mt-2">
-                        <InteractButton
-                            onPress={() => googleSignIn()}
-                            label="Sign In with Google"
-                            buttonClassName="bg-white mt-5 rounded-3xl py-1"
-                            textClassName="text-[#3b3b3b] font-bold text-xl"
-                            iconSource={{ uri: "https://developers.google.com/static/identity/images/g-logo.png" }}
-                        />
-                        {error && <Text style={{ color: 'red' }} className="text-center mt-2">{error}</Text>}
-                        {loading && (
-                            <ActivityIndicator className="mt-4" size={"large"} />
-                        )}
-                    </View>
-                    <View className="items-center">
-                    </View>
-                </View>
-            </View>
-
-            <View className="flex-1 justify-end items-center">
-                <View className="flex-row items-center">
-                    <Text className="text-slate-400 text-lg">Don't have a student account?</Text>
+            <SafeAreaView className="flex-1">
+                {/* Header */}
+                <View className='px-4 mt-5'>
                     <TouchableOpacity
-                        className="items-center"
-                        onPress={() => navigation.navigate("LoginGuest")}
+                        onPress={() => navigation.navigate("LoginScreen")}
                         activeOpacity={1}
                     >
-                        <Text className="text-pale-orange text-lg ml-1">Guest Login</Text>
+                        <Octicons name="chevron-left" size={30} color="white" />
                     </TouchableOpacity>
-
                 </View>
-            </View>
-        </SafeAreaView>
+
+                <View className="items-center">
+                    <Image
+                        className="flex-row h-20 w-20 mt-2 mb-14"
+                        source={Images.SHPE_LOGO}
+                    />
+                </View>
+
+                <View className="items-center mx-8">
+                    <Text className="text-white text-center text-4xl font-bold">Student Login</Text>
+                    <Text className="text-white text-center text-lg">Sign in with your Texas A&M email account to access
+                        student-exclusive features.</Text>
+                </View>
+                {/* Action Button */}
+                <View className="mx-8 mt-20">
+                    <InteractButton
+                        onPress={() => googleSignIn()}
+                        label="Sign In with Google"
+                        buttonClassName="justify-center items-center bg-white rounded-xl h-14"
+                        textClassName="text-black font-semibold text-2xl"
+                        iconSource={{ uri: "https://developers.google.com/static/identity/images/g-logo.png" }}
+                    />
+                    <Text className="text-primary-orange text-lg text-center font-bold mt-2">Sign in using tamu.edu account</Text>
+                    {error && <Text className="text-center mt-2 text-red-1 text-lg">{error}</Text>}
+                    {loading && (
+                        <ActivityIndicator className="mt-4" size="small" />
+                    )}
+                </View>
+
+                {/* Footer */}
+                <View className="mx-8 flex-1 justify-end items-center">
+                    <View className="flex-row items-center">
+                        <Text className="text-grey-light text-lg">Don't have a student account?</Text>
+                        <TouchableOpacity
+                            className="items-center"
+                            onPress={() => navigation.navigate("LoginGuest")}
+                            activeOpacity={1}
+                        >
+                            <Text className="text-primary-orange text-lg ml-1">Guest Login</Text>
+                        </TouchableOpacity>
+
+                    </View>
+                </View>
+            </SafeAreaView>
+        </LinearGradient>
     );
 };
 

@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, AppState, TouchableOpacity, Pressable, AppStateStatus } from 'react-native';
+import { View, Text, AppState, TouchableOpacity, Pressable, AppStateStatus, Image } from 'react-native';
 import { User, onAuthStateChanged, reload, sendEmailVerification } from 'firebase/auth';
 import { Octicons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -7,6 +7,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
 import { AuthStackParams } from '../../types/navigation';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Images } from '../../../assets';
 
 const GuestVerification = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [appState, setAppState] = useState(AppState.currentState);
@@ -73,37 +75,57 @@ const GuestVerification = ({ navigation }: NativeStackScreenProps<AuthStackParam
 
 
     return (
-        <SafeAreaView className='flex-1 bg-dark-navy py-10 px-8' edges={["top"]}>
-            <TouchableOpacity
-                className="mb-4"
-                onPress={() => {
-                    signOutUser(false);
-                    navigation.navigate("LoginScreen");
-                }}
-            >
-                <Octicons name="chevron-left" size={30} color="white" />
-            </TouchableOpacity>
-
-            <Text className='text-white text-center text-3xl'>Please verify your email</Text>
-            <View className='flex-col items-center mb-12 mx-6 h-[75%]'>
-                <View className='rounded-full border-4 border-white h-32 w-32 items-center justify-center my-8'>
-                    <Octicons name="mail" size={65} color="white" />
+        <LinearGradient
+            colors={['#191740', '#413CA6']}
+            className="flex-1"
+        >
+            <SafeAreaView className="flex-1">
+                {/* Header */}
+                <View className='px-4 mt-5'>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate("LoginScreen")}
+                        activeOpacity={1}
+                    >
+                        <Octicons name="chevron-left" size={30} color="white" />
+                    </TouchableOpacity>
                 </View>
-                <Text className='text-white text-lg'>We sent an email to <Text className='text-pale-orange'>{auth.currentUser?.email}</Text> {"\n"}If you don't see it, you may need to check your spam folder</Text>
 
-            </View>
-            {(!auth.currentUser?.emailVerified && !resend) && (
-                <Pressable
-                    onPress={resendVerificationEmail}
-                >
-                    <Text className="text-slate-400 text-xl"><Text className='text-white text-xl'>If you did not receive an email then click </Text>Resend Verification Email</Text>
-                </Pressable>
-            )}
+                <View className="items-center">
+                    <Image
+                        className="flex-row h-20 w-20 mt-2 mb-14"
+                        source={Images.SHPE_LOGO}
+                    />
+                </View>
 
-            {resend && (
-                <Text className='text-white text-xl'>Another verification email has been resend</Text>
-            )}
-        </SafeAreaView>
+                <View className="items-center mx-8">
+                    <Text className="text-white text-center text-4xl font-bold">Email Verification</Text>
+                </View>
+
+                <View className="mx-8 mt-10 items-center">
+                    <View className='rounded-full border-4 border-white h-36 w-36 items-center justify-center'>
+                        <Octicons name="mail" size={75} color="white" />
+                    </View>
+                    <Text className='text-white text-center text-lg mt-4'>We sent an email to <Text className='text-primary-orange text-bold'>{auth.currentUser?.email}</Text> {"\n"}If you don't see it, you may need to check your spam folder</Text>
+
+                </View>
+                <View className='mx-8 flex-1 justify-end'>
+
+                    {(!auth.currentUser?.emailVerified && !resend) && (
+                        <Pressable
+                            onPress={resendVerificationEmail}
+                        >
+                            <Text className="text-white text-center text-lg text-semibold">Did not receive verification email? <Text className='text-primary-orange'>Resend</Text></Text>
+                        </Pressable>
+                    )}
+
+                    {resend && (
+                        <Text className='text-primary-orange text-lg'>Another verification email has been resend</Text>
+                    )}
+                </View>
+
+
+            </SafeAreaView>
+        </LinearGradient>
     );
 };
 
