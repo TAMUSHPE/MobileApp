@@ -21,11 +21,16 @@ import MemberSHPE from "../screens/home/MemberSHPE";
 import Members from "../screens/home/Members";
 import { AboutSettingsScreen, AccountSettingsScreen, DisplaySettingsScreen, FAQSettingsScreen, FeedBackSettingsScreen, ProfileSettingsScreen, SettingsScreen } from "../screens/userProfile/Settings";
 import { UserContext } from "../context/UserContext";
+import { useColorScheme } from "react-native";
 
 const HomeStack = () => {
     const Stack = createNativeStackNavigator<HomeStackParams>();
     const { userInfo } = useContext(UserContext)!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     return (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
