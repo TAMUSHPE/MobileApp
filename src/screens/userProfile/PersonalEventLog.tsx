@@ -86,7 +86,6 @@ const PersonalEventLog = ({ navigation }: NativeStackScreenProps<UserProfileStac
                 </View>
 
                 <View className='mx-4'>
-                    {isLoading && <ActivityIndicator size="small" className='mt-4' />}
                     {!isLoading && events.map(({ eventData, eventLog }, index) => (
                         <View
                             className={`mt-8 rounded-md p-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
