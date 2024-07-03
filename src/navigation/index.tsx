@@ -139,7 +139,7 @@ const RenderUserLoading = () => {
                     className="h-36 w-36"
                 />
             </View>
-            <ActivityIndicator className='mt-4' size={"large"} />
+            <ActivityIndicator className='mt-4' size={"small"} />
         </View>
     );
 };

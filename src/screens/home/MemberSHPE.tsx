@@ -295,7 +295,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
 
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>
                                 Pay the <TouchableOpacity onPress={() => handleLinkPress((tamuLink?.url || ""))}>
-                                    <Text className='text-primary-blue font-bold text-xl' style={{ lineHeight: 0 }}>chapter dues</Text>
+                                    <Text className='text-primary-blue font-bold text-xl underline' style={{ lineHeight: 0 }}>chapter dues</Text>
                                 </TouchableOpacity>, which include a t-shirt. Be sure to take a screenshot of your <Text className='font-bold'>receipt</Text> and upload it below.
                             </Text>
 
@@ -339,7 +339,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
 
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>
                                 1. Create a <TouchableOpacity onPress={() => handleLinkPress((tamuLink?.url || ""))}>
-                                    <Text className='text-primary-blue font-bold text-xl' style={{ lineHeight: 0 }}>national account</Text>
+                                    <Text className='text-primary-blue font-bold text-xl underline' style={{ lineHeight: 0 }}>national account</Text>
                                 </TouchableOpacity>
                             </Text>
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>2. Select the "Join Membership" or "Renew Membership" tab.</Text>
