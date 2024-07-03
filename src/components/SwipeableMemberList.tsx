@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text, SafeAreaView, FlatList, StatusBar, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, SafeAreaView, FlatList, TouchableOpacity } from "react-native";
 import React, { useRef, useCallback, useState } from "react";
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import MemberCard from "./MemberCard";
@@ -6,6 +6,7 @@ import { PublicUserInfo } from "../types/user";
 import DismissibleModal from "./DismissibleModal";
 import { Octicons } from '@expo/vector-icons';
 import { setMOTM } from "../api/firebaseUtils";
+import { StatusBar } from "expo-status-bar";
 
 
 const Separator = () => <View style={styles.itemSeparator} />;

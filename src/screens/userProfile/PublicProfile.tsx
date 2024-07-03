@@ -126,7 +126,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
     return (
         <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`}>
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
-                <StatusBar style="light" />
+                <StatusBar style={darkMode ? "light" : "dark"} />
                 <View>
                     <Image
                         className="flex w-full absolute h-full"
@@ -134,7 +134,12 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                         source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
                         blurRadius={15}
                     />
-                    <View className='absolute w-full h-full bg-[#0007]' />
+                    {darkMode ? (
+                        <View className='absolute w-full h-full bg-[#0007]' />
+                    ) : (
+                        <View className='absolute w-full h-full bg-[#fff4]' />
+
+                    )}
 
                     <SafeAreaView edges={['top']}>
                         {/* Back and Edit Button */}
