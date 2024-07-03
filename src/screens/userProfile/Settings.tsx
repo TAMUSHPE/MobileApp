@@ -13,13 +13,15 @@ import { setPublicUserData, setPrivateUserData, getUser, getCommittees, submitFe
 import { getBlobFromURI, selectFile, selectImage } from '../../api/fileSelection';
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
-import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
 import { HomeStackParams } from '../../types/navigation';
 import { Committee } from '../../types/committees';
 import { MAJORS, classYears } from '../../types/user';
 import { Images } from '../../../assets';
-import DownloadIcon from '../../../assets/arrow-down-solid.svg';
-import UploadFileIcon from '../../../assets/file-arrow-up-solid-black.svg';
+import DownloadIconBlack from '../../../assets/arrow-down-solid.svg';
+import DownloadIconWhite from '../../../assets/arrow-down-solid_white.svg'
+import UploadFileIconBlack from '../../../assets/file-arrow-up-solid-black.svg';
+import UploadFileIconWhite from '../../../assets/file-arrow-up-solid.svg'
+
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../../components/SettingsComponents"
 import CustomDropDown from '../../components/CustomDropDown';
 import { Circle, Svg } from 'react-native-svg';
@@ -506,15 +508,15 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                                         transform="rotate(-90, 50, 50)"
                                     />
                                 </Svg>
-                                <UploadFileIcon width={110} height={110} />
+                                {darkMode ? <UploadFileIconWhite width={110} height={110} /> : <UploadFileIconBlack width={110} height={110} />}
                             </TouchableOpacity>
 
                             {resumeURL && (
                                 <TouchableOpacity onPress={async () => { handleLinkPress(resumeURL!) }}>
-                                    <View className='relative flex-row items-center border-b border-black'>
-                                        <Text className="text-black font-semibold text-lg">View Resume</Text>
+                                    <View className={`relative flex-row items-center border-b ${darkMode ? "border-white" : "border-black"}`}>
+                                        <Text className={`font-semibold text-lg ${darkMode ? "text-white" : "text-black"}`}>View Resume</Text>
                                         <View className='absolute left-full ml-1'>
-                                            <DownloadIcon width={15} height={15} color='black' />
+                                            {darkMode ? <DownloadIconWhite width={15} height={15} /> : <DownloadIconBlack width={15} height={15} />}
                                         </View>
                                     </View>
                                 </TouchableOpacity>
