@@ -390,7 +390,7 @@ export const isUsernameUnique = async (username: string): Promise<boolean> => {
     }
 };
 
-const backupAndDeleteUserData = async (userId: string) => {
+export const backupAndDeleteUserData = async (userId: string) => {
     const userDocRef = doc(db, `users/${userId}`);
     const backupUserDocRef = doc(db, `deleted-accounts/${userId}`);
     const batch = writeBatch(db);
@@ -423,7 +423,7 @@ const backupAndDeleteUserData = async (userId: string) => {
     await batch.commit();
 };
 
-const deleteUserStorageData = async (userId: string) => {
+export const deleteUserStorageData = async (userId: string) => {
     const userDocsRef = ref(storage, `user-docs/${userId}`);
 
     try {
@@ -436,7 +436,7 @@ const deleteUserStorageData = async (userId: string) => {
     }
 };
 
-const deleteUserAuthentication = async (userId: string) => {
+export const deleteUserAuthentication = async (userId: string) => {
     try {
         if (auth.currentUser) {
             await deleteUser(auth.currentUser);

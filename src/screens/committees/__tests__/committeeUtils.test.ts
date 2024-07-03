@@ -34,14 +34,17 @@ describe("Get Committees", () => {
         await clearCollection("users");
         await clearCollection("committees")
 
-        const headUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
-        await createTestUserInFirebase(headUser);
-        await waitForUser(HEADUSER);
     })
 
     afterAll(async () => {
         await clearCollection("users");
         await clearCollection("committees")
+    });
+
+    beforeEach(async () => {
+        const headUser = await generateTestUsers({ publicInfo: { uid: HEADUSER } });
+        await createTestUserInFirebase(headUser);
+        await waitForUser(HEADUSER, 50);
     });
 
     test("Get committees returns empty array if no data", async () => {
@@ -397,9 +400,6 @@ describe("getCommitteeEvents", () => {
 
     beforeEach(async () => {
         await clearCollection("events");
-
-
-
     });
 
     test("should fetch events for given committees", async () => {
@@ -439,7 +439,14 @@ describe("getLeads", () => {
 
     beforeAll(async () => {
         await clearCollection("users");
+    });
 
+    afterAll(async () => {
+        await clearCollection("users");
+
+    })
+
+    beforeEach(async () => {
         const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, roles: { lead: true } } });
         const nonLeadUser = await generateTestUsers({ publicInfo: { uid: NON_LEAD_USER_UID, roles: { lead: false } } });
 
@@ -447,7 +454,7 @@ describe("getLeads", () => {
         await createTestUserInFirebase(nonLeadUser);
         await waitForUser(LEAD_USER_UID);
         await waitForUser(NON_LEAD_USER_UID);
-    });
+    })
 
     test("returns only users with lead role", async () => {
         const leads = await getLeads();
@@ -465,7 +472,13 @@ describe("getRepresentatives", () => {
 
     beforeAll(async () => {
         await clearCollection("users");
+    });
 
+    afterAll(async () => {
+        await clearCollection("users");
+    });
+
+    beforeEach(async () => {
         const repUser = await generateTestUsers({ publicInfo: { uid: REP_USER_UID, roles: { representative: true } } });
         const nonRepUser = await generateTestUsers({ publicInfo: { uid: NON_REP_USER_UID, roles: { representative: false } } });
 
@@ -473,7 +486,7 @@ describe("getRepresentatives", () => {
         await createTestUserInFirebase(nonRepUser);
         await waitForUser(REP_USER_UID);
         await waitForUser(NON_REP_USER_UID);
-    });
+    })
 
     test("returns only users with representative role", async () => {
         const representatives = await getRepresentatives();
@@ -492,7 +505,13 @@ describe("getTeamMembers", () => {
 
     beforeAll(async () => {
         await clearCollection("users");
+    })
 
+    afterAll(async () => {
+        await clearCollection("users");
+    })
+
+    beforeEach(async () => {
         const officerUser = await generateTestUsers({ publicInfo: { uid: OFFICER_USER_UID, roles: { officer: true } } });
         const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, roles: { lead: true } } });
         const repUser = await generateTestUsers({ publicInfo: { uid: REP_USER_UID, roles: { representative: true } } });
@@ -509,9 +528,25 @@ describe("getTeamMembers", () => {
     });
 
     test("returns only users with officer, lead, or representative roles", async () => {
+        await clearCollection("users");
+
+        const officerUser = await generateTestUsers({ publicInfo: { uid: OFFICER_USER_UID, roles: { officer: true } } });
+        const leadUser = await generateTestUsers({ publicInfo: { uid: LEAD_USER_UID, roles: { lead: true } } });
+        const repUser = await generateTestUsers({ publicInfo: { uid: REP_USER_UID, roles: { representative: true } } });
+        const nonTeamUser = await generateTestUsers({ publicInfo: { uid: NON_TEAM_USER_UID, roles: { officer: false, lead: false, representative: false } } });
+
+        await createTestUserInFirebase(officerUser);
+        await createTestUserInFirebase(leadUser);
+        await createTestUserInFirebase(repUser);
+        await createTestUserInFirebase(nonTeamUser);
+        await waitForUser(OFFICER_USER_UID);
+        await waitForUser(LEAD_USER_UID);
+        await waitForUser(REP_USER_UID);
+        await waitForUser(NON_TEAM_USER_UID);
+
         const teamMembers = await getTeamMembers();
         expect(Array.isArray(teamMembers)).toBe(true);
-        console.log("Team Member UIDs:", teamMembers.map(member => member.uid));
+        console.log("Team Member UIDs:", teamMembers.map(member => member.roles));
         expect(teamMembers.length).toBe(3);
 
         const teamMemberUIDs = teamMembers.map(member => member.uid);
