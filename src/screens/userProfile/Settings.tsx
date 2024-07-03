@@ -38,18 +38,6 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>)
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const { name, roles, photoURL, chapterExpiration, nationalExpiration } = userInfo?.publicInfo ?? {};
-    const isOfficer = roles ? roles.officer : false;
-
-    const [isVerified, setIsVerified] = useState<boolean>(false);
-    let badgeColor = getBadgeColor(isOfficer!, isVerified);
-
-    useEffect(() => {
-        if (nationalExpiration && chapterExpiration) {
-            setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
-        }
-    }, [nationalExpiration, chapterExpiration])
-
     return (
         <ScrollView
             className={`flex-col ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}
@@ -298,36 +286,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
         })
     }
 
-
-    const CommitteeListItemComponent = ({ committeeData, onPress, darkMode, isChecked, committeeIndex }: any) => {
-        return (
-            <TouchableHighlight
-                className={`border-2 my-4 p-4 rounded-xl w-11/12 shadow-md shadow-black ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${isChecked ? "border-green-400" : "border-transparent"}`}
-                onPress={() => onPress()}
-                underlayColor={darkMode ? "#7a7a7a" : "#DDD"}
-            >
-                <View className={`items-center flex-row justify-between`}>
-                    <View className='flex-row items-center'>
-                        <View className='h-8 w-8 mr-4 rounded-full' style={{ backgroundColor: committeeData.color }} />
-                        <Text className={`text-2xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeData.name}</Text>
-                    </View>
-                    {isChecked && <Text className={`text-xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeIndex + 1}</Text>}
-                </View>
-            </TouchableHighlight>
-        );
-    };
-
-    const handleCommitteeToggle = (name: string) => {
-        setCommittees(prevCommittees => {
-            const isCommitteeSelected = prevCommittees.includes(name);
-            if (isCommitteeSelected) {
-                return prevCommittees.filter(committee => committee !== name);
-            } else {
-                return [...prevCommittees, name];
-            }
-        });
-    };
-
     const findMajorByIso = (iso: string) => {
         const majorObj = MAJORS.find(major => major.iso === iso);
         return majorObj ? majorObj.major : null;
@@ -371,13 +329,18 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                 }}
                 onDone={async () => {
                     if (validateDisplayName(displayName, true) && validateName(name, true)) {
-                        const isUnique = await isUsernameUnique(displayName!);
-                        if (isUnique) {
-                            saveChanges();
-                            setShowNamesModal(false);
+                        if (displayName === userInfo?.publicInfo?.displayName) {
+                            saveChanges()
+                            setShowNamesModal(false)
                         } else {
-                            setDisplayName(userInfo?.publicInfo?.displayName);
-                            alert("Display name is already taken. Please choose another one.");
+                            const isUnique = await isUsernameUnique(displayName!);
+                            if (isUnique) {
+                                saveChanges();
+                                setShowNamesModal(false);
+                            } else {
+                                setDisplayName(userInfo?.publicInfo?.displayName);
+                                alert("Display name is already taken. Please choose another one.");
+                            }
                         }
                     }
 
@@ -413,6 +376,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                     </KeyboardAvoidingView>
                 )}
             />
+
             {/* Bio Modal */}
             <SettingsModal
                 visible={showBioModal}
