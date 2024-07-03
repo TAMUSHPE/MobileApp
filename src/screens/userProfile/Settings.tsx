@@ -663,18 +663,35 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                         }
                     })
                         .then(async () => {
-                            if (auth.currentUser?.uid) {
-                                await getUser(auth.currentUser?.uid)
-                                    .then(async (firebaseUser) => {
-                                        if (firebaseUser) {
-                                            setUserInfo(firebaseUser);
-                                            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                                        } else {
-                                            console.warn("firebaseUser returned as undefined when attempting to sync. Sync will be skipped.");
+                            setUserInfo(prevUserInfo => ({
+                                ...prevUserInfo,
+                                private: {
+                                    ...prevUserInfo?.private,
+                                    privateInfo: {
+                                        ...prevUserInfo?.private?.privateInfo,
+                                        settings: {
+                                            ...prevUserInfo?.private?.privateInfo?.settings,
+                                            darkMode: !darkMode,
+                                            useSystemDefault: false,
                                         }
-                                    })
-                                    .catch(err => console.error(err));
-                            }
+                                    }
+                                }
+                            }));
+
+                            await AsyncStorage.setItem("@user", JSON.stringify({
+                                ...userInfo,
+                                private: {
+                                    ...userInfo?.private,
+                                    privateInfo: {
+                                        ...userInfo?.private?.privateInfo,
+                                        settings: {
+                                            ...userInfo?.private?.privateInfo?.settings,
+                                            darkMode: !darkMode,
+                                            useSystemDefault: false,
+                                        }
+                                    }
+                                }
+                            }));
                         })
                         .catch((err) => console.error(err))
                         .finally(() => {
@@ -698,18 +715,33 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                         }
                     })
                         .then(async () => {
-                            if (auth.currentUser?.uid) {
-                                await getUser(auth.currentUser?.uid)
-                                    .then(async (firebaseUser) => {
-                                        if (firebaseUser) {
-                                            setUserInfo(firebaseUser);
-                                            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                                        } else {
-                                            console.warn("firebaseUser returned as undefined when attempting to sync. Sync will be skipped.");
+                            setUserInfo(prevUserInfo => ({
+                                ...prevUserInfo,
+                                private: {
+                                    ...prevUserInfo?.private,
+                                    privateInfo: {
+                                        ...prevUserInfo?.private?.privateInfo,
+                                        settings: {
+                                            ...prevUserInfo?.private?.privateInfo?.settings,
+                                            useSystemDefault: !systemDefaultToggled,
                                         }
-                                    })
-                                    .catch(err => console.error(err));
-                            }
+                                    }
+                                }
+                            }));
+
+                            await AsyncStorage.setItem("@user", JSON.stringify({
+                                ...userInfo,
+                                private: {
+                                    ...userInfo?.private,
+                                    privateInfo: {
+                                        ...userInfo?.private?.privateInfo,
+                                        settings: {
+                                            ...userInfo?.private?.privateInfo?.settings,
+                                            useSystemDefault: !systemDefaultToggled,
+                                        }
+                                    }
+                                }
+                            }));
                         })
                         .catch((err) => console.error(err))
                         .finally(() => {
