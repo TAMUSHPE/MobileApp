@@ -9,14 +9,20 @@ import { updateLink, fetchLink } from '../../api/firebaseUtils';
 import { handleLinkPress } from '../../helpers/links';
 import { LinkData } from '../../types/links';
 
-const generateLinkIDs = (numberOfLinks: number): string[] => {
-    return Array.from({ length: numberOfLinks }, (_, i) => (i + 1).toString());
-};
-
-const numberOfLinks = 7;
 
 
+/**
+ * Link Editor is a management tool for all links displayed in the app.
+ * The first five links are reserved for social media links. (Link IDs 1-5)
+ * The next two links are reserved for membership link. (Link IDs 6-7)
+ * 
+ * If you need to add more links, you can increase the numberOfLinks variable.
+ * Then create a new link by visiting the link editor and filling out the form
+ * 
+ * To use this new link, use the fetchLink function with the respective link ID
+ */
 const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+    const numberOfLinks = 8;
     const linkIDs = generateLinkIDs(numberOfLinks);
     const [links, setLinks] = useState<LinkData[]>(
         linkIDs.map(id => ({
@@ -146,6 +152,10 @@ const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
             </ScrollView>
         </SafeAreaView>
     );
+};
+
+const generateLinkIDs = (numberOfLinks: number): string[] => {
+    return Array.from({ length: numberOfLinks }, (_, i) => (i + 1).toString());
 };
 
 export default LinkEditor;
