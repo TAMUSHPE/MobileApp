@@ -48,10 +48,10 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
             }}
         >
             {/* Committee Status and Head */}
-            <View className='flex-row justify-between items-center'>
-                <View className='flex-row items-center'></View>
+            <View className='flex-row justify-end'>
                 <Image source={localHead?.photoURL ? { uri: localHead.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-9 w-9 rounded-full' />
             </View>
+
             {/* Logo */}
             <View className='items-center justify-center flex-1'>
                 {darkMode ?

@@ -88,10 +88,13 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
         if (auth.currentUser) {
             try {
                 await uploadResumeVerificationDoc(auth.currentUser.uid, userInfo?.publicInfo?.resumePublicURL!);
+                setSubmittedResume(true);
                 alert('Resume submission was successful! You will receive a notification when your resume is approved.');
+
             } catch (error) {
                 console.error('Error submitting resume: ', error);
                 alert('There was an error submitting your resume. Please try again.');
+                setSubmittedResume(false);
             }
         }
     }, [userInfo]);
@@ -193,7 +196,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                                     try {
                                         // Remove from resume verification if submitted
                                         await removeSubmittedResume();
-                                        alert('Resume was successfully removed.');
+                                        alert('Your submitted Resume was successfully removed.');
 
                                         // Delete resume from user data in Firebase
                                         await deleteUserResumeData(auth.currentUser?.uid!);
@@ -260,7 +263,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                     <Octicons name="alert" size={24} color={darkMode ? "white" : "black"} />
                     <View className='flex items-center w-[80%]'>
                         <Text className={`text-center text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>Be sure to remove information you don't want public (i.e. phone #, address, email, etc.)</Text>
-                        <Text className="text-center text-lg font-bold text-red-1 mt-2">Only an officer can remove you resume after it's been approved.</Text>
+                        <Text className="text-center text-lg font-bold text-red-1 mt-2">Only an officer can remove your resume after it's been approved.</Text>
                         <View className="flex-row mt-8">
                             <TouchableOpacity
                                 onPress={async () => {
