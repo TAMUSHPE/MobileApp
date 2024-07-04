@@ -906,7 +906,7 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStack
             </View>
             <Pressable
                 onPress={handleFeedbackSubmit}
-                className={`mt-4 rounded-md w-[50%] py-2 items-center justify-center ${feedback.length === 0 ? 'bg-neutral-400' : 'bg-pale-blue'}`}
+                className={`mt-4 rounded-md w-[50%] py-2 items-center justify-center ${feedback.length === 0 ? 'bg-neutral-400' : 'bg-primary-blue'}`}
                 disabled={feedback.length === 0}
             >
                 <Text className={` text-lg font-semibold ${feedback.length === 0 ? 'text-neutral-200' : 'text-white'}`}>Submit FeedBack</Text>

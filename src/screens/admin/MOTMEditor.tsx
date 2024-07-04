@@ -37,8 +37,7 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
     const [infoVisible, setInfoVisible] = useState(false);
     const [invisibleConfirmModal, setInvisibleConfirmModal] = useState(false);
     const [membersModal, setMembersModal] = useState(false);
-    const [loadingMember, setLoadingMember] = useState(true);
-    const [loadingMOTM, setLoadingMOTM] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     // Very Hacky way to force update MOTM Card from both swipeable and modal
     const [forceUpdate, setForceUpdate] = useState(0);
@@ -62,20 +61,18 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
     );
 
     const fetchMembers = async () => {
-        setLoadingMember(true);
         try {
             const fetchedMembers = await getMembersExcludeOfficers();
             setMembers(fetchedMembers);
         } catch (error) {
             console.error('Error fetching members:', error);
-        } finally {
-            setLoadingMember(false);
         }
     };
 
     useEffect(() => {
         fetchMembers();
         const fetchSuggestedLocalMOTM = async () => {
+            setLoading(true);
             try {
                 const response = await calculateMOTM();
                 if (response && response.data) {
@@ -83,6 +80,8 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                 }
             } catch (error) {
                 console.error('Error fetching user info:', error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -142,6 +141,8 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                 <View className='mx-5'>
                     <Text className={`text-2xl font-bold mb-3 mt-10 ${darkMode ? "text-white" : "text-black"}`}>Suggestions</Text>
                 </View>
+
+                {loading && <ActivityIndicator size="small" className='mt-5' />}
 
                 <SwipeableMemberList
                     userData={localSuggestedMOTM!}

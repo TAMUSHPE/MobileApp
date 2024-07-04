@@ -49,9 +49,11 @@ const SwipeableMemberCard = ({ userData, onSwipe }: { userData: PublicUserInfo, 
                 }
             }}
         >
-            <MemberCard
-                userData={userData}
-                displayPoints={true} />
+            <View className="mx-5">
+                <MemberCard
+                    userData={userData}
+                    displayPoints={true} />
+            </View>
 
             <DismissibleModal
                 visible={confirmVisible && invisibleConfirmModal}
