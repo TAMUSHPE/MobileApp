@@ -38,10 +38,9 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
 
 
     return (
-        <View className="mx-4 mt-10 ">
+        <View className="mx-4">
             <Text className={`text-2xl font-bold mb-3 ${darkMode ? "text-white" : "text-black"}`}>Member of the Month</Text>
             <TouchableOpacity
-                className=''
                 onPress={() => {
                     navigation?.navigate("PublicProfile", { uid: MOTM?.uid });
                 }}>

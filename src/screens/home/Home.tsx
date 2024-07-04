@@ -428,7 +428,9 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 </View>
 
                 {/* MOTM */}
-                <MOTMCard navigation={navigation} />
+                <View className='mt-10'>
+                    <MOTMCard navigation={navigation} />
+                </View>
 
                 <View className='pb-16' />
             </ScrollView>

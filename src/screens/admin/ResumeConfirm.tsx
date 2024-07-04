@@ -154,7 +154,7 @@ const ResumeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams>) 
             )}
 
             {loading && (
-                <ActivityIndicator size="large" className='mt-8' />
+                <ActivityIndicator size="small" className='mt-8' />
             )}
 
             <DismissibleModal
