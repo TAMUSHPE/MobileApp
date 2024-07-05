@@ -10,7 +10,7 @@ import { EventsStack } from "./EventsStack";
 import { CommitteesStack } from "./CommitteesStack";
 import { UserProfileStack } from "./UserProfileStack";
 import { Octicons } from '@expo/vector-icons';
-import { Image, Text, View } from "react-native";
+import { Image, Text, View, useColorScheme } from "react-native";
 import { auth } from "../config/firebaseConfig";
 import { Images } from "../../assets";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -31,19 +31,23 @@ const MainStack = () => {
 };
 
 const HomeBottomTabs = () => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const BottomTabs = createBottomTabNavigator();
 
     const TAB_ICON_CONFIG: Record<TabName, OcticonIconName> = {
         HomeTab: 'home',
-        ResourcesTab: 'rows',
+        ResourcesTab: 'book',
         EventsTab: "calendar",
-        CommitteesTab: 'stack',
+        CommitteesTab: 'people',
         ProfileTab: 'person',
     };
-
-    const activeIconColor = 'black';
-    const inactiveIconColor = 'black';
-    const iconSize = 28;
 
     const generateTabIcon = (routeName: TabName, focused: boolean): JSX.Element => {
         if (routeName == 'ProfileTab') {
@@ -52,32 +56,36 @@ const HomeBottomTabs = () => {
                     <Image
                         source={auth?.currentUser?.photoURL ? { uri: auth?.currentUser?.photoURL } : Images.DEFAULT_USER_PICTURE}
                         style={{ width: 32, height: 32, borderRadius: 16 }}
-                        className={`${focused ? 'border-2 border-black' : 'border-2 border-transparent'}`}
+                        className={`${focused ? (darkMode ? 'border-2 border-white' : 'border-2 border-black') : 'border-2 border-transparent'}`}
                     />
                 </View>
             );
         }
 
         const iconName = TAB_ICON_CONFIG[routeName] || 'x-circle';
-        const iconColor = focused ? activeIconColor : inactiveIconColor;
+        const iconColor = darkMode ? "white" : "black";
+
         let tabName: string = routeName.replace('Tab', '');
+
         return (
             <View className='flex-col items-center justify-center pt-2'>
-                <Octicons name={iconName} size={iconSize} color={iconColor} />
-                <Text className='text-black'>{focused ? tabName : ""}</Text>
+                <Octicons name={iconName} size={24} color={iconColor} />
+                <Text className={`text-xs ${darkMode ? "text-white" : "text-black"}`}>{focused ? tabName : ""}</Text>
             </View>
         );
     };
 
     return (
-        <View className='flex-1 bg-offwhite'>
+        <View className='flex-1 '>
             <BottomTabs.Navigator
                 screenOptions={({ route }) => ({
                     tabBarIcon: ({ focused }) => generateTabIcon(route.name as TabName, focused),
                     headerShown: false,
-                    tabBarActiveTintColor: 'maroon',
-                    tabBarInactiveTintColor: 'black',
                     tabBarShowLabel: false,
+                    tabBarStyle: {
+                        backgroundColor: darkMode ? 'black' : 'white',
+                        borderTopWidth: 0,
+                    }
                 })}
             >
                 <BottomTabs.Screen name="HomeTab" component={HomeStack} />

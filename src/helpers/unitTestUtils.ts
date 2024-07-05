@@ -204,28 +204,45 @@ export const waitForUser = async (uid: string, maxRetries: number = 16, interval
 };
 
 
-const clearSubcollections = async (docRef: DocumentReference) => {
-    const subcollectionsSnapshot = await getDocs(collection(docRef, 'private'));
-    const batch = writeBatch(db);
+const clearSubcollections = async (docRef: DocumentReference, retries = 5) => {
+    while (retries > 0) {
+        try {
+            const subcollectionsSnapshot = await getDocs(collection(docRef, 'private'));
+            const batch = writeBatch(db);
 
-    subcollectionsSnapshot.forEach(subDoc => {
-        batch.delete(subDoc.ref);
-    });
+            subcollectionsSnapshot.forEach(subDoc => {
+                batch.delete(subDoc.ref);
+            });
 
-    await batch.commit();
-};
-
-export const clearCollection = async (collectionName: string) => {
-    const collectionRef = collection(db, collectionName);
-    const querySnapshot = await getDocs(collectionRef);
-
-    const batch = writeBatch(db);
-
-    for (const documentSnapshot of querySnapshot.docs) {
-        await clearSubcollections(documentSnapshot.ref);
-        batch.delete(documentSnapshot.ref);
+            await batch.commit();
+            return; // Exit if successful
+        } catch (error) {
+            retries--;
+            if (retries === 0) throw error;
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
     }
-
-    await batch.commit();
 };
 
+export const clearCollection = async (collectionName: string, retries = 5) => {
+    while (retries > 0) {
+        try {
+            const collectionRef = collection(db, collectionName);
+            const querySnapshot = await getDocs(collectionRef);
+
+            const batch = writeBatch(db);
+
+            for (const documentSnapshot of querySnapshot.docs) {
+                await clearSubcollections(documentSnapshot.ref);
+                batch.delete(documentSnapshot.ref);
+            }
+
+            await batch.commit();
+            return; // Exit if successful
+        } catch (error) {
+            retries--;
+            if (retries === 0) throw error;
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+    }
+};

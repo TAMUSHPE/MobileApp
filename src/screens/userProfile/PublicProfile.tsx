@@ -1,26 +1,26 @@
-import { View, Text, ActivityIndicator, Image, Alert, TouchableOpacity, Pressable, TextInput, ScrollView, RefreshControl } from 'react-native';
-import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RouteProp, useFocusEffect } from '@react-navigation/core';
-import { useRoute } from '@react-navigation/native';
+import { View, Text, ActivityIndicator, Image, Alert, TouchableOpacity, Pressable, TextInput, ScrollView, useColorScheme } from 'react-native';
+import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp, useFocusEffect } from '@react-navigation/core';;
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Octicons, FontAwesome } from '@expo/vector-icons';
+import { Octicons, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
-import { getCommittees, getPublicUserData, getUser, getUserEventLogs, setUserRoles } from '../../api/firebaseUtils';
-import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
+import { getPublicUserData, getUser, getUserEventLogs, setUserRoles } from '../../api/firebaseUtils';
+import { isMemberVerified } from '../../helpers/membership';
 import { handleLinkPress } from '../../helpers/links';
 import { UserProfileStackParams } from '../../types/navigation';
 import { PublicUserInfo, Roles } from '../../types/user';
-import { Committee } from '../../types/committees';
 import { Images } from '../../../assets';
-import TwitterSvg from '../../components/TwitterSvg';
 import ProfileBadge from '../../components/ProfileBadge';
 import DismissibleModal from '../../components/DismissibleModal';
 import { UserEventData } from '../../types/events';
-import { Timestamp } from 'firebase/firestore';
+import { DocumentSnapshot, Timestamp } from 'firebase/firestore';
+import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
+import { reverseFormattedFirebaseName } from '../../types/committees';
+import { formatDate, formatDateWithYear } from '../../helpers/timeUtils';
 
 export type PublicProfileScreenProps = {
     route: RouteProp<UserProfileStackParams, 'PublicProfile'>;
@@ -28,55 +28,60 @@ export type PublicProfileScreenProps = {
 };
 
 const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, navigation }) => {
-    // Data related to public profile user
     const { uid } = route.params;
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
+    const isCurrentUser = uid === auth.currentUser?.uid;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [publicUserData, setPublicUserData] = useState<PublicUserInfo | undefined>();
     const { nationalExpiration, chapterExpiration, roles, photoURL, name, major, classYear, bio, points, resumeVerified, resumePublicURL, email, isStudent, committees, pointsRank, isEmailPublic } = publicUserData || {};
-    const [committeesData, setCommitteesData] = useState<Committee[]>([]);
+
     const [events, setEvents] = useState<UserEventData[]>([]);
     const [modifiedRoles, setModifiedRoles] = useState<Roles | undefined>(undefined);
     const [isVerified, setIsVerified] = useState<boolean>(false);
-    const isOfficer = roles ? roles.officer : false;
-    const badgeColor = getBadgeColor(isOfficer!, isVerified);
-    const isCurrentUser = uid === auth.currentUser?.uid;
-
     const [loading, setLoading] = useState<boolean>(true);
-    const [refreshing, setRefreshing] = useState(false);
     const [updatingRoles, setUpdatingRoles] = useState<boolean>(false);
     const [showRoleModal, setShowRoleModal] = useState<boolean>(false);
-    const [showEventsLogModal, setEventsLogModal] = useState<boolean>(false);
+    const [endOfData, setEndOfData] = useState(false);
+    const lastVisibleRef = useRef<DocumentSnapshot | null>(null);
 
-    // Data related to currently authenticated user
-    const { userInfo, setUserInfo } = useContext(UserContext)!;
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
-
-
-    const fetchUserData = async () => {
-        console.log("Fetching user data...");
-        try {
-            const firebaseUser = await getUser(auth.currentUser?.uid!)
-            if (firebaseUser) {
-                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+    useEffect(() => {
+        const fetchUserData = async () => {
+            console.log("Fetching user data...");
+            try {
+                const firebaseUser = await getUser(auth.currentUser?.uid!)
+                if (firebaseUser) {
+                    await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                }
+                else {
+                    console.warn("User data undefined. Data was likely deleted from Firebase.");
+                }
+                setUserInfo(firebaseUser);
+            } catch (error) {
+                console.error("Error updating user:", error);
             }
-            else {
-                console.warn("User data undefined. Data was likely deleted from Firebase.");
-            }
-            setUserInfo(firebaseUser);
-        } catch (error) {
-            console.error("Error updating user:", error);
-        } finally {
-            setRefreshing(false);
         }
-    }
 
-    const onRefresh = useCallback(async () => {
+        const fetchInitialEventLogs = async () => {
+            setEvents([]);
+            const { events: initialEvents, lastVisibleDoc } = await getUserEventLogs(auth.currentUser?.uid!, 3, null, setEndOfData);
+            setEvents(initialEvents);
+            lastVisibleRef.current = lastVisibleDoc;
+        };
+
+
         if (isCurrentUser) {
-            setRefreshing(true);
             fetchUserData();
+            fetchInitialEventLogs();
         }
-    }, [uid]);
+    }, [isCurrentUser])
 
     useFocusEffect(
         useCallback(() => {
@@ -92,37 +97,11 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                     });
             };
 
-
-            if (isCurrentUser) {
-                fetchUserData();
-            }
             fetchPublicUserData();
 
             return () => { };
-        }, [auth])
+        }, [])
     );
-
-    // used to get committee color for badges
-    useEffect(() => {
-        const fetchCommitteeData = async () => {
-            const response = await getCommittees();
-            setCommitteesData(response);
-        }
-
-        const fetchUserEventLogs = async () => {
-            if (auth.currentUser?.uid) {
-                try {
-                    const data = await getUserEventLogs(auth.currentUser?.uid);
-                    setEvents(data);
-                } catch (error) {
-                    console.error('Error fetching user event logs:', error);
-                }
-            }
-        };
-
-        fetchCommitteeData();
-        fetchUserEventLogs();
-    }, [])
 
     useEffect(() => {
         if (nationalExpiration && chapterExpiration) {
@@ -130,284 +109,253 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
         }
     }, [nationalExpiration, chapterExpiration])
 
-    const RoleItem = ({ roleName, isActive, onToggle, darkMode }: {
-        roleName: string,
-        isActive: boolean,
-        onToggle: () => void,
-        darkMode: boolean
-    }) => {
+    const RoleItem = ({ roleName, isActive, onToggle }: { roleName: string, isActive: boolean, onToggle: () => void }) => {
         return (
             <Pressable onPress={onToggle} className='flex-row items-center py-1 mb-3'>
-                <View className={`w-7 h-7 mr-3 rounded-full border ${isActive && "bg-black"}`} />
+                <View className={`w-7 h-7 mr-3 rounded-full border ${isActive ? darkMode ? "bg-white" : "bg-black" : darkMode ? "border-white" : "border-black"}`} />
                 <Text className={`${darkMode ? "text-white" : "text-black"} text-lg`}>{roleName}</Text>
             </Pressable>
         );
     };
 
-    if (loading) {
-        return (
-            <View className='fixed top-1/2 -translate-y-1/2 '>
-                <ActivityIndicator
-                    size="large"
-                    animating={true}
-                />
-            </View>
-        );
-    }
-
-    if (!uid || uid === "") {
-        return (
-            <View>
-
-                <StatusBar style="light" />
+    return (
+        <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`}>
+            <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
+                <StatusBar style={darkMode ? "light" : "dark"} />
                 <View>
                     <Image
                         className="flex w-full absolute h-full"
                         defaultSource={Images.DEFAULT_USER_PICTURE}
-                        source={Images.DEFAULT_USER_PICTURE}
+                        source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
                         blurRadius={15}
                     />
-                    <View className='absolute w-full h-full bg-[#0007]' />
+                    {darkMode ? (
+                        <View className='absolute w-full h-full bg-[#0007]' />
+                    ) : (
+                        <View className='absolute w-full h-full bg-[#fff4]' />
 
-                    <SafeAreaView edges={['top']} >
-                        <View className='flex-row justify-between items-center mx-5 mt-1'>
-                            <TouchableOpacity
-                                onPress={() => navigation.goBack()}
-                                className="rounded-full w-10 h-10 justify-center items-center"
-                                style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                            >
-                                <Octicons name="chevron-left" size={30} color="white" />
-                            </TouchableOpacity>
+                    )}
+
+                    <SafeAreaView edges={['top']}>
+                        {/* Back and Edit Button */}
+                        <View>
+                            {!isCurrentUser &&
+                                <TouchableOpacity
+                                    onPress={() => navigation.goBack()}
+                                    className="mx-4 w-10 h-10 items-center justify-center rounded-full"
+                                    style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                                >
+                                    <Octicons name="chevron-left" size={30} color="white" />
+                                </TouchableOpacity>
+
+                            }
+                            {isCurrentUser &&
+                                <View className='flex-row justify-end'>
+                                    <TouchableOpacity
+                                        onPress={() => navigation.navigate("ProfileSettingsScreen")}
+                                        className="p-4"
+                                    >
+                                        <FontAwesome6 name="edit" size={24} color="white" />
+                                    </TouchableOpacity>
+                                </View>
+                            }
                         </View>
 
-                        <View className='flex items-center justify-center -mt-2 mb-8'>
+                        <View className='items-center justify-center -mt-5 mb-8'>
+                            {/* Profile Picture */}
                             <Image
                                 className="flex w-52 h-52 rounded-full"
                                 defaultSource={Images.DEFAULT_USER_PICTURE}
-                                source={Images.DEFAULT_USER_PICTURE}
+                                source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
                             />
-
-                            <View className="flex-col justify-center mt-2">
-                                <View className="relative flex-row items-center">
-                                    <Text className="text-white text-3xl font-semibold">No User Found</Text>
+                            <View className='flex-row items-center mx-16'>
+                                {/* General User Info */}
+                                <View className='justify-center items-center'>
+                                    <View className="flex-col justify-center mt-4 flex-wrap">
+                                        <View className="relative flex-row items-center flex-wrap">
+                                            <Text className="text-white text-3xl font-semibold text-center">{(name) ?? "Name"}</Text>
+                                        </View>
+                                    </View>
+                                    <View className='items-center justify-center'>
+                                        <Text className="text-white text-lg font-semibold">
+                                            {`${major} ${"'" + classYear?.substring(2)}`}
+                                            {points !== undefined && ` • ${points.toFixed(2)} pts`}
+                                        </Text>
+                                    </View>
+                                </View>
+                                <View className='absolute -right-12'>
+                                    {(isEmailPublic && email && email.trim() !== "") && (
+                                        <TouchableOpacity
+                                            className='items-center justify-center w-11 h-11 rounded-full'
+                                            style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                                            onPress={() => (handleLinkPress('mailto:' + email))}
+                                        >
+                                            <FontAwesome name="envelope" size={24} color="white" />
+                                        </TouchableOpacity>
+                                    )}
                                 </View>
                             </View>
-                        </View>
-                    </SafeAreaView>
-                </View>
-            </View>
-        )
-    }
 
-    return (
-        <ScrollView
-            refreshControl={
-                <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                />
-            }
-            bounces={isCurrentUser ? true : false}
-        >
-            <StatusBar style="light" />
-            {/* Profile Header */}
-            <View>
-                <Image
-                    className="flex w-full absolute h-full"
-                    defaultSource={Images.DEFAULT_USER_PICTURE}
-                    source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
-                    blurRadius={15}
-                />
-                <View className='absolute w-full h-full bg-[#0007]' />
-
-                <SafeAreaView edges={['top']} >
-                    <View className='flex-row justify-between items-center mx-5 mt-1'>
-                        {!isCurrentUser ?
-                            <TouchableOpacity
-                                onPress={() => navigation.goBack()}
-                                className="rounded-full w-10 h-10 justify-center items-center"
-                                style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
-                            >
-                                <Octicons name="chevron-left" size={30} color="white" />
-                            </TouchableOpacity>
-                            :
-                            <View />
-                        }
-
-                        <View className='flex-col relative items-center'>
-                            {isCurrentUser &&
+                            {/* Edit Role Button */}
+                            {hasPrivileges &&
                                 <TouchableOpacity
-                                    onPress={() => navigation.navigate("ProfileSettingsScreen")}
-                                    className="rounded-md px-3 py-2"
+                                    onPress={() => setShowRoleModal(true)}
+                                    className="rounded-xl px-3 py-2 mt-4"
                                     style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
                                 >
-                                    <Text className='text-white text-xl'>Edit</Text>
+                                    <Text className='text-white font-semibold text-xl'>Edit Role</Text>
                                 </TouchableOpacity>
                             }
                         </View>
-                    </View>
+                        {/* MemberSHPE Button */}
+                        {(isVerified && isCurrentUser) &&
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate("MemberSHPE")}
+                                className="m-3 rounded-full absolute bottom-0 left-0 items-center justify-center"
+                                style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+                            >
+                                <Image
+                                    resizeMode='contain'
+                                    className='w-16  h-16'
+                                    source={Images.SHPE_WHITE}
+                                />
+                            </TouchableOpacity>
+                        }
+                    </SafeAreaView>
+                </View>
 
-                    <View className='flex items-center justify-center -mt-2 mb-8'>
-                        <Image
-                            className="flex w-52 h-52 rounded-full"
-                            defaultSource={Images.DEFAULT_USER_PICTURE}
-                            source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
-                        />
-
-                        <View className="flex-col justify-center mt-2">
-                            <View className="relative flex-row items-center">
-                                <Text className="text-white text-3xl font-semibold">{name ?? "Name"}</Text>
-                            </View>
-                        </View>
-                        <View className='items-center justify-center'>
-                            <Text className="text-white text-lg font-semibold">
-                                {`${major} ${"'" + classYear?.substring(2)}`}
-                                {points !== undefined && ` • ${points.toFixed(2)} pts`}
-                                {points !== undefined && pointsRank && ` • rank ${pointsRank}`}
+                {/* Profile Body */}
+                <View className="flex-col mx-4 my-8">
+                    {/* User's Title */}
+                    <View
+                        className={`rounded-md p-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light "}`}
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                                width: 0,
+                                height: 2,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 3.84,
+                            elevation: 5,
+                        }}
+                    >
+                        <View className='flex-row items-center mb-4'>
+                            <Text className={`text-3xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>
+                                {roles?.customTitle ? roles.customTitle :
+                                    (isVerified ? "Member" :
+                                        (isStudent ? "Student" : "Guest"))
+                                }
                             </Text>
                         </View>
-                        {hasPrivileges &&
-                            <View className='flex items-center justify-center'>
-                                <View style={{ flexDirection: 'row' }}>
-                                    <TouchableOpacity
-                                        onPress={() => setShowRoleModal(true)}
-                                        className="rounded-md px-3 py-2"
-                                        style={{ backgroundColor: 'rgba(0,0,0,0.3)', marginRight: 10 }}
-                                    >
-                                        <Text className='text-white text-xl'>Edit Role</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        }
-                        {(isVerified && isCurrentUser) &&
-                            <View className='flex items-center justify-center'>
-                                <View style={{ flexDirection: 'row' }}>
-                                    <TouchableOpacity
-                                        onPress={() => navigation.navigate("MemberSHPE")}
-                                        className="rounded-md px-3 py-2"
-                                        style={{ backgroundColor: 'rgba(0,0,0,0.3)', marginRight: 10 }}
-                                    >
-                                        <Text className='text-white text-xl'>MemberSHPE</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        }
+                        <Text className={`text-xl  ${darkMode ? "text-white" : "text-black"}`}>{bio}</Text>
                     </View>
-                </SafeAreaView>
-            </View>
 
-            {/* Profile Body */}
-            <View className="flex-col m-8">
-                <View className='flex-row items-center'>
-                    <Text className='text-2xl italic'>
-                        {roles?.customTitle ? roles.customTitle :
-                            (isVerified ? "Member" :
-                                (isStudent ? "Student" : "Guest"))
-                        }
-                    </Text>
-                </View>
-                <Text className='text-lg mt-2'>{bio}</Text>
-                <View className='flex-row mt-4 items-center'>
-                    {(isEmailPublic && email && email.trim() !== "") && (
-                        <TouchableOpacity
-                            className='items-center justify-center mr-6'
-                            onPress={() => (handleLinkPress('mailto:' + email))}
+
+                    {committees && committees.length > 0 && (
+                        <View
+                            className={`mt-8 rounded-md p-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
                         >
-                            <FontAwesome name="envelope" size={24} color="black" />
-                            <Text className='text-lg font-semibold'>Email</Text>
-                        </TouchableOpacity>
+                            <Text className={`mb-4 text-3xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
+                            <View className='flex-row flex-wrap'>
+                                {committees?.map((committeeName, index) => {
+                                    return (
+                                        <View
+                                            className={`py-3 px-4 mr-2 mb-2 rounded-md bg-primary-blue`}
+                                            style={{
+                                                shadowColor: "#000",
+                                                shadowOffset: {
+                                                    width: 0,
+                                                    height: 2,
+                                                },
+                                                shadowOpacity: 0.25,
+                                                shadowRadius: 3.84,
+                                                elevation: 5,
+                                            }}
+                                            key={index}
+                                        >
+                                            <Text className={`text-lg text-white`}>{reverseFormattedFirebaseName(committeeName) || "Unknown"}</Text>
+                                        </View>
+                                    );
+                                })}
+                            </View>
+                        </View>
                     )}
 
-                    {resumeVerified &&
-                        <TouchableOpacity
-                            className='items-center justify-center'
-                            onPress={() => handleLinkPress(resumePublicURL!)}
+                    {(isCurrentUser && events.length > 0) && (
+                        <View
+                            className={`mt-8 rounded-md p-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
                         >
-                            <FontAwesome name="file" size={24} color="black" />
-                            <Text className='text-lg font-semibold'>Resume</Text>
-                        </TouchableOpacity>
-                    }
+                            <View className='flex-row items-center justify-between mb-4'>
+                                <Text className={`text-3xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>My Event Log</Text>
+
+                                <TouchableOpacity
+                                    onPress={() => navigation.navigate("PersonalEventLogScreen")}
+                                >
+                                    <Text className='text-xl text-primary-blue py-2'>See All</Text>
+                                </TouchableOpacity>
+                            </View>
+
+                            <View>
+                                {events.map(({ eventData, eventLog }, index) => (
+                                    <View className={`flex-row mb-4`} key={index}>
+                                        <Text className={`flex-1 text-lg font-semibold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(eventData?.name, 22) || "None"}</Text>
+                                        <Text className={`w-[30%] text-lg font-semibold ${darkMode ? "text-white" : "text-black"}`}>{formatDateWithYear(eventData?.startTime?.toDate()!)}</Text>
+                                    </View>
+                                ))}
+                            </View>
+                        </View>
+                    )}
+
                 </View>
-
-                {committees && committees.length > 0 && (
-                    <View>
-                        <Text className='text-2xl italic mt-5'>Committees</Text>
-                        <View className='flex-row flex-wrap mt-2'>
-                            {committees?.map((committeeName, index) => {
-                                const committeeData = committeesData.find(c => c.firebaseDocName === committeeName);
-
-                                return (
-                                    <ProfileBadge
-                                        badgeClassName='p-2 max-w-2/5 rounded-md mr-1 mb-2'
-                                        textClassName='text-lg'
-                                        text={committeeData?.name || "Unknown Committee"}
-                                        badgeColor={committeeData?.color || ""}
-                                        key={index}
-                                    />
-                                );
-                            })}
-                        </View>
-                    </View>
-                )}
-
-                {isCurrentUser && (
-                    <View>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate("PersonalEventLogScreen")}
-                            className="rounded-md mt-8"
-                        >
-                            <Text className='text-xl'>Personal Event Logs</Text>
-                        </TouchableOpacity>
-
-                        <View className='mt-4'>
-                            {events.map(({ eventData, eventLog }, index) => (
-                                <View key={index} style={{ marginBottom: 20 }}>
-                                    <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{eventData?.name}</Text>
-                                    <Text>Start Time: {formatTimestamp(eventData?.startTime)}</Text>
-                                    <Text>End Time: {formatTimestamp(eventData?.endTime)}</Text>
-                                    <Text>Total Points Earned: {eventLog?.points}</Text>
-
-                                </View>
-                            ))}
-                        </View>
-                    </View>
-                )}
-
-                <View className='pb-20' />
-            </View>
+            </ScrollView >
 
             {/* Role Modal */}
-            <DismissibleModal
-                visible={showRoleModal}
-                setVisible={setShowRoleModal}
-            >
-                <View
-                    className='flex opacity-100 bg-white rounded-md px-6 pt-6'
-                    style={{ minWidth: 300 }}
-                >
+            <DismissibleModal visible={showRoleModal} setVisible={setShowRoleModal}>
+                <View className={`flex opacity-100 rounded-md p-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`} style={{ width: 325 }}>
                     {/* Title */}
                     <View className='flex-row items-center mb-4'>
-                        <FontAwesome name="user" color="black" size={30} />
-                        <Text className='text-2xl font-semibold ml-2'>User Permissions</Text>
+                        <FontAwesome name="user" color={darkMode ? "white" : "black"} size={30} />
+                        <Text className={`text-2xl font-semibold ml-2 ${darkMode ? "text-white" : "text-black"}`}>User Permissions</Text>
                     </View>
 
                     {/* Position Custom Title */}
                     <View>
-                        <Text className='text-lg font-semibold'>Enter a custom title</Text>
-                        <Text className='text-sm text-gray-500 mb-2'>This is only used on profile screen</Text>
+                        <Text className={`text-lg font-semibold ${darkMode ? "text-white" : "text-black"}`}>Enter a custom title</Text>
                         <TextInput
-                            className='border-b mb-5 text-lg pb-1'
+                            className={`border-b mb-5 text-lg pb-1 ${darkMode ? "text-white border-grey-light" : "text-black border-grey-light"}`}
                             onChangeText={(text) => {
                                 setModifiedRoles({
                                     ...modifiedRoles,
                                     customTitle: text || ""
-                                })
+                                });
                             }}
                             placeholder='Enter title'
+                            placeholderTextColor={darkMode ? "white" : "black"}
                             value={modifiedRoles?.customTitle}
                         />
 
-                        <Text className='text-lg font-semibold mb-2'>Select user role</Text>
+                        <Text className={`text-lg font-semibold mb-2  mt-6 ${darkMode ? "text-white" : "text-black"}`}>Select user role</Text>
                     </View>
 
                     {/* Position Selection */}
@@ -416,52 +364,43 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                             roleName="Admin"
                             isActive={modifiedRoles?.admin || false}
                             onToggle={() => setModifiedRoles({ ...modifiedRoles, admin: !modifiedRoles?.admin })}
-                            darkMode={darkMode || false}
                         />
                         <RoleItem
                             roleName="Developer"
                             isActive={modifiedRoles?.developer || false}
                             onToggle={() => setModifiedRoles({ ...modifiedRoles, developer: !modifiedRoles?.developer })}
-                            darkMode={darkMode || false}
-
                         />
                         <RoleItem
                             roleName="Officer"
                             isActive={modifiedRoles?.officer || false}
                             onToggle={() => setModifiedRoles({ ...modifiedRoles, officer: !modifiedRoles?.officer })}
-                            darkMode={darkMode || false}
                         />
                         <RoleItem
                             roleName="Secretary"
                             isActive={modifiedRoles?.secretary || false}
                             onToggle={() => setModifiedRoles({ ...modifiedRoles, secretary: !modifiedRoles?.secretary })}
-                            darkMode={darkMode || false}
                         />
                         <RoleItem
                             roleName="Representative"
                             isActive={modifiedRoles?.representative || false}
                             onToggle={() => setModifiedRoles({ ...modifiedRoles, representative: !modifiedRoles?.representative })}
-                            darkMode={darkMode || false}
                         />
                         <RoleItem
                             roleName="Lead"
                             isActive={modifiedRoles?.lead || false}
                             onToggle={() => setModifiedRoles({ ...modifiedRoles, lead: !modifiedRoles?.lead })}
-                            darkMode={darkMode || false}
                         />
                     </View>
 
                     {/* Action Buttons */}
-                    <View className="flex-row justify-between items-center my-6 mx-5">
+                    <View className="flex-row justify-between items-center my-6">
                         <TouchableOpacity
                             onPress={async () => {
-
                                 // checks if has role but no custom title
                                 if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
                                     Alert.alert("Missing Title", "You must enter a title ");
                                     return;
                                 }
-
 
                                 // Checks if has custom title but no role
                                 if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead && modifiedRoles?.customTitle) {
@@ -473,34 +412,35 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                                 if (modifiedRoles)
                                     await setUserRoles(uid, modifiedRoles)
                                         .then(() => {
-                                            Alert.alert("Permissions Updated", "This user's roles have been updated successfully!")
+                                            Alert.alert("Permissions Updated", "This user's roles have been updated successfully!");
                                         })
                                         .catch((err) => {
                                             console.error(err);
-                                            Alert.alert("An Issue Occured", "A server issue has occured. Please try again. If this keeps occurring, please contact a developer");
+                                            Alert.alert("An Issue Occurred", "A server issue has occurred. Please try again. If this keeps occurring, please contact a developer");
                                         });
 
                                 setUpdatingRoles(false);
                                 setShowRoleModal(false);
                             }}
-                            className="bg-pale-blue rounded-lg justify-center items-center px-4 py-1"
+                            className="flex-1 bg-primary-blue rounded-lg justify-center items-center py-2"
                         >
                             <Text className='text-xl font-bold text-white px-2'>Done</Text>
                         </TouchableOpacity>
 
-
                         <TouchableOpacity
                             onPress={async () => {
-                                setModifiedRoles(roles)
-                                setShowRoleModal(false)
-                            }} >
-                            <Text className='text-xl font-bold px-4 py-1'>Cancel</Text>
+                                setModifiedRoles(roles);
+                                setShowRoleModal(false);
+                            }}
+                            className="flex-1 justify-center items-center py-2"
+                        >
+                            <Text className={`flex-1 text-xl font-bold px-4 py-1 ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
-                    {updatingRoles && <ActivityIndicator className='mb-4' size={30} />}
+                    {updatingRoles && <ActivityIndicator size="small" className='mb-4' />}
                 </View>
             </DismissibleModal>
-        </ScrollView>
+        </View>
     )
 }
 

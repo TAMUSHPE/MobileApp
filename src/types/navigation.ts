@@ -118,6 +118,11 @@ export type UserProfileStackParams = {
     PersonalEventLogScreen: undefined;
     ProfileSettingsScreen: undefined;
     MemberSHPE: undefined;
+
+    // Event Screens
+    EventInfo: { event: SHPEEvent };
+    UpdateEvent: { event: SHPEEvent };
+    QRCode: { event: SHPEEvent };
 };
 
 

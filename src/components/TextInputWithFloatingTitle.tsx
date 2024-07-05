@@ -17,10 +17,11 @@ type TextInputWithFloatingTitleProps = {
     lineCount?: number,
     isMultiline?: boolean,
     secureTextEntry?: boolean;
+    placeHolderColor?: string;
     onSubmitEditing?: () => void;
 }
 
-const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleStartY, titleEndY, componentClassName, textInputClassName, titleClassName, focusTitleClassName, blurTitleClassName, placeholderText, maxCharacters, lineCount, isMultiline, secureTextEntry, onSubmitEditing }: TextInputWithFloatingTitleProps) => {
+const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleStartY, titleEndY, componentClassName, textInputClassName, titleClassName, focusTitleClassName, blurTitleClassName, placeholderText, maxCharacters, lineCount, isMultiline, secureTextEntry, placeHolderColor, onSubmitEditing }: TextInputWithFloatingTitleProps) => {
     const [currentTitleClassName, setCurrentTitleClassName] = useState<string | undefined>(titleClassName ?? blurTitleClassName ?? "");
     const moveTitle = useRef(new Animated.Value(0)).current;
 
@@ -65,11 +66,16 @@ const TextInputWithFloatingTitle = ({ setTextFunction, inputValue, title, titleS
             <Animated.View style={{
                 transform: [{ translateY: yVal }],
             }}>
-                <Text className={currentTitleClassName}>{title ?? "Title"}</Text>
+                <Text
+                    className={currentTitleClassName}
+                    style={{ opacity: inputValue ? 1 : 0 }}
+                >{title ?? "Title"}</Text>
             </Animated.View>
+
             <TextInput
                 style={textInputStyle}
                 placeholder={placeholderText ?? ""}
+                placeholderTextColor={placeHolderColor ?? "white"}
                 className={textInputClassName ?? ""}
                 multiline={isMultiline ?? false}
                 value={inputValue ?? ""}

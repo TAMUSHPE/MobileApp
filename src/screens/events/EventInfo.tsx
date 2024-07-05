@@ -122,7 +122,7 @@ const EventInfo = ({ navigation }: EventProps) => {
     const eventButtonState = getEventButtonState(event, userEventLog);
 
     return (
-        <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`} >
+        <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`} >
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}

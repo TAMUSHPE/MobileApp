@@ -390,7 +390,7 @@ export const isUsernameUnique = async (username: string): Promise<boolean> => {
     }
 };
 
-const backupAndDeleteUserData = async (userId: string) => {
+export const backupAndDeleteUserData = async (userId: string) => {
     const userDocRef = doc(db, `users/${userId}`);
     const backupUserDocRef = doc(db, `deleted-accounts/${userId}`);
     const batch = writeBatch(db);
@@ -423,7 +423,7 @@ const backupAndDeleteUserData = async (userId: string) => {
     await batch.commit();
 };
 
-const deleteUserStorageData = async (userId: string) => {
+export const deleteUserStorageData = async (userId: string) => {
     const userDocsRef = ref(storage, `user-docs/${userId}`);
 
     try {
@@ -436,7 +436,7 @@ const deleteUserStorageData = async (userId: string) => {
     }
 };
 
-const deleteUserAuthentication = async (userId: string) => {
+export const deleteUserAuthentication = async (userId: string) => {
     try {
         if (auth.currentUser) {
             await deleteUser(auth.currentUser);
@@ -761,9 +761,22 @@ export const getUserEventLog = async (eventId: string, uid: string): Promise<SHP
     }
 }
 
-export const getUserEventLogs = async (uid: string, limitNum: number = 3): Promise<Array<UserEventData>> => {
+
+export const getUserEventLogs = async (
+    uid: string,
+    limitNum: number = 3,
+    startAfterDoc: DocumentSnapshot | null = null,
+    setEndOfData?: (endOfData: boolean) => void
+): Promise<{ events: Array<UserEventData>, lastVisibleDoc: DocumentSnapshot | null }> => {
     const userEventLogsCollectionRef = collection(db, `users/${uid}/event-logs`);
-    const q = query(userEventLogsCollectionRef, orderBy('signInTime', 'desc'), limit(limitNum));
+    let q;
+
+    if (startAfterDoc) {
+        q = query(userEventLogsCollectionRef, orderBy('signInTime', 'desc'), startAfter(startAfterDoc), limit(limitNum));
+    } else {
+        q = query(userEventLogsCollectionRef, orderBy('signInTime', 'desc'), limit(limitNum));
+    }
+
     const eventLogSnapshot = await getDocs(q);
     const docPromises: Array<Promise<DocumentSnapshot>> = [];
     const events: Array<UserEventData> = [];
@@ -779,7 +792,12 @@ export const getUserEventLogs = async (uid: string, limitNum: number = 3): Promi
         events[index].eventData = eventData;
     }
 
-    return events;
+    if (setEndOfData && eventLogSnapshot.docs.length < limitNum) {
+        setEndOfData(true);
+    }
+
+    const lastVisibleDoc = eventLogSnapshot.docs[eventLogSnapshot.docs.length - 1] || null;
+    return { events, lastVisibleDoc };
 }
 
 // ============================================================================

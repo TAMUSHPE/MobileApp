@@ -8,7 +8,7 @@ import CustomDropDownMenu, { CustomDropDownMethods } from './CustomDropDown';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { UserContext } from '../context/UserContext';
 
-const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, navigation }) => {
+const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, navigation, canSearch = true }) => {
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
 
@@ -18,14 +18,9 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const [search, setSearch] = useState<string>("")
-    const [showFilterMenu, setShowFilterMenu] = useState(false);
     const [filter, setFilter] = useState<UserFilter>({ major: "", classYear: "", role: "" });
     const [members, setMembers] = useState<PublicUserInfo[]>(users)
     const inputRef = useRef<TextInput>(null);
-    const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-    const dropDownRefYear = useRef<CustomDropDownMethods>(null);
-    const dropDownRefMajor = useRef<CustomDropDownMethods>(null);
-    const dropDownRefRole = useRef<CustomDropDownMethods>(null);
 
     const updateFilteredMembers = (appliedFilter: UserFilter) => {
         let filtered = users.filter(user => {
@@ -46,70 +41,50 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
         updateFilteredMembers(filter);
     }, [search]);
 
-    const handleApplyFilter = async () => {
-        updateFilteredMembers(filter);
-    };
-
-    const handleClearFilter = async () => {
-        handleClearAllSelections();
-        setFilter({ major: "", classYear: "", role: "" });
-        updateFilteredMembers({ major: "", classYear: "", role: "" });
-        setSearch("");
-    };
-
-    const handleClearAllSelections = () => {
-        dropDownRefYear.current?.clearSelection();
-        dropDownRefMajor.current?.clearSelection();
-        dropDownRefRole.current?.clearSelection();
-    };
-
-    const toggleDropdown = (dropdownKey: string) => {
-        if (openDropdown === dropdownKey) {
-            setOpenDropdown(null);
-        } else {
-            setOpenDropdown(dropdownKey);
-        }
-    };
-
     return (
         <View className='flex-1'>
             <ScrollView className='-z-20'>
-                <View className='px-4'>
-                    <View className='flex-row mb-4'>
-                        <TouchableOpacity
-                            activeOpacity={1}
-                            className={`rounded-xl px-4 py-2 flex-row flex-1 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
-                            onPress={() => { inputRef.current?.focus() }}
-                            style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 3.84,
+                {/* Search */}
+                {canSearch && (
+                    <View className='px-4'>
+                        <View className='flex-row mb-4'>
+                            <TouchableOpacity
+                                activeOpacity={1}
+                                className={`rounded-xl px-4 py-2 flex-row flex-1 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
+                                onPress={() => { inputRef.current?.focus() }}
+                                style={{
+                                    shadowColor: "#000",
+                                    shadowOffset: {
+                                        width: 0,
+                                        height: 2,
+                                    },
+                                    shadowOpacity: 0.25,
+                                    shadowRadius: 3.84,
 
-                                elevation: 5,
-                            }}
-                        >
-                            <View className='mr-3'>
-                                <Octicons name="search" size={24} color={darkMode ? "white" : "black"} />
-                            </View>
-                            <TextInput
-                                style={{ textAlignVertical: 'top', color: darkMode ? 'white' : 'black' }}
-                                onChangeText={(text) => {
-                                    setSearch(text);
+                                    elevation: 5,
                                 }}
-                                ref={inputRef}
-                                value={search}
-                                underlineColorAndroid="transparent"
-                                placeholder="Search"
-                                placeholderTextColor={"grey"}
-                                className='flex-1 text-lg justify-center'
-                            />
-                        </TouchableOpacity>
+                            >
+                                <View className='mr-3'>
+                                    <Octicons name="search" size={24} color={darkMode ? "white" : "black"} />
+                                </View>
+                                <TextInput
+                                    style={{ textAlignVertical: 'top', color: darkMode ? 'white' : 'black' }}
+                                    onChangeText={(text) => {
+                                        setSearch(text);
+                                    }}
+                                    ref={inputRef}
+                                    value={search}
+                                    underlineColorAndroid="transparent"
+                                    placeholder="Search"
+                                    placeholderTextColor={"grey"}
+                                    className='flex-1 text-lg justify-center'
+                                />
+                            </TouchableOpacity>
+                        </View>
                     </View>
-                </View>
+                )}
+
+                {/* Members */}
                 <View className='px-4'>
                     {members?.map((userData, index) => {
                         if (!userData.name) {
@@ -119,7 +94,6 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
                             <MemberCard
                                 key={index}
                                 userData={userData}
-                                navigation={navigation}
                                 handleCardPress={() => {
                                     if (handleCardPress) {
                                         handleCardPress(userData.uid!);
@@ -136,16 +110,11 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
     )
 }
 
-const ROLESDROPDOWN = [
-    { role: 'Officer', iso: 'officer' },
-    { role: 'Representative', iso: 'representative' },
-    { role: 'Lead', iso: 'lead' },
-];
-
 export type MemberListProps = {
     handleCardPress?: (uid: string) => string | void;
     users: PublicUserInfo[];
     navigation?: NativeStackNavigationProp<any>
+    canSearch?: boolean;
 }
 
 

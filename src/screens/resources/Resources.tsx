@@ -95,7 +95,7 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                 elevation: 5,
             }}
             onPress={() => {
-                if (userInfo?.publicInfo?.isStudent || navigateTo == "PointsLeaderboard") {
+                if (!userInfo?.publicInfo?.isStudent || navigateTo == "PointsLeaderboard") {
                     navigation.navigate(navigateTo);
                 } else {
                     alert("You must be a student to access this resource.");

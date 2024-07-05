@@ -1,4 +1,4 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated } from 'react-native';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated, useColorScheme } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -13,13 +13,15 @@ import { setPublicUserData, setPrivateUserData, getUser, getCommittees, submitFe
 import { getBlobFromURI, selectFile, selectImage } from '../../api/fileSelection';
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
-import { getBadgeColor, isMemberVerified } from '../../helpers/membership';
 import { HomeStackParams } from '../../types/navigation';
 import { Committee } from '../../types/committees';
 import { MAJORS, classYears } from '../../types/user';
 import { Images } from '../../../assets';
-import DownloadIcon from '../../../assets/arrow-down-solid.svg';
-import UploadFileIcon from '../../../assets/file-arrow-up-solid-black.svg';
+import DownloadIconBlack from '../../../assets/arrow-down-solid.svg';
+import DownloadIconWhite from '../../../assets/arrow-down-solid_white.svg'
+import UploadFileIconBlack from '../../../assets/file-arrow-up-solid-black.svg';
+import UploadFileIconWhite from '../../../assets/file-arrow-up-solid.svg'
+
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../../components/SettingsComponents"
 import CustomDropDown from '../../components/CustomDropDown';
 import { Circle, Svg } from 'react-native-svg';
@@ -30,21 +32,13 @@ import * as Clipboard from 'expo-clipboard';
  * Settings entrance screen which has a search function and paths to every other settings screen
  */
 const SettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, signOutUser } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo, signOutUser } = userContext!;
 
-    const { name, roles, photoURL, chapterExpiration, nationalExpiration } = userInfo?.publicInfo ?? {};
-    const isOfficer = roles ? roles.officer : false;
-
-    const [isVerified, setIsVerified] = useState<boolean>(false);
-    let badgeColor = getBadgeColor(isOfficer!, isVerified);
-
-    useEffect(() => {
-        if (nationalExpiration && chapterExpiration) {
-            setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
-        }
-    }, [nationalExpiration, chapterExpiration])
-
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     return (
         <ScrollView
@@ -107,7 +101,14 @@ const SettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>)
  * These changes are synced in firebase.
  */
 const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [loading, setLoading] = useState<boolean>(false);
     const [image, setImage] = useState<Blob | null>(null);
     const [showSaveButton, setShowSaveButton] = useState<boolean>(false);
@@ -141,8 +142,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
     const [showBioModal, setShowBioModal] = useState<boolean>(false);
     const [showAcademicInfoModal, setShowAcademicInfoModal] = useState<boolean>(false);
     const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
-
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
 
     useEffect(() => {
         const fetchCommitteeData = async () => {
@@ -289,36 +288,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
         })
     }
 
-
-    const CommitteeListItemComponent = ({ committeeData, onPress, darkMode, isChecked, committeeIndex }: any) => {
-        return (
-            <TouchableHighlight
-                className={`border-2 my-4 p-4 rounded-xl w-11/12 shadow-md shadow-black ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"} ${isChecked ? "border-green-400" : "border-transparent"}`}
-                onPress={() => onPress()}
-                underlayColor={darkMode ? "#7a7a7a" : "#DDD"}
-            >
-                <View className={`items-center flex-row justify-between`}>
-                    <View className='flex-row items-center'>
-                        <View className='h-8 w-8 mr-4 rounded-full' style={{ backgroundColor: committeeData.color }} />
-                        <Text className={`text-2xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeData.name}</Text>
-                    </View>
-                    {isChecked && <Text className={`text-xl ${darkMode ? "text-gray-300" : "text-black"}`}>{committeeIndex + 1}</Text>}
-                </View>
-            </TouchableHighlight>
-        );
-    };
-
-    const handleCommitteeToggle = (name: string) => {
-        setCommittees(prevCommittees => {
-            const isCommitteeSelected = prevCommittees.includes(name);
-            if (isCommitteeSelected) {
-                return prevCommittees.filter(committee => committee !== name);
-            } else {
-                return [...prevCommittees, name];
-            }
-        });
-    };
-
     const findMajorByIso = (iso: string) => {
         const majorObj = MAJORS.find(major => major.iso === iso);
         return majorObj ? majorObj.major : null;
@@ -362,13 +331,18 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                 }}
                 onDone={async () => {
                     if (validateDisplayName(displayName, true) && validateName(name, true)) {
-                        const isUnique = await isUsernameUnique(displayName!);
-                        if (isUnique) {
-                            saveChanges();
-                            setShowNamesModal(false);
+                        if (displayName === userInfo?.publicInfo?.displayName) {
+                            saveChanges()
+                            setShowNamesModal(false)
                         } else {
-                            setDisplayName(userInfo?.publicInfo?.displayName);
-                            alert("Display name is already taken. Please choose another one.");
+                            const isUnique = await isUsernameUnique(displayName!);
+                            if (isUnique) {
+                                saveChanges();
+                                setShowNamesModal(false);
+                            } else {
+                                setDisplayName(userInfo?.publicInfo?.displayName);
+                                alert("Display name is already taken. Please choose another one.");
+                            }
                         }
                     }
 
@@ -404,6 +378,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                     </KeyboardAvoidingView>
                 )}
             />
+
             {/* Bio Modal */}
             <SettingsModal
                 visible={showBioModal}
@@ -533,15 +508,15 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                                         transform="rotate(-90, 50, 50)"
                                     />
                                 </Svg>
-                                <UploadFileIcon width={110} height={110} />
+                                {darkMode ? <UploadFileIconWhite width={110} height={110} /> : <UploadFileIconBlack width={110} height={110} />}
                             </TouchableOpacity>
 
                             {resumeURL && (
                                 <TouchableOpacity onPress={async () => { handleLinkPress(resumeURL!) }}>
-                                    <View className='relative flex-row items-center border-b border-black'>
-                                        <Text className="text-black font-semibold text-lg">View Resume</Text>
+                                    <View className={`relative flex-row items-center border-b ${darkMode ? "border-white" : "border-black"}`}>
+                                        <Text className={`font-semibold text-lg ${darkMode ? "text-white" : "text-black"}`}>View Resume</Text>
                                         <View className='absolute left-full ml-1'>
-                                            <DownloadIcon width={15} height={15} color='black' />
+                                            {darkMode ? <DownloadIconWhite width={15} height={15} /> : <DownloadIconBlack width={15} height={15} />}
                                         </View>
                                     </View>
                                 </TouchableOpacity>
@@ -618,12 +593,17 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
  * These changes are synced in firebase.
  */
 const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, setUserInfo } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [loading, setLoading] = useState<boolean>(false);
     const [darkModeToggled, setDarkModeToggled] = useState<boolean>(userInfo?.private?.privateInfo?.settings?.darkMode ?? false);
     const [systemDefaultToggled, setSystemDefaultToggled] = useState<boolean>(userInfo?.private?.privateInfo?.settings?.useSystemDefault ?? false);
-
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode
 
     return (
         <ScrollView
@@ -649,18 +629,35 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                         }
                     })
                         .then(async () => {
-                            if (auth.currentUser?.uid) {
-                                await getUser(auth.currentUser?.uid)
-                                    .then(async (firebaseUser) => {
-                                        if (firebaseUser) {
-                                            setUserInfo(firebaseUser);
-                                            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                                        } else {
-                                            console.warn("firebaseUser returned as undefined when attempting to sync. Sync will be skipped.");
+                            setUserInfo(prevUserInfo => ({
+                                ...prevUserInfo,
+                                private: {
+                                    ...prevUserInfo?.private,
+                                    privateInfo: {
+                                        ...prevUserInfo?.private?.privateInfo,
+                                        settings: {
+                                            ...prevUserInfo?.private?.privateInfo?.settings,
+                                            darkMode: !darkMode,
+                                            useSystemDefault: false,
                                         }
-                                    })
-                                    .catch(err => console.error(err));
-                            }
+                                    }
+                                }
+                            }));
+
+                            await AsyncStorage.setItem("@user", JSON.stringify({
+                                ...userInfo,
+                                private: {
+                                    ...userInfo?.private,
+                                    privateInfo: {
+                                        ...userInfo?.private?.privateInfo,
+                                        settings: {
+                                            ...userInfo?.private?.privateInfo?.settings,
+                                            darkMode: !darkMode,
+                                            useSystemDefault: false,
+                                        }
+                                    }
+                                }
+                            }));
                         })
                         .catch((err) => console.error(err))
                         .finally(() => {
@@ -684,18 +681,33 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                         }
                     })
                         .then(async () => {
-                            if (auth.currentUser?.uid) {
-                                await getUser(auth.currentUser?.uid)
-                                    .then(async (firebaseUser) => {
-                                        if (firebaseUser) {
-                                            setUserInfo(firebaseUser);
-                                            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                                        } else {
-                                            console.warn("firebaseUser returned as undefined when attempting to sync. Sync will be skipped.");
+                            setUserInfo(prevUserInfo => ({
+                                ...prevUserInfo,
+                                private: {
+                                    ...prevUserInfo?.private,
+                                    privateInfo: {
+                                        ...prevUserInfo?.private?.privateInfo,
+                                        settings: {
+                                            ...prevUserInfo?.private?.privateInfo?.settings,
+                                            useSystemDefault: !systemDefaultToggled,
                                         }
-                                    })
-                                    .catch(err => console.error(err));
-                            }
+                                    }
+                                }
+                            }));
+
+                            await AsyncStorage.setItem("@user", JSON.stringify({
+                                ...userInfo,
+                                private: {
+                                    ...userInfo?.private,
+                                    privateInfo: {
+                                        ...userInfo?.private?.privateInfo,
+                                        settings: {
+                                            ...userInfo?.private?.privateInfo?.settings,
+                                            useSystemDefault: !systemDefaultToggled,
+                                        }
+                                    }
+                                }
+                            }));
                         })
                         .catch((err) => console.error(err))
                         .finally(() => {
@@ -713,8 +725,14 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
  * These changes will go through firebase where an email will be sent to the user. 
  */
 const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
-    const { userInfo, setUserInfo, signOutUser } = useContext(UserContext)!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const userContext = useContext(UserContext);
+    const { userInfo, setUserInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const deleteConfirmationText = "DELETECONFIRM";
 
     const [deleteText, setDeleteText] = useState('');
@@ -851,10 +869,16 @@ const AccountSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
 };
 
 const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
-    const [feedback, setFeedback] = useState('');
-    const { userInfo } = useContext(UserContext)!;
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
 
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
+
+    const [feedback, setFeedback] = useState('');
 
     const handleFeedbackSubmit = async () => {
         const response = await submitFeedback(feedback, userInfo!);
@@ -882,7 +906,7 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStack
             </View>
             <Pressable
                 onPress={handleFeedbackSubmit}
-                className={`mt-4 rounded-md w-[50%] py-2 items-center justify-center ${feedback.length === 0 ? 'bg-neutral-400' : 'bg-pale-blue'}`}
+                className={`mt-4 rounded-md w-[50%] py-2 items-center justify-center ${feedback.length === 0 ? 'bg-neutral-400' : 'bg-primary-blue'}`}
                 disabled={feedback.length === 0}
             >
                 <Text className={` text-lg font-semibold ${feedback.length === 0 ? 'text-neutral-200' : 'text-white'}`}>Submit FeedBack</Text>
@@ -892,11 +916,15 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStack
 };
 
 const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [activeQuestion, setActiveQuestion] = useState<number | null>(null);
-    const { userInfo } = useContext(UserContext)!;
-
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
-
 
     const toggleQuestion = (questionNumber: number) => {
         if (activeQuestion === questionNumber) {
@@ -975,8 +1003,14 @@ const FAQSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParam
  */
 const AboutSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const pkg: any = require("../../../package.json");
-    const { userInfo } = useContext(UserContext)!;
-    const darkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
 
     return (
         <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>

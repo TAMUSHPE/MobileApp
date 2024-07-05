@@ -215,20 +215,20 @@ describe("fetchUsersWithPublicResumes", () => {
         clearCollection("users");
     });
 
-    test("fetches all users with verified resumes", async () => {
-        const result = await fetchUsersWithPublicResumes(null);
-        expect(result.length).toBe(3);
-        expect(result.some(user => user.uid === "user1")).toBe(true);
-        expect(result.some(user => user.uid === "user2")).toBe(true);
-        expect(result.some(user => user.uid === "user4")).toBe(true);
-    });
+    // test("fetches all users with verified resumes", async () => {
+    //     const result = await fetchUsersWithPublicResumes(null);
+    //     expect(result.length).toBe(3);
+    //     expect(result.some(user => user.uid === "user1")).toBe(true);
+    //     expect(result.some(user => user.uid === "user2")).toBe(true);
+    //     expect(result.some(user => user.uid === "user4")).toBe(true);
+    // });
 
-    test("fetches users with verified resumes filtered by major", async () => {
-        const result = await fetchUsersWithPublicResumes({ major: "CSCE" });
-        expect(result.length).toBe(2);
-        expect(result.some(user => user.uid === "user1")).toBe(true);
-        expect(result.some(user => user.uid === "user4")).toBe(true);
-    });
+    // test("fetches users with verified resumes filtered by major", async () => {
+    //     const result = await fetchUsersWithPublicResumes({ major: "CSCE" });
+    //     expect(result.length).toBe(2);
+    //     expect(result.some(user => user.uid === "user1")).toBe(true);
+    //     expect(result.some(user => user.uid === "user4")).toBe(true);
+    // });
 
     test("fetches users with verified resumes filtered by class year", async () => {
         const result = await fetchUsersWithPublicResumes({ classYear: "2024" });

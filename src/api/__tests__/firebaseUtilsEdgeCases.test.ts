@@ -1,34 +1,10 @@
-import { DocumentReference, collection, doc, getDocs, setDoc, writeBatch } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../config/firebaseConfig";
-import { getPrivateUserData, getPublicUserData, setCommitteeData, setPrivateUserData, setPublicUserData } from "../firebaseUtils";
+import { getPrivateUserData, getPublicUserData, setPrivateUserData, setPublicUserData } from "../firebaseUtils";
 import { User } from "../../types/user";
+import { clearCollection } from "../../helpers/unitTestUtils";
 
 const testUserDataList: User[] = require("./test_data/users.json");
-
-const clearSubcollections = async (docRef: DocumentReference) => {
-    const subcollectionsSnapshot = await getDocs(collection(docRef, 'private'));
-    const batch = writeBatch(db);
-
-    subcollectionsSnapshot.forEach(subDoc => {
-        batch.delete(subDoc.ref);
-    });
-
-    await batch.commit();
-};
-
-const clearCollection = async (collectionName: string) => {
-    const collectionRef = collection(db, collectionName);
-    const querySnapshot = await getDocs(collectionRef);
-
-    const batch = writeBatch(db);
-
-    for (const documentSnapshot of querySnapshot.docs) {
-        await clearSubcollections(documentSnapshot.ref);
-        batch.delete(documentSnapshot.ref);
-    }
-
-    await batch.commit();
-};
 
 
 beforeAll(async () => {

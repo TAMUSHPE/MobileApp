@@ -1,40 +1,45 @@
-import { StyleSheet, View, Text, SafeAreaView, FlatList, StatusBar, TouchableOpacity } from "react-native";
-import React, { useRef, useCallback, useState } from "react";
+import { StyleSheet, View, Text, SafeAreaView, FlatList, TouchableOpacity, useColorScheme, ScrollView } from "react-native";
+import React, { useRef, useCallback, useState, useContext } from "react";
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import MemberCard from "./MemberCard";
 import { PublicUserInfo } from "../types/user";
 import DismissibleModal from "./DismissibleModal";
 import { Octicons } from '@expo/vector-icons';
 import { setMOTM } from "../api/firebaseUtils";
+import { StatusBar } from "expo-status-bar";
+import { UserContext } from "../context/UserContext";
 
-
-const Separator = () => <View style={styles.itemSeparator} />;
 
 
 const rightSwipeActions = () => {
     return (
-        <View style={styles.rightSwipe}>
-            <Text style={styles.rightSwipeText}>Set New MOTM</Text>
+        <View className="bg-primary-blue justify-center items-center px-6">
+            <Text className="text-white text-xl">set MOTM</Text>
         </View>
     );
 };
 
 
-// Swipeable Member Card 
 const SwipeableMemberCard = ({ userData, onSwipe }: { userData: PublicUserInfo, onSwipe: any }) => {
-    // Create a ref for the Swipeable component
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const swipeableRef = useRef<Swipeable | null>(null);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [invisibleConfirmModal, setInvisibleConfirmModal] = useState(false);
 
-    // Function to close the Swipeable manually
     const closeSwipeable = useCallback(() => {
         swipeableRef.current?.close();
     }, []);
 
     return (
         <Swipeable
-            ref={swipeableRef} // Assign the ref here
+            ref={swipeableRef}
             renderRightActions={rightSwipeActions}
             onSwipeableOpen={(direction) => {
                 if (direction === 'right') {
@@ -44,46 +49,51 @@ const SwipeableMemberCard = ({ userData, onSwipe }: { userData: PublicUserInfo, 
                 }
             }}
         >
-
-
-            <MemberCard
-                userData={userData}
-                displayPoints={true} />
+            <View className="mx-5">
+                <MemberCard
+                    userData={userData}
+                    displayPoints={true} />
+            </View>
 
             <DismissibleModal
                 visible={confirmVisible && invisibleConfirmModal}
                 setVisible={setConfirmVisible}
             >
-                <View className='flex opacity-100 bg-white rounded-md p-6' style={{ minWidth: 325 }}>
-                    <View className='flex-row items-center justify-between'>
-                        <View className='flex-row items-center'>
-                            <Octicons name="alert" size={24} color="black" />
-                            <Text className='text-xl font-semibold ml-2'>Confirm Member</Text>
-                        </View>
+                <View
+                    className={`flex opacity-100 rounded-md p-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    style={{ width: 325 }}
+                >
+
+                    <View className='flex-row items-center justify-end'>
                         <View>
                             <TouchableOpacity onPress={() => setConfirmVisible(false)}>
-                                <Octicons name="x" size={24} color="black" />
+                                <Octicons name="x" size={24} color={darkMode ? "white" : "black"} />
                             </TouchableOpacity>
                         </View>
                     </View>
 
-                    <View className='flex-row justify-around'>
+                    <MemberCard userData={userData} />
+
+
+                    <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>You will be setting {userData?.name} as the member of the month.</Text>
+
+
+                    <View className='mt-20 flex-row space-x-6'>
                         <TouchableOpacity
-                            className='bg-[#AEF359] w-[40%] items-center py-2 rounded-md'
                             onPress={() => {
                                 setMOTM(userData)
                                 setConfirmVisible(false)
                                 onSwipe(userData)
                             }}
+                            className='flex-1 bg-primary-blue items-center py-2 rounded-lg justify-center'
                         >
-                            <Text className='font-semibold text-lg'>Confirm</Text>
+                            <Text className='text-lg font-semibold text-white'>Confirm</Text>
                         </TouchableOpacity>
-
                         <TouchableOpacity
-                            className='w-[40%] items-center py-2 rounded-md'
                             onPress={() => setConfirmVisible(false)}
+                            className='flex-1 items-center py-2 rounded-lg justify-center'
                         >
-                            <Text className='font-semibold text-lg'>Cancel</Text>
+                            <Text className={`text-lg font-semibold ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -92,47 +102,21 @@ const SwipeableMemberCard = ({ userData, onSwipe }: { userData: PublicUserInfo, 
     );
 };
 
-// Main component
 const SwipeableMemberList = ({ userData, onSwipe }: { userData: PublicUserInfo[], onSwipe: any }) => {
+    if (!userData) {
+        return;
+    }
+
     return (
-        <>
-            <StatusBar />
-            <SafeAreaView style={styles.container}>
-                <FlatList
-                    data={userData}
-                    keyExtractor={(item) => item.uid!}
-                    renderItem={({ item }) => <SwipeableMemberCard userData={item} onSwipe={onSwipe} />}
-                    ItemSeparatorComponent={Separator}
-                />
-            </SafeAreaView>
-        </>
+        <SafeAreaView className="flex-1">
+            <ScrollView className="flex-grow">
+                {userData.map((item) => (
+                    <SwipeableMemberCard key={item.uid} userData={item} onSwipe={onSwipe} />
+                ))}
+                <View style={{ height: 20 }} />
+            </ScrollView>
+        </SafeAreaView>
     );
 };
-
-// Styles
-const styles = StyleSheet.create({
-    container: {
-        marginHorizontal: 13
-    },
-    title: {
-        textAlign: 'center',
-        marginVertical: 20,
-    },
-    itemSeparator: {
-        backgroundColor: '#444',
-    },
-    rightSwipe: {
-        backgroundColor: '#ff8303',
-        justifyContent: 'center',
-        alignItems: 'flex-end',
-    },
-    rightSwipeText: {
-        color: '#1b1a17',
-        paddingHorizontal: 10,
-        fontWeight: '600',
-        paddingVertical: 20,
-    },
-});
-
 export default SwipeableMemberList;
 
