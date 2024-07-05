@@ -31,6 +31,9 @@ export const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug
  * @returns Formatted date string
  */
 export const formatDate = (date: Date): string => {
+    if (!date) {
+        return "";
+    }
     const dayOfWeek = dayNames[date.getDay()];
     const day = date.getDate();
     const month = monthNames[date.getMonth()];
@@ -39,6 +42,9 @@ export const formatDate = (date: Date): string => {
 };
 
 export const formatDateWithYear = (date: Date): string => {
+    if (!date) {
+        return "";
+    }
     const dayOfWeek = dayNames[date.getDay()];
     const day = date.getDate();
     const month = monthNames[date.getMonth()];
