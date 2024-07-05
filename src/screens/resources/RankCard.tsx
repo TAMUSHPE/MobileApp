@@ -1,9 +1,10 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native'
-import React from 'react'
-import { Octicons } from '@expo/vector-icons';
+import { View, Text, TouchableOpacity, Image, useColorScheme } from 'react-native'
+import React, { useContext } from 'react'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { UserContext } from '../../context/UserContext';
 import { Images } from '../../../assets';
-import { PointsProps } from '../../types/navigation'
-import { RankChange } from '../../types/user';
+import { PublicUserInfo } from '../../types/user';
+import { ResourcesStackParams } from '../../types/navigation';
 
 /**
  * The RankCard component displays a user's rank information.
@@ -11,50 +12,64 @@ import { RankChange } from '../../types/user';
  * 
  * @param props - Contains user public info data and navigation functions.
  */
-const RankCard: React.FC<PointsProps> = ({ userData, navigation }) => {
-    const { uid, photoURL, name, points, pointsRank, rankChange } = userData
+const RankCard: React.FC<PointsProps> = ({ userData, navigation, rank, monthlyPoints }) => {
+    const { uid, photoURL, name, points, pointsRank } = userData;
 
-    const renderRankChangeIcon = (change: RankChange | undefined) => {
-        switch (change) {
-            case "increased":
-                return <Octicons name="chevron-up" size={24} color="#AEF359" />;
-            case "decreased":
-                return <Octicons name="chevron-down" size={24} color="#FF0000" />;
-            default:
-                return <Octicons name="dash" size={22} color="gray" />;
-        }
-    };
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     return (
         <TouchableOpacity
             disabled={uid === undefined}
             onPress={() => { navigation.navigate("PublicProfile", { uid: uid! }) }}
         >
-            <View className="flex-row bg-white py-3 mx-4 px-4 mt-8 rounded-xl items-center shadow-md shadow-slate-300">
-                {/* Profile image and points*/}
+            <View
+                className={`flex-row py-3 mx-4 px-4 mt-8 rounded-xl items-center ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                style={{
+                    shadowColor: "#000",
+                    shadowOffset: {
+                        width: 0,
+                        height: 2,
+                    },
+                    shadowOpacity: 0.25,
+                    shadowRadius: 3.84,
+                    elevation: 5,
+                }}
+            >
+                <View className='flex-row'>
+                    <Text className={`text-xl font-medium mr-5 ${darkMode ? "text-white" : "text-black"}`}>{rank}</Text>
+                </View>
+
                 <View className='flex-1 flex-row items-center'>
                     <Image
                         className="flex w-14 h-14 rounded-full mr-4"
                         source={photoURL ? { uri: photoURL } : Images.DEFAULT_USER_PICTURE}
                     />
                     <View className='w-[65%]'>
-                        <Text className='text-xl font-medium'>{name}</Text>
+                        <Text className={`text-xl font-medium ${darkMode ? "text-white" : "text-black"}`}>{name}</Text>
                         <View className='flex-row items-center'>
-                            <Text className='text-xl font-medium text-gray-500'>{points?.toFixed(2)} pts</Text>
+                            <Text className={`text-xl font-medium ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>
+                                {monthlyPoints !== undefined ? `${monthlyPoints.toFixed(2)} pts` : `${points?.toFixed(2)} pts`}
+                            </Text>
                         </View>
                     </View>
                 </View>
-
-                {/* Rank and rank change icon */}
-                <View className='flex-row'>
-                    <Text className='text-xl font-medium mr-4'>{pointsRank}</Text>
-                    <View className='bg-white h-7 w-7 rounded-full items-center justify-center'>
-                        {renderRankChangeIcon(rankChange)}
-                    </View>
-                </View>
             </View>
-        </TouchableOpacity>
-    )
+        </TouchableOpacity >
+    );
 }
+
+export type PointsProps = {
+    userData: PublicUserInfo;
+    navigation: NativeStackNavigationProp<ResourcesStackParams>;
+    rank: number;
+    monthlyPoints?: number;
+}
+
 
 export default RankCard

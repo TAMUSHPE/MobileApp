@@ -274,7 +274,9 @@ export class VolunteerEvent extends SHPEEvent {
         this.eventType = EventType.VOLUNTEER_EVENT;
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.pointsPerHour = 2;
+        this.signInPoints = 0;
+        this.signOutPoints = 0;
+        this.pointsPerHour = 1;
         this.locationName = null;
         this.geolocation = null;
         this.general = false
@@ -390,16 +392,22 @@ export enum EventType {
 }
 
 /**
+ * Extended event type to include 'myEvents' and 'clubWide' for filtering
+ */
+export type ExtendedEventType = EventType | 'myEvents' | 'clubWide';
+
+/**
  * Status of an event that user attempts to sign in to or out of
  */
 export enum EventLogStatus {
     SUCCESS,
     EVENT_OVER,
     EVENT_ONGOING,
-    EVENT_NOT_STARTED,
     EVENT_NOT_FOUND,
     ALREADY_LOGGED,
     NOT_A_STUDENT,
+    EVENT_NOT_STARTED,
+    OUT_OF_RANGE,
     ERROR,
 }
 
@@ -413,10 +421,11 @@ export const getStatusMessage = (status: EventLogStatus): string => {
         [EventLogStatus.SUCCESS]: "Successfully signed in/out.",
         [EventLogStatus.EVENT_OVER]: "The event is already over.",
         [EventLogStatus.EVENT_ONGOING]: "The event is ongoing.",
-        [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
         [EventLogStatus.EVENT_NOT_FOUND]: "The event was not found.",
         [EventLogStatus.ALREADY_LOGGED]: "You have already signed in/out.",
         [EventLogStatus.NOT_A_STUDENT]: "Only student can sign in/out of events..",
+        [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
+        [EventLogStatus.OUT_OF_RANGE]: "You are not close enough to the event to sign in/out.",
         [EventLogStatus.ERROR]: "An internal error occurred. Please try again.",
     };
 

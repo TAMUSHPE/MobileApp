@@ -1,14 +1,15 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, useColorScheme } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AdminDashboardParams } from '../../types/navigation';
-import { fetchEventByName, getMembers } from '../../api/firebaseUtils';
+import { HomeStackParams } from '../../types/navigation';
+import { fetchEventByName, getUsers } from '../../api/firebaseUtils';
 import { PublicUserInfo } from '../../types/user';
 import MemberCardMultipleSelect from '../../components/MemberCardMultipleSelect';
 import { SHPEEvent } from '../../types/events';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import { UserContext } from '../../context/UserContext';
 
 
 /**
@@ -17,7 +18,15 @@ import { getFunctions, httpsCallable } from 'firebase/functions';
  * The date should be set to the end of the school year. 
  */
 
-const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [members, setMembers] = useState<SelectedPublicUserInfo[]>([])
     const [event, setEvent] = useState<SHPEEvent | null>(null)
     const [search, setSearch] = useState<string>("")
@@ -29,7 +38,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
         const fetchMembers = async () => {
             setLoading(true);
             try {
-                const fetchedMembers: PublicUserInfo[] = await getMembers();
+                const fetchedMembers: PublicUserInfo[] = await getUsers();
                 const extendedMembers = fetchedMembers.map(member => ({
                     ...member,
                     selected: false,
@@ -114,34 +123,44 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
     const selectedCount = members.filter(member => member.selected).length;
 
     return (
-        <View className="h-full" style={{ paddingTop: insets.top }}>
-            <ScrollView>
-                {/* Header */}
-                <View className="flex-row items-center mx-5 mt-1">
-                    <View className="absolute w-full justify-center items-center">
-                        <Text className="text-2xl font-semibold">Instagram Points</Text>
-                    </View>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Octicons name="chevron-left" size={30} color="black" />
-                    </TouchableOpacity>
+        <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`} style={{ paddingTop: insets.top }}>
+            {/* Header */}
+            <View className="flex-row items-center mx-5 mt-1">
+                <View className="absolute w-full justify-center items-center">
+                    <Text className={`text-2xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Instagram Points</Text>
                 </View>
-
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
+                </TouchableOpacity>
+            </View>
+            <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
                 {/* Search Bar */}
                 <View className='px-4 mt-6'>
                     <View className='flex-row mb-4'>
                         <TouchableOpacity
                             activeOpacity={1}
-                            className='bg-gray-300 rounded-xl px-4 py-2 flex-row flex-1'
+                            className={`rounded-xl px-4 py-2 flex-row flex-1 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
                         >
                             <View className='mr-3'>
-                                <Octicons name="search" size={24} color="grey" />
+                                <Octicons name="search" size={24} color={darkMode ? "white" : "black"} />
                             </View>
                             <TextInput
-                                style={{ textAlignVertical: 'top' }}
+                                style={{ textAlignVertical: 'top', color: darkMode ? 'white' : 'black' }}
                                 onChangeText={(text) => { setSearch(text); }}
                                 value={search}
                                 underlineColorAndroid="transparent"
                                 placeholder="Search"
+                                placeholderTextColor={"grey"}
                                 className='flex-1 text-lg justify-center'
                             />
                         </TouchableOpacity>
@@ -149,7 +168,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
                 </View>
 
                 <View className='px-4'>
-                    {loading && <ActivityIndicator size="large" />}
+                    {loading && <ActivityIndicator size="small" />}
                     {/* Members List */}
                     {!loading && filteredMembers?.map((userData, index) => {
                         if (!userData.name) {
@@ -171,11 +190,11 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<AdminDashboardPa
 
             <View className='absolute bottom-5 w-full'>
                 <TouchableOpacity
-                    className='absolute bottom-5 py-4 w-[90%] self-center bg-pale-blue rounded-lg shadow-lg justify-center items-center'
+                    className='absolute bottom-5 py-4 w-[90%] self-center bg-primary-blue rounded-lg shadow-lg justify-center items-center'
                     onPress={handleSubmit}
                 >
                     <Text className='text-white text-xl font-bold'>
-                        Adding {(event?.signInPoints)} Point to ({selectedCount} selected members)
+                        Adding {(event?.signInPoints)} Point to {selectedCount} selected members
                     </Text>
                 </TouchableOpacity>
             </View>

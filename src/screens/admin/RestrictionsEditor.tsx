@@ -1,18 +1,27 @@
-import { View, Text, Image, TouchableOpacity, ScrollView, Modal } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, Image, TouchableOpacity, ScrollView, Modal, useColorScheme } from 'react-native'
+import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
-import { AdminDashboardParams } from '../../types/navigation';
+import { HomeStackParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import MembersList from '../../components/MembersList';
 import { PublicUserInfo } from '../../types/user';
 import { addToBlacklist, addToWatchlist, getBlacklist, getMembersExcludeOfficers, getWatchlist, removeFromBlacklist, removeFromWatchlist } from '../../api/firebaseUtils';
 import { Images } from '../../../assets';
 import DismissibleModal from '../../components/DismissibleModal';
+import { UserContext } from '../../context/UserContext';
 
 
 
-const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [members, setMembers] = useState<PublicUserInfo[]>([])
     const [watchList, setWatchList] = useState<PublicUserInfo[]>([])
     const [blackList, setBlackList] = useState<PublicUserInfo[]>([])
@@ -56,19 +65,19 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
     const insets = useSafeAreaInsets();
 
     return (
-        <SafeAreaView className='flex-1' edges={["top"]}>
+        <SafeAreaView className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`} edges={["top"]}>
             <View className='flex-row items-center h-10'>
                 <View className='pl-6'>
                     <TouchableOpacity activeOpacity={1} className="px-2" onPress={() => navigation.goBack()}>
-                        <Octicons name="chevron-left" size={30} color="black" />
+                        <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
                 </View>
                 <View className='flex-1 items-center'>
-                    <Text className="text-2xl font-bold text-black">Restrictions</Text>
+                    <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Restrictions</Text>
                 </View>
                 <View className="pr-6">
                     <TouchableOpacity activeOpacity={1} onPress={() => setInfoVisible(true)}>
-                        <Octicons name="info" size={25} color="black" />
+                        <Octicons name="info" size={25} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -76,8 +85,8 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
             <TouchableOpacity className='mx-8 mt-8 flex-row items-center'
                 onPress={() => setWatchListModal(true)}
             >
-                <Text className='text-2xl font-bold'>Watch List</Text>
-                <View className='ml-3 bg-pale-blue rounded-full h-5 w-5 items-center justify-center'>
+                <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Watch List</Text>
+                <View className='ml-3 bg-primary-blue rounded-full h-7 w-7 items-center justify-center'>
                     <Octicons name="plus" size={15} color="white" />
                 </View>
             </TouchableOpacity>
@@ -99,8 +108,8 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
                                         />
                                         <View className='ml-2 my-1'>
                                             <View>
-                                                <Text className='font-semibold text-lg'>{name}</Text>
-                                                <Text className='text-md text-grey'> {displayName}</Text>
+                                                <Text className={`font-semibold text-lg ${darkMode ? "text-white" : "text-black"}`}>{name}</Text>
+                                                <Text className={`text-md text-grey ${darkMode ? "text-grey-light" : "text-grey-dark"}`}> {displayName}</Text>
                                             </View>
                                         </View>
                                     </View>
@@ -112,7 +121,7 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
                                         removeFromWatchlist(userData);
                                     }}
                                 >
-                                    <Octicons name="x" size={26} color="red" />
+                                    <Octicons name="x" size={26} color="#ff0000" />
                                 </TouchableOpacity>
                             </View>
                         );
@@ -124,8 +133,8 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
             <TouchableOpacity className='mx-8 mt-8 flex-row items-center'
                 onPress={() => setBlackListModal(true)}
             >
-                <Text className='text-2xl font-bold'>Black List</Text>
-                <View className='ml-3 bg-pale-blue rounded-full h-5 w-5 items-center justify-center'>
+                <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Black List</Text>
+                <View className='ml-3 bg-primary-blue rounded-full h-7 w-7 items-center justify-center'>
                     <Octicons name="plus" size={15} color="white" />
                 </View>
             </TouchableOpacity>
@@ -147,8 +156,8 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
                                         />
                                         <View className='ml-2 my-1'>
                                             <View>
-                                                <Text className='font-semibold text-lg'>{name}</Text>
-                                                <Text className='text-md text-grey'> {displayName}</Text>
+                                                <Text className={`font-semibold text-lg ${darkMode ? "text-white" : "text-black"}`}>{name}</Text>
+                                                <Text className={`text-md text-grey ${darkMode ? "text-grey-light" : "text-grey-dark"}`}> {displayName}</Text>
                                             </View>
                                         </View>
                                     </View>
@@ -160,7 +169,7 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
                                         removeFromBlacklist(userData);
                                     }}
                                 >
-                                    <Octicons name="x" size={26} color="red" />
+                                    <Octicons name="x" size={26} color="#ff0000" />
                                 </TouchableOpacity>
                             </View>
                         );
@@ -178,22 +187,21 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className='bg-white'>
-
-                    <View className='flex-row items-center h-10 mb-4 justify-end'>
-                        <View className='w-screen absolute'>
-                            <Text className="text-2xl font-bold justify-center text-center">Select User</Text>
+                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                >
+                    <View className='h-screen'>
+                        <View className='flex-row items-center h-10 mb-4 justify-end'>
+                            <View className='w-screen absolute'>
+                                <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>Select User</Text>
+                            </View>
+                            <TouchableOpacity
+                                className='px-4 mr-3'
+                                onPress={() => setWatchListModal(false)}
+                            >
+                                <Octicons name="x" size={26} color={darkMode ? "white" : "black"} />
+                            </TouchableOpacity>
                         </View>
-                        <TouchableOpacity
-                            className='px-4 mr-3'
-                            onPress={() => setWatchListModal(false)}
-                        >
-                            <Octicons name="x" size={26} color="black" />
-                        </TouchableOpacity>
-                    </View>
 
-
-                    <View className="h-[100%] w-[100%] bg-white">
                         <MembersList
                             handleCardPress={(uid) => {
                                 const memberToAdd = members.find(member => member.uid === uid);
@@ -220,22 +228,21 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className='bg-white'>
-
-                    <View className='flex-row items-center h-10 mb-4 justify-end'>
-                        <View className='w-screen absolute'>
-                            <Text className="text-2xl font-bold justify-center text-center">Select User</Text>
+                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                >
+                    <View className='h-screen'>
+                        <View className='flex-row items-center h-10 mb-4 justify-end'>
+                            <View className='w-screen absolute'>
+                                <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>Select User</Text>
+                            </View>
+                            <TouchableOpacity
+                                className='px-4 mr-3'
+                                onPress={() => setBlackListModal(false)}
+                            >
+                                <Octicons name="x" size={26} color={darkMode ? "white" : "black"} />
+                            </TouchableOpacity>
                         </View>
-                        <TouchableOpacity
-                            className='px-4 mr-3'
-                            onPress={() => setBlackListModal(false)}
-                        >
-                            <Octicons name="x" size={26} color="black" />
-                        </TouchableOpacity>
-                    </View>
 
-
-                    <View className="h-[100%] w-[100%] bg-white">
                         <MembersList
                             handleCardPress={(uid) => {
                                 const memberToAdd = members.find(member => member.uid === uid);
@@ -260,36 +267,39 @@ const RestrictionsEditor = ({ navigation }: NativeStackScreenProps<AdminDashboar
                 visible={infoVisible}
                 setVisible={setInfoVisible}
             >
-                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ minWidth: 325 }}>
+                <View
+                    className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    style={{ minWidth: 325 }}
+                >
                     <View className='flex-row items-center justify-between'>
                         <View className='flex-row items-center'>
-                            <Octicons name="info" size={24} color="black" />
-                            <Text className='text-2xl font-semibold ml-2'>Instructions</Text>
+                            <Octicons name="info" size={24} color={darkMode ? "white" : "black"} />
+                            <Text className={`text-2xl font-semibold ml-2 ${darkMode ? "text-white" : "text-black"}`}>Instructions</Text>
                         </View>
                         <View>
                             <TouchableOpacity onPress={() => setInfoVisible(false)}>
-                                <Octicons name="x" size={24} color="black" />
+                                <Octicons name="x" size={24} color={darkMode ? "white" : "black"} />
                             </TouchableOpacity>
                         </View>
                     </View>
+
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>User on the watch list have perform an action classified as "bad behavior". This means that this user is using the app in a way that is not intended. </Text>
+                        <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>User on the watch list have perform an action classified as "bad behavior". This means that this user is using the app in a way that is not intended. </Text>
                     </View>
 
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>This is important to reduce unnecessary cost for the app.</Text>
+                        <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>This is important to reduce unnecessary cost for the app.</Text>
                     </View>
 
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>A user on the watch list will not be restricted but simply there to keep an eye on. A user on the black list will be restricted from using the app.</Text>
+                        <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>A user on the watch list will not be restricted but simply there to keep an eye on. A user on the black list will be restricted from using the app.</Text>
                     </View>
 
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>A user must be manually added to the black list</Text>
+                        <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>A user must be manually added to the black list</Text>
                     </View>
                 </View>
             </DismissibleModal>
-
         </SafeAreaView>
     )
 }

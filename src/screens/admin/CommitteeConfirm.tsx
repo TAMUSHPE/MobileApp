@@ -1,8 +1,7 @@
-import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, useColorScheme, Modal } from 'react-native'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Octicons } from '@expo/vector-icons';
-import { AdminDashboardParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import DismissibleModal from '../../components/DismissibleModal';
 import { Committee, getLogoComponent, reverseFormattedFirebaseName } from '../../types/committees';
@@ -14,8 +13,21 @@ import MembersList from '../../components/MembersList';
 import MemberCard from '../../components/MemberCard';
 import { httpsCallable } from 'firebase/functions';
 import { calculateHexLuminosity } from '../../helpers';
+import { HomeStackParams } from '../../types/navigation';
+import { UserContext } from '../../context/UserContext';
+import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 
-const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
+    const insets = useSafeAreaInsets();
+
     const [committees, setCommittees] = useState<Committee[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedCommittee, setSelectedCommittee] = useState<string | undefined>();
@@ -27,9 +39,6 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardP
     const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
     const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();
     const [initialLoad, setInitialLoad] = useState(true);
-
-
-    const insets = useSafeAreaInsets();
 
     useFocusEffect(
         useCallback(() => {
@@ -91,7 +100,6 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardP
 
 
     useEffect(() => {
-        console.log(selectedCommittee)
         if (selectedCommittee) {
             const committeeMembers = committeeRequests![selectedCommittee] || [];
             setMembers(committeeMembers);
@@ -174,147 +182,188 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardP
         }
     }, [confirmVisible])
 
-
     return (
-        <SafeAreaView className='flex-1' edges={["top"]}>
+        <SafeAreaView className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`} edges={["top"]}>
             <View className='flex-row items-center h-10'>
                 <View className='pl-6'>
                     <TouchableOpacity activeOpacity={1} className="px-2" onPress={() => navigation.goBack()}>
-                        <Octicons name="chevron-left" size={30} color="black" />
+                        <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
                 </View>
                 <View className='flex-1 items-center'>
-                    <Text className="text-2xl font-bold text-black">Committee Membership</Text>
+                    <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Committee Membership</Text>
                 </View>
                 <View className="pr-6">
                     <TouchableOpacity activeOpacity={1} onPress={() => setInfoVisible(true)}>
-                        <Octicons name="info" size={25} color="black" />
+                        <Octicons name="info" size={25} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
                 </View>
             </View>
 
             <ScrollView className='pt-8'>
-                {loading && (
-                    <ActivityIndicator size="large" />
-                )}
-                {!loading && committees.map((committee) => {
-                    const { name, color, firebaseDocName } = committee;
-                    const { LogoComponent, height, width } = getLogoComponent(committee.logo);
+                <View className='flex-row flex-wrap mt-10 mx-4 justify-between'>
 
-                    const requestCount = committeeRequests[firebaseDocName!]?.length ?? 0;
+                    {!loading && committees.map((committee) => {
+                        const { name, logo, firebaseDocName } = committee;
+                        const { LogoComponent, LightLogoComponent, height, width } = getLogoComponent(logo);
 
+                        const requestCount = committeeRequests[firebaseDocName!]?.length ?? 0;
 
-                    const isTextLight = (colorHex: string) => {
-                        const luminosity = calculateHexLuminosity(colorHex);
-                        return luminosity < 155;
-                    };
-
-                    return (
-                        <View className='flex items-center mb-8 w-full' key={firebaseDocName}>
+                        return (
                             <TouchableOpacity
+                                key={firebaseDocName}
                                 onPress={() => {
                                     setSelectedCommittee(firebaseDocName)
                                     setCommitteeListVisible(true)
                                     setInitialLoad(false)
                                 }}
-                                className='flex-row w-[90%] h-28 rounded-xl'
-                                style={{ backgroundColor: color }}
+                                className={`w-[45%] flex-col h-40 mb-11 p-2 rounded-xl ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                                style={{
+                                    shadowColor: "#000",
+                                    shadowOffset: {
+                                        width: 0,
+                                        height: 2,
+                                    },
+                                    shadowOpacity: 0.25,
+                                    shadowRadius: 3.84,
+
+                                    elevation: 5,
+                                }}
                             >
-                                <View className='flex-1 rounded-l-xl' style={{ backgroundColor: "rgba(255,255,255,0.4)" }} >
-                                    <View className='items-center justify-center h-full'>
-                                        <LogoComponent width={height} height={width} />
-                                    </View>
+
+                                <View className='flex-row justify-center'>
+                                    <Text className={`text-lg ${darkMode ? "text-white" : "text-black"} ${requestCount > 0 && "text-primary-blue font-bold"}`}>{requestCount} Request</Text>
                                 </View>
 
-                                <View className='w-[70%] justify-end py-3 px-5'>
-                                    <View className='justify-end flex-row'>
-                                        <Text className={`font-bold text-2xl text-${isTextLight(color!) ? "white" : "black"}`}>{name}</Text>
-                                    </View>
-                                    <View className='justify-end flex-row'>
-                                        <Text className={`font-semibold text-${isTextLight(color!) ? "white" : "black"}`}>{requestCount} Request</Text>
-                                    </View>
+
+                                {/* Logo */}
+                                <View className='items-center justify-center flex-1'>
+                                    {darkMode ?
+                                        <LightLogoComponent height={height * .9} width={width * .9} />
+                                        :
+                                        <LogoComponent height={height * .9} width={width * .9} />
+                                    }
+                                </View>
+
+                                {/* Name and Membership */}
+                                <View className='items-center justify-center'>
+                                    <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(name, 11)}</Text>
                                 </View>
 
                             </TouchableOpacity>
+                        );
+                    })}
+                </View>
 
-                        </View>
-                    );
-                })}
+
+                {loading && (
+                    <ActivityIndicator size="small" />
+                )}
             </ScrollView>
 
-            <DismissibleModal
+
+            <Modal
+                animationType="slide"
+                transparent={true}
                 visible={committeeListVisible}
-                setVisible={setCommitteeListVisible}
+                onRequestClose={() => {
+                    setCommitteeListVisible(false);
+                }}
             >
-                <View className='flex opacity-100 bg-white rounded-md space-y-6 h-screen w-screen'>
-                    <View
-                        className='flex-row items-center justify-between mx-5 mt-6'
-                        style={{ paddingTop: insets.top }}
-                    >
-                        <View className='flex-row items-center'>
-                            <Octicons name="stack" size={35} color="black" />
-                            <Text className='text-3xl font-semibold ml-4'>{reverseFormattedFirebaseName(selectedCommittee || "")}</Text>
+                <View
+                    style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                >
+                    <View className='h-screen'>
+                        <View className='flex-row justify-between mx-6'>
+                            <View className='flex-row items-center'>
+                                <Octicons name="stack" size={35} color={darkMode ? "white" : "black"} />
+                                <Text className={`text-3xl font-semibold ml-4 text-black ${darkMode ? "text-white" : "text-black"}`}>{reverseFormattedFirebaseName(selectedCommittee || "")}</Text>
+                            </View>
+                            <View>
+                                <TouchableOpacity onPress={() => {
+                                    setSelectedCommittee(undefined);
+                                    setCommitteeListVisible(false);
+                                }}>
+                                    <Octicons name="x" size={24} color={darkMode ? "white" : "black"} />
+                                </TouchableOpacity>
+                            </View>
                         </View>
-                        <View>
-                            <TouchableOpacity onPress={() => {
-                                setSelectedCommittee(undefined);
-                                setCommitteeListVisible(false);
-                            }}>
-                                <Octicons name="x" size={24} color="black" />
-                            </TouchableOpacity>
+
+                        <View className='mt-9 flex-1'>
+                            {members && members.length === 0 && (
+                                <Text className={`text-lg font-bold text-center ${darkMode ? "text-white" : "text-black"}`}>No members to verify</Text>
+                            )}
+                            <MembersList
+                                key={forceUpdate} // Force rerender when selectedCommittee Changes because rendering problems
+                                handleCardPress={(uid) => {
+                                    setCommitteeListVisible(false);
+                                    setConfirmVisible(true);
+                                    setSelectedMemberUID(uid);
+                                }}
+                                canSearch={false}
+                                users={members}
+                            />
                         </View>
                     </View>
-
-                    <View className='mt-9 flex-1'>
-                        <MembersList
-                            key={forceUpdate} // Force rerender when selectedCommittee Changes because rendering problems
-                            handleCardPress={(uid) => {
-                                setCommitteeListVisible(false);
-                                setConfirmVisible(true);
-                                setSelectedMemberUID(uid);
-                            }}
-                            users={members}
-                        />
-                    </View>
-
                 </View>
-            </DismissibleModal>
+            </Modal>
 
             <DismissibleModal
                 visible={confirmVisible}
                 setVisible={setConfirmVisible}
             >
-                <View className='flex opacity-100 bg-white rounded-md p-6' style={{ minWidth: 325 }}>
+                <View
+                    className={`flex opacity-100 rounded-md p-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    style={{ width: 325 }}
+                >
                     <View className='flex-row items-center justify-end'>
                         <View>
                             <TouchableOpacity onPress={() => setConfirmVisible(false)}>
-                                <Octicons name="x" size={24} color="black" />
+                                <Octicons name="x" size={24} color={darkMode ? "white" : "black"} />
                             </TouchableOpacity>
                         </View>
                     </View>
 
                     <MemberCard userData={selectedMember} handleCardPress={() => { }} />
-                    <View className='flex-col mt-12'>
+
+                    <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>{selectedMember?.name} is also in: </Text>
+
+                    {selectedMember?.committees && selectedMember?.committees.length > 0 && (
+                        <View className='flex-row flex-wrap'>
+                            {selectedMember?.committees?.map((committeeName, index) => {
+                                return (
+                                    <View key={index}>
+                                        <Text className={`text-md text-primary-blue`}>
+                                            {reverseFormattedFirebaseName(committeeName) || "Unknown"}
+                                            {index < selectedMember.committees!.length - 1 && ", "}
+                                        </Text>
+                                    </View>
+                                );
+                            })}
+                        </View>
+                    )}
+
+                    <View className='mt-12 flex-row space-x-6'>
                         <TouchableOpacity
                             onPress={() => {
                                 handleApprove(selectedMemberUID!)
                                 setConfirmVisible(false);
                                 setSelectedMemberUID(undefined);
                             }}
-                            className='bg-[#AEF359] w-1/3 items-center py-2 rounded-lg'
+                            className='flex-1 bg-primary-blue items-center py-2 rounded-lg justify-center'
                         >
-                            <Text className='text-lg font-semibold'>Approve</Text>
+                            <Text className='text-lg font-semibold text-white'>Approve</Text>
                         </TouchableOpacity>
-
                         <TouchableOpacity
                             onPress={() => {
                                 handleDeny(selectedMemberUID!)
                                 setConfirmVisible(false);
                                 setSelectedMemberUID(undefined);
                             }}
-                            className='w-1/3 items-center py-2 rounded-lg mt-1'
+                            className='flex-1 items-center py-2 rounded-lg justify-center'
                         >
-                            <Text className='text-lg font-semibold'>Deny</Text>
+                            <Text className={`text-lg font-semibold ${darkMode ? "text-white" : "text-black"}`}>Deny</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -324,39 +373,36 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<AdminDashboardP
                 visible={infoVisible}
                 setVisible={setInfoVisible}
             >
-                <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ minWidth: 325 }}>
+                <View
+                    className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    style={{ minWidth: 325 }}
+                >
                     <View className='flex-row items-center justify-between'>
                         <View className='flex-row items-center'>
-                            <Octicons name="info" size={24} color="black" />
-                            <Text className='text-2xl font-semibold ml-2'>Instructions</Text>
+                            <Octicons name="info" size={24} color={darkMode ? "white" : "black"} />
+                            <Text className={`text-2xl font-semibold ml-2 ${darkMode ? "text-white" : "text-black"}`}>Instructions</Text>
                         </View>
                         <View>
                             <TouchableOpacity onPress={() => setInfoVisible(false)}>
-                                <Octicons name="x" size={24} color="black" />
+                                <Octicons name="x" size={24} color={darkMode ? "white" : "black"} />
                             </TouchableOpacity>
                         </View>
                     </View>
-                    {/* <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>Members that upload both their TAMU Chapter and SHPE national receipt will appear here</Text>
+
+                    <View className='w-[85%]'>
+                        <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>All closed committees and their members request will appear here.</Text>
                     </View>
 
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>To begin verification, click on a member and view their TAMU Chapter and SHPE National Proofs</Text>
+                        <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>Click on a committee, select a member and approve or deny their membership.</Text>
                     </View>
 
                     <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>
-                            You may adjust SHPE National Expiration Date by clicking <Text className='text-pale-blue'>Adjust</Text>. You may enter the day of registration and expiration date will be set OR enter the expiration date directly. Click Save. </Text>
+                        <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>
+                            The member will be notified when they are approved or denied </Text>
                     </View>
-
-                    <View className='w-[85%]'>
-                        <Text className='text-md font-semibold'>
-                            Click Approve or Deny and the member will be notified.</Text>
-                    </View> */}
                 </View>
             </DismissibleModal>
-
-
         </SafeAreaView>
     )
 }

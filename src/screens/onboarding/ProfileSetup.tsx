@@ -8,8 +8,8 @@ import { Octicons } from '@expo/vector-icons';
 import { Circle, Svg } from 'react-native-svg';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
-import { getUser, setPrivateUserData, setPublicUserData } from '../../api/firebaseUtils';
-import { getBlobFromURI, selectFile, selectImage, uploadFile } from '../../api/fileSelection';
+import { getUser, setPrivateUserData, setPublicUserData, uploadFile } from '../../api/firebaseUtils';
+import { getBlobFromURI, selectFile, selectImage } from '../../api/fileSelection';
 import { updateProfile } from 'firebase/auth';
 import { CommonMimeTypes, validateName } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
@@ -17,16 +17,17 @@ import { MAJORS, classYears } from '../../types/user';
 import { ProfileSetupStackParams } from '../../types/navigation';
 import { Images } from '../../../assets';
 import UploadFileIcon from '../../../assets/file-arrow-up-solid.svg';
-import DownloadIcon from '../../../assets/arrow-down-solid.svg';
-import VolunteerIcon from '../../../assets/volunteering.svg';
-import IntramuralIcon from '../../../assets/futbol-solid.svg';
-import SocialsIcon from '../../../assets/socials.svg';
-import StudyHoursIcon from '../../../assets/study-hours.svg';
-import WorkshopIcon from '../../../assets/workshop.svg';
+import DownloadIcon from '../../../assets/arrow-down-solid_white.svg';
+import IntramuralIcon from '../../../assets/intramural_white.svg';
+import SocialIcon from '../../../assets/social_white.svg';
+import StudyHoursIcon from '../../../assets/study_hour_white.svg';
+import WorkshopIcon from '../../../assets/workshop_event_white.svg';
+import VolunteerIcon from '../../../assets/volunteer_white.svg';
 import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
 import CustomDropDown from '../../components/CustomDropDown';
 import InteractButton from '../../components/InteractButton';
 import { EventType } from '../../types/events';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
@@ -44,78 +45,96 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
     }, [navigation]);
 
     return (
-        <SafeAreaView className={safeAreaViewStyle}>
-            <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-                <View>
-                    <TouchableOpacity
-                        className="mb-4"
-                        onPress={() => {
-                            signOutUser(false);
-                            navigation.navigate("LoginScreen");
-                        }}
-                    >
-                        <Octicons name="chevron-left" size={30} color="white" />
-                    </TouchableOpacity>
-                    <View className='flex-col items-center mb-12'>
-                        <Text className='text-white text-center text-3xl'>Tell Us About Yourself</Text>
-                        <Text className='text-white text-center text-lg mt-4'>Please enter your full name{"\n"} below to get started.</Text>
-                    </View>
-                    <View className="flex-col">
-                        <TextInputWithFloatingTitle
-                            setTextFunction={(text: string) => {
-                                if (text.length <= 64)
-                                    setName(text);
-                            }}
-                            inputValue={name}
-                            title='Name*'
-                            placeholderText='Name*'
-                            titleStartY={20}
-                            titleEndY={0}
-                            maxCharacters={64}
-                            blurTitleClassName='text-white text-md'
-                            focusTitleClassName='text-white pl-1 pb-1 text-xl'
-                            textInputClassName="w-full rounded-md px-2 py-1 pb-3 bg-white h-6 items-center h-10 text-lg mb-4"
-                        />
+        <LinearGradient
+            colors={['#191740', '#413CA6']}
+            className="flex-1"
+        >
+            <SafeAreaView className='flex-1'>
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+                    <View>
+                        {/* Header */}
+                        <View className='px-4 mt-5 flex-row items-center'>
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate("LoginScreen")}
+                                activeOpacity={1}
+                            >
+                                <Octicons name="chevron-left" size={30} color="white" />
+                            </TouchableOpacity>
 
-                        <TextInputWithFloatingTitle
-                            setTextFunction={(text: string) => {
-                                if (text.length <= 250)
-                                    setBio(text)
-                            }}
-                            inputValue={bio}
-                            title='Bio'
-                            titleStartY={20}
-                            titleEndY={0}
-                            placeholderText='Write a short bio...'
-                            maxCharacters={250}
-                            blurTitleClassName='text-white text-md'
-                            focusTitleClassName='text-white pl-1 pb-1 text-xl'
-                            lineCount={5}
-                            isMultiline
-                            textInputClassName="w-full rounded-md px-2 py-1 pt-3 bg-white mb-4 h-32"
-                        />
-                        <InteractButton
-                            onPress={async () => {
-                                if (validateName(name, true)) {
-                                    if (auth.currentUser) {
-                                        await setPublicUserData({
-                                            name: name,
-                                            bio: bio,
-                                        });
+                            <View className='flex-1 mx-5 flex-row'>
+                                <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                                <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
+                                <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
+                                <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
+                                <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
+                            </View>
+                        </View>
+
+                        <View className='mx-8 mt-8'>
+                            <Text className='text-white text-3xl font-bold'>Tell Us About Yourself</Text>
+                            <Text className='text-white text-xl mt-2'>Enter your full name. Biography is displayed in your public profile.</Text>
+                        </View>
+
+                        <View className="mx-8 mt-10">
+                            <TextInputWithFloatingTitle
+                                setTextFunction={(text: string) => {
+                                    if (text.length <= 64)
+                                        setName(text);
+                                }}
+                                inputValue={name}
+                                title='Name*'
+                                placeholderText='Name*'
+                                placeHolderColor="white"
+                                titleStartY={20}
+                                titleEndY={-5}
+                                maxCharacters={64}
+                                blurTitleClassName='text-xl'
+                                focusTitleClassName='text-white text-xl ml-1'
+                                textInputClassName="text-xl text-white border-2 border-white rounded-lg pl-2 h-14"
+                            />
+
+                            <TextInputWithFloatingTitle
+                                setTextFunction={(text: string) => {
+                                    if (text.length <= 250)
+                                        setBio(text)
+                                }}
+                                inputValue={bio}
+                                title='Bio'
+                                titleStartY={20}
+                                titleEndY={-5}
+                                placeholderText='Write a short bio...'
+                                maxCharacters={250}
+                                lineCount={5}
+                                isMultiline
+                                blurTitleClassName='text-xl'
+                                componentClassName="mt-4"
+                                focusTitleClassName='text-white text-xl ml-1'
+                                textInputClassName="text-xl text-white border-2 border-white rounded-lg pl-2 h-32"
+                            />
+
+                            <InteractButton
+                                onPress={async () => {
+                                    if (validateName(name, true)) {
+                                        if (auth.currentUser) {
+                                            await setPublicUserData({
+                                                name: name,
+                                                bio: bio,
+                                            });
+                                        }
+                                        navigation.navigate("SetupProfilePicture")
                                     }
-                                    navigation.navigate("SetupProfilePicture")
-                                }
-                            }}
-                            label='Continue'
-                            buttonClassName={`${name === "" ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
-                            textClassName={`${name === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
-                            opacity={name === "" ? 1 : 0.8}
-                            underlayColor={`${name === "" ? "" : "#A22E2B"}`}
-                        />
+                                }}
+                                label='Continue'
+                                opacity={name === "" ? 1 : 0.8}
+                                buttonClassName={`justify-center items-center mt-8 rounded-xl h-14 ${name === "" ? "bg-grey-dark" : "bg-primary-orange"}`}
+                                textClassName={`text-white font-semibold text-2xl text-white`}
+                                underlayColor={`${name === "" ? "" : "#EF9260"}`}
+                            />
+                        </View>
                     </View>
-                </View>
-            </TouchableWithoutFeedback>
-        </SafeAreaView>
+                </TouchableWithoutFeedback>
+            </SafeAreaView>
+        </LinearGradient>
     );
 };
 
@@ -176,6 +195,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
 
     const onProfilePictureUploadSuccess = async (URL: string) => {
         console.log("File available at", URL);
+        setLoading(true);
         if (auth.currentUser) {
             await updateProfile(auth.currentUser, {
                 photoURL: URL
@@ -190,77 +210,96 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
     }
 
     return (
-        <SafeAreaView className={safeAreaViewStyle}>
-            <View>
-                <TouchableOpacity
-                    className="mb-4"
-                    onPress={() => { navigation.goBack(); }}
-                >
-                    <Octicons name="chevron-left" size={30} color="white" />
-                </TouchableOpacity>
+        <LinearGradient
+            colors={['#191740', '#413CA6']}
+            className="flex-1"
+        >
 
-                <View className='flex-col items-center'>
-                    <View className='flex-col items-center'>
-                        <Text className='text-white text-center text-3xl'>Howdy!</Text>
-                        <Text className='text-white text-center text-lg mt-4'>{"It's always nice to add a face to a name.\nWould you like to upload a photo?"}</Text>
-                    </View>
+            <SafeAreaView className='flex-1'>
+                {/* Header */}
+                <View className='px-4 mt-5 flex-row items-center'>
                     <TouchableOpacity
-                        className='w-64 h-64 my-8'
-                        activeOpacity={0.6}
-                        onPress={async () => await selectProfilePicture()}
+                        onPress={() => navigation.goBack()}
+                        activeOpacity={1}
                     >
-                        <Image
-                            className="w-64 h-64 rounded-full"
-                            defaultSource={Images.DEFAULT_USER_PICTURE}
-                            source={localImageURI !== "" ? { uri: localImageURI as string } : Images.DEFAULT_USER_PICTURE}
-                        />
-                        <Animated.View
-                            className='absolute inset-x-1/4 inset-y-1/4 w-32 h-32'
-                            style={{
-                                transform: [{ translateY: arrowYVal }, { scaleX: arrowWidth }],
-                            }}
+                        <Octicons name="chevron-left" size={30} color="white" />
+                    </TouchableOpacity>
+
+                    <View className='flex-1 mx-5 flex-row'>
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
+                    </View>
+                </View>
+
+                <View className='mx-8 mt-8'>
+                    <Text className='text-white text-3xl font-bold'>Howdy!</Text>
+                    <Text className='text-white text-xl mt-2'>Upload a profile picture that will display to other members.</Text>
+                </View>
+
+                <View className="mx-8 mt-10">
+                    {/* Upload Profile Picture */}
+                    <View className='items-center'>
+                        <TouchableOpacity
+                            className='w-52 h-52 my-8'
+                            activeOpacity={0.6}
+                            onPress={async () => await selectProfilePicture()}
                         >
                             <Image
-                                className='w-full h-full'
-                                style={{
-                                    opacity: localImageURI === "" ? 0.75 : 0
-                                }}
-                                source={Images.UPLOAD_ARROW}
+                                className="w-52 h-52 rounded-full"
+                                defaultSource={Images.DEFAULT_USER_PICTURE}
+                                source={localImageURI !== "" ? { uri: localImageURI as string } : Images.DEFAULT_USER_PICTURE}
                             />
-                        </Animated.View>
-                    </TouchableOpacity>
-                    <View className='w-10/12 mb-2'>
-                        {loading && (
-                            <ActivityIndicator className="mb-4" size={"large"} />
-                        )}
-                        <InteractButton
-                            onPress={() => {
-                                if (localImageURI !== "") {
-                                    uploadFile(
-                                        image!,
-                                        CommonMimeTypes.IMAGE_FILES,
-                                        `user-docs/${auth.currentUser?.uid}/user-profile-picture`,
-                                        onProfilePictureUploadSuccess
-                                    );
-                                }
-                            }}
-                            label='Continue'
-                            buttonClassName={`${localImageURI === "" ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
-                            textClassName={`${localImageURI === "" ? "text-gray-700" : "text-white"} text-lg font-bold`}
-                            opacity={localImageURI === "" ? 1 : 0.8}
-                            underlayColor={`${localImageURI === "" ? "" : "#A22E2B"}`}
-                        />
+                            <Animated.View
+                                className='absolute w-52 h-52 items-center justify-center'
+                                style={{
+                                    transform: [{ translateY: arrowYVal }, { scaleX: arrowWidth }],
+                                }}
+                            >
+                                <Image
+                                    className='h-1/2 w-1/2'
+                                    style={{
+                                        opacity: localImageURI === "" ? 0.75 : 0
+                                    }}
+                                    source={Images.UPLOAD_ARROW}
+                                />
+                            </Animated.View>
+                        </TouchableOpacity>
                     </View>
+
+                    <InteractButton
+                        onPress={() => {
+                            if (localImageURI !== "") {
+                                setLoading(true);
+                                uploadFile(
+                                    image!,
+                                    CommonMimeTypes.IMAGE_FILES,
+                                    `user-docs/${auth.currentUser?.uid}/user-profile-picture`,
+                                    onProfilePictureUploadSuccess
+                                );
+                            }
+                        }}
+                        label='Continue'
+                        opacity={localImageURI === "" ? 1 : 0.8}
+                        buttonClassName={`justify-center items-center mt-8 rounded-xl h-14 ${localImageURI === "" ? "bg-grey-dark" : "bg-primary-orange"}`}
+                        textClassName={`text-white font-semibold text-2xl text-white`}
+                        underlayColor={`${localImageURI === "" ? "" : "#EF9260"}`}
+                    />
+                    {loading && (
+                        <ActivityIndicator className="mt-2" size="small" />
+                    )}
                     <InteractButton
                         onPress={() => navigation.navigate("SetupAcademicInformation")}
                         label='Skip For Now'
-                        buttonClassName='justify-center items-center  rounded-md w-10/12'
-                        textClassName='text-pale-orange text-lg font-bold'
+                        buttonClassName='justify-center items-center mt-4'
+                        textClassName='text-primary-orange text-xl font-semibold'
                         underlayColor='transparent'
                     />
                 </View>
-            </View>
-        </SafeAreaView>
+            </SafeAreaView>
+        </LinearGradient>
     );
 };
 
@@ -279,23 +318,37 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
         }
     };
 
-
     return (
-        <SafeAreaView className={safeAreaViewStyle}>
-            <View>
-                <TouchableOpacity
-                    className="mb-4"
-                    onPress={() => { navigation.goBack(); }}
-                >
-                    <Octicons name="chevron-left" size={30} color="white" />
-                </TouchableOpacity>
+        <LinearGradient
+            colors={['#191740', '#413CA6']}
+            className="flex-1"
+        >
+            <SafeAreaView className='flex-1'>
+                {/* Header */}
+                <View className='px-4 mt-5 flex-row items-center'>
+                    <TouchableOpacity
+                        onPress={() => navigation.goBack()}
+                        activeOpacity={1}
+                    >
+                        <Octicons name="chevron-left" size={30} color="white" />
+                    </TouchableOpacity>
 
-                <View className='flex-col items-center'>
-                    <Text className='text-white text-center text-3xl'>Academic Information</Text>
-                    <Text className='text-white text-center text-lg mt-4'>We're all about fostering a community of learners. Tell us about your academic journey.</Text>
+                    <View className='flex-1 mx-5 flex-row'>
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
+                    </View>
                 </View>
-                <View>
-                    <View className='flex-col mt-10 justify-center h-52 z-20'>
+
+                <View className='mx-8 mt-8'>
+                    <Text className='text-white text-3xl font-bold'>Academic Information</Text>
+                    <Text className='text-white text-xl mt-2'>Your major and class year will display in your public profile.</Text>
+                </View>
+
+                <View className="mx-8 mt-10">
+                    <View className='flex-col justify-center h-52 z-20'>
                         <View className='absolute top-0 z-20 w-full'>
                             <CustomDropDown
                                 data={MAJORS}
@@ -306,6 +359,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                 onToggle={() => toggleDropdown('major')}
                                 title={'Major'}
                                 dropDownClassName='top-20'
+                                titleClassName='text-white'
                                 textClassName='text-black font-semibold'
                             />
                         </View>
@@ -321,12 +375,13 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                 displayType='iso'
                                 disableSearch
                                 dropDownClassName='top-20'
+                                titleClassName='text-white'
                                 textClassName='text-black font-semibold'
                             />
                         </View>
                     </View>
 
-                    <View className='flex items-center z-5'>
+                    <View className='z-5'>
                         <InteractButton
                             onPress={() => {
                                 if (!(major === "" || classYear === "")) {
@@ -340,15 +395,16 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                 }
                             }}
                             label='Continue'
-                            buttonClassName={`${(major === "" || classYear === "") ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md w-2/3 z-5`}
-                            textClassName={`${(major === "" || classYear === "") ? "text-gray-700" : "text-white"} text-lg font-bold`}
+
                             opacity={(major === "" || classYear === "") ? 1 : 0.8}
-                            underlayColor={`${(major === "" || classYear === "") ? "" : "#A22E2B"}`}
+                            buttonClassName={`justify-center items-center mt-8 rounded-xl h-14 ${(major === "" || classYear === "") ? "bg-grey-dark" : "bg-primary-orange"}`}
+                            textClassName={`text-white font-semibold text-2xl text-white`}
+                            underlayColor={`${(major === "" || classYear === "") ? "" : "#EF9260"}`}
                         />
                     </View>
                 </View>
-            </View>
-        </SafeAreaView>
+            </SafeAreaView>
+        </LinearGradient>
     );
 };
 
@@ -403,25 +459,39 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
 
 
     return (
-        <SafeAreaView className={safeAreaViewStyle}>
-            <View>
-                <TouchableOpacity
-                    className="mb-4"
-                    onPress={() => { navigation.goBack(); }}
-                >
-                    <Octicons name="chevron-left" size={30} color="white" />
-                </TouchableOpacity>
+        <LinearGradient
+            colors={['#191740', '#413CA6']}
+            className="flex-1"
+        >
+            <SafeAreaView className='flex-1'>
+                {/* Header */}
+                <View className='px-4 mt-5 flex-row items-center'>
+                    <TouchableOpacity
+                        onPress={() => navigation.goBack()}
+                        activeOpacity={1}
+                    >
+                        <Octicons name="chevron-left" size={30} color="white" />
+                    </TouchableOpacity>
 
-                <View className='flex-col items-center'>
-                    <View className='flex-col items-center'>
-                        <Text className='text-white text-center text-3xl'>Professional Information</Text>
-                        <Text className='text-white text-center text-lg mt-4'>Showcase Your Skills and Experience</Text>
+                    <View className='flex-1 mx-5 flex-row'>
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
                     </View>
+                </View>
 
+                <View className='mx-8 mt-8'>
+                    <Text className='text-white text-3xl font-bold'>Professional Information</Text>
+                    <Text className='text-white text-xl mt-2'>Your resume will be sent to companies for various opportunities. This can be changed later.</Text>
+                </View>
+
+
+                <View className="mx-8 mt-4">
                     <View className='items-center'>
                         {resumeURL && (
                             <TouchableOpacity
-                                className='mt-8'
                                 onPress={async () => { handleLinkPress(resumeURL!) }}
                             >
                                 <View className='relative flex-row items-center border-b border-white'>
@@ -469,36 +539,39 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                                 />
                             </Svg>
                             <UploadFileIcon width={110} height={110} />
+                            <View className='h-full w-full absolute top-10 left-14'>
+                                <Text className='text-black font-extrabold text-xl'>pdf</Text>
+                            </View>
                         </TouchableOpacity>
-                    </View>
 
-                    <View className='w-10/12 mb-2'>
                         {loading && (
-                            <ActivityIndicator className="mb-4" size={"large"} />
+                            <ActivityIndicator className="mb-4" size={"small"} />
                         )}
-                        <InteractButton
-                            onPress={() => {
-                                if (resumeURL) {
-                                    navigation.navigate("SetupInterests")
-                                }
-                            }}
-                            label='Continue'
-                            buttonClassName={`${!resumeURL ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
-                            textClassName={`${!resumeURL ? "text-gray-700" : "text-white"} text-lg font-bold`}
-                            opacity={!resumeURL ? 1 : 0.8}
-                            underlayColor={`${!resumeURL ? "" : "#A22E2B"}`}
-                        />
+
                     </View>
+                    <InteractButton
+                        onPress={() => {
+                            if (resumeURL) {
+                                navigation.navigate("SetupInterests")
+                            }
+                        }}
+                        label='Continue'
+                        opacity={!resumeURL ? 1 : 0.8}
+                        buttonClassName={`justify-center items-center rounded-xl h-14 ${!resumeURL ? "bg-grey-dark" : "bg-primary-orange"}`}
+                        textClassName={`text-white font-semibold text-2xl text-white`}
+                        underlayColor={`${!resumeURL ? "" : "#EF9260"}`}
+                    />
+
                     <InteractButton
                         onPress={() => navigation.navigate("SetupInterests")}
                         label='Skip For Now'
-                        buttonClassName='justify-center items-center  rounded-md w-10/12'
-                        textClassName='text-pale-orange text-lg font-bold'
+                        buttonClassName='justify-center items-center mt-4'
+                        textClassName='text-primary-orange text-xl font-semibold'
                         underlayColor='transparent'
                     />
                 </View>
-            </View>
-        </SafeAreaView>
+            </SafeAreaView>
+        </LinearGradient>
     )
 }
 
@@ -530,93 +603,100 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
     }, [userInterests]);
 
 
-    const InterestButtons = ({ interestEvent, label, color, Icon }: {
+    const InterestButtons = ({ interestEvent, label, Icon }: {
         interestEvent: EventType;
         label: string;
-        color: string;
         Icon: React.FC<React.SVGProps<SVGSVGElement>>;
     }) => {
         const isSelected = userInterests.includes(interestEvent);
         return (
             <TouchableOpacity
                 onPress={() => handleInterestToggle(interestEvent)}
-                className='flex-col rounded-md w-[45%] mb-4'
+                className='flex-col rounded-xl w-[45%] mb-8'
                 style={{ minHeight: 90 }}
             >
-                <View className='flex-1 rounded-md items-center bg-white' >
+                <View className={`flex-1 rounded-md items-center border-2 ${isSelected ? "border-primary-orange" : "border-white"}`} >
                     <View className='flex-1 items-center flex-row justify-center py-2'>
                         {isSelected ? (
-                            <View className="items-center justify-center h-10 w-10 rounded-full" style={{ backgroundColor: color }}>
-                                <Octicons name="check" size={30} color="white" />
+                            <View className="items-center justify-center h-10 w-10 rounded-full">
+                                <Octicons name="check" size={30} color="#FD652F" />
                             </View>
                         ) : (
                             <Icon width={35} height={35} />
                         )}
                     </View>
-                    <Text className="justify-end font-bold text-lg text-black">{label}</Text>
+                    <Text className={`justify-end font-bold text-lg ${isSelected ? "text-primary-orange" : "text-white"}`}>{label}</Text>
                 </View>
             </TouchableOpacity>
         );
     }
 
     return (
-        <SafeAreaView className={safeAreaViewStyle}>
-            <View className='flex-col'>
-                <TouchableOpacity
-                    className="mb-4"
-                    onPress={() => { navigation.goBack(); }}
-                >
-                    <Octicons name="chevron-left" size={30} color="white" />
-                </TouchableOpacity>
-                <View className='items-center'>
-                    <View className='flex-col items-center'>
-                        <Text className='text-white text-center text-3xl'>What are you interest in?</Text>
-                        <Text className='text-white text-center text-lg mt-4'>Choose activities that you are interested in at SHPE</Text>
-                    </View>
-                    <ScrollView
-                        className='w-11/12 h-1/2 flex-col bg-[#b5b5cc2c] my-5 rounded-md'
-                        persistentScrollbar
-                        scrollToOverflowEnabled
+        <LinearGradient
+            colors={['#191740', '#413CA6']}
+            className="flex-1"
+        >
+            <SafeAreaView className='flex-1'>
+                {/* Header */}
+                <View className='px-4 mt-5 flex-row items-center'>
+                    <TouchableOpacity
+                        onPress={() => navigation.goBack()}
+                        activeOpacity={1}
                     >
-                        {/* If any additional interest are added in the future, then update manually in ISHPE component */}
-                        <View className='flex-wrap flex-row w-full h-full pb-28 pt-4 px-2 justify-between'>
-                            <InterestButtons interestEvent={EventType.VOLUNTEER_EVENT} label="Volunteering" color={"#E93535"} Icon={VolunteerIcon} />
-                            <InterestButtons interestEvent={EventType.INTRAMURAL_EVENT} label="Intramural" color={"#000000"} Icon={IntramuralIcon} />
-                            <InterestButtons interestEvent={EventType.SOCIAL_EVENT} label="Socials" color={"#A75EF8"} Icon={SocialsIcon} />
-                            <InterestButtons interestEvent={EventType.STUDY_HOURS} label="Study Hours" color={"#9DB89A"} Icon={StudyHoursIcon} />
-                            <InterestButtons interestEvent={EventType.WORKSHOP} label="Workshops" color={"#FF910A"} Icon={WorkshopIcon} />
-                        </View>
-                    </ScrollView>
+                        <Octicons name="chevron-left" size={30} color="white" />
+                    </TouchableOpacity>
 
-                    <View className='w-10/12 mb-2'>
-                        <InteractButton
-                            onPress={async () => {
-                                if (canContinue && auth.currentUser) {
-                                    setLoading(true);
-                                    await setPublicUserData({
-                                        interests: userInterests,
-                                    });
-
-                                    await setPrivateUserData({
-                                        completedAccountSetup: true,
-                                    });
-
-                                    // Save user to local storage and update user context
-                                    const firebaseUser = await getUser(auth.currentUser.uid)
-                                    await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                                    setUserInfo(firebaseUser); // Navigates to Home
-
-                                    setLoading(false);
-                                }
-                            }}
-
-                            label='Continue'
-                            buttonClassName={`${!canContinue ? "bg-gray-500" : "bg-continue-dark"} justify-center items-center rounded-md`}
-                            textClassName={`${!canContinue ? "text-gray-700" : "text-white"} text-lg font-bold`}
-                            opacity={!canContinue ? 1 : 0.8}
-                            underlayColor={`${!canContinue ? "" : "#A22E2B"}`}
-                        />
+                    <View className='flex-1 mx-5 flex-row'>
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
+                        <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
                     </View>
+                </View>
+
+                <View className='mx-8 mt-8'>
+                    <Text className='text-white text-3xl font-bold'>What are you interested in?</Text>
+                    <Text className='text-white text-xl mt-2'>You will receive notifications for events related to your interests. This can be changed later.</Text>
+                </View>
+
+                <View className='mx-8'>
+                    <View className='flex-wrap flex-row w-full justify-between mt-10'>
+                        <InterestButtons interestEvent={EventType.VOLUNTEER_EVENT} label="Volunteering" Icon={VolunteerIcon} />
+                        <InterestButtons interestEvent={EventType.INTRAMURAL_EVENT} label="Intramural" Icon={IntramuralIcon} />
+                        <InterestButtons interestEvent={EventType.SOCIAL_EVENT} label="Socials" Icon={SocialIcon} />
+                        <InterestButtons interestEvent={EventType.STUDY_HOURS} label="Study Hours" Icon={StudyHoursIcon} />
+                        <InterestButtons interestEvent={EventType.WORKSHOP} label="Workshops" Icon={WorkshopIcon} />
+                    </View>
+
+                    <InteractButton
+                        onPress={async () => {
+                            if (canContinue && auth.currentUser) {
+                                setLoading(true);
+                                await setPublicUserData({
+                                    interests: userInterests,
+                                });
+
+                                await setPrivateUserData({
+                                    completedAccountSetup: true,
+                                });
+
+                                // Save user to local storage and update user context
+                                const firebaseUser = await getUser(auth.currentUser.uid)
+                                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                                setUserInfo(firebaseUser); // Navigates to Home
+
+                                setLoading(false);
+                            }
+                        }}
+
+                        label='Continue'
+                        opacity={!canContinue ? 1 : 0.8}
+                        buttonClassName={`justify-center items-center rounded-xl h-14 ${!canContinue ? "bg-grey-dark" : "bg-primary-orange"}`}
+                        textClassName={`text-white font-semibold text-2xl text-white`}
+                        underlayColor={`${!canContinue ? "" : "#EF9260"}`}
+                    />
+
                     <InteractButton
                         onPress={async () => {
                             if (auth.currentUser) {
@@ -634,16 +714,17 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
                             setUserInfo(firebaseUser); // Navigates to Home
                         }}
                         label='Skip For Now'
-                        buttonClassName='justify-center items-center  rounded-md w-10/12'
-                        textClassName='text-pale-orange text-lg font-bold'
+                        buttonClassName='justify-center items-center mt-4'
+                        textClassName='text-primary-orange text-xl font-semibold'
                         underlayColor='transparent'
                     />
+
                     {loading && (
-                        <ActivityIndicator className="mb-4" size={"large"} />
+                        <ActivityIndicator className="mb-4" size="small" />
                     )}
                 </View>
-            </View>
-        </SafeAreaView>
+            </SafeAreaView>
+        </LinearGradient>
     );
 };
 

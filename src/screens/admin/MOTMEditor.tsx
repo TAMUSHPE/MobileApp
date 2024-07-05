@@ -1,11 +1,11 @@
-import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Modal } from 'react-native'
-import React, { useCallback, useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Modal, useColorScheme } from 'react-native'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Octicons } from '@expo/vector-icons';
 import { getMOTM, getMembersExcludeOfficers, setMOTM } from '../../api/firebaseUtils';
 import { httpsCallable, getFunctions } from 'firebase/functions';
-import { AdminDashboardParams } from '../../types/navigation';
+import { HomeStackParams } from '../../types/navigation';
 import { PublicUserInfo } from '../../types/user';
 import MembersList from '../../components/MembersList';
 import DismissibleModal from '../../components/DismissibleModal';
@@ -14,10 +14,19 @@ import { useFocusEffect } from '@react-navigation/core';
 import MOTMCard from '../../components/MOTMCard';
 import SwipeableMemberList from '../../components/SwipeableMemberList';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { UserContext } from '../../context/UserContext';
 
 const functions = getFunctions();
 
-const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const [members, setMembers] = useState<PublicUserInfo[]>([])
     const [selectedMemberUID, setSelectedMemberUID] = useState<string>();
     const [selectedMember, setSelectedMember] = useState<PublicUserInfo>();
@@ -28,8 +37,7 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
     const [infoVisible, setInfoVisible] = useState(false);
     const [invisibleConfirmModal, setInvisibleConfirmModal] = useState(false);
     const [membersModal, setMembersModal] = useState(false);
-    const [loadingMember, setLoadingMember] = useState(true);
-    const [loadingMOTM, setLoadingMOTM] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     // Very Hacky way to force update MOTM Card from both swipeable and modal
     const [forceUpdate, setForceUpdate] = useState(0);
@@ -53,20 +61,18 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
     );
 
     const fetchMembers = async () => {
-        setLoadingMember(true);
         try {
             const fetchedMembers = await getMembersExcludeOfficers();
             setMembers(fetchedMembers);
         } catch (error) {
             console.error('Error fetching members:', error);
-        } finally {
-            setLoadingMember(false);
         }
     };
 
     useEffect(() => {
         fetchMembers();
         const fetchSuggestedLocalMOTM = async () => {
+            setLoading(true);
             try {
                 const response = await calculateMOTM();
                 if (response && response.data) {
@@ -74,6 +80,8 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
                 }
             } catch (error) {
                 console.error('Error fetching user info:', error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -91,44 +99,56 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
 
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
-            <SafeAreaView className='flex-1' edges={["top"]}>
+            <SafeAreaView className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`} edges={["top"]}>
                 <View className='flex-row items-center h-10'>
                     <View className='pl-6'>
                         <TouchableOpacity activeOpacity={1} className="px-2" onPress={() => navigation.goBack()}>
-                            <Octicons name="chevron-left" size={30} color="black" />
+                            <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                         </TouchableOpacity>
                     </View>
                     <View className='flex-1 items-center'>
-                        <Text className="text-2xl font-bold text-black">MOTM</Text>
+                        <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Member of the Month</Text>
                     </View>
                     <View className="pr-6">
                         <TouchableOpacity activeOpacity={1} onPress={() => setInfoVisible(true)}>
-                            <Octicons name="info" size={25} color="black" />
+                            <Octicons name="info" size={25} color={darkMode ? "white" : "black"} />
                         </TouchableOpacity>
                     </View>
                 </View>
 
-                {(loadingMOTM && loadingMember) ? (
-                    <ActivityIndicator size="large" className='mt-8' />
-                ) : (
-                    <View className='flex-1'>
-                        <MOTMCard navigation={navigation} key={forceUpdate} />
+                <View className='mt-8'>
+                    <MOTMCard navigation={navigation} key={forceUpdate} />
+                </View>
 
-                        <View className='mt-6 mx-5 pb-3'>
-                            <Text className='font-bold text-xl'>Suggested MOTM</Text>
-                        </View>
-                        <SwipeableMemberList
-                            userData={localSuggestedMOTM!}
-                            onSwipe={(userData: any) => { setForceUpdate(prev => prev + 1); }}
-                        />
 
-                        <TouchableOpacity className='mx-4 px-4 py-3 rounded-md bg-gray-300'
-                            onPress={() => setMembersModal(true)}
-                        >
-                            <Text className='font-bold text-xl'>Select another member</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
+                <TouchableOpacity
+                    className={`mx-4 px-4 py-3 mt-8 rounded-md ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    style={{
+                        shadowColor: "#000",
+                        shadowOffset: {
+                            width: 0,
+                            height: 2,
+                        },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 3.84,
+                        elevation: 5,
+                    }}
+                    onPress={() => setMembersModal(true)}
+                >
+                    <Text className={`font-bold text-xl ${darkMode ? "text-white" : "text-black"}`}>Select another member</Text>
+                </TouchableOpacity>
+
+                <View className='mx-5'>
+                    <Text className={`text-2xl font-bold mb-3 mt-10 ${darkMode ? "text-white" : "text-black"}`}>Suggestions</Text>
+                </View>
+
+                {loading && <ActivityIndicator size="small" className='mt-5' />}
+
+                <SwipeableMemberList
+                    userData={localSuggestedMOTM!}
+                    onSwipe={(userData: any) => { setForceUpdate(prev => prev + 1); }}
+                />
+
                 <Modal
                     animationType="slide"
                     transparent={true}
@@ -139,22 +159,21 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
                 >
                     <View
                         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                        className='bg-white'>
-
-                        <View className='flex-row items-center h-10 mb-4 justify-end'>
-                            <View className='w-screen absolute'>
-                                <Text className="text-2xl font-bold justify-center text-center">Select User</Text>
+                        className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    >
+                        <View className='h-screen'>
+                            <View className='flex-row items-center h-10 mb-4 justify-end'>
+                                <View className='w-screen absolute'>
+                                    <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>Select User</Text>
+                                </View>
+                                <TouchableOpacity
+                                    className='px-4 mr-3'
+                                    onPress={() => setMembersModal(false)}
+                                >
+                                    <Octicons name="x" size={26} color={darkMode ? "white" : "black"} />
+                                </TouchableOpacity>
                             </View>
-                            <TouchableOpacity
-                                className='px-4 mr-3'
-                                onPress={() => setMembersModal(false)}
-                            >
-                                <Octicons name="x" size={26} color="black" />
-                            </TouchableOpacity>
-                        </View>
 
-
-                        <View className="h-[100%] w-[100%] bg-white">
                             <MembersList
                                 handleCardPress={(uid) => {
                                     setSelectedMemberUID(uid)
@@ -167,48 +186,43 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
                 </Modal>
 
                 <DismissibleModal
-                    visible={confirmVisible && invisibleConfirmModal}
+                    visible={confirmVisible}
                     setVisible={setConfirmVisible}
                 >
-                    <View className='flex opacity-100 bg-white rounded-md p-6' style={{ minWidth: 325 }}>
-                        <View className='flex-row items-center justify-between'>
-                            <View className='flex-row items-center'>
-                                <Octicons name="alert" size={24} color="black" />
-                                <Text className='text-xl font-semibold ml-2'>Confirm Member</Text>
-                            </View>
+                    <View
+                        className={`flex opacity-100 rounded-md p-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                        style={{ width: 325 }}
+                    >
+                        <View className='flex-row items-center justify-end'>
                             <View>
                                 <TouchableOpacity onPress={() => setConfirmVisible(false)}>
-                                    <Octicons name="x" size={24} color="black" />
+                                    <Octicons name="x" size={24} color={darkMode ? "white" : "black"} />
                                 </TouchableOpacity>
                             </View>
                         </View>
 
-                        <View className='mt-5'>
-                            <MemberCard
-                                userData={selectedMember!}
-                                navigation={navigation}
-                                handleCardPress={() => {
-                                    navigation.navigate("PublicProfile", { uid: selectedMemberUID! })
-                                    setInvisibleConfirmModal(false)
-                                }} />
-                        </View>
-                        <View className='flex-row justify-around'>
+                        <MemberCard userData={selectedMember!} />
+
+
+                        <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>You will be setting {selectedMember?.name} as the member of the month.</Text>
+
+
+                        <View className='mt-20 flex-row space-x-6'>
                             <TouchableOpacity
-                                className='bg-[#AEF359] w-[40%] items-center py-2 rounded-md'
                                 onPress={() => {
                                     setMOTM(selectedMember!)
                                     setConfirmVisible(false)
                                     setForceUpdate(prev => prev + 1);
                                 }}
+                                className='flex-1 bg-primary-blue items-center py-2 rounded-lg justify-center'
                             >
-                                <Text className='font-semibold text-lg'>Confirm</Text>
+                                <Text className='text-lg font-semibold text-white'>Confirm</Text>
                             </TouchableOpacity>
-
                             <TouchableOpacity
-                                className='w-[40%] items-center py-2 rounded-md'
                                 onPress={() => setConfirmVisible(false)}
+                                className='flex-1 items-center py-2 rounded-lg justify-center'
                             >
-                                <Text className='font-semibold text-lg'>Cancel</Text>
+                                <Text className={`text-lg font-semibold ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -243,7 +257,7 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>
                         </View>
                     </View>
                 </DismissibleModal>
-            </SafeAreaView >
+            </SafeAreaView>
         </GestureHandlerRootView>
     )
 }

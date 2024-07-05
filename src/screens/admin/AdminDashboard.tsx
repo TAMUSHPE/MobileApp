@@ -1,14 +1,24 @@
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import { Alert, ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native'
+import React, { useContext } from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { httpsCallable, getFunctions } from 'firebase/functions';
-import { AdminDashboardParams } from '../../types/navigation';
+import { HomeStackParams } from '../../types/navigation';
+import { UserContext } from '../../context/UserContext';
+import { StatusBar } from 'expo-status-bar';
 
 const functions = getFunctions();
 
-const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardParams>) => {
+const AdminDashboard = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
+    const userContext = useContext(UserContext);
+    const { userInfo } = userContext!;
+
+    const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
+    const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
+    const colorScheme = useColorScheme();
+    const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
     const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
     const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
     const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
@@ -16,116 +26,217 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
     const resetOfficeOnCall = httpsCallable(functions, 'resetOfficeOnCall');
 
     return (
-        <View className='flex-1'>
-            <SafeAreaView edges={['top']} >
-                <View className='flex-row items-center mx-5 mt-1'>
-                    <View className='absolute w-full justify-center items-center'>
-                        <Text className="text-2xl font-semibold" >Admin Dashboard</Text>
-                    </View>
-                    <TouchableOpacity onPress={() => navigation.goBack()} className='py-2'>
-                        <Octicons name="chevron-left" size={30} color={"black"} />
-                    </TouchableOpacity>
-                </View>
-            </SafeAreaView>
+        <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <StatusBar style={darkMode ? "light" : "dark"} />
 
             <ScrollView>
-                <View className='py-4 px-2 mx-5'>
-                    <Text className='text-2xl font-semibold mb-3'>Verification</Text>
-                    <View className='flex-row flex-wrap'>
+                {/* Header */}
+                <View className='flex-row items-center justify-between mb-3'>
+                    <View className='absolute w-full justify-center items-center'>
+                        <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Office Dashboard</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => navigation.goBack()} className='py-1 px-4'>
+                        <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
+                    </TouchableOpacity>
+                </View>
+
+
+                <View className={`mx-4`}>
+                    {/* Verification Tools */}
+                    <Text className={`font-bold text-2xl ${darkMode ? "text-white" : "text-black"}`}>Verification Tools</Text>
+                    <View className='flex-row justify-between mt-4'>
                         <TouchableOpacity
+                            className={`bg-primary-blue items-center justify-center h-20 rounded-lg w-[48%]`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
                             onPress={() => navigation.navigate('MemberSHPEConfirm')}
-                            className='bg-red-orange rounded-md py-4 px-2 items-center justify-center mr-4'
                         >
-                            <Text className='text-white text-xl'>MemberSHPE</Text>
+                            <Text className='text-xl font-semibold text-white text-center'>MemberSHPE</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('ResumeConfirm')}
-                            className='bg-red-orange rounded-md py-4 px-2 items-center justify-center'
-                        >
-                            <Text className='text-white text-xl'>Resume Bank</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
+                            className={`bg-primary-blue items-center justify-center h-20 rounded-lg w-[48%]`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
                             onPress={() => navigation.navigate('ShirtConfirm')}
-                            className='bg-red-orange rounded-md py-4 px-2 items-center justify-center mt-3'
                         >
-                            <Text className='text-white text-xl'>Shirt Pick-Up</Text>
+                            <Text className='text-xl font-semibold text-white text-center'>Shirt Pick-up</Text>
                         </TouchableOpacity>
-
+                    </View>
+                    <View className='flex-row justify-between mt-4'>
                         <TouchableOpacity
+                            className={`bg-primary-blue items-center justify-center h-20 rounded-lg w-[48%]`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
                             onPress={() => navigation.navigate('CommitteeConfirm')}
-                            className='bg-red-orange rounded-md py-4 px-2 items-center justify-center mt-3'
                         >
-                            <Text className='text-white text-xl'>Committee Membership</Text>
+                            <Text className='text-xl font-semibold text-white text-center'>Committee Membership</Text>
                         </TouchableOpacity>
 
-
+                        <TouchableOpacity
+                            className={`bg-primary-blue items-center justify-center h-20 rounded-lg w-[48%]`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
+                            onPress={() => navigation.navigate('ResumeConfirm')}
+                        >
+                            <Text className='text-xl font-semibold text-white text-center'>Resume Bank</Text>
+                        </TouchableOpacity>
                     </View>
-                </View>
 
-                <View className='py-4 px-2 mx-5'>
-                    <Text className='text-2xl font-semibold mb-3'>Other Tools</Text>
-                    <View className='flex-row flex-wrap'>
+                    {/* Other Tools */}
+                    <Text className={`mt-8 font-bold text-2xl ${darkMode ? "text-white" : "text-black"}`}>Other Tools</Text>
+                    <View className='flex-row justify-between mt-4'>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('MOTMEditor')}
-                            className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center mr-4'
-                        >
-                            <Text className='text-white text-xl'>MOTM</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate('ResumeDownloader')}
-                            className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center'
-                        >
-                            <Text className='text-white text-xl'>Resumes Download</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={() => navigation.navigate('LinkEditor')}
-                            className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center'
-                        >
-                            <Text className='text-white text-xl'>Link Manger</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
+                            className={`bg-secondary-blue-1 items-center justify-center h-20 rounded-lg w-[48%]`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
                             onPress={() => navigation.navigate('InstagramPoints')}
-                            className='bg-dark-navy rounded-md py-4 px-2 items-center justify-center mr-4'
                         >
-                            <Text className='text-white text-xl'>Instagram Points</Text>
+                            <Text className='text-xl font-semibold text-white text-center'>Instagram Points</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            className={`bg-secondary-blue-1 items-center justify-center h-20 rounded-lg w-[48%]`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
+                            onPress={() => navigation.navigate('MOTMEditor')}
+                        >
+                            <Text className='text-xl font-semibold text-white text-center'>Member of the Month</Text>
                         </TouchableOpacity>
                     </View>
-                </View>
-
-                <View className='py-4 px-2 mx-5'>
-                    <Text className='text-2xl font-semibold mb-3'>Admin</Text>
-                    <View className='flex-row flex-wrap '>
+                    <View className='flex-row justify-between mt-4'>
                         <TouchableOpacity
-                            onPress={() => navigation.navigate('RestrictionsEditor')}
-                            className='bg-pale-orange rounded-md py-4 px-2 items-center justify-center'
+                            className={`bg-secondary-blue-1 items-center justify-center h-20 rounded-lg w-[48%]`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
+                            onPress={() => navigation.navigate('ResumeDownloader')}
                         >
-                            <Text className='text-white text-xl'>Restriction</Text>
+                            <Text className='text-xl font-semibold text-white text-center'>Resume Downloader</Text>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Admin Tools */}
+                    <Text className={`mt-8 font-bold text-2xl ${darkMode ? "text-white" : "text-black"}`}>Admin Tools</Text>
+                    <View className='flex-row justify-between mt-4'>
+                        <TouchableOpacity
+                            className={`bg-secondary-blue-2 items-center justify-center h-20 rounded-lg w-[48%]`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
+                            onPress={() => navigation.navigate('LinkEditor')}
+                        >
+                            <Text className='text-xl font-semibold text-black text-center'>Link Manager</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
+                            className={`bg-secondary-blue-2 items-center justify-center h-20 rounded-lg w-[48%]`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
                             onPress={() => navigation.navigate('FeedbackEditor')}
-                            className='bg-pale-orange rounded-md py-4 px-2 items-center justify-center ml-2'
                         >
-                            <Text className='text-white text-xl'>Feedback Editor</Text>
+                            <Text className='text-xl font-semibold text-black text-center'>App Feedback</Text>
                         </TouchableOpacity>
                     </View>
-                </View>
+                    <View className='flex-row justify-between mt-4'>
+                        <TouchableOpacity
+                            className={`bg-secondary-blue-2 items-center justify-center h-20 rounded-lg w-[48%]`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
+                            onPress={() => navigation.navigate('RestrictionsEditor')}
+                        >
+                            <Text className='text-xl font-semibold text-black text-center'>App Restriction</Text>
+                        </TouchableOpacity>
+                    </View>
 
-                <View className='py-4 px-2 mx-5'>
-                    <Text className='text-2xl font-semibold mb-3'>Developer Testing</Text>
-                    <View className='flex-row flex-wrap '>
+                    <Text className={`mt-8 font-bold text-2xl ${darkMode ? "text-white" : "text-black"}`}>Developer Tools</Text>
+                    <View>
                         <TouchableOpacity
                             onPress={async () => {
                                 await updateAllUserPoints();
                                 Alert.alert('Update All User Points', 'Update All User Points have been successfully called');
 
                             }}
-                            className='bg-black rounded-md py-4 px-2 items-center justify-center'
                         >
-                            <Text className='text-white text-xl'>Update All User Points</Text>
+                            <Text className={`text-xl underline mt-2 ${darkMode ? "text-white" : "text-black"}`}>Update All User Points</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -134,9 +245,8 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                                 Alert.alert('Update Ranks', 'Update All Ranks have been successfully called');
 
                             }}
-                            className='bg-black rounded-md py-4 px-2 items-center justify-center'
                         >
-                            <Text className='text-white text-xl'>Update User Rank</Text>
+                            <Text className={`text-xl underline mt-2 ${darkMode ? "text-white" : "text-black"}`}>Update User Rank</Text>
                         </TouchableOpacity>
 
 
@@ -145,9 +255,8 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                                 updateCommitteeCount()
                                 Alert.alert('Update Committee Count', 'Update committee count has been called')
                             }}
-                            className='bg-black rounded-md py-4 px-2 items-center justify-center'
                         >
-                            <Text className='text-white text-xl'>Update Committee Count</Text>
+                            <Text className={`text-xl underline mt-2 ${darkMode ? "text-white" : "text-black"}`}>Update Committee Count</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -155,9 +264,8 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                                 resetOfficeOnCall();
                                 Alert.alert('Reset Office Hours', 'Reset Office Hours has been called');
                             }}
-                            className='bg-black rounded-md py-4 px-2 items-center justify-center'
                         >
-                            <Text className='text-white text-xl'>Rest Office</Text>
+                            <Text className={`text-xl underline mt-2 ${darkMode ? "text-white" : "text-black"}`}>Rest Office</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity
@@ -165,16 +273,16 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<AdminDashboardPar
                                 committeeCountCheckOnCall()
                                 Alert.alert('Committee Count Check', 'Committee Count Check has been called')
                             }}
-                            className='bg-black rounded-md py-4 px-2 items-center justify-center mt-3'
                         >
-                            <Text className='text-white text-xl'>Load Committee Membership Count</Text>
+                            <Text className={`text-xl underline mt-2 ${darkMode ? "text-white" : "text-black"}`}>Load Committee Membership Count</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
 
+
                 <View className='pb-20' />
             </ScrollView>
-        </View>
+        </SafeAreaView>
     )
 }
 

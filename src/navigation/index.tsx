@@ -5,77 +5,76 @@ import { Timestamp } from 'firebase/firestore';
 import { UserContext } from '../context/UserContext';
 import { AuthStack } from './AuthStack';
 import { MainStack } from './MainStack';
-import Splash from '../screens/Splash';
 import { Images } from '../../assets';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { setPrivateUserData } from '../api/firebaseUtils';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { auth } from '../config/firebaseConfig';
+
 /**
  * Renders the root navigator for the application.
- * It determines whether to show the splash screen, authentication stack, or main stack
+ * It determines whether to show the authentication stack or main stack
  * based on the user's authentication status and profile setup.
  *
  * @returns  The rendered root navigator.
  */
 const RootNavigator = () => {
     const { userInfo, setUserInfo, userLoading, signOutUser } = useContext(UserContext)!;
-    const [splashLoading, setSplashLoading] = useState<boolean>(true);
 
     /**
      * OLD IMPLEMENTATION - checkDataExpiration that is originally created to update a user data if it is expired
      * however user data is auto updated in home.tsx file. However this can still be used to check inactive users.
      */
-    useEffect(() => {
-        const checkDataExpiration = async () => {
-            try {
-                const now = new Date();
+    // useEffect(() => {
+    //     const checkDataExpiration = async () => {
+    //         try {
+    //             const now = new Date();
 
-                // Use the existing userInfo state to check the expiration date
-                const expirationDateData = userInfo?.private?.privateInfo?.expirationDate;
+    //             // Use the existing userInfo state to check the expiration date
+    //             const expirationDateData = userInfo?.private?.privateInfo?.expirationDate;
 
-                let expirationDate;
-                if (expirationDateData) {
-                    try {
-                        expirationDate = new Timestamp(expirationDateData.seconds, expirationDateData.nanoseconds).toDate();
-                    } catch (error) {
-                        console.error("Error parsing expiration date:", error);
-                    }
-                }
+    //             let expirationDate;
+    //             if (expirationDateData) {
+    //                 try {
+    //                     expirationDate = new Timestamp(expirationDateData.seconds, expirationDateData.nanoseconds).toDate();
+    //                 } catch (error) {
+    //                     console.error("Error parsing expiration date:", error);
+    //                 }
+    //             }
 
-                if (!expirationDate || expirationDate < now) {
-                    const newExpirationDate = new Date();
-                    newExpirationDate.setDate(newExpirationDate.getDate() + 7);
+    //             if (!expirationDate || expirationDate < now) {
+    //                 const newExpirationDate = new Date();
+    //                 newExpirationDate.setDate(newExpirationDate.getDate() + 7);
 
-                    const updatedPrivateData = {
-                        ...userInfo?.private?.privateInfo,
-                        expirationDate: Timestamp.fromDate(newExpirationDate),
-                    };
+    //                 const updatedPrivateData = {
+    //                     ...userInfo?.private?.privateInfo,
+    //                     expirationDate: Timestamp.fromDate(newExpirationDate),
+    //                 };
 
-                    await setPrivateUserData(updatedPrivateData);
+    //                 await setPrivateUserData(updatedPrivateData);
 
-                    // Update the local user data instead of re-fetching
-                    const updatedUserInfo = {
-                        ...userInfo,
-                        private: {
-                            ...userInfo?.private,
-                            privateInfo: updatedPrivateData,
-                        }
-                    };
+    //                 // Update the local user data instead of re-fetching
+    //                 const updatedUserInfo = {
+    //                     ...userInfo,
+    //                     private: {
+    //                         ...userInfo?.private,
+    //                         privateInfo: updatedPrivateData,
+    //                     }
+    //                 };
 
-                    // Update AsyncStorage and state
-                    await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
-                    setUserInfo(updatedUserInfo);
-                }
-            } catch (error) {
-                console.error("Error in checkDataExpiration:", error);
-            }
-        };
+    //                 // Update AsyncStorage and state
+    //                 await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
+    //                 setUserInfo(updatedUserInfo);
+    //             }
+    //         } catch (error) {
+    //             console.error("Error in checkDataExpiration:", error);
+    //         }
+    //     };
 
-        if (userInfo) {
-            checkDataExpiration();
-        }
-    }, [userInfo]);
+    //     if (userInfo) {
+    //         checkDataExpiration();
+    //     }
+    // }, [userInfo]);
 
 
     useEffect(() => {
@@ -102,11 +101,6 @@ const RootNavigator = () => {
 
         handleBannedUser();
     }, [auth.currentUser?.uid])
-
-
-    if (splashLoading) {
-        return <Splash setIsLoading={setSplashLoading} />;
-    }
 
     if (userLoading) {
         return <RenderUserLoading />;
@@ -145,7 +139,7 @@ const RenderUserLoading = () => {
                     className="h-36 w-36"
                 />
             </View>
-            <ActivityIndicator className='mt-4' size={"large"} />
+            <ActivityIndicator className='mt-4' size={"small"} />
         </View>
     );
 };

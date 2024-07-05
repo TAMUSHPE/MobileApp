@@ -30,9 +30,9 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [userLoading, setUserLoading] = useState<boolean>(true);
   const [userInfo, setUserInfo] = useState<User | undefined>(undefined)
 
-  const signOutUser = async (hasExpoPushToken: boolean) => {
+  const signOutUser = async (deleteExpoPushToken: boolean) => {
     try {
-      if (hasExpoPushToken) {
+      if (deleteExpoPushToken) {
         await removeExpoPushToken();
       }
       await signOut(auth);
@@ -78,7 +78,7 @@ type UserContextType = {
   setUserInfo: React.Dispatch<React.SetStateAction<User | undefined>>
   userLoading: boolean;
   setUserLoading: React.Dispatch<React.SetStateAction<boolean>>
-  signOutUser: (hasExpoPushToken: boolean) => Promise<void>;
+  signOutUser: (deleteExpoPushToken: boolean) => Promise<void>;
 };
 
 export { UserContext, UserProvider };

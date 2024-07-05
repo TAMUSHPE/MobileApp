@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, Alert, Image } from 'react-native'
 import React, { useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -8,6 +8,8 @@ import { AuthStackParams } from '../../types/navigation';
 import { auth } from '../../config/firebaseConfig';
 import TextInputWithFloatingTitle from '../../components/TextInputWithFloatingTitle';
 import InteractButton from '../../components/InteractButton';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Images } from '../../../assets';
 
 const GuestRecoveryAccount = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [email, setEmail] = useState('');
@@ -32,46 +34,57 @@ const GuestRecoveryAccount = ({ navigation }: NativeStackScreenProps<AuthStackPa
 
 
     return (
-        <SafeAreaView className='flex-1 bg-dark-navy py-10 px-8 w-screen' edges={["top"]}>
-            <TouchableOpacity
-                className="mb-4"
-                onPress={() => {
-                    navigation.navigate("LoginGuest");
-                }}
-            >
-                <Octicons name="chevron-left" size={30} color="white" />
-            </TouchableOpacity>
+        <LinearGradient
+            colors={['#191740', '#413CA6']}
+            className="flex-1"
+        >
 
+            <SafeAreaView className="flex-1">
+                <View className='px-4 mt-5'>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate("LoginScreen")}
+                        activeOpacity={1}
+                    >
+                        <Octicons name="chevron-left" size={30} color="white" />
+                    </TouchableOpacity>
+                </View>
 
+                <View className="items-center">
+                    <Image
+                        className="flex-row h-20 w-20 mt-2 mb-14"
+                        source={Images.SHPE_LOGO}
+                    />
+                </View>
 
-            <View className='flex-col px-7'>
-                <Text className='text-white text-center text-3xl'>Reset Password</Text>
-                <Text className="text-xl text-white mb-8">Please enter your email we will send you an email to reset your password</Text>
-                <TextInputWithFloatingTitle
-                    setTextFunction={(text: string) => { setEmail(text); }}
-                    inputValue={email}
-                    title='Email*'
-                    placeholderText='Email*'
-                    titleStartY={20}
-                    titleEndY={0}
-                    maxCharacters={64}
-                    blurTitleClassName='text-white text-md'
-                    focusTitleClassName='text-white pl-1 pb-1 text-xl'
-                    textInputClassName="w-full rounded-md px-2 py-1 pb-3 bg-white h-6 items-center h-10 text-lg mb-4"
-                />
+                <View className="items-center mx-8">
+                    <Text className="text-white text-center text-4xl font-bold">Reset Password</Text>
+                    <Text className="text-white text-center text-lg">Enter your email, we will send you an email to reset your password.</Text>
+                </View>
 
-                <InteractButton
-                    onPress={async () => {
-                        handlePasswordReset();
-                    }}
-                    label='Reset Password'
-                    buttonClassName="bg-continue-dark justify-center items-center rounded-md"
-                    textClassName="text-white text-lg font-bold"
-                    opacity={0.8}
-                    underlayColor="#A22E2B"
-                />
-            </View>
-        </SafeAreaView>
+                <View className="mx-8 mt-10">
+                    <TextInputWithFloatingTitle
+                        setTextFunction={(text: string) => { setEmail(text); }}
+                        inputValue={email}
+                        title='Email*'
+                        placeholderText='Email*'
+                        titleStartY={20}
+                        titleEndY={0}
+                        maxCharacters={64}
+                        blurTitleClassName='text-xl'
+                        focusTitleClassName='text-white text-xl ml-1'
+                        textInputClassName="text-xl text-white border-2 border-white rounded-lg pl-2 h-14"
+                    />
+
+                    <InteractButton
+                        onPress={() => handlePasswordReset()}
+                        label="Reset Password"
+                        buttonClassName="justify-center items-center bg-primary-orange mt-8 rounded-xl h-14"
+                        textClassName="text-white font-semibold text-2xl"
+                        underlayColor="#EF9260"
+                    />
+                </View>
+            </SafeAreaView>
+        </LinearGradient>
     )
 }
 
