@@ -2,7 +2,7 @@
   "expo": {
     "name": "TAMU SHPE",
     "slug": "TAMU-SHPE",
-    "version": "0.6.5",
+    "version": "1.0.0",
     "owner": "tamu-shpe",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -57,7 +57,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.tamu.shpe",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "userInterfaceStyle": "automatic"
     },
     "extra": {
