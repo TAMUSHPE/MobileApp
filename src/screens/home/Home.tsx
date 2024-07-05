@@ -54,6 +54,21 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const [savedInterestLoading, setSavedInterestLoading] = useState<boolean>(false);
 
 
+    const fetchEvents = async () => {
+        try {
+            setIsLoading(true);
+
+            const events = await getMyEvents(userCommittees, userInterests, 3);
+            events.sort((a, b) => (a.startTime?.toDate().getTime() || 0) - (b.startTime?.toDate().getTime() || 0));
+            setMyEvents(events);
+        } catch (error) {
+            console.error("Error retrieving events:", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+
     useEffect(() => {
         manageNotificationPermissions();
     }, []);
@@ -86,31 +101,12 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             }
         };
 
+        fetchEvents();
         getOfficeCount();
         if (hasPrivileges) {
             getOfficerStatus();
         }
-
     }, [currentUser]);
-
-
-    const fetchEvents = async () => {
-        try {
-            setIsLoading(true);
-
-            const events = await getMyEvents(userCommittees, userInterests, 3);
-            events.sort((a, b) => (a.startTime?.toDate().getTime() || 0) - (b.startTime?.toDate().getTime() || 0));
-            setMyEvents(events);
-        } catch (error) {
-            console.error("Error retrieving events:", error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        fetchEvents();
-    }, []);
 
     const isInterestChanged = () => {
         if (!userInfo?.publicInfo?.interests) {

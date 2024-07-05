@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity, useColorScheme } from 'react-native'
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { MemberCardProp } from '../types/navigation'
 import { Images } from '../../assets'
 import { PublicUserInfo } from '../types/user'
@@ -7,6 +7,7 @@ import { getMOTM } from '../api/firebaseUtils'
 import { useFocusEffect } from '@react-navigation/core'
 import { UserContext } from '../context/UserContext'
 import { truncateStringWithEllipsis } from '../helpers/stringUtils'
+import { auth } from '../config/firebaseConfig'
 
 const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
     const userContext = useContext(UserContext);
@@ -20,6 +21,16 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
 
     const [MOTM, setMOTM] = useState<PublicUserInfo>();
+    const [currentUser, setCurrentUser] = useState(auth.currentUser);
+
+
+    useEffect(() => {
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            setCurrentUser(user);
+        });
+        return unsubscribe;
+    }, []);
+
 
     const fetchMOTM = async () => {
         try {
@@ -30,10 +41,24 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
         }
     };
 
+    useEffect(() => {
+        if (!currentUser) {
+            return
+        }
+
+        fetchMOTM();
+    }, [currentUser])
+
     useFocusEffect(
         useCallback(() => {
-            fetchMOTM();
-        }, [])
+            if (!currentUser) {
+                return
+            }
+
+            if (hasPrivileges) {
+                fetchMOTM();
+            }
+        }, [currentUser])
     );
 
 
