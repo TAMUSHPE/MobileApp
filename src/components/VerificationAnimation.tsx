@@ -11,26 +11,30 @@ type AnimationProps = {
 };
 
 const CheckmarkAnimation = ({ loop, duration, onAnimationFinish }: AnimationProps) => {
-    const bubbleAnimation = useRef(new Animated.Value(0)).current;
+    const bubbleAnimation = useRef(new Animated.Value(0.5)).current;
     const ringAnimation = useRef(new Animated.Value(0)).current;
 
-    duration = duration ? duration : 1000;
+    duration = duration ? duration : 1800;
 
     const checkOpacity = bubbleAnimation.interpolate({
-        inputRange: [0, 0.2, 1],
+        inputRange: [0, 0.6, 1],
         outputRange: [0, 0, 1]
     });
 
     const bubbleSize = bubbleAnimation.interpolate({
-        inputRange: [0, 0.2, 1],
-        outputRange: [0.6, 0.4, 0.6]
+        inputRange: [0, 1],
+        outputRange: [0.05, 0.6]
     });
 
     const ringSize = ringAnimation.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, 1]
+        outputRange: [0, 1.1]
     });
 
+    const ringOpacity = ringAnimation.interpolate({
+        inputRange: [0, 0.8, 1],
+        outputRange: [1, 1, 0]
+    });
 
     const animationFinishCallback = ({ finished }: Animated.EndResult) => {
         if (loop === false && onAnimationFinish) {
@@ -41,23 +45,43 @@ const CheckmarkAnimation = ({ loop, duration, onAnimationFinish }: AnimationProp
     useEffect(() => {
         const bubbleSequence = Animated.sequence([
             Animated.timing(bubbleAnimation, {
-                toValue: 1,
-                duration: duration / 2,
-                easing: Easing.elastic(1.2),
+                toValue: 0,
+                duration: duration / 4,
+                easing: Easing.elastic(0.1),
                 useNativeDriver: true,
             }),
             Animated.timing(bubbleAnimation, {
                 toValue: 1,
                 duration: duration / 2,
+                easing: Easing.elastic(2.0),
+                useNativeDriver: true,
+            }),
+            Animated.timing(bubbleAnimation, {
+                toValue: 1,
+                duration: duration / 4,
+                easing: Easing.elastic(2.0),
                 useNativeDriver: true,
             }),
         ]);
 
-        const ringSequence = Animated.timing(ringAnimation, {
-            toValue: 1,
-            duration: duration,
-            useNativeDriver: true,
-        });
+        const ringSequence = Animated.sequence([
+            Animated.timing(ringAnimation, {
+                toValue: 0,
+                duration: duration / 4,
+                useNativeDriver: true,
+            }),
+            Animated.timing(ringAnimation, {
+                toValue: 1,
+                duration: duration / 4,
+                easing: Easing.bezier(0.19, 1.0, 0.22, 1.0),
+                useNativeDriver: true,
+            }),
+            Animated.timing(ringAnimation, {
+                toValue: 1,
+                duration: duration / 2,
+                useNativeDriver: true,
+            }),
+        ]);
 
         if (loop) {
             Animated.parallel([Animated.loop(bubbleSequence), Animated.loop(ringSequence)]).start();
@@ -68,9 +92,15 @@ const CheckmarkAnimation = ({ loop, duration, onAnimationFinish }: AnimationProp
     }, []);
 
     return (
-        <>
-            {/* Ripple */}
-            <Animated.View />
+        <View className='relative'>
+            {/* Ring */}
+            <Animated.View
+                style={{
+                    transform: [{ scaleX: ringSize }, { scaleY: ringSize }],
+                    opacity: ringOpacity
+                }}
+                className='border-green-500 border-4 rounded-full p-5 absolute left-0 right-0 top-0 bottom-0 m-auto'
+            />
             {/* Checkmark Circle */}
             <Animated.View
                 style={{
@@ -82,7 +112,7 @@ const CheckmarkAnimation = ({ loop, duration, onAnimationFinish }: AnimationProp
                     <MaterialCommunityIcons name='check' size={100} color='white' />
                 </Animated.View>
             </Animated.View>
-        </>
+        </View>
     );
 };
 
