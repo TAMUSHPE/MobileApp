@@ -20,8 +20,6 @@ interface MonthViewProps {
 }
 
 const MonthView: React.FC<MonthViewProps> = ({ eventsByDate, focusDate, setFocusDate }) => {
-  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
   const firstDayOfCurrMonth = startOfMonth(focusDate);
   const lastDayOfCurrMonth = endOfMonth(focusDate);
 
@@ -48,7 +46,6 @@ const MonthView: React.FC<MonthViewProps> = ({ eventsByDate, focusDate, setFocus
 
     return (
       <div
-        key={`${dayState}-${index}`}
         onClick={() => setFocusDate(day)}
         className={`relative border-t-[3px] border-l-[3px] border-[#E0E0E0] ${
           dayState != 'curr' && 'bg-gray-100 opacity-90'
@@ -57,7 +54,7 @@ const MonthView: React.FC<MonthViewProps> = ({ eventsByDate, focusDate, setFocus
         {/* Day of the week text */}
         {(dayState == 'prev' || (dayState == 'curr' && index + startingDayIndex < 7)) && (
           <p className="absolute right-0 top-0 font-semibold text-[#A8A8A8] p-2">
-            {dayState == 'prev' ? weekdays[index] : weekdays[index + startingDayIndex]}
+            {format(day, 'EEE')}
           </p>
         )}
 
@@ -88,13 +85,13 @@ const MonthView: React.FC<MonthViewProps> = ({ eventsByDate, focusDate, setFocus
   return (
     <div className="h-full w-full grid grid-cols-7">
       {daysInPrevMonth.map((day, index) => (
-        <DayCell day={day} index={index} dayState="prev" />
+        <DayCell key={`prev-${index}`} day={day} index={index} dayState="prev" />
       ))}
       {daysInCurrMonth.map((day, index) => (
-        <DayCell day={day} index={index} dayState="curr" />
+        <DayCell key={`curr-${index}`} day={day} index={index} dayState="curr" />
       ))}
       {daysInNextMonth.map((day, index) => (
-        <DayCell day={day} index={index} dayState="next" />
+        <DayCell key={`next-${index}`} day={day} index={index} dayState="next" />
       ))}
       <DayModal day={selectedDay} events={selectedDayEvents} isShowing={isShowing} hide={() => toggle()} />
     </div>

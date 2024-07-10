@@ -55,3 +55,21 @@ export const formatDateTime = (date: Date): string => {
     return `${formatDate(date)}, ${formatTime(date)} GMT${date.getTimezoneOffset() < 0 ? "+" : "-"}${(date.getTimezoneOffset() / 60).toString().padStart(2, '0')}`
 }
 
+/**
+ * Constructs a readable string that represents the hour of the day from 12 AM to 11 PM
+ * @param hour 
+ * @returns Formatted hour string
+ */
+export const formatHour = (hour: number): string => {
+    if (hour >= 0 && hour <= 23) {
+        let formattedHour = hour % 12;
+        if (formattedHour === 0) {
+            formattedHour = 12;
+        }
+        return `${formattedHour} ${hour > 11 ? "PM" : "AM"}`
+    }
+    else {
+        return "Invalid hour"
+    }
+}
+

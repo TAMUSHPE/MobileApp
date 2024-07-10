@@ -95,7 +95,7 @@ const Page = () => {
 
       {/* Event Calendar */}
       <div className="flex flex-col w-full h-fit">
-        <button className="h-12 w-44 my-3 mr-3 bg-[#500000] place-self-end rounded-lg font-semibold flex flex-row justify-center items-center gap-2 flex-shrink-0">
+        <button className="h-12 w-44 my-3 mr-10 bg-[#500000] place-self-end rounded-lg font-semibold flex flex-row justify-center items-center gap-2 flex-shrink-0">
           <img src="plus-icon.svg" className="" />
           Create Event
         </button>
