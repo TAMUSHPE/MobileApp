@@ -4,13 +4,13 @@ import { RouteProp, useRoute } from '@react-navigation/core';
 import { MainStackParams } from '../../types/navigation'
 import { getEvent, signInToEvent, signOutOfEvent } from '../../api/firebaseUtils';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import LottieView from "lottie-react-native";
 import { EventLogStatus, getStatusMessage } from '../../types/events';
 import { ActivityIndicator } from "react-native";
 import * as Haptics from 'expo-haptics';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { VerificationAnimation, VerificationAnimationTypes } from '../../components/VerificationAnimation';
 
 const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, navigation }) => {
     const { id, mode } = route.params;
@@ -76,50 +76,50 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
     const renderStatusView = () => {
         if (logStatus === undefined) return null;
 
-        const statusComponents: { [key in EventLogStatus]: { animation: any, haptic: Haptics.NotificationFeedbackType, bgColor: string } } = {
+        const statusComponents: { [key in EventLogStatus]: { animation: VerificationAnimationTypes, haptic: Haptics.NotificationFeedbackType, bgColor: string } } = {
             [EventLogStatus.SUCCESS]: {
-                animation: require("../../../assets/check_animation.json"),
+                animation: 'check_animation',
                 haptic: Haptics.NotificationFeedbackType.Success,
                 bgColor: "bg-green-500"
             },
             [EventLogStatus.ALREADY_LOGGED]: {
-                animation: require("../../../assets/red_x_animation.json"),
+                animation: 'red_x_animation',
                 haptic: Haptics.NotificationFeedbackType.Warning,
                 bgColor: "bg-dark-navy"
             },
             [EventLogStatus.ERROR]: {
-                animation: require("../../../assets/red_x_animation.json"),
+                animation: 'red_x_animation',
                 haptic: Haptics.NotificationFeedbackType.Error,
                 bgColor: "bg-dark-navy"
             },
             [EventLogStatus.EVENT_NOT_STARTED]: {
-                animation: require("../../../assets/red_x_animation.json"),
+                animation: 'red_x_animation',
                 haptic: Haptics.NotificationFeedbackType.Error,
                 bgColor: "bg-dark-navy"
             },
             [EventLogStatus.EVENT_OVER]: {
-                animation: require("../../../assets/red_x_animation.json"),
+                animation: 'red_x_animation',
                 haptic: Haptics.NotificationFeedbackType.Error,
                 bgColor: "bg-dark-navy"
             },
             [EventLogStatus.EVENT_NOT_FOUND]: {
-                animation: require("../../../assets/red_x_animation.json"),
+                animation: 'red_x_animation',
                 haptic: Haptics.NotificationFeedbackType.Error,
                 bgColor: "bg-dark-navy"
             },
             [EventLogStatus.NOT_A_STUDENT]: {
-                animation: require("../../../assets/red_x_animation.json"),
+                animation: 'red_x_animation',
                 haptic: Haptics.NotificationFeedbackType.Error,
                 bgColor: "bg-dark-navy"
             },
             [EventLogStatus.OUT_OF_RANGE]: {
-                animation: require("../../../assets/red_x_animation.json"),
+                animation: 'red_x_animation',
                 haptic: Haptics.NotificationFeedbackType.Error,
                 bgColor: "bg-dark-navy"
             },
             // Default case for missing EventLogStatus.EVENT_ONGOING
             [EventLogStatus.EVENT_ONGOING]: {
-                animation: require("../../../assets/red_x_animation.json"),
+                animation: 'red_x_animation',
                 haptic: Haptics.NotificationFeedbackType.Error,
                 bgColor: "bg-dark-navy"
             }
@@ -131,9 +131,8 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
         return (
             <View className={`w-screen h-[70%] items-center justify-center ${bgColor}`}>
                 <View className='w-screen h-40'>
-                    <LottieView
-                        source={animation}
-                        autoPlay
+                    <VerificationAnimation 
+                        animation={animation}
                         loop={false}
                         onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(haptic); }}
                     />
