@@ -10,7 +10,7 @@ type AnimationProps = {
     onAnimationFinish?: ((isCancelled: boolean) => void)
 };
 
-const CheckmarkAnimation = ({ loop, duration, onAnimationFinish }: AnimationProps) => {
+const CheckmarkAnimation = ({ loop, duration, onAnimationFinish }: AnimationProps): React.JSX.Element => {
     const bubbleAnimation = useRef(new Animated.Value(1.0)).current;
     const ringAnimation = useRef(new Animated.Value(0)).current;
 
@@ -116,7 +116,7 @@ const CheckmarkAnimation = ({ loop, duration, onAnimationFinish }: AnimationProp
     );
 };
 
-const RedXAnimation = ({ loop, duration, onAnimationFinish }: AnimationProps) => {
+const RedXAnimation = ({ loop, duration, onAnimationFinish }: AnimationProps): React.JSX.Element => {
     const bubbleAnimation = useRef(new Animated.Value(0)).current;
     const bubbleHorizontalAnimation = useRef(new Animated.Value(0.5)).current;
     const ringAnimation = useRef(new Animated.Value(0)).current;
@@ -243,26 +243,77 @@ const RedXAnimation = ({ loop, duration, onAnimationFinish }: AnimationProps) =>
     );
 };
 
+const QuestionMarkAnimation = ({ loop, duration, onAnimationFinish }: AnimationProps): React.JSX.Element => {
+    const bubbleAnimation = useRef(new Animated.Value(0)).current;
 
+    const bubbleRotation = bubbleAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: ['0deg', '360deg'],
+    });
 
-export type VerificationAnimationTypes = "check_animation" | "red_x_animation";
+    duration = duration ? duration : 1800;
+
+    const animationFinishCallback = ({ finished }: Animated.EndResult) => {
+        if (loop === false && onAnimationFinish) {
+            onAnimationFinish(!finished);
+        }
+    }
+
+    useEffect(() => {
+        const bubbleSequence = Animated.sequence([
+            Animated.timing(bubbleAnimation, {
+                toValue: 1,
+                duration: duration / 2,
+                easing: Easing.elastic(1.0),
+                useNativeDriver: true,
+            }),
+            Animated.timing(bubbleAnimation, {
+                toValue: 1,
+                duration: duration / 2,
+                useNativeDriver: true,
+            }),
+        ]);
+
+        if (loop) {
+            Animated.loop(bubbleSequence).start();
+        }
+        else {
+            bubbleSequence.start(animationFinishCallback);
+        }
+    }, []);
+
+    return (
+        <Animated.View
+            style={{
+                transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }, { rotateZ: bubbleRotation }]
+            }}
+            className='bg-neutral-500 rounded-full p-5'
+        >
+            <MaterialCommunityIcons name="help" size={100} color='white' />
+        </Animated.View>
+    );
+}
+
+export type VerificationAnimationTypes = "check_animation" | "red_x_animation" | "question_mark_animation";
 
 /**
+ * Animation used for when something has been verified. This mainly used when the user signs in/out of an event. 
  * 
- * @param animation
+ * @param animation Selected animation. This will default to a spinning question mark if animation is not specified
  * @param loop Animation will repeat immediately after finishing. Default is false.
  * @param duration How long the animation will last in milliseconds. This is 1800 milliseconds by default
  * @param onAnimationFinish Callback function when animation finishes. This only works when the animation does not loop.
- * @returns 
  */
-export const VerificationAnimation = ({ animation, loop, duration, onAnimationFinish }: { animation?: VerificationAnimationTypes, loop?: boolean, duration?: number, onAnimationFinish?: ((isCancelled: boolean) => void) }) => {
+export const VerificationAnimation = ({ animation, loop, duration, onAnimationFinish }: { animation?: VerificationAnimationTypes, loop?: boolean, duration?: number, onAnimationFinish?: ((isCancelled: boolean) => void) }): React.JSX.Element => {
     const props: AnimationProps = { loop, duration, onAnimationFinish };
 
     switch (animation) {
         case "check_animation":
             return CheckmarkAnimation(props);
         case "red_x_animation":
-        default:
             return RedXAnimation(props);
+        case "question_mark_animation":
+        default:
+            return QuestionMarkAnimation(props);
     }
 };
