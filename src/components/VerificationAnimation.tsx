@@ -307,13 +307,21 @@ export type VerificationAnimationTypes = "check_animation" | "red_x_animation" |
 export const VerificationAnimation = ({ animation, loop, duration, onAnimationFinish }: { animation?: VerificationAnimationTypes, loop?: boolean, duration?: number, onAnimationFinish?: ((isCancelled: boolean) => void) }): React.JSX.Element => {
     const props: AnimationProps = { loop, duration, onAnimationFinish };
 
+    let AnimationElement: React.JSX.Element;
+
     switch (animation) {
         case "check_animation":
-            return CheckmarkAnimation(props);
+            AnimationElement = CheckmarkAnimation(props);
+            break;
         case "red_x_animation":
-            return RedXAnimation(props);
+            AnimationElement = RedXAnimation(props);
+            break;
         case "question_mark_animation":
         default:
-            return QuestionMarkAnimation(props);
+            AnimationElement = QuestionMarkAnimation(props);
     }
+
+    return (
+        <View className='flex flex-row items-center justify-center'>{AnimationElement}</View>
+    )
 };
