@@ -11,7 +11,7 @@ type AnimationProps = {
 };
 
 const CheckmarkAnimation = ({ loop, duration, onAnimationFinish }: AnimationProps) => {
-    const bubbleAnimation = useRef(new Animated.Value(0.5)).current;
+    const bubbleAnimation = useRef(new Animated.Value(1.0)).current;
     const ringAnimation = useRef(new Animated.Value(0)).current;
 
     duration = duration ? duration : 1800;
@@ -116,18 +116,147 @@ const CheckmarkAnimation = ({ loop, duration, onAnimationFinish }: AnimationProp
     );
 };
 
-const RedXAnimation = ({ loop, onAnimationFinish }: AnimationProps) => {
-    return (
-        <Animated.View>
+const RedXAnimation = ({ loop, duration, onAnimationFinish }: AnimationProps) => {
+    const bubbleAnimation = useRef(new Animated.Value(0)).current;
+    const bubbleHorizontalAnimation = useRef(new Animated.Value(0.5)).current;
+    const ringAnimation = useRef(new Animated.Value(0)).current;
 
-        </Animated.View>
+    duration = duration ? duration : 1800;
+
+    const bubbleXPosition = bubbleHorizontalAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [-20, 20]
+    });
+
+    const bubbleSize = bubbleAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0.05, 0.6]
+    });
+
+    const xSize = bubbleAnimation.interpolate({
+        inputRange: [0, 0.6, 1, 1.4],
+        outputRange: [0, 0, 1, 1.2]
+    });
+
+    const ringSize = ringAnimation.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 1.1]
+    });
+
+    const ringOpacity = ringAnimation.interpolate({
+        inputRange: [0, 0.8, 1],
+        outputRange: [1, 1, 0]
+    });
+
+    const animationFinishCallback = ({ finished }: Animated.EndResult) => {
+        if (loop === false && onAnimationFinish) {
+            onAnimationFinish(!finished);
+        }
+    }
+
+    useEffect(() => {
+        const bubbleSequence = Animated.sequence([
+            Animated.timing(bubbleAnimation, {
+                toValue: 1.4,
+                duration: duration / 4,
+                easing: Easing.bezier(0.165, 0.84, 0.44, 1.0),
+                useNativeDriver: true,
+            }),
+            Animated.timing(bubbleAnimation, {
+                toValue: 1,
+                duration: duration / 8,
+                useNativeDriver: true,
+            }),
+            Animated.timing(bubbleHorizontalAnimation, {
+                toValue: 1,
+                duration: duration / 8,
+                useNativeDriver: true,
+            }),
+            Animated.timing(bubbleHorizontalAnimation, {
+                toValue: 0,
+                duration: duration / 8,
+                useNativeDriver: true,
+            }),
+            Animated.timing(bubbleHorizontalAnimation, {
+                toValue: 0.5,
+                duration: duration / 8,
+                useNativeDriver: true,
+            }),
+            Animated.timing(bubbleHorizontalAnimation, {
+                toValue: 0.5,
+                duration: duration / 4,
+                useNativeDriver: true,
+            }),
+        ]);
+
+        const ringSequence = Animated.sequence([
+            Animated.timing(ringAnimation, {
+                toValue: 0,
+                duration: duration / 4,
+                useNativeDriver: true,
+            }),
+            Animated.timing(ringAnimation, {
+                toValue: 1,
+                duration: duration / 4,
+                easing: Easing.bezier(0.19, 1.0, 0.22, 1.0),
+                useNativeDriver: true,
+            }),
+            Animated.timing(ringAnimation, {
+                toValue: 1,
+                duration: duration / 2,
+                useNativeDriver: true,
+            }),
+        ]);
+
+        if (loop) {
+            Animated.parallel([Animated.loop(bubbleSequence), Animated.loop(ringSequence)]).start();
+        }
+        else {
+            Animated.parallel([bubbleSequence, ringSequence]).start(animationFinishCallback);
+        }
+    }, []);
+
+    return (
+        <View>
+            {/* Ring */}
+            <Animated.View
+                style={{
+                    transform: [{ scaleX: ringSize }, { scaleY: ringSize }],
+                    opacity: ringOpacity
+                }}
+                className='border-red-500 border-4 rounded-full p-5 absolute left-0 right-0 top-0 bottom-0 m-auto'
+            />
+            {/* Red X Bubble */}
+            <Animated.View
+                style={{
+                    transform: [{ scaleX: bubbleSize }, { scaleY: bubbleSize }, { translateX: bubbleXPosition }],
+                }}
+                className='bg-red-500 rounded-full p-5'
+            >
+                <Animated.View style={{
+                    transform: [{ scaleX: xSize }, { scaleY: xSize }],
+                }} className="">
+                    <MaterialCommunityIcons name='close' size={100} color='white' />
+                </Animated.View>
+            </Animated.View>
+        </View>
     );
 };
 
+
+
 export type VerificationAnimationTypes = "check_animation" | "red_x_animation";
 
-export const VerificationAnimation = ({ animation, autoPlay, loop, duration, onAnimationFinish }: { animation: VerificationAnimationTypes, autoPlay?: boolean, loop?: boolean, duration?: number, onAnimationFinish?: ((isCancelled: boolean) => void) }) => {
-    const props: AnimationProps = { autoPlay, loop, duration, onAnimationFinish };
+/**
+ * 
+ * @param animation
+ * @param loop Animation will repeat immediately after finishing. Default is false.
+ * @param duration How long the animation will last in milliseconds. This is 1800 milliseconds by default
+ * @param onAnimationFinish Callback function when animation finishes. This only works when the animation does not loop.
+ * @returns 
+ */
+export const VerificationAnimation = ({ animation, loop, duration, onAnimationFinish }: { animation?: VerificationAnimationTypes, loop?: boolean, duration?: number, onAnimationFinish?: ((isCancelled: boolean) => void) }) => {
+    const props: AnimationProps = { loop, duration, onAnimationFinish };
 
     switch (animation) {
         case "check_animation":
