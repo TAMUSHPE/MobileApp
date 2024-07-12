@@ -80,7 +80,7 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
             [EventLogStatus.SUCCESS]: {
                 animation: 'check_animation',
                 haptic: Haptics.NotificationFeedbackType.Success,
-                bgColor: "bg-green-500"
+                bgColor: "bg-dark-navy"
             },
             [EventLogStatus.ALREADY_LOGGED]: {
                 animation: 'red_x_animation',
@@ -131,7 +131,7 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
         return (
             <View className={`w-screen h-[70%] items-center justify-center ${bgColor}`}>
                 <View className='w-screen h-40'>
-                    <VerificationAnimation 
+                    <VerificationAnimation
                         animation={animation}
                         loop={false}
                         onAnimationFinish={() => { redirectToPage(); Haptics.notificationAsync(haptic); }}
@@ -143,7 +143,7 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
     };
 
     return (
-        <SafeAreaView className={`w-screen h-screen bg-dark-navy ${(logStatus === EventLogStatus.SUCCESS) && "bg-green-500"}`}>
+        <SafeAreaView className={`w-screen h-screen bg-dark-navy`}>
             <StatusBar style="light" />
 
             {loading ? (
