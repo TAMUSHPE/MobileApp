@@ -5,6 +5,7 @@ on:
         branches: [ "main" ]
     pull_request:
         branches: [ "main", "dev" ]
+    workflow_dispatch:
 
 jobs:
     jest-test:
@@ -13,6 +14,7 @@ jobs:
         strategy:
             matrix:
                 node-version: [ 18.x ]
+                java-version: [ 21 ]
 
         steps:
         - uses: actions/checkout@v3
@@ -21,6 +23,12 @@ jobs:
           uses: actions/setup-node@v3
           with:
             node-version: ${{ matrix.node-version }}
+
+        - name: Use Java ${{ matrix.java-version }}
+          uses: actions/setup-java@v4
+          with:
+            distribution: 'zulu'
+            java-version: ${{ matrix.java-version }}
             
         - name: Set Environment Variables
           env:
@@ -28,15 +36,33 @@ jobs:
             FLICKER_USER_ID: ${{ secrets.FLICKER_USER_ID }}
             FLICKER_API_KEY: ${{ secrets.FLICKER_API_KEY }}
             GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
+            FIREBASE_EMULATOR_ADDRESS: 127.0.0.1
+            FIREBASE_AUTH_PORT: 9099
+            FIREBASE_FIRESTORE_PORT: 8080
+            FIREBASE_CLOUD_FUNCTIONS_PORT: 5001
+            FIREBASE_STORAGE_PORT: 9199
           run: echo "Environment variables set"
           
-        - name: Install dependencies
-          run: yarn install
-          
-        - name: Run tests
+        - name: Install Dependencies
+          run: | 
+            yarn install
+            yarn global add firebase-tools
+            
+        - name: Build Cloud Functions
+          working-directory: ./functions
+          run: |
+            npm install
+            npm run build
+
+        - name: Run Tests
           env:
             GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
             FLICKER_USER_ID: ${{ secrets.FLICKER_USER_ID }}
             FLICKER_API_KEY: ${{ secrets.FLICKER_API_KEY }}
             GOOGLE_PLACES_API_KEY: ${{ secrets.GOOGLE_PLACES_API_KEY }}
-          run: yarn test
+            FIREBASE_EMULATOR_ADDRESS: 127.0.0.1
+            FIREBASE_AUTH_PORT: 9099
+            FIREBASE_FIRESTORE_PORT: 8080
+            FIREBASE_CLOUD_FUNCTIONS_PORT: 5001
+            FIREBASE_STORAGE_PORT: 9199
+          run: firebase emulators:exec 'yarn test'

@@ -1,5 +1,4 @@
-import { validateTamuEmail } from "../helpers/validation";
-import { GoogleSheetsResponse, PointsColumnVals } from "../types/GoogleSheetsTypes";
+import { GoogleSheetsResponse } from "../types/googleSheetsTypes";
 
 /**
  * Constant defining different google sheet ids used
@@ -24,7 +23,7 @@ export const queryGoogleSpreadsheet = async (sheetID: string, query: string = "s
     This function queries a google spreadsheet for data given certain parameters
     */
     const spreadsheetURI = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tq=${encodeURIComponent(query)}&sheet=${sheetName}`;
-    
+
     return await fetch(spreadsheetURI)
         .then(async (res) => {
             const responseText = await res.text()

@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Header from '../../components/Header';
 import PendingEvent from './components/PendingEvent';
 import EventCalendar from './components/EventCalendar';
-import { getEvents, getEventLogs } from '@/helpers/firebaseUtils';
-import { SHPEEvent, SHPEEventLog } from '@/types/Events';
+import { getEvents, getEventLogs } from '@/api/firebaseUtils';
+import { SHPEEvent } from '@/types/events';
 
 const Page = () => {
   const [events, setEvents] = useState<SHPEEvent[]>([]);

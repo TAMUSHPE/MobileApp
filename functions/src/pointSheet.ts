@@ -1,7 +1,9 @@
 import * as functions from 'firebase-functions';
-import { db } from "./firebaseConfig"
-import { RankChange } from "./types";
 import { AggregateField } from 'firebase-admin/firestore';
+import { db } from "./firebaseConfig"
+
+
+type RankChange = "increased" | "decreased" | "same";
 
 /** Determines rank change based on current and new ranks.
  *  - "increased" means that the overall rank *value* is lower than before
@@ -169,3 +171,20 @@ export const updateAllUserPoints = functions.https.onCall(async (_, context) => 
             throw new functions.https.HttpsError("aborted", `Issue occured while attempting to update user document: ${err}`);
         });
 });
+
+export const scheduledUpdateAllPoints = functions.pubsub.schedule('0 5 * * *').timeZone('America/Chicago').onRun(async (context) => {
+    try {
+        const snapshot = await db.collection('users').get();
+        const updatePromises = snapshot.docs.map(async (document) => {
+            return document.ref.set({
+                points: await calculateUserPoints(document.id),
+                pointsThisMonth: await calculateUserPointsThisMonth(document.id),
+            }, { merge: true });
+        });
+        await Promise.all(updatePromises);
+        return { success: true };
+    } catch (err) {
+        throw new functions.https.HttpsError("aborted", `Issue occurred while attempting to update user documents: ${err}`);
+    }
+});
+

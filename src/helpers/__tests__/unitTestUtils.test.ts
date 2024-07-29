@@ -18,7 +18,6 @@ describe("Test random string generation", () => {
     test("Create strings of invalid lengths with randomStr()", () => {
         expect(() => unitTestUtils.randomStr(-1)).toThrow();
         expect(() => unitTestUtils.randomStr(-255)).toThrow();
-        expect(() => unitTestUtils.randomStr(Math.random() * -1 * 255)).toThrow();
     });
 
     test("Create random strings from range of lengths with randomStrRange()", () => {

@@ -1,4 +1,4 @@
-import { SHPEEvent } from '@/types/Events';
+import { SHPEEvent } from '@/types/events';
 import { format, subMonths, addMonths, subWeeks, addWeeks, isSameMonth, startOfWeek, endOfWeek } from 'date-fns';
 import MonthView from './MonthView';
 import { useMemo, useState } from 'react';

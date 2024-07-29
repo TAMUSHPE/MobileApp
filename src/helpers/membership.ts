@@ -1,6 +1,8 @@
 import { Timestamp } from "firebase/firestore";
 
 export const isMemberVerified = (nationalExpiration: Timestamp | { seconds: number; nanoseconds: number; } | undefined, chapterExpiration: Timestamp | { seconds: number; nanoseconds: number; } | undefined) => {
+    if (!nationalExpiration || !chapterExpiration) return false;
+
     const nationalExpirationDate = nationalExpiration instanceof Timestamp ? nationalExpiration.toDate() : nationalExpiration ? new Date(nationalExpiration.seconds * 1000) : undefined;
     const chapterExpirationDate = chapterExpiration instanceof Timestamp ? chapterExpiration.toDate() : chapterExpiration ? new Date(chapterExpiration.seconds * 1000) : undefined;
 

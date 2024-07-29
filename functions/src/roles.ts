@@ -1,5 +1,5 @@
-import { auth } from "./firebaseConfig"
 import * as functions from 'firebase-functions';
+import { auth } from "./firebaseConfig"
 
 /**
  * Given a request header containing a `uid` and `roles` object, sets a user's custom claims to given `roles` object.

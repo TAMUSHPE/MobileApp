@@ -1,9 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp, FirebaseApp, getApp, getApps } from 'firebase/app';
-import { getAuth, initializeAuth, getReactNativePersistence, Auth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
-import { getFunctions } from 'firebase/functions';
-import { getStorage } from "firebase/storage";
+import { getAuth, initializeAuth, getReactNativePersistence, Auth, connectAuthEmulator } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import { connectFunctionsEmulator, getFunctions } from 'firebase/functions';
+import { connectStorageEmulator, getStorage } from "firebase/storage";
 
 
 const firebaseConfig = {
@@ -24,7 +24,7 @@ let auth: Auth;
 if (getApps().length === 0) {
     app = initializeApp(firebaseConfig);
 
-    // For jest unit tests, getReactNativePersistence is not defined.
+    // Non react-native environments do not define getReactNativePersistence
     auth = initializeAuth(app, {
         persistence: getReactNativePersistence ? getReactNativePersistence(AsyncStorage) : undefined,
     });
@@ -37,5 +37,22 @@ else {
 const db = getFirestore(app);
 const storage = getStorage(app);
 const functions = getFunctions(app);
+
+if (process.env.FIREBASE_EMULATOR_ADDRESS !== undefined) {
+    const address = process.env.FIREBASE_EMULATOR_ADDRESS;
+    console.debug("Connecting to firebase emulators.");
+    if(process.env.FIREBASE_AUTH_PORT !== undefined){
+        connectAuthEmulator(auth, `http://${address}:${process.env.FIREBASE_AUTH_PORT}`);
+    }
+    if(process.env.FIREBASE_FIRESTORE_PORT !== undefined){
+        connectFirestoreEmulator(db, address, Number(process.env.FIREBASE_FIRESTORE_PORT));
+    }
+    if(process.env.FIREBASE_CLOUD_FUNCTIONS_PORT !== undefined){
+        connectFunctionsEmulator(functions, address, Number(process.env.FIREBASE_CLOUD_FUNCTIONS_PORT));
+    }
+    if(process.env.FIREBASE_STORAGE_PORT !== undefined){
+        connectStorageEmulator(storage, address, Number(process.env.FIREBASE_STORAGE_PORT));
+    }
+}
 
 export { db, auth, storage, functions };
