@@ -1,7 +1,9 @@
 import { GeoPoint, Timestamp } from 'firebase/firestore';
 import { MillisecondTimes, getNextHourMillis } from '../helpers';
 
-/** Anything added to this document needs to be added to functions/src/types.ts **/
+/** Anything added to this document needs to be added to functions/src/types/events.ts and to 
+ *  shpe-app-web/app/types/events.ts
+ *  **/
 
 /**
  * Type used specifically for Workshop events to differentiate the type of workshop
@@ -56,6 +58,8 @@ export abstract class SHPEEvent {
     public general?: boolean | null;
     /** A flag to indicate that the notification has been sent */
     public notificationSent?: boolean | null;
+    /** Hide event from Events Screen */
+    public hiddenEvent?: boolean | null;
 
 
     /**
@@ -76,6 +80,9 @@ export abstract class SHPEEvent {
         this.creator = null;
         this.nationalConventionEligible = null;
         this.notificationSent = true;
+        this.endTimeBuffer = null;
+        this.startTimeBuffer = null;
+        this.hiddenEvent = false;
     }
 
     /**
@@ -101,8 +108,9 @@ export interface SHPEEventLog {
     eventId?: string; // Used when data is copied to user collection
     signInTime?: Timestamp;
     signOutTime?: Timestamp;
-    creationTime?: Timestamp
+    creationTime?: Timestamp;
     verified?: boolean;
+    instagramLogs?: Timestamp[]; // Used to log instagram points
 }
 
 /**
@@ -266,7 +274,9 @@ export class VolunteerEvent extends SHPEEvent {
         this.eventType = EventType.VOLUNTEER_EVENT;
         this.startTime = Timestamp.fromMillis(getNextHourMillis());
         this.endTime = Timestamp.fromMillis(getNextHourMillis() + MillisecondTimes.HOUR);
-        this.pointsPerHour = 2;
+        this.signInPoints = 0;
+        this.signOutPoints = 0;
+        this.pointsPerHour = 1;
         this.locationName = null;
         this.geolocation = null;
         this.general = false
@@ -382,18 +392,45 @@ export enum EventType {
 }
 
 /**
+ * Extended event type to include 'myEvents' and 'clubWide' for filtering
+ */
+export type ExtendedEventType = EventType | 'myEvents' | 'clubWide';
+
+/**
  * Status of an event that user attempts to sign in to or out of
  */
 export enum EventLogStatus {
     SUCCESS,
     EVENT_OVER,
     EVENT_ONGOING,
-    EVENT_NOT_STARTED,
     EVENT_NOT_FOUND,
     ALREADY_LOGGED,
+    NOT_A_STUDENT,
+    EVENT_NOT_STARTED,
+    OUT_OF_RANGE,
     ERROR,
 }
 
+export type UserEventData = {
+    eventData?: SHPEEvent,
+    eventLog?: SHPEEventLog,
+}
+
+export const getStatusMessage = (status: EventLogStatus): string => {
+    const statusMessages = {
+        [EventLogStatus.SUCCESS]: "Successfully signed in/out.",
+        [EventLogStatus.EVENT_OVER]: "The event is already over.",
+        [EventLogStatus.EVENT_ONGOING]: "The event is ongoing.",
+        [EventLogStatus.EVENT_NOT_FOUND]: "The event was not found.",
+        [EventLogStatus.ALREADY_LOGGED]: "You have already signed in/out.",
+        [EventLogStatus.NOT_A_STUDENT]: "Only student can sign in/out of events..",
+        [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
+        [EventLogStatus.OUT_OF_RANGE]: "You are not close enough to the event to sign in/out.",
+        [EventLogStatus.ERROR]: "An internal error occurred. Please try again.",
+    };
+
+    return statusMessages[status] || "An unknown error occurred.";
+};
 
 
 

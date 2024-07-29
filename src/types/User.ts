@@ -1,4 +1,8 @@
 import { Timestamp, FieldValue } from 'firebase/firestore';
+
+/** Anything added to this document needs to be added to shpe-app-web/app/types/user.ts **/
+
+
 /**
  * This interface represents the roles a user has. These values will only determine what the app looks like and **not** firebase read/write/edit/delete permissions.
  */
@@ -41,7 +45,6 @@ export interface PublicUserInfo {
     interests?: string[];
     points?: number;
     pointsThisMonth?: number;
-    shirtPickedUp?: boolean;
     isStudent?: boolean;
     isEmailPublic?: boolean;
 };
@@ -51,7 +54,8 @@ export interface PublicUserInfo {
  * Different sliders and values will be added to this over time.
  */
 export interface AppSettings {
-    darkMode: boolean;
+    darkMode?: boolean;
+    useSystemDefault?: boolean;
 }
 
 /**
@@ -62,7 +66,7 @@ export interface PrivateUserInfo {
     completedAccountSetup?: boolean;
     settings?: AppSettings;
     expoPushTokens?: string[];
-    expirationDate?: Date;
+    expirationDate?: Timestamp;
     resumeURL?: string;
     email?: string;
 };
@@ -93,15 +97,17 @@ export interface MemberStatus {
     timestamp: Timestamp | FieldValue;
 }
 
-export interface OfficerStatus extends MemberStatus {
-    signedIn: boolean;
-}
-
 
 export type UserFilter = {
     classYear: string,
     major: string,
     role?: string
+}
+
+export enum FilterRole {
+    OFFICER = "Officer",
+    REPRESENTATIVE = "Representative",
+    LEAD = "Lead",
 }
 
 const generateClassYears = (): { year: string }[] => {
@@ -122,11 +128,11 @@ export const MAJORS: Array<{ major: string, iso: string }> = [
     { major: 'Architectural Engineering', iso: 'AREN' },
     { major: 'Biomedical Engineering', iso: 'BMEN' },
     { major: 'Chemical Engineering', iso: 'CHEN' },
-    { major: 'Civil Engineering', iso: 'CHEN' },
+    { major: 'Civil Engineering', iso: 'CVEN' },
     { major: 'Computer Engineering', iso: 'CPEN' },
     { major: 'Computer Science', iso: 'CSCE' },
     { major: 'Computing', iso: 'COMP' },
-    { major: 'Data Engineering', iso: 'EC' },
+    { major: 'Data Engineering', iso: 'DAEN' },
     { major: 'Electrical Engineering', iso: 'ECEN' },
     { major: 'Electronic Systems Engineering Technology', iso: 'ESET' },
     { major: 'Environmental Engineering', iso: 'EVEN' },
