@@ -1,15 +1,15 @@
-import SHPEtinas from '../../../assets/shpetinas_icon.svg';
-import TechnicalAffairs from '../../../assets/technical_affairs_icon.svg';
-import DefaultIcon from '../../../assets/generic_course_icon.svg';
-import Scholastic from '../../../assets/scholastic_committee_icon.svg';
-import MentorSHPE from '../../../assets/mentorshpe_committee_icon.svg';
-import Presidents from '../../../assets/presidents_committee_icon.svg';
-import PublicRelations from '../../../assets/public_relations_committee_icon.svg';
-import JonesSHPEjr from '../../../assets/jones_shpe_jr_committee.svg';
-import Treasurer from '../../../assets/treasurer_committee_icon.svg';
-import InternalAffairs from '../../../assets/internal_affairs_committee_icon.svg';
-import Secretary from '../../../assets/secretary_committee_icon.svg';
-import ProfessionalDevelopment from '../../../assets/professional_development_committee_icon.svg';
+import SHPEtinas from '/public/shpetinas_icon.svg';
+import TechnicalAffairs from '/public/technical_affairs_icon.svg';
+import DefaultIcon from '/public/generic_course_icon.svg';
+import Scholastic from '/public/scholastic_committee_icon.svg';
+import MentorSHPE from '/public/mentorshpe_committee_icon.svg';
+import Presidents from '/public/presidents_committee_icon.svg';
+import PublicRelations from '/public/public_relations_committee_icon.svg';
+import JonesSHPEjr from '/public/jones_shpe_jr_committee.svg';
+import Treasurer from '/public/treasurer_committee_icon.svg';
+import InternalAffairs from '/public/internal_affairs_committee_icon.svg';
+import Secretary from '/public/secretary_committee_icon.svg';
+import ProfessionalDevelopment from '/public/professional_development_committee_icon.svg';
 
 
 /** ===================================================================================
