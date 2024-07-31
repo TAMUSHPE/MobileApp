@@ -10,6 +10,7 @@ import Treasurer from '/public/treasurer_committee_icon.svg';
 import InternalAffairs from '/public/internal_affairs_committee_icon.svg';
 import Secretary from '/public/secretary_committee_icon.svg';
 import ProfessionalDevelopment from '/public/professional_development_committee_icon.svg';
+import { PublicUserInfo } from "./user";
 
 
 /** ===================================================================================
@@ -94,19 +95,17 @@ export const getLogoComponent = (logoName: keyof typeof committeeLogos = 'defaul
 };
 export type CommitteeLogosName = keyof typeof committeeLogos;
 
-
 export type Committee = {
-    firebaseDocName?: string;
-    name?: string;
-    color?: string,
-    description?: string;
-    head?: string;
-    representatives?: string[];
-    leads?: string[];
-    applicationLink?: string;
-    logo?: keyof typeof committeeLogos;
-    memberCount?: number;
-    isOpen?: boolean;
+   name?: string;
+   firebaseDocName?: string;
+   color?: string,
+   logo?: string;
+   description?: string;
+   head?: PublicUserInfo;
+   leads?: PublicUserInfo[];
+   memberCount?: number;
+   memberApplicationLink?: string;
+   leadApplicationLink?: string;
 }
 
 export const reverseFormattedFirebaseName = (firebaseName: string) => {

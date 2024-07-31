@@ -1,7 +1,7 @@
-import { Committee } from "@/types/Committees";
-import { getLogoComponent } from "@/types/Committees";
+import { Committee } from "@/types/committees";
+import { getLogoComponent } from "@/types/committees";
 import Image from 'next/image';
-import { CommitteeLogosName } from "@/types/Committees";
+import { CommitteeLogosName } from "@/types/committees";
 const CommitteCard: React.FC<CommitteeCardProps> = ({ committee }) => {
     const { name, color, logo, head, memberCount } = committee;
     const { LogoComponent, height, width } = getLogoComponent(logo as CommitteeLogosName);
