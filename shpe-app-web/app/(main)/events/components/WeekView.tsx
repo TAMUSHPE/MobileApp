@@ -1,4 +1,4 @@
-import { SHPEEvent } from '@/types/Events';
+import { SHPEEvent } from '@/types/events';
 import {
   eachDayOfInterval,
   format,

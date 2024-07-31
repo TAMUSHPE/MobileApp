@@ -1,7 +1,7 @@
 import { PublicUserInfo } from "./User";
-import SHPEtinas from '../../assets/shpetinas.svg';
-import TechnicalAffairs from '../../assets/technical_affairs_logo.svg';
-import DefaultIcon from '../../assets/generic_course_icon.svg';
+import SHPEtinas from '/public/shpetinas.svg';
+import TechnicalAffairs from '/public/technical_affairs_logo.svg';
+import DefaultIcon from '/public/generic_course_icon.svg';
 
 
 export type Committee = {
