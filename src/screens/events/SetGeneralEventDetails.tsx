@@ -376,7 +376,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                 }}
                             />
                             <View className='w-full items-center justify-center'>
-                                <Text> Location details can be changed later</Text>
+                                <Text> General details can be changed later</Text>
                             </View>
                         </View>
                     </View>
