@@ -30,6 +30,9 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
     const [showSignInModal, setSignInModal] = useState<boolean>(false);
     const [showSignOutModal, setSignOutModal] = useState<boolean>(false);
 
+    console.log(event.signInPoints);
+    console.log(event.signOutPoints);
+
     const saveQRCode = async (qrRef: React.MutableRefObject<QRCodeRef | null>, type: string) => {
         if (qrRef.current) {
             try {
@@ -91,7 +94,7 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                                 <Text className='text-center text-2xl font-bold' style={{ color: darkMode ? 'white' : 'black' }}>No QR Codes Available</Text>
                             </View>
                         )}
-                        {event.signInPoints && (
+                        {event.signInPoints !== null && event.signInPoints !== undefined && event.signInPoints >= 0 && (
                             <View
                                 className={`my-4 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'} rounded-md border-1 p-2 w-[85%] h-20 px-5`}
                                 style={{
@@ -121,7 +124,7 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                                 </TouchableOpacity>
                             </View>
                         )}
-                        {event.signOutPoints && (
+                        {event.signOutPoints !== null && event.signOutPoints !== undefined && event.signOutPoints >= 0 && (
                             <View
                                 className={`my-4 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'} rounded-md border-1 p-2 w-[85%] h-20 px-5`}
                                 style={{
