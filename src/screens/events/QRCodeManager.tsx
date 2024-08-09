@@ -30,9 +30,6 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
     const [showSignInModal, setSignInModal] = useState<boolean>(false);
     const [showSignOutModal, setSignOutModal] = useState<boolean>(false);
 
-    console.log(event.signInPoints);
-    console.log(event.signOutPoints);
-
     const saveQRCode = async (qrRef: React.MutableRefObject<QRCodeRef | null>, type: string) => {
         if (qrRef.current) {
             try {
