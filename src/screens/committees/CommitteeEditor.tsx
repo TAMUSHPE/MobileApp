@@ -565,6 +565,17 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                         elevation: 5,
                     }}
                     onPress={async () => {
+                        if (!localCommitteeData.head) {
+                            alert("Please select a head");
+                            return;
+                        }
+                        console.log(localCommitteeData.name, "test")
+
+                        if (!localCommitteeData.name || localCommitteeData.name.trim() === '') {
+                            alert("Please select a name");
+                            return;
+                        }
+
                         const updatedCommitteeData = {
                             ...localCommitteeData,
                             applicationLink: localCommitteeData.applicationLink || ''
@@ -789,7 +800,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                             onPress={async () => {
                                 await handleDeleteCommittee()
                                 setDeleteModalVisible(false)
-                                navigation.goBack()
+                                navigation.navigate("CommitteesScreen")
                             }}
                         >
                             <Text className='font-semibold text-lg text-white'>Delete</Text>
