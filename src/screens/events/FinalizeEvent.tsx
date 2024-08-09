@@ -31,7 +31,7 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     return (
-        <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-white"}`} >
+        <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`} >
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}
@@ -120,14 +120,12 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                             </View>
                         </View>
 
+
                         {locationName && (
                             <View className='mt-4'>
                                 <Text className={`text-lg ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>Location</Text>
-                                <View className='flex-row flew-wrap items-center'>
-                                    <Text className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {locationName}
-                                    </Text>
-                                    {geolocation && (
+                                <View className='flex-row flex-wrap items-center'>
+                                    {geolocation ? (
                                         <TouchableOpacity
                                             onPress={() => {
                                                 if (Platform.OS === 'ios') {
@@ -137,8 +135,14 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                                                 }
                                             }}
                                         >
-                                            <Text className='underline text-primary-blue font-semibold text-md ml-4'>View in Maps</Text>
+                                            <Text className={`text-xl font-bold underline text-primary-blue`}>
+                                                {locationName}
+                                            </Text>
                                         </TouchableOpacity>
+                                    ) : (
+                                        <Text className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                            {locationName}
+                                        </Text>
                                     )}
                                 </View>
                             </View>
