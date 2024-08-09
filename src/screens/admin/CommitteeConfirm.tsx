@@ -327,9 +327,11 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
 
                     <MemberCard userData={selectedMember} handleCardPress={() => { }} />
 
-                    <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>{selectedMember?.name} is also in: </Text>
+                    <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>
+                        {selectedMember?.name} {selectedMember?.committees && selectedMember.committees.length > 0 ? "is also in:" : "is not in any committees"}
+                    </Text>
 
-                    {selectedMember?.committees && selectedMember?.committees.length > 0 && (
+                    {selectedMember?.committees && selectedMember.committees.length > 0 && (
                         <View className='flex-row flex-wrap'>
                             {selectedMember?.committees?.map((committeeName, index) => {
                                 return (
@@ -343,6 +345,7 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
                             })}
                         </View>
                     )}
+
 
                     <View className='mt-12 flex-row space-x-6'>
                         <TouchableOpacity
