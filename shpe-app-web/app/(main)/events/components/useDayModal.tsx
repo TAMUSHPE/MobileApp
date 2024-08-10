@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { SHPEEvent } from '@/types/events';
+import { useState } from 'react';
 
 export const useDayModal = () => {
   const [isShowing, setIsShowing] = useState(false);

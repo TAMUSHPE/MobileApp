@@ -1,8 +1,8 @@
-'use client';
-import { useMemo, useState } from 'react';
-import { format, subMonths, addMonths } from 'date-fns';
 import { SHPEEvent } from '@/types/events';
+import { format, subMonths, addMonths, subWeeks, addWeeks, isSameMonth, startOfWeek, endOfWeek } from 'date-fns';
 import MonthView from './MonthView';
+import { useMemo, useState } from 'react';
+import WeekView from './WeekView';
 
 interface EventCalendarProps {
   events: SHPEEvent[];
@@ -43,43 +43,58 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events }) => {
       <div className="flex-grow flex flex-col">
         {/* Top Bar */}
         <div className="w-full h-16 flex flex-row items-center justify-around border-l-[3px] border-[#E0E0E0]">
-          <h2 className="font-bold text-2xl">{format(focusDate, 'MMMM yyyy')}</h2>
+          <h2 className="font-bold text-2xl">
+            {isMonthSelected
+              ? format(focusDate, 'MMMM yyyy')
+              : `${
+                  !isSameMonth(startOfWeek(focusDate), endOfWeek(focusDate))
+                    ? format(startOfWeek(focusDate), 'MMMM - ')
+                    : ''
+                }${format(endOfWeek(focusDate), 'MMMM yyyy')}`}
+          </h2>
           <div className="h-10 w-64">
             <button
               onClick={() => setIsMonthSelected(true)}
-              className={`${isMonthSelected ? 'w-3/5 bg-[#500000] text-white' : 'w-2/5 bg-[#e8e7e7] text-[#A8A8A8]'
-                } transition-all duration-500 h-full font-semibold rounded-l-md`}
+              className={`${
+                isMonthSelected ? 'w-3/5 bg-[#500000] text-white' : 'w-2/5 bg-[#e8e7e7] text-[#A8A8A8]'
+              } transition-all duration-500 h-full font-semibold rounded-l-md`}
             >
               Month
             </button>
             <button
               onClick={() => setIsMonthSelected(false)}
-              className={`${!isMonthSelected ? 'w-3/5 bg-[#500000] text-white' : 'w-2/5 bg-[#e8e7e7] text-[#A8A8A8]'
-                } transition-all duration-500 h-full font-semibold rounded-r-md`}
+              className={`${
+                !isMonthSelected ? 'w-3/5 bg-[#500000] text-white' : 'w-2/5 bg-[#e8e7e7] text-[#A8A8A8]'
+              } transition-all duration-500 h-full font-semibold rounded-r-md`}
             >
               Week
             </button>
           </div>
           <div className="h-14 w-32 gap-2 flex items-center">
             <button
-              onClick={() => setFocusDate(subMonths(focusDate, 1))}
+              onClick={() =>
+                isMonthSelected ? setFocusDate(subMonths(focusDate, 1)) : setFocusDate(subWeeks(focusDate, 1))
+              }
               className="flex items-center justify-center h-10 w-16 bg-[#e8e7e7] rounded-xl border-solid border-[#E0E0E0] border-[3px]"
             >
               <img src="alt-arrow.svg" className="w-5/6 h-5/6" />
             </button>
             <button
-              onClick={() => setFocusDate(addMonths(focusDate, 1))}
+              onClick={() =>
+                isMonthSelected ? setFocusDate(addMonths(focusDate, 1)) : setFocusDate(addWeeks(focusDate, 1))
+              }
               className="flex items-center justify-center h-10 w-16 bg-[#e8e7e7] rounded-xl border-solid border-[#E0E0E0] border-[3px]"
             >
               <img src="alt-arrow.svg" className="w-5/6 h-5/6 rotate-180" />
             </button>
           </div>
         </div>
+        
         {/* Main Calendar */}
         {isMonthSelected ? (
           <MonthView eventsByDate={eventsByDate} focusDate={focusDate} setFocusDate={setFocusDate} />
         ) : (
-          <div className="h-full w-full bg-red-300"></div>
+          <WeekView eventsByDate={eventsByDate} focusDate={focusDate} setFocusDate={setFocusDate} />
         )}
       </div>
     </div>
