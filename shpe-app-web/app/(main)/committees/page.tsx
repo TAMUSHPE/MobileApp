@@ -20,7 +20,7 @@ const Committees = () => {
 
       const updatedCommittees = await Promise.all(committees.map(async (committee) => {
         if (committee.head) {
-          const userData = await getPublicUserData(committee.head);
+          const userData = committee.head;
           return { ...committee, head: userData };
         }
         return committee;

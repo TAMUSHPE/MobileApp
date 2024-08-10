@@ -22,10 +22,11 @@ const Navbar = () => {
                         <div className=" pl-3 "> Dashboard </div>
                     </div>
 
-                    path == '/dashboard' ?
+                    {path == '/dashboard' ?
                     <Image src="Polygon1.svg" alt="Dashboard" width={25} height={20}
                         style={{ position: 'absolute', top: 9, right: -2, zIndex: 0 }} />
                     : ''
+                    }
                 </Link>
 
                 <Link href={'/events'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/events' ? 'bg-[#794141]' : 'bg-[#500000]'}`} >
