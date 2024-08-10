@@ -322,28 +322,36 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                 </View>
 
                 <View className='flex-1 mx-4 mt-6'>
-                    <View>
-                        <Text className={`mb-1 text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>
-                            Committee Name<Text className='text-[#f00]'>*</Text>
-                        </Text>
-                        <TextInput
-                            className={`text-lg p-2 rounded border border-1 border-black ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
-                            value={localCommitteeData?.name}
-                            placeholder='Select a committee name'
-                            placeholderTextColor={darkMode ? "#DDD" : "#777"}
-                            onChangeText={(text: string) => {
-                                const trimmedText = text.trim();
-                                const formattedFirebaseName = trimmedText.toLowerCase().replace(/\s+/g, '-');
-                                setLocalCommitteeData({
-                                    ...localCommitteeData,
-                                    name: text,
-                                    firebaseDocName: formattedFirebaseName
-                                });
-                            }}
-                            keyboardType='ascii-capable'
-                            enterKeyHint='enter'
-                        />
-                    </View>
+                    {(!committeeData ? (
+                        <View>
+                            <Text className={`mb-1 text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>
+                                Committee Name<Text className='text-[#f00]'>*</Text>
+                            </Text>
+                            <TextInput
+                                className={`text-lg p-2 rounded border border-1 border-black ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
+                                value={localCommitteeData?.name}
+                                placeholder='Select a committee name'
+                                placeholderTextColor={darkMode ? "#DDD" : "#777"}
+                                onChangeText={(text: string) => {
+                                    const trimmedText = text.trim();
+                                    const formattedFirebaseName = trimmedText.toLowerCase().replace(/\s+/g, '-');
+                                    setLocalCommitteeData({
+                                        ...localCommitteeData,
+                                        name: text,
+                                        firebaseDocName: formattedFirebaseName
+                                    });
+                                }}
+                                keyboardType='ascii-capable'
+                                enterKeyHint='enter'
+                            />
+                        </View>
+                    ) : (
+                        <View>
+                            <Text className={`mb-1 text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>
+                                {committeeData.name}
+                            </Text>
+                        </View>
+                    ))}
 
                     <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg mt-6 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                         style={{
@@ -557,6 +565,17 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                         elevation: 5,
                     }}
                     onPress={async () => {
+                        if (!localCommitteeData.head) {
+                            alert("Please select a head");
+                            return;
+                        }
+                        console.log(localCommitteeData.name, "test")
+
+                        if (!localCommitteeData.name || localCommitteeData.name.trim() === '') {
+                            alert("Please select a name");
+                            return;
+                        }
+
                         const updatedCommitteeData = {
                             ...localCommitteeData,
                             applicationLink: localCommitteeData.applicationLink || ''
@@ -781,7 +800,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                             onPress={async () => {
                                 await handleDeleteCommittee()
                                 setDeleteModalVisible(false)
-                                navigation.goBack()
+                                navigation.navigate("CommitteesScreen")
                             }}
                         >
                             <Text className='font-semibold text-lg text-white'>Delete</Text>

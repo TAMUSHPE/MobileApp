@@ -9,3 +9,4 @@ export { checkUsernameUniqueness } from "./checkUsername";
 export { eventSignIn, eventSignOut, addInstagramPoints } from "./events";
 export { isUserInBlacklist } from "./restriction";
 export { calculateMOTM } from "./points";
+export { scheduledFirestoreExport, httpFirestoreExport, resetPointsWithPassword } from "./backup"
