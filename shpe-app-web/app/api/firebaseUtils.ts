@@ -1,29 +1,29 @@
 import { db, auth } from "@/config/firebaseConfig";
 import { collection, getDocs, getDoc, doc, query, orderBy } from 'firebase/firestore';
-import { PrivateUserInfo, PublicUserInfo } from "@/types/user"
+import { PrivateUserInfo, PublicUserInfo, User } from "@/types/user"
 import { SHPEEvent, SHPEEventLog } from "@/types/events";
 import { Committee } from "@/types/committees";
 
-
-export const getMembers = async (): Promise<(PublicUserInfo & { privateInfo?: PrivateUserInfo, eventLogs?: SHPEEventLog[] })[]> => {
+export const getMembers = async (): Promise<User[]> => {
     try {
         const userRef = collection(db, 'users');
         const q = query(userRef, orderBy("points", "desc"));
         const querySnapshot = await getDocs(q);
+
         if (querySnapshot.empty) {
             return [];
         }
 
         const members = await Promise.all(querySnapshot.docs.map(async (doc) => {
-            const publicInfo = doc.data();
+            const publicInfo = doc.data() as PublicUserInfo;
             const uid = doc.id;
 
             // Fetch private info
-            let privateInfo;
+            let privateInfo: PrivateUserInfo | undefined;
             try {
                 privateInfo = await getPrivateUserData(uid);
             } catch (error) {
-                console.error("Error fetching private data for user:", uid, error);
+                console.error(`Error fetching private data for user: ${uid}`, error);
             }
 
             // Fetch event logs
@@ -31,27 +31,26 @@ export const getMembers = async (): Promise<(PublicUserInfo & { privateInfo?: Pr
             try {
                 const eventLogsRef = collection(db, `users/${uid}/event-logs`);
                 const eventLogsSnapshot = await getDocs(eventLogsRef);
-                eventLogs = eventLogsSnapshot.docs.map(doc => doc.data()); // Adjust according to your event log structure
+                eventLogs = eventLogsSnapshot.docs.map(doc => doc.data() as SHPEEventLog);
             } catch (error) {
-                console.error("Error fetching event logs for user:", uid, error);
+                console.error(`Error fetching event logs for user: ${uid}`, error);
             }
 
             return {
-                ...publicInfo,
-                uid,
-                privateInfo,
+                publicInfo,
+                private: {
+                    privateInfo,
+                },
                 eventLogs
             };
         }));
 
         return members;
-
     } catch (error) {
         console.error("Error fetching members:", error);
         throw new Error("Internal Server Error.");
     }
 };
-
 
 export const getEvents = async (): Promise<SHPEEvent[]> => {
     try {

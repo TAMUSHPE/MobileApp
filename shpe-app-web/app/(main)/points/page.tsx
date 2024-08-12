@@ -4,17 +4,16 @@ import { useRouter } from "next/navigation";
 import { getEvents, getMembers } from "@/api/firebaseUtils";
 import { checkAuthAndRedirect } from "@/helpers/auth";
 import { SHPEEvent, SHPEEventLog } from '@/types/events';
-import { PublicUserInfo } from "@/types/user";
-import Header from "@/components/Header";
 import { format } from 'date-fns';
+import { User } from "@/types/user";
 
-interface MemberWithEventLogs extends PublicUserInfo {
+interface UserWithLogs extends User {
   eventLogs?: SHPEEventLog[];
 }
 
 const Points = () => {
   const router = useRouter();
-  const [members, setMembers] = useState<MemberWithEventLogs[]>([]);
+  const [members, setMembers] = useState<UserWithLogs[]>([]);
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<SHPEEvent[]>([]);
 
@@ -30,20 +29,32 @@ const Points = () => {
   }
 
   useEffect(() => {
-    checkAuthAndRedirect(router);
     fetchMembers();
     fetchEvents();
-    setLoading(false)
+    setLoading(false);
   }, []);
 
-  const generateSchoolYearMonths = () => {
+  const generateSchoolYear = () => {
+    const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
+    const startYear = currentMonth >= 5 ? currentYear : currentYear - 1;
+    const endYear = startYear + 1;
+    return `${startYear}-${endYear}`;
+  };
+
+  const schoolYear = generateSchoolYear();
+
+  const generateSchoolYearMonths = () => {
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const startYear = currentMonth >= 5 ? currentYear : currentYear - 1;
+
     const months = [];
-    for (let i = 5; i < 12; i++) { // June to December of previous year
-      months.push(new Date(currentYear - 1, i, 1));
+    for (let i = 5; i < 12; i++) { // June to December of startYear
+      months.push(new Date(startYear, i, 1));
     }
-    for (let i = 0; i < 5; i++) { // January to May of current year
-      months.push(new Date(currentYear, i, 1));
+    for (let i = 0; i < 5; i++) { // January to May of startYear + 1
+      months.push(new Date(startYear + 1, i, 1));
     }
     return months;
   };
@@ -61,18 +72,18 @@ const Points = () => {
 
   const getColumnColor = (index: number): string => {
     const colors = [
-      'bg-yellow-200',
-      'bg-green-200',
-      'bg-blue-200',
-      'bg-red-200',
-      'bg-purple-200',
-      'bg-pink-200',
-      'bg-orange-200',
-      'bg-teal-200',
-      'bg-indigo-200',
-      'bg-gray-200',
-      'bg-yellow-300',
-      'bg-green-300'
+      '#FFF9DB', // Light Yellow
+      '#DFF2D8', // Light Green
+      '#DDEEFF', // Light Blue
+      '#FAD4D4', // Light Red/Pink
+      '#E8DAEF', // Light Purple
+      '#FFD1DC', // Light Pink
+      '#FFE0B2', // Light Orange
+      '#D0EDE6', // Light Teal
+      '#D1C4E9', // Light Indigo
+      '#E0E0E0', // Light Gray
+      '#FFF7CC', // Slightly Darker Yellow
+      '#C8E6C9', // Slightly Darker Green
     ];
     return colors[index % colors.length];
   };
@@ -87,30 +98,47 @@ const Points = () => {
 
   return (
     <div className="bg-white h-full overflow-auto">
-      <Header title="Points Management" iconPath="calendar-solid-gray.svg" />
+      <div className="m-5">
+        <h1 className="text-2xl font-bold text-[#500000]">Main Point Sheets {schoolYear}</h1>
+      </div>
 
       <div className="bg-white flex flex-col h-full w-full">
         <table className="table-auto w-full text-left">
           <thead className="bg-gray-200">
-            <tr className="text-black">
-              <th className="px-4 py-2">Rank</th>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Points</th>
+            <tr className="text-black border-b-2 border-gray-400">
+              <th className="px-4 py-2 text-md font-bold">Rank</th>
+              <th className="px-4 py-2 text-md font-bold">Name</th>
+              <th className="px-4 py-2 text-md font-bold">Email</th>
+              <th className="px-4 py-2 text-md font-bold text-right">Total Points</th>
               {months.map((month, index) => (
-                <th key={index} className={`px-4 py-2 ${getColumnColor(index)}`}>{format(month, 'MMM yyyy')}</th>
+                <th
+                  key={index}
+                  className="px-4 py-2 text-md font-bold text-right"
+                  style={{ backgroundColor: getColumnColor(index) }}>
+                  {format(month, 'MMM yyyy')}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
             {members.map((member) => (
-              <tr key={member.uid} className="border-b text-black">
-                <td className="px-4 py-2">{member.pointsRank}</td>
-                <td className="px-4 py-2">{member.displayName}</td>
-                <td className="px-4 py-2">{member.points?.toFixed(2)}</td>
+              <tr key={member.publicInfo?.uid} className="border-b text-black text-sm">
+                <td className="px-4 py-2">{member.publicInfo?.pointsRank}</td>
+                <td
+                  className={`px-4 py-2 ${member.publicInfo?.roles?.officer ? 'text-red-500 font-semibold' : ''}`}
+                >
+                  {member.publicInfo?.displayName}
+                </td>
+                <td className="px-4 py-2">
+                  {member.publicInfo?.email?.trim() || member.private?.privateInfo?.email || "Email not available"}
+                </td>
+                <td className="px-4 py-2 text-right">{member.publicInfo?.points?.toFixed(2)}</td>
                 {months.map((month, index) => {
                   const pointsForMonth = getPointsForMonth(member.eventLogs || [], month);
                   return (
-                    <td key={index} className={`px-4 py-2 ${getColumnColor(index)}`}>{pointsForMonth.toFixed(2)}</td>
+                    <td key={index} className="px-4 py-2 text-right text-sm" style={{ backgroundColor: getColumnColor(index) }}>
+                      {pointsForMonth !== 0 ? pointsForMonth.toFixed(2) : ""}
+                    </td>
                   );
                 })}
               </tr>
