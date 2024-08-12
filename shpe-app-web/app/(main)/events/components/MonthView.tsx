@@ -33,9 +33,9 @@ const MonthView: React.FC<MonthViewProps> = ({ eventsByDate, focusDate, setFocus
   const firstDayOfNextMonth = addDays(lastDayOfCurrMonth, 1);
   const lastDayOfNextMonth = addDays(firstDayOfNextMonth, 5 - endingDayIndex);
 
-  const daysInPrevMonth = eachDayOfInterval({ start: firstDayOfPrevMonth, end: lastDayOfPrevMonth });
+  const daysInPrevMonth = startingDayIndex != 0 ? eachDayOfInterval({ start: firstDayOfPrevMonth, end: lastDayOfPrevMonth }) : [];
   const daysInCurrMonth = eachDayOfInterval({ start: firstDayOfCurrMonth, end: lastDayOfCurrMonth });
-  const daysInNextMonth = eachDayOfInterval({ start: firstDayOfNextMonth, end: lastDayOfNextMonth });
+  const daysInNextMonth = endingDayIndex != 6 ? eachDayOfInterval({ start: firstDayOfNextMonth, end: lastDayOfNextMonth }) : [];
 
   // Day Modal Hook
   const { isShowing, toggle, selectedDay, selectedDayEvents } = useDayModal();
@@ -48,8 +48,8 @@ const MonthView: React.FC<MonthViewProps> = ({ eventsByDate, focusDate, setFocus
       <div
         onClick={() => setFocusDate(day)}
         className={`relative border-t-[3px] border-l-[3px] border-[#E0E0E0] ${
-          dayState != 'curr' && 'bg-gray-100 opacity-90'
-        }`}
+          dayState != 'curr' && 'bg-gray-100 opacity-90'}
+          `}
       >
         {/* Day of the week text */}
         {(dayState == 'prev' || (dayState == 'curr' && index + startingDayIndex < 7)) && (
