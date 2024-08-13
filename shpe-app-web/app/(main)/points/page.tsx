@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { getEvents, getMembers } from "@/api/firebaseUtils";
+import { getEvents, getMembers, updatePointsInFirebase } from "@/api/firebaseUtils";
 import { checkAuthAndRedirect } from "@/helpers/auth";
 import { SHPEEvent, SHPEEventLog } from '@/types/events';
 import { format } from 'date-fns';
@@ -67,7 +67,7 @@ const Points = () => {
   useEffect(() => {
     if (isEditing && inputRef.current) {
       inputRef.current.focus();
-      inputRef.current.selectionStart = inputRef.current.value.length; // Place cursor at the end
+      inputRef.current.selectionStart = inputRef.current.value.length;
     }
   }, [isEditing]);
 
@@ -119,7 +119,7 @@ const Points = () => {
 
     setEditedPoints((prev: PointsRecord) => ({
       ...prev,
-      [key]: newValue,  // Store the raw input value as a string
+      [key]: newValue,
     }));
   };
 
@@ -137,45 +137,58 @@ const Points = () => {
       } else {
         const parsedValue = parseFloat(value);
 
-        // If the value is invalid or incomplete, revert to the original
-        if (isNaN(parsedValue)) {
+        // If the value is invalid, negative, or incomplete, revert to the original
+        if (isNaN(parsedValue) || parsedValue < 0) {
           updatedPoints[key] = originalPoints[key];
         } else {
-          updatedPoints[key] = parsedValue;  // Apply the valid number
+          updatedPoints[key] = parsedValue;
         }
       }
 
       return updatedPoints;
     });
 
-    setIsEditing(null);  // Stop editing when focus is lost
+    setIsEditing(null);
   };
 
-  const saveChanges = () => {
-    const changes = Object.keys(editedPoints).filter(key => {
-      console.log(`Comparing: ${originalPoints[key]} vs. ${editedPoints[key]}`);
-      return originalPoints[key] !== editedPoints[key];
-    });
 
-    console.log("Filtered changes:", changes);
+
+  const saveChanges = async () => {
+    const changes = Object.keys(editedPoints).filter(key => originalPoints[key] !== editedPoints[key]);
 
     const changesToSave = changes.map(key => {
       const [userId, eventId] = key.split('-');
+      const newPointsValue = editedPoints[key];
+
       return {
         userId,
         eventId,
-        newPoints: editedPoints[key],
+        newPoints: newPointsValue !== null ? parseFloat(newPointsValue as string) : null,
       };
     });
 
+    // Check if any points exceed 5
+    const hasHighPoints = changesToSave.some(change => change.newPoints !== null && change.newPoints > 5);
+
+    if (hasHighPoints) {
+      const proceed = confirm("Some points exceed 5. Are you sure you want to proceed?");
+      if (!proceed) {
+        return;
+      }
+    }
+
     console.log("Changes to save:", changesToSave);
 
-    // Implement the logic to persist these changes, e.g., sending them to your backend
-
-    // After saving, reset the edited points and the isEditing state
-    setOriginalPoints(editedPoints);
-    setIsEditing(null);
+    try {
+      await updatePointsInFirebase(changesToSave);
+      setOriginalPoints(editedPoints);
+      setIsEditing(null);
+      alert("Points have been updated successfully.");
+    } catch (error) {
+      console.error("Failed to save changes:", error);
+    }
   };
+
 
   if (loading) {
     return (

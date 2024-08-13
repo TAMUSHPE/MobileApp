@@ -1,5 +1,5 @@
 import { db, auth } from "@/config/firebaseConfig";
-import { collection, getDocs, getDoc, doc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, query, orderBy, writeBatch } from 'firebase/firestore';
 import { PrivateUserInfo, PublicUserInfo, User } from "@/types/user"
 import { SHPEEvent, SHPEEventLog } from "@/types/events";
 import { Committee } from "@/types/committees";
@@ -173,3 +173,38 @@ export const getPrivateUserData = async (uid: string = ""): Promise<PrivateUserI
         });
 };
 
+export const updatePointsInFirebase = async (changesToSave: { userId: string, eventId: string, newPoints: number | null }[]) => {
+    const batch = writeBatch(db);
+
+    changesToSave.forEach(change => {
+        const { userId, eventId, newPoints } = change;
+
+        // First location: events/{eventID}/log/{UserID}
+        const eventLogRef = doc(db, `events/${eventId}/logs/${userId}`);
+        batch.set(eventLogRef, {
+            points: newPoints,
+            eventId,
+            uid: userId,
+            edited: true,
+            verified: true,
+        }, { merge: true });
+
+        // Second location: users/{userID}/event-logs/{eventID}
+        const userEventLogRef = doc(db, `users/${userId}/event-logs/${eventId}`);
+        batch.set(userEventLogRef, {
+            points: newPoints,
+            eventId,
+            uid: userId,
+            edited: true,
+            verified: true,
+        }, { merge: true });
+    });
+
+    try {
+        await batch.commit();
+        console.log("Batch write successful");
+    } catch (error) {
+        console.error("Error writing batch: ", error);
+        throw error;
+    }
+};
