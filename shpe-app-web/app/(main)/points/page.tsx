@@ -6,7 +6,7 @@ import { checkAuthAndRedirect } from "@/helpers/auth";
 import { SHPEEvent, SHPEEventLog } from '@/types/events';
 import { format } from 'date-fns';
 import { User } from "@/types/user";
-import { FaChevronLeft, FaChevronRight, FaFilter, FaUndo } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaFilter, FaUndo, FaSave } from "react-icons/fa";
 
 interface UserWithLogs extends User {
   eventLogs?: SHPEEventLog[];
@@ -100,17 +100,17 @@ const Points = () => {
     });
   };
 
-  const handleCellClick = (userId: string | undefined, eventId: string | undefined, initialValue: number) => {
+  const handleCellClick = (userId: string | undefined, eventId: string | undefined, initialValue: number | null) => {
     if (!userId || !eventId) return;
     const key = `${userId}-${eventId}`;
     if (!(key in editedPoints)) {
       setEditedPoints((prev: PointsRecord) => ({
         ...prev,
-        [key]: initialValue,
+        [key]: initialValue !== null ? initialValue : '',
       }));
     }
 
-    setIsEditing(key); // Start editing this cell
+    setIsEditing(key);
   };
 
   const handleInputChange = (userId: string | undefined, eventId: string | undefined, newValue: string) => {
@@ -151,11 +151,13 @@ const Points = () => {
     setIsEditing(null);  // Stop editing when focus is lost
   };
 
-
-
-
   const saveChanges = () => {
-    const changes = Object.keys(editedPoints).filter(key => originalPoints[key] !== editedPoints[key]);
+    const changes = Object.keys(editedPoints).filter(key => {
+      console.log(`Comparing: ${originalPoints[key]} vs. ${editedPoints[key]}`);
+      return originalPoints[key] !== editedPoints[key];
+    });
+
+    console.log("Filtered changes:", changes);
 
     const changesToSave = changes.map(key => {
       const [userId, eventId] = key.split('-');
@@ -224,10 +226,25 @@ const Points = () => {
               {filterType === 'total' ? 'Total Points' : 'Monthly Points'}
             </p>
           </button>
-          <button className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200" onClick={saveChanges}>
+          <button className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200">
             <FaUndo color="black" className="mr-2" />
             <p className="text-black text-lg font-bold">Update Points</p>
           </button>
+          <button
+            className={`flex items-center px-4 py-2 rounded-lg transition duration-200 ${filterType === 'monthly' && Object.keys(editedPoints).length > 0
+              ? 'hover:bg-gray-200 cursor-pointer'
+              : 'bg-gray-100 cursor-not-allowed'
+              }`}
+            onClick={filterType === 'monthly' && Object.keys(editedPoints).some(key => originalPoints[key] !== editedPoints[key]) ? saveChanges : undefined}
+            disabled={filterType !== 'monthly' || !Object.keys(editedPoints).some(key => originalPoints[key] !== editedPoints[key])}
+          >
+            <FaSave color={filterType === 'monthly' && Object.keys(editedPoints).some(key => originalPoints[key] !== editedPoints[key]) ? "black" : "gray"} className="mr-2" />
+            <p className={`text-lg font-bold ${filterType === 'monthly' && Object.keys(editedPoints).some(key => originalPoints[key] !== editedPoints[key]) ? 'text-black' : 'text-gray-400'}`}>
+              Save Changes
+            </p>
+          </button>
+
+
         </div>
       </div>
 
@@ -324,8 +341,9 @@ const Points = () => {
                           key={eventIndex}
                           className={`px-4 py-2 text-right text-sm ${editedPoints[key] !== undefined && editedPoints[key] !== originalPoints[key] ? 'border-yellow-500 border' : ''}`}
                           style={{ backgroundColor: getColumnColor(eventIndex) }}
-                          onClick={() => handleCellClick(member.publicInfo?.uid, event.id!, member.eventLogs?.find(log => log.eventId === event.id)?.points || 0)}
+                          onClick={() => handleCellClick(member.publicInfo?.uid, event.id!, member.eventLogs?.find(log => log.eventId === event.id)?.points ?? null)}
                         >
+
                           {isEditing === key ? (
                             <input
                               type="text"
