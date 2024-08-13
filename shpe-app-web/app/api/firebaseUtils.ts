@@ -176,29 +176,59 @@ export const getPrivateUserData = async (uid: string = ""): Promise<PrivateUserI
 export const updatePointsInFirebase = async (changesToSave: { userId: string, eventId: string, newPoints: number | null }[]) => {
     const batch = writeBatch(db);
 
-    changesToSave.forEach(change => {
+    for (const change of changesToSave) {
         const { userId, eventId, newPoints } = change;
 
         // First location: events/{eventID}/log/{UserID}
         const eventLogRef = doc(db, `events/${eventId}/logs/${userId}`);
-        batch.set(eventLogRef, {
+        const eventDoc = await getDoc(doc(db, `events/${eventId}`));
+        const eventStartTime = eventDoc.exists() ? eventDoc.data()?.startTime : null;
+
+        const eventLogData: any = {
             points: newPoints,
             eventId,
             uid: userId,
             edited: true,
             verified: true,
-        }, { merge: true });
+        };
+
+        // Add creationTime and signInTime if they do not exist
+        if (eventStartTime) {
+            const existingEventLog = await getDoc(eventLogRef);
+            if (!existingEventLog.exists() || !existingEventLog.data()?.creationTime) {
+                eventLogData.creationTime = eventStartTime;
+            }
+            if (!existingEventLog.exists() || !existingEventLog.data()?.signInTime) {
+                eventLogData.signInTime = eventStartTime;
+            }
+        }
+
+        batch.set(eventLogRef, eventLogData, { merge: true });
 
         // Second location: users/{userID}/event-logs/{eventID}
         const userEventLogRef = doc(db, `users/${userId}/event-logs/${eventId}`);
-        batch.set(userEventLogRef, {
+
+        const userEventLogData: any = {
             points: newPoints,
             eventId,
             uid: userId,
             edited: true,
             verified: true,
-        }, { merge: true });
-    });
+        };
+
+        // Add creationTime and signInTime if they do not exist
+        if (eventStartTime) {
+            const existingUserEventLog = await getDoc(userEventLogRef);
+            if (!existingUserEventLog.exists() || !existingUserEventLog.data()?.creationTime) {
+                userEventLogData.creationTime = eventStartTime;
+            }
+            if (!existingUserEventLog.exists() || !existingUserEventLog.data()?.signInTime) {
+                userEventLogData.signInTime = eventStartTime;
+            }
+        }
+
+        batch.set(userEventLogRef, userEventLogData, { merge: true });
+    }
 
     try {
         await batch.commit();

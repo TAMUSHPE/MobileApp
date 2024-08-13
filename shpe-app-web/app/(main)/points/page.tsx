@@ -7,6 +7,8 @@ import { SHPEEvent, SHPEEventLog } from '@/types/events';
 import { format } from 'date-fns';
 import { User } from "@/types/user";
 import { FaChevronLeft, FaChevronRight, FaFilter, FaUndo, FaSave } from "react-icons/fa";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "@/config/firebaseConfig";
 
 interface UserWithLogs extends User {
   eventLogs?: SHPEEventLog[];
@@ -26,6 +28,8 @@ const Points = () => {
 
   const schoolYear = generateSchoolYear();
   const months = generateSchoolYearMonths();
+  const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
+  const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
 
   // Set the initial current month index to the real current month
   const currentMonthDate = new Date();
@@ -189,6 +193,30 @@ const Points = () => {
     }
   };
 
+  const updatePoints = async () => {
+    try {
+      await updateAllUserPoints();
+      alert('Points have been successfully updated.');
+      window.location.reload(); // Refresh the page
+    } catch (error) {
+      console.error('Failed to update points:', error);
+      alert('An error occurred while updating points.');
+    }
+  };
+
+  const updateRanks = async () => {
+    try {
+      await sleep(2000);  // Add a delay if necessary
+      await updateRanksOnCall();
+      alert('Ranks have been successfully updated.');
+      window.location.reload(); // Refresh the page
+    } catch (error) {
+      console.error('Failed to update ranks:', error);
+      alert('An error occurred while updating ranks.');
+    }
+  };
+
+
 
   if (loading) {
     return (
@@ -239,10 +267,6 @@ const Points = () => {
               {filterType === 'total' ? 'Total Points' : 'Monthly Points'}
             </p>
           </button>
-          <button className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200">
-            <FaUndo color="black" className="mr-2" />
-            <p className="text-black text-lg font-bold">Update Points</p>
-          </button>
           <button
             className={`flex items-center px-4 py-2 rounded-lg transition duration-200 ${filterType === 'monthly' && Object.keys(editedPoints).length > 0
               ? 'hover:bg-gray-200 cursor-pointer'
@@ -256,7 +280,25 @@ const Points = () => {
               Save Changes
             </p>
           </button>
+          <button
+            className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200"
+            onClick={async () => {
+              await updatePoints();
+            }}
+          >
+            <FaUndo color="black" className="mr-2" />
+            <p className="text-black text-lg font-bold">Update Points</p>
+          </button>
 
+          <button
+            className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200"
+            onClick={async () => {
+              await updateRanks();
+            }}
+          >
+            <FaUndo color="black" className="mr-2" />
+            <p className="text-black text-lg font-bold">Update Ranks</p>
+          </button>
 
         </div>
       </div>
@@ -449,5 +491,8 @@ const getColumnColor = (index: number): string => {
   ];
   return colors[index % colors.length];
 };
+
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 
 export default Points;
