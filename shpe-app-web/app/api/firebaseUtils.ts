@@ -18,6 +18,8 @@ export const getMembers = async (): Promise<User[]> => {
             const publicInfo = doc.data() as PublicUserInfo;
             const uid = doc.id;
 
+            publicInfo.uid = uid;
+
             // Fetch private info
             let privateInfo: PrivateUserInfo | undefined;
             try {
