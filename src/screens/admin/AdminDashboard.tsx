@@ -22,7 +22,6 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<HomeStackParams>)
     const committeeCountCheckOnCall = httpsCallable(functions, 'committeeCountCheckOnCall');
     const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
     const updateCommitteeCount = httpsCallable(functions, 'updateCommitteeCount');
-    const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
     const resetOfficeOnCall = httpsCallable(functions, 'resetOfficeOnCall');
 
     return (
@@ -238,17 +237,6 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<HomeStackParams>)
                         >
                             <Text className={`text-xl underline mt-2 ${darkMode ? "text-white" : "text-black"}`}>Update All User Points</Text>
                         </TouchableOpacity>
-
-                        <TouchableOpacity
-                            onPress={async () => {
-                                await updateRanksOnCall();
-                                Alert.alert('Update Ranks', 'Update All Ranks have been successfully called');
-
-                            }}
-                        >
-                            <Text className={`text-xl underline mt-2 ${darkMode ? "text-white" : "text-black"}`}>Update User Rank</Text>
-                        </TouchableOpacity>
-
 
                         <TouchableOpacity
                             onPress={() => {

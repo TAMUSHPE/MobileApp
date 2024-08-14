@@ -220,18 +220,6 @@ const Points = () => {
     }
   };
 
-  const updateRanks = async () => {
-    try {
-      await sleep(2000);  // Add a delay if necessary
-      await updateRanksOnCall();
-      alert('Ranks have been successfully updated.');
-      window.location.reload(); // Refresh the page
-    } catch (error) {
-      console.error('Failed to update ranks:', error);
-      alert('An error occurred while updating ranks.');
-    }
-  };
-
   const exportPointsToExcel = async (members: UserWithLogs[], events: SHPEEvent[], months: Date[]) => {
     const workbook = new ExcelJS.Workbook();
 
@@ -423,16 +411,6 @@ const Points = () => {
           >
             <FaUndo color="black" className="mr-2" />
             <p className="text-black text-lg font-bold">Update Points</p>
-          </button>
-
-          <button
-            className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200"
-            onClick={async () => {
-              await updateRanks();
-            }}
-          >
-            <FaUndo color="black" className="mr-2" />
-            <p className="text-black text-lg font-bold">Update Ranks</p>
           </button>
 
           <button

@@ -82,7 +82,7 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
         IconComponent: React.ElementType;
     }) => (
         <TouchableOpacity
-            className={`flex-row bg-primary-blue h-24 rounded-3xl mb-8 ${(userInfo?.publicInfo?.isStudent || navigateTo == "PointsLeaderboard") ? "bg-primary-blue" : (darkMode ? "bg-primary-grey-dark" : "bg-grey-light")}`}
+            className={`flex-row bg-primary-blue h-28 rounded-3xl mb-8 ${(userInfo?.publicInfo?.isStudent || navigateTo == "PointsLeaderboard") ? "bg-primary-blue" : (darkMode ? "bg-primary-grey-dark" : "bg-grey-light")}`}
             style={{
                 shadowColor: "#000",
                 shadowOffset: {
