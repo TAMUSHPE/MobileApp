@@ -12,22 +12,28 @@ export const handleLogout = async (router: AppRouterInstance) => {
 
 export const handleLogin = async (router: AppRouterInstance) => {
     const provider = new GoogleAuthProvider();
-    provider.addScope("email")
+    provider.addScope("email");
     provider.setCustomParameters({
         'hd': 'tamu.edu',
-        'prompt': 'select_account'
+        'prompt': 'select_account',
     });
-    signInWithPopup(auth, provider).then((result) => {
-        if (result.user?.email?.endsWith('@tamu.edu')) {
-            router.push('/dashboard');
+
+    try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        const idTokenResult = await user.getIdTokenResult();
+
+        const hasRequiredRole = idTokenResult.claims.admin || idTokenResult.claims.officer || idTokenResult.claims.developer || idTokenResult.claims.lead || idTokenResult.claims.representative;
+
+        if (!hasRequiredRole) {
+            await signOut(auth);
+            alert('Access denied. You do not have the required role to access this application.');
         } else {
-            auth.signOut();
-            alert('Please sign in with your TAMU account.');
+            router.push('/dashboard');
         }
-    }).catch((error) => {
-        console.error(error);
-    });
-}
-
-
-
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('An error occurred during login.');
+    }
+};
