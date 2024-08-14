@@ -52,7 +52,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
     const [endOfData, setEndOfData] = useState(false);
     const lastVisibleRef = useRef<DocumentSnapshot | null>(null);
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
 
     useEffect(() => {
         const fetchUserData = async () => {

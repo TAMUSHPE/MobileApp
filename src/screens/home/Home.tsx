@@ -39,7 +39,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
 
     const [isVerified, setIsVerified] = useState<boolean>(true); // By default hide "become a member" banner
     const [isSignedIn, setIsSignedIn] = useState<boolean | undefined>(undefined);

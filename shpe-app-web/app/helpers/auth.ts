@@ -35,7 +35,8 @@ export const checkAuthAndRedirect = async (router: AppRouterInstance): Promise<v
         router.push('/');
     } else {
         const token = await auth.currentUser.getIdTokenResult();
-        if (!token.claims.admin && !token.claims.developer && !token.claims.officer) {
+        if (!token.claims.admin && !token.claims.developer && !token.claims.officer && !token.claims.lead && !token.claims.representative
+        ) {
             alert("You do not have permission to this website. Please sign in with an authorized account.")
             auth.signOut();
             router.push('/');
