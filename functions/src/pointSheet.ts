@@ -1,4 +1,5 @@
 import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
 import { AggregateField } from 'firebase-admin/firestore';
 import { db } from "./firebaseConfig"
 
@@ -21,15 +22,23 @@ const updateUserRank = async (uid: string, userData: FirebaseFirestore.DocumentD
     if (!uid || !userData) return;
 
     const userDocRef = db.collection('users').doc(uid);
-    const rankChange = userData.pointsRank ? getRankChange(userData.pointsRank, newRank) : "same";
 
-    await userDocRef.set({
-        pointsRank: newRank,
-        rankChange: rankChange,
-    }, { merge: true });
+    // If the user has 0 points or no points, delete the rank and rankChange fields
+    if (!userData.points || userData.points === 0) {
+        await userDocRef.update({
+            pointsRank: admin.firestore.FieldValue.delete(),
+            rankChange: admin.firestore.FieldValue.delete(),
+        });
+    } else {
+        const rankChange = userData.pointsRank ? getRankChange(userData.pointsRank, newRank) : "same";
+
+        await userDocRef.set({
+            pointsRank: newRank,
+            rankChange: rankChange,
+        }, { merge: true });
+    }
 }
 
-/** Fetches data from Google Spreadsheet and updates users' ranks in Firestore */
 const updateRanks = async (): Promise<string> => {
     try {
         const snapshot = await db.collection('users').orderBy("points", "desc").get();
@@ -37,7 +46,9 @@ const updateRanks = async (): Promise<string> => {
         let currentRank = 1;
         snapshot.forEach((doc) => {
             updateUserRank(doc.id, doc.data(), currentRank);
-            currentRank++;
+            if (doc.data().points > 0) {
+                currentRank++;
+            }
         });
         console.info(`${snapshot.size} documents updated`);
         return "Success";

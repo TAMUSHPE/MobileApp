@@ -256,15 +256,15 @@ const Points = () => {
     // Add Member Data
     members.forEach((member, index) => {
       const rowValues: any = {
-        rank: member.publicInfo?.pointsRank || index + 1,
+        rank: member.publicInfo?.pointsRank ?? '',
         name: member.publicInfo?.displayName || '',
         email: member.publicInfo?.email || member.private?.privateInfo?.email || 'Email not available',
-        totalPoints: member.publicInfo?.points ?? 0, // Ensure this is a number
+        totalPoints: member.publicInfo?.points ?? 0,
       };
 
       months.forEach((month, monthIndex) => {
         const pointsForMonth = getPointsForMonth(member.eventLogs || [], month);
-        rowValues[`month${monthIndex}`] = pointsForMonth > 0 ? pointsForMonth : ''; // Keep as a number if positive
+        rowValues[`month${monthIndex}`] = pointsForMonth > 0 ? pointsForMonth : '';
       });
 
       const row = masterSheet.addRow(rowValues);
@@ -296,7 +296,7 @@ const Points = () => {
         { header: 'Email', key: 'email', width: 30 },
         { header: 'Monthly Points', key: 'monthlyPoints', width: 15 },
         ...monthEvents.map((event, eventIndex) => ({
-          header: `${event.name}\n${format(event.startTime?.toDate()!, 'MM/dd/yyyy')}`, // Event name and date
+          header: `${event.name}\n${format(event.startTime?.toDate()!, 'MM/dd/yyyy')}`,
           key: `event${eventIndex}`,
           width: 20,
         })),
@@ -323,12 +323,12 @@ const Points = () => {
           rank: member.publicInfo?.pointsRank || index + 1,
           name: member.publicInfo?.displayName || '',
           email: member.publicInfo?.email || member.private?.privateInfo?.email || 'Email not available',
-          monthlyPoints: getPointsForMonth(member.eventLogs || [], month) ?? 0, // Ensure this is a number
+          monthlyPoints: getPointsForMonth(member.eventLogs || [], month) ?? 0,
         };
 
         monthEvents.forEach((event, eventIndex) => {
           const eventPoints = member.eventLogs?.find(log => log.eventId === event.id)?.points || 0;
-          rowValues[`event${eventIndex}`] = eventPoints > 0 ? eventPoints : ''; // Keep as a number if positive
+          rowValues[`event${eventIndex}`] = eventPoints > 0 ? eventPoints : '';
         });
 
         const row = sheet.addRow(rowValues);
@@ -349,7 +349,6 @@ const Points = () => {
       });
     });
 
-    // Export the workbook
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(new Blob([buffer]), `SHPE_Points_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };

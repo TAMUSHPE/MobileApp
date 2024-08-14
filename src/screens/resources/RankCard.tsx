@@ -42,7 +42,7 @@ const RankCard: React.FC<PointsProps> = ({ userData, navigation, rank, monthlyPo
                 }}
             >
                 <View className='flex-row'>
-                    <Text className={`text-xl font-medium mr-5 ${darkMode ? "text-white" : "text-black"}`}>{rank}</Text>
+                    <Text className={`text-xl font-medium mr-5 ${darkMode ? "text-white" : "text-black"}`}>{rank || "-"}</Text>
                 </View>
 
                 <View className='flex-1 flex-row items-center'>
