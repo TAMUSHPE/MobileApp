@@ -1,9 +1,9 @@
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme, Image, Modal } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RouteProp } from '@react-navigation/core';
+import { RouteProp, useFocusEffect } from '@react-navigation/core';
 import { Octicons, Entypo } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { auth } from '../../config/firebaseConfig';
@@ -53,6 +53,47 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
         head: null,
     });
 
+    const fetchTeamMemberData = async () => {
+        if (initialCommittee) {
+            const { head, representatives, leads } = initialCommittee;
+            const newTeamMembers: TeamMembersState = { leads: [], representatives: [], head: null };
+
+            if (head) {
+                const headData = await getPublicUserData(head);
+                if (headData) {
+                    headData.uid = head;
+                    newTeamMembers.head = headData;
+                }
+            }
+
+            if (representatives && representatives.length > 0) {
+                newTeamMembers.representatives = await Promise.all(
+                    representatives.map(async (uid) => {
+                        const repData = await getPublicUserData(uid);
+                        if (repData) {
+                            repData.uid = uid;
+                        }
+                        return repData;
+                    })
+                );
+            }
+
+            if (leads && leads.length > 0) {
+                newTeamMembers.leads = await Promise.all(
+                    leads.map(async (uid) => {
+                        const leadData = await getPublicUserData(uid);
+                        if (leadData) {
+                            leadData.uid = uid;
+                        }
+                        return leadData;
+                    })
+                );
+            }
+
+            setLocalTeamMembers(newTeamMembers);
+        }
+    };
+
     useEffect(() => {
         const fetchEvents = async () => {
             setEventLoading(true);
@@ -60,47 +101,6 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
             setEvents(response);
             setEventLoading(false);
         }
-
-        const fetchTeamMemberData = async () => {
-            if (initialCommittee) {
-                const { head, representatives, leads } = initialCommittee;
-                const newTeamMembers: TeamMembersState = { leads: [], representatives: [], head: null };
-
-                if (head) {
-                    const headData = await getPublicUserData(head);
-                    if (headData) {
-                        headData.uid = head;
-                        newTeamMembers.head = headData;
-                    }
-                }
-
-                if (representatives && representatives.length > 0) {
-                    newTeamMembers.representatives = await Promise.all(
-                        representatives.map(async (uid) => {
-                            const repData = await getPublicUserData(uid);
-                            if (repData) {
-                                repData.uid = uid;
-                            }
-                            return repData;
-                        })
-                    );
-                }
-
-                if (leads && leads.length > 0) {
-                    newTeamMembers.leads = await Promise.all(
-                        leads.map(async (uid) => {
-                            const leadData = await getPublicUserData(uid);
-                            if (leadData) {
-                                leadData.uid = uid;
-                            }
-                            return leadData;
-                        })
-                    );
-                }
-
-                setLocalTeamMembers(newTeamMembers);
-            }
-        };
 
         const checkStatus = async () => {
             setLoadingLabel(true);
@@ -146,6 +146,14 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
         fetchLocalMemberOnlyCount();
     }, [localTeamMembers])
+
+    useFocusEffect(
+        useCallback(() => {
+            if (hasPrivileges) {
+                fetchTeamMemberData();
+            }
+        }, [fetchTeamMemberData])
+    );
 
     const updateUserInfo = async (updatedCommittees: string[]) => {
         try {
