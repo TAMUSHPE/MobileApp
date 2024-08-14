@@ -1,7 +1,7 @@
 import { View, Text, ActivityIndicator, Image, Alert, TouchableOpacity, Pressable, TextInput, ScrollView, useColorScheme } from 'react-native';
 import React, { useState, useEffect, useContext, useCallback, useRef } from 'react';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RouteProp, useFocusEffect } from '@react-navigation/core';;
+import { RouteProp, useFocusEffect, useNavigationState } from '@react-navigation/core';;
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome, FontAwesome6 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,13 +14,12 @@ import { handleLinkPress } from '../../helpers/links';
 import { UserProfileStackParams } from '../../types/navigation';
 import { PublicUserInfo, Roles } from '../../types/user';
 import { Images } from '../../../assets';
-import ProfileBadge from '../../components/ProfileBadge';
 import DismissibleModal from '../../components/DismissibleModal';
 import { UserEventData } from '../../types/events';
 import { DocumentSnapshot, Timestamp } from 'firebase/firestore';
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { reverseFormattedFirebaseName } from '../../types/committees';
-import { formatDate, formatDateWithYear } from '../../helpers/timeUtils';
+import { formatDateWithYear } from '../../helpers/timeUtils';
 
 export type PublicProfileScreenProps = {
     route: RouteProp<UserProfileStackParams, 'PublicProfile'>;
@@ -32,6 +31,9 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo } = userContext!;
     const isCurrentUser = uid === auth.currentUser?.uid;
+    const routes = useNavigationState(state => state.routes);
+    const isInMemberDirectoryStack = routes.some(route => route.name === 'Home');
+
 
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
@@ -139,7 +141,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                     <SafeAreaView edges={['top']}>
                         {/* Back and Edit Button */}
                         <View>
-                            {!isCurrentUser &&
+                            {(isInMemberDirectoryStack) &&
                                 <TouchableOpacity
                                     onPress={() => navigation.goBack()}
                                     className="mx-4 w-10 h-10 items-center justify-center rounded-full"
@@ -147,9 +149,8 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                                 >
                                     <Octicons name="chevron-left" size={30} color="white" />
                                 </TouchableOpacity>
-
                             }
-                            {isCurrentUser &&
+                            {(isCurrentUser && !isInMemberDirectoryStack) &&
                                 <View className='flex-row justify-end'>
                                     <TouchableOpacity
                                         onPress={() => navigation.navigate("ProfileSettingsScreen")}
@@ -208,7 +209,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                             }
                         </View>
                         {/* MemberSHPE Button */}
-                        {(isVerified && isCurrentUser) &&
+                        {(isVerified && isCurrentUser && !isInMemberDirectoryStack) &&
                             <TouchableOpacity
                                 onPress={() => navigation.navigate("MemberSHPE")}
                                 className="m-3 rounded-full absolute bottom-0 left-0 items-center justify-center"
