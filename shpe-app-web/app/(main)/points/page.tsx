@@ -7,7 +7,8 @@ import { format } from 'date-fns';
 import { User } from "@/types/user";
 import { FaChevronLeft, FaChevronRight, FaFilter, FaUndo, FaSave } from "react-icons/fa";
 import { httpsCallable } from "firebase/functions";
-import { functions } from "@/config/firebaseConfig";
+import { auth, functions } from "@/config/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 
 interface UserWithLogs extends User {
   eventLogs?: SHPEEventLog[];
@@ -15,6 +16,8 @@ interface UserWithLogs extends User {
 type PointsRecord = Record<string, string | number | null>;
 
 const Points = () => {
+  const router = useRouter();
+
   const [members, setMembers] = useState<UserWithLogs[]>([]);
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState<SHPEEvent[]>([]);
@@ -54,7 +57,6 @@ const Points = () => {
     }, {});
 
     setOriginalPoints(initialPoints);
-    setLoading(false);
   };
 
   const fetchEvents = async () => {
@@ -73,6 +75,19 @@ const Points = () => {
       inputRef.current.selectionStart = inputRef.current.value.length;
     }
   }, [isEditing]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setLoading(false);
+      } else {
+        // User is not logged in, redirect to root
+        router.push('/');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
 
   const getPointsForMonth = (eventLogs: SHPEEventLog[], month: Date): number => {
