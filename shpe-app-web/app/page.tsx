@@ -4,15 +4,33 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from "./config/firebaseConfig";
 import { handleLogin } from './helpers/auth';
+import { getIdTokenResult, onAuthStateChanged } from 'firebase/auth';
 
 const SignIn = () => {
   const router = useRouter()
 
   useEffect(() => {
-    if (auth.currentUser) {
-      router.push('/dashboard')
-    }
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        try {
+          const idTokenResult = await getIdTokenResult(currentUser);
+
+          const hasRequiredRole = idTokenResult.claims.admin || idTokenResult.claims.officer || idTokenResult.claims.developer || idTokenResult.claims.lead || idTokenResult.claims.representative;
+
+          if (hasRequiredRole) {
+            router.push('/dashboard');
+          } else {
+            auth.signOut();
+          }
+        } catch (error) {
+          console.error('Error checking token:', error);
+          auth.signOut();
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   return (
     <div className='flex flex-col w-screen h-screen items-center'>

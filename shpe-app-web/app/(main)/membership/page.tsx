@@ -1,17 +1,26 @@
 'use client'
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { checkAuthAndRedirect } from "@/helpers/auth";
 import Header from "@/components/Header";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/config/firebaseConfig";
 
 const Membership = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkAuthAndRedirect(router);
-    setLoading(false);
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setLoading(false);
+      } else {
+        // User is not logged in, redirect to root
+        router.push('/');
+      }
+    });
+
+    return () => unsubscribe();
+  }, [router]);
 
   if (loading) {
     return (

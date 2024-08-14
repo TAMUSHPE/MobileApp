@@ -146,7 +146,7 @@ const Members = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
 
                     {endOfData && !loading && (
                         <View className='flex-1'>
-                            <Text className='text-xl text-center'>No more members</Text>
+                            <Text className={`text-xl text-center ${darkMode ? "text-white" : "text-black"}`}>No more members</Text>
                         </View>
                     )}
                 </View>

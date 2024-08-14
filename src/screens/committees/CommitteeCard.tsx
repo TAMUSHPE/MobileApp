@@ -1,5 +1,6 @@
 import { View, Text, Image, TouchableOpacity, useColorScheme } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/core';
 import { getPublicUserData } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { Images } from "../../../assets";
@@ -19,17 +20,28 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+
     const [localHead, setLocalHead] = useState<PublicUserInfo | null>(null);
 
-    useEffect(() => {
-        const fetchHeadData = async () => {
-            if (head) {
-                const headData = await getPublicUserData(head);
-                setLocalHead(headData || null);
-            }
+    const fetchHeadData = async () => {
+        if (head) {
+            const headData = await getPublicUserData(head);
+            setLocalHead(headData || null);
         }
+    }
+
+    useEffect(() => {
         fetchHeadData();
     }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (hasPrivileges) {
+                fetchHeadData();
+            }
+        }, [fetchHeadData, userInfo])
+    );
 
     const isUserInCommittee = userInfo?.publicInfo?.committees?.includes(firebaseDocName || "");
 
