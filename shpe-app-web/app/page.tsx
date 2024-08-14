@@ -8,12 +8,6 @@ import { handleLogin } from './helpers/auth';
 const SignIn = () => {
   const router = useRouter()
 
-  useEffect(() => {
-    if (auth.currentUser) {
-      router.push('/dashboard')
-    }
-  }, []);
-
   return (
     <div className='flex flex-col w-screen h-screen items-center'>
       <img src="officer-picture.svg" className='z-0 absolute h-full w-screen bg-[#500000] opacity-40 object-cover' />

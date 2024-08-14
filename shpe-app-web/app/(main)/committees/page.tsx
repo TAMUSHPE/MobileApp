@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getPublicUserData, getCommittees } from "@/api/firebaseUtils";
-import { checkAuthAndRedirect } from "@/helpers/auth";
 import { Committee } from "@/types/committees";
 import Header from "@/components/Header";
 import CommitteeCard from "./components/CommitteeCard";
@@ -30,7 +29,6 @@ const Committees = () => {
       setLoading(false);
     }
 
-    checkAuthAndRedirect(router);
     fetchCommittees();
     setLoading(false);
   }, []);

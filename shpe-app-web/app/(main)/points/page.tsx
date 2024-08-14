@@ -2,7 +2,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getEvents, getMembers, updatePointsInFirebase } from "@/api/firebaseUtils";
-import { checkAuthAndRedirect } from "@/helpers/auth";
 import { SHPEEvent, SHPEEventLog } from '@/types/events';
 import { format } from 'date-fns';
 import { User } from "@/types/user";

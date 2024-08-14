@@ -1,17 +1,11 @@
 'use client'
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
-import { checkAuthAndRedirect } from "@/helpers/auth";
 import Header from "@/components/Header";
 
 const Dashboard = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        checkAuthAndRedirect(router);
-        setLoading(false);
-    }, []);
 
     if (loading) {
         return (
