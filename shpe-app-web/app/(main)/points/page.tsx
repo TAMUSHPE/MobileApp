@@ -9,6 +9,8 @@ import { FaChevronLeft, FaChevronRight, FaFilter, FaUndo, FaSave } from "react-i
 import { httpsCallable } from "firebase/functions";
 import { auth, functions } from "@/config/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 interface UserWithLogs extends User {
   eventLogs?: SHPEEventLog[];
@@ -230,7 +232,127 @@ const Points = () => {
     }
   };
 
+  const exportPointsToExcel = async (members: UserWithLogs[], events: SHPEEvent[], months: Date[]) => {
+    const workbook = new ExcelJS.Workbook();
 
+    // Create Master Sheet
+    const masterSheet = workbook.addWorksheet('Master');
+
+    // Define Columns
+    const columns = [
+      { header: 'Rank', key: 'rank', width: 10 },
+      { header: 'Name', key: 'name', width: 20 },
+      { header: 'Email', key: 'email', width: 30 },
+      { header: 'Total Points', key: 'totalPoints', width: 15 },
+      ...months.map((month, index) => ({
+        header: format(month, 'MMM yyyy'),
+        key: `month${index}`,
+        width: 15,
+      })),
+    ];
+
+    masterSheet.columns = columns;
+
+    // Add Member Data
+    members.forEach((member, index) => {
+      const rowValues: any = {
+        rank: member.publicInfo?.pointsRank || index + 1,
+        name: member.publicInfo?.displayName || '',
+        email: member.publicInfo?.email || member.private?.privateInfo?.email || 'Email not available',
+        totalPoints: member.publicInfo?.points ?? 0, // Ensure this is a number
+      };
+
+      months.forEach((month, monthIndex) => {
+        const pointsForMonth = getPointsForMonth(member.eventLogs || [], month);
+        rowValues[`month${monthIndex}`] = pointsForMonth > 0 ? pointsForMonth : ''; // Keep as a number if positive
+      });
+
+      const row = masterSheet.addRow(rowValues);
+
+      // Style the officer's name in red
+      if (member.publicInfo?.roles?.officer) {
+        row.getCell('name').font = { color: { argb: 'FFFF0000' }, bold: true };
+      }
+
+      // Apply background color to the month columns
+      months.forEach((_, monthIndex) => {
+        row.getCell(`month${monthIndex}`).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: getColumnColor(monthIndex).replace('#', '') },
+        };
+      });
+    });
+
+    // Create Monthly Sheets
+    months.forEach((month, monthIndex) => {
+      const monthName = format(month, 'MMMM yyyy');
+      const monthEvents = getEventsForMonth(month);
+      const sheet = workbook.addWorksheet(monthName);
+
+      const sheetColumns = [
+        { header: 'Rank', key: 'rank', width: 10 },
+        { header: 'Name', key: 'name', width: 20 },
+        { header: 'Email', key: 'email', width: 30 },
+        { header: 'Monthly Points', key: 'monthlyPoints', width: 15 },
+        ...monthEvents.map((event, eventIndex) => ({
+          header: `${event.name}\n${format(event.startTime?.toDate()!, 'MM/dd/yyyy')}`, // Event name and date
+          key: `event${eventIndex}`,
+          width: 20,
+        })),
+      ];
+
+      sheet.columns = sheetColumns;
+
+      // Style the header row with colors
+      const headerRow = sheet.getRow(1);
+      headerRow.eachCell((cell, colNumber) => {
+        if (colNumber > 4) {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: getColumnColor(colNumber - 5).replace('#', '') },
+          };
+        }
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        cell.font = { bold: true };
+      });
+
+      members.forEach((member, index) => {
+        const rowValues: any = {
+          rank: member.publicInfo?.pointsRank || index + 1,
+          name: member.publicInfo?.displayName || '',
+          email: member.publicInfo?.email || member.private?.privateInfo?.email || 'Email not available',
+          monthlyPoints: getPointsForMonth(member.eventLogs || [], month) ?? 0, // Ensure this is a number
+        };
+
+        monthEvents.forEach((event, eventIndex) => {
+          const eventPoints = member.eventLogs?.find(log => log.eventId === event.id)?.points || 0;
+          rowValues[`event${eventIndex}`] = eventPoints > 0 ? eventPoints : ''; // Keep as a number if positive
+        });
+
+        const row = sheet.addRow(rowValues);
+
+        // Style the officer's name in red
+        if (member.publicInfo?.roles?.officer) {
+          row.getCell('name').font = { color: { argb: 'FFFF0000' }, bold: true };
+        }
+
+        // Apply background color to the event columns
+        monthEvents.forEach((_, eventIndex) => {
+          row.getCell(`event${eventIndex}`).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: getColumnColor(eventIndex).replace('#', '') },
+          };
+        });
+      });
+    });
+
+    // Export the workbook
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `SHPE_Points_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
 
   if (loading) {
     return (
@@ -313,6 +435,15 @@ const Points = () => {
             <FaUndo color="black" className="mr-2" />
             <p className="text-black text-lg font-bold">Update Ranks</p>
           </button>
+
+          <button
+            className="flex items-center px-4 py-2 rounded-lg hover:bg-gray-200 transition duration-200"
+            onClick={() => exportPointsToExcel(members, events, months)}
+          >
+            <FaSave color="black" className="mr-2" />
+            <p className="text-black text-lg font-bold">Export to Excel</p>
+          </button>
+
 
         </div>
       </div>
@@ -507,6 +638,7 @@ const getColumnColor = (index: number): string => {
 };
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 
 
 export default Points;
