@@ -1,15 +1,12 @@
 import * as functions from 'firebase-functions';
+import * as admin from 'firebase-admin';
 import { AggregateField } from 'firebase-admin/firestore';
 import { db } from "./firebaseConfig"
 
 
 type RankChange = "increased" | "decreased" | "same";
 
-/** Determines rank change based on current and new ranks.
- *  - "increased" means that the overall rank *value* is lower than before
- *  - "decreased" means that the overall rank *value* is higher than before
- *  - "same" means that the overall rank has stayed the same
- */
+/** Determines rank change based on current and new ranks. */
 const getRankChange = (oldRank: any, newRank: number): RankChange => {
     if (oldRank < newRank) return "decreased";
     if (oldRank > newRank) return "increased";
@@ -21,15 +18,24 @@ const updateUserRank = async (uid: string, userData: FirebaseFirestore.DocumentD
     if (!uid || !userData) return;
 
     const userDocRef = db.collection('users').doc(uid);
-    const rankChange = userData.pointsRank ? getRankChange(userData.pointsRank, newRank) : "same";
 
-    await userDocRef.set({
-        pointsRank: newRank,
-        rankChange: rankChange,
-    }, { merge: true });
+    // If the user has 0 points or no points, delete the rank and rankChange fields
+    if (!userData.points || userData.points === 0) {
+        await userDocRef.update({
+            pointsRank: admin.firestore.FieldValue.delete(),
+            rankChange: admin.firestore.FieldValue.delete(),
+        });
+    } else {
+        const rankChange = userData.pointsRank ? getRankChange(userData.pointsRank, newRank) : "same";
+
+        await userDocRef.set({
+            pointsRank: newRank,
+            rankChange: rankChange,
+        }, { merge: true });
+    }
 }
 
-/** Fetches data from Google Spreadsheet and updates users' ranks in Firestore */
+/** Updates the ranks of all users based on their points */
 const updateRanks = async (): Promise<string> => {
     try {
         const snapshot = await db.collection('users').orderBy("points", "desc").get();
@@ -37,7 +43,9 @@ const updateRanks = async (): Promise<string> => {
         let currentRank = 1;
         snapshot.forEach((doc) => {
             updateUserRank(doc.id, doc.data(), currentRank);
-            currentRank++;
+            if (doc.data().points > 0) {
+                currentRank++;
+            }
         });
         console.info(`${snapshot.size} documents updated`);
         return "Success";
@@ -45,29 +53,7 @@ const updateRanks = async (): Promise<string> => {
         console.error("Error in updateRanks:", error);
         throw new Error("Internal Server error");
     }
-}
-
-/** Scheduled function to update ranks daily at 5AM CST */
-export const updateRanksScheduled = functions.pubsub.schedule('0 5 * * *').timeZone('America/Chicago').onRun(async (context) => {
-    await updateRanks();
-});
-
-/** Callable function to manually update ranks */
-export const updateRanksOnCall = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
-    }
-    try {
-        const result = await updateRanks();
-        return {
-            status: 'success',
-            message: result,
-        };
-    } catch (error) {
-        console.error("Error in updatePointStats:", error);
-        throw new functions.https.HttpsError('internal', 'Internal Server Error.');
-    }
-});
+};
 
 /**
  * Sums all user points from their event log collection and returns this value
@@ -156,32 +142,42 @@ export const updateAllUserPoints = functions.https.onCall(async (_, context) => 
         throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
     }
 
-    return db.collection('users').get()
-        .then((snapshot) => {
-            snapshot.forEach(async (document) => {
-                document.ref.set({
-                    points: await calculateUserPoints(document.id),
-                    pointsThisMonth: await calculateUserPointsThisMonth(document.id),
-                }, { merge: true });
-            });
-
-            return { success: true };
-        })
-        .catch((err) => {
-            throw new functions.https.HttpsError("aborted", `Issue occured while attempting to update user document: ${err}`);
-        });
-});
-
-export const scheduledUpdateAllPoints = functions.pubsub.schedule('0 5 * * *').timeZone('America/Chicago').onRun(async (context) => {
     try {
+        // Update all users' points
         const snapshot = await db.collection('users').get();
         const updatePromises = snapshot.docs.map(async (document) => {
-            return document.ref.set({
+            await document.ref.set({
                 points: await calculateUserPoints(document.id),
                 pointsThisMonth: await calculateUserPointsThisMonth(document.id),
             }, { merge: true });
         });
         await Promise.all(updatePromises);
+
+        // Once points are updated, update ranks
+        await updateRanks();
+
+        return { success: true };
+    } catch (err) {
+        throw new functions.https.HttpsError("aborted", `Issue occurred while attempting to update user documents: ${err}`);
+    }
+});
+
+/** Scheduled function to update all points and ranks daily at 5AM CST */
+export const scheduledUpdateAllPoints = functions.pubsub.schedule('0 5 * * *').timeZone('America/Chicago').onRun(async (context) => {
+    try {
+        // Update all users' points
+        const snapshot = await db.collection('users').get();
+        const updatePromises = snapshot.docs.map(async (document) => {
+            await document.ref.set({
+                points: await calculateUserPoints(document.id),
+                pointsThisMonth: await calculateUserPointsThisMonth(document.id),
+            }, { merge: true });
+        });
+        await Promise.all(updatePromises);
+
+        // Once points are updated, update ranks
+        await updateRanks();
+
         return { success: true };
     } catch (err) {
         throw new functions.https.HttpsError("aborted", `Issue occurred while attempting to update user documents: ${err}`);

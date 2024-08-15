@@ -24,7 +24,7 @@ const getMemberTokens = async (uid: string) => {
  */
 const getAvailableOfficersTokens = async (): Promise<string[]> => {
     const signedInOfficersTokens: string[] = [];
-    const snapshot = await db.collection('office-hours/officers-status/officers').where('signedIn', '==', true).get();
+    const snapshot = await db.collection('office-hours').get();
 
     for (const doc of snapshot.docs) {
         const data = doc.data();
@@ -36,8 +36,11 @@ const getAvailableOfficersTokens = async (): Promise<string[]> => {
         }
     }
 
+    console.log(signedInOfficersTokens, 'SignedInOfficerTokens');
+
     return signedInOfficersTokens;
 };
+
 
 /**
  * Checks if a provided token conforms to the structure of an Expo push token.
