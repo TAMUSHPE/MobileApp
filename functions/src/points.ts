@@ -17,6 +17,7 @@ export const calculateMOTM = functions.https.onCall(async (data, context) => {
     const eligibleUsersRef = db.collection('users')
         .where('roles.officer', '==', false)
         .where('roles.representative', '==', false)
+        .where('roles.lead', '==', false)
         .orderBy('pointsThisMonth', 'desc');
 
     const eligibleUsersSnapshot = await eligibleUsersRef.get();
