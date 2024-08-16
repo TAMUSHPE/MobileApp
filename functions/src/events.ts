@@ -192,7 +192,7 @@ export const addInstagramPoints = functions.https.onCall(async (data, context) =
     }
 
     const token = context.auth.token;
-    if (token.admin !== true && token.officer !== true && token.developer !== true) {
+    if (token.admin !== true && token.officer !== true && token.developer !== true && token.lead !== true && token.representative !== true) {
         throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
     }
 

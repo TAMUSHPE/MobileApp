@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getPublicUserData, getCommittees } from "@/api/firebaseUtils";
-import { checkAuthAndRedirect } from "@/helpers/auth";
 import { Committee } from "@/types/committees";
 import Header from "@/components/Header";
 import CommitteeCard from "./components/CommitteeCard";
@@ -20,7 +19,7 @@ const Committees = () => {
 
       const updatedCommittees = await Promise.all(committees.map(async (committee) => {
         if (committee.head) {
-          const userData = await getPublicUserData(committee.head);
+          const userData = committee.head;
           return { ...committee, head: userData };
         }
         return committee;
@@ -30,7 +29,6 @@ const Committees = () => {
       setLoading(false);
     }
 
-    checkAuthAndRedirect(router);
     fetchCommittees();
     setLoading(false);
   }, []);

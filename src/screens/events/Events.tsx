@@ -40,7 +40,7 @@ const Events = ({ navigation }: EventsProps) => {
     const [committees, setCommittees] = useState<Committee[]>([]);
     const [selectedCommittee, setSelectedCommittee] = useState<string | null>(route.params?.committee || null);
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
 
     const fetchEvents = async () => {
         try {

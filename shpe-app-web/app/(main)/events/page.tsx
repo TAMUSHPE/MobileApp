@@ -1,14 +1,15 @@
 'use client';
+
 import { useEffect, useRef, useState } from 'react';
-import { getEvents, getEventLogs } from '@/api/firebaseUtils';
-import { SHPEEvent } from '@/types/events';
-import Header from '@/components/Header';
+import Header from '../../components/Header';
 import PendingEvent from './components/PendingEvent';
 import EventCalendar from './components/EventCalendar';
+import { getEvents, getEventLogs } from '@/api/firebaseUtils';
+import { SHPEEvent } from '@/types/events';
 
 const Page = () => {
   const [events, setEvents] = useState<SHPEEvent[]>([]);
-  const pendingEvents: SHPEEvent[] = [];
+  const [pendingEvents, setPendingEvents] = useState<SHPEEvent[]>([]);
 
   const listRef = useRef<HTMLOListElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -16,16 +17,29 @@ const Page = () => {
   const [startScrollLeft, setStartScrollLeft] = useState(0);
 
   useEffect(() => {
-    const getData = async () => {
-      setEvents(await getEvents());
-      for (const event of events) {
-        // Check if the event requires approval
-        if ((await getEventLogs(event.id!)).some((log) => !log.verified)) {
-          pendingEvents.push(event);
-        }
+    const fetchData = async () => {
+      try {
+        const events = await getEvents();
+        setEvents(events);
+
+        const pendingApprovalEvents = await Promise.all(
+          events.map(async (event) => {
+            const logs = await getEventLogs(event.id!);
+            return logs.some((log) => !log.verified) ? event : null;
+          })
+        );
+
+        const validPendingEvents = pendingApprovalEvents.filter(
+          (event): event is SHPEEvent => event !== null
+        );
+
+        setPendingEvents(validPendingEvents);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
     };
-    getData();
+
+    fetchData();
   }, []);
 
   // Dragging functionality for horizontal scroll
@@ -94,7 +108,7 @@ const Page = () => {
 
       {/* Event Calendar */}
       <div className="flex flex-col w-full h-fit">
-        <button className="h-12 w-44 my-3 mr-3 bg-[#500000] place-self-end rounded-lg font-semibold flex flex-row justify-center items-center gap-2 flex-shrink-0">
+        <button className="h-12 w-44 my-3 mr-10 bg-[#500000] place-self-end rounded-lg font-semibold flex flex-row justify-center items-center gap-2 flex-shrink-0">
           <img src="plus-icon.svg" className="" />
           Create Event
         </button>

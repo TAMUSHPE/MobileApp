@@ -12,10 +12,16 @@ interface DayModalProps {
 export const DayModal: React.FC<DayModalProps> = ({ day, events, isShowing, hide }) => {
   const modal = (
     <>
+      {/* Filter */}
       <div className="fixed top-0 right-0 w-full h-full bg-[#500000] bg-opacity-30 z-50"></div>
+
+      {/* Modal */}
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl z-50">
         <div className="flex flex-col gap-3 p-5 w-[60vw] max-w-[800px] h-[60vh] items-center">
+          {/* Header */}
           <h2 className="font-bold text-2xl text-black">{format(day, 'cccc, MMMM do yyyy')}</h2>
+            
+          {/* Event List */}
           <div className="flex flex-col gap-2 w-5/6 mt-3 overflow-auto">
             {events.map((event) => {
               return (
@@ -30,6 +36,8 @@ export const DayModal: React.FC<DayModalProps> = ({ day, events, isShowing, hide
               );
             })}
           </div>
+            
+          {/* Close Button */}
           <button
             onClick={hide}
             className="absolute left-5 bg-[#500000] text-white text-sm font-semibold rounded-md p-2"
