@@ -34,9 +34,11 @@
         }
       ],
       [
-        "expo-barcode-scanner",
+        "expo-camera",
         {
-          "cameraPermission": "TAMU SHPE needs to access the camera to scan QR codes."
+          "cameraPermission": "TAMU SHPE needs access to your camera to scan QRCode",
+          "microphonePermission": "Allow TAMUSHPE to access your microphone",
+          "recordAudioAndroid": false
         }
       ]
     ],
