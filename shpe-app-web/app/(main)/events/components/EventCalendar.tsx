@@ -6,9 +6,10 @@ import WeekView from './WeekView';
 
 interface EventCalendarProps {
   events: SHPEEvent[];
+  toggleEventPage: (event?: SHPEEvent) => void;
 }
 
-const EventCalendar: React.FC<EventCalendarProps> = ({ events }) => {
+const EventCalendar: React.FC<EventCalendarProps> = ({ events, toggleEventPage }) => {
   const [focusDate, setFocusDate] = useState(new Date());
   const [isMonthSelected, setIsMonthSelected] = useState(true);
 
@@ -89,12 +90,22 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events }) => {
             </button>
           </div>
         </div>
-        
+
         {/* Main Calendar */}
         {isMonthSelected ? (
-          <MonthView eventsByDate={eventsByDate} focusDate={focusDate} setFocusDate={setFocusDate} />
+          <MonthView
+            eventsByDate={eventsByDate}
+            focusDate={focusDate}
+            setFocusDate={setFocusDate}
+            toggleEventPage={toggleEventPage}
+          />
         ) : (
-          <WeekView eventsByDate={eventsByDate} focusDate={focusDate} setFocusDate={setFocusDate} />
+          <WeekView
+            eventsByDate={eventsByDate}
+            focusDate={focusDate}
+            setFocusDate={setFocusDate}
+            toggleEventPage={toggleEventPage}
+          />
         )}
       </div>
     </div>

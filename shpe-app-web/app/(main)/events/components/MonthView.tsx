@@ -17,9 +17,10 @@ interface MonthViewProps {
   eventsByDate: { [key: string]: SHPEEvent[] };
   focusDate: Date;
   setFocusDate: (date: Date) => void;
+  toggleEventPage: (event?: SHPEEvent) => void;
 }
 
-const MonthView: React.FC<MonthViewProps> = ({ eventsByDate, focusDate, setFocusDate }) => {
+const MonthView: React.FC<MonthViewProps> = ({ eventsByDate, focusDate, setFocusDate, toggleEventPage }) => {
   const firstDayOfCurrMonth = startOfMonth(focusDate);
   const lastDayOfCurrMonth = endOfMonth(focusDate);
 
@@ -72,9 +73,9 @@ const MonthView: React.FC<MonthViewProps> = ({ eventsByDate, focusDate, setFocus
         <div className="flex flex-col gap-2">
           {dayEvents.map((event) => {
             return (
-              <div key={event.id} className="bg-red-300 rounded-md text-center font-medium mx-1 p-1">
+              <button onClick={() => toggleEventPage(event)} key={event.id} className="bg-red-300 rounded-md text-center font-medium mx-1 p-1">
                 <p className="text-sm">{event.name}</p>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -93,7 +94,7 @@ const MonthView: React.FC<MonthViewProps> = ({ eventsByDate, focusDate, setFocus
       {daysInNextMonth.map((day, index) => (
         <DayCell key={`next-${index}`} day={day} index={index} dayState="next" />
       ))}
-      <DayModal day={selectedDay} events={selectedDayEvents} isShowing={isShowing} hide={() => toggle()} />
+      <DayModal day={selectedDay} events={selectedDayEvents} isShowing={isShowing} hide={() => toggle()} toggleEventPage={toggleEventPage} />
     </div>
   );
 };
