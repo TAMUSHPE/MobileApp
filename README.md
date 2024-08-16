@@ -6,9 +6,14 @@
 </p>
 
 <p align="center">
-  Your Famila, Our Mission.
+  <a href="https://apps.apple.com/us/app/tamu-shpe/id6451004230">
+    <img alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" height="50">
+  </a>
+  &nbsp;
+  <a href="https://play.google.com/store/apps/details?id=com.tamu.shpe&pcampaignid=web_share">
+    <img alt="Get it on Google Play" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" height="50">
+  </a>
 </p>
-
 ## Introduction
 
 The TAMU SHPE mobile application, designed for the Texas A&M University Chapter of the Society of Hispanic Professional Engineers, is a tool aimed at enhancing member interaction and engagement. This application brings together a host of features, each developed to streamline organizational processes and encourage community involvement.
