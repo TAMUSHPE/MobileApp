@@ -94,7 +94,7 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
                 {/* Pulsing Effect */}
                 <View className="flex justify-center items-center h-full">
                     <Animated.View className="flex justify-center items-center" style={{ transform: [{ scale: pulseAnim }] }}>
-                        <View className='w-48 h-48'>
+                        <View className='w-60 h-60'>
                             <View className='absolute top-0 left-0 w-11 h-11 border-t-4 border-l-4 border-white rounded-tl-lg' />
                             <View className='absolute top-0 right-0 w-11 h-11 border-t-4 border-r-4 border-white rounded-tr-lg' />
                             <View className='absolute bottom-0 left-0 w-11 h-11 border-b-4 border-l-4 border-white rounded-bl-lg' />
