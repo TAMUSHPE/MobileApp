@@ -86,12 +86,15 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
 
                 <View className='w-screen'>
                     <View className='justify-center items-center'>
-                        {!event.signInPoints && !event.signOutPoints && (
+                        {!event.signInPoints && !event.signOutPoints && event.signInPoints !== 0 && event.signOutPoints !== 0 && (
                             <View>
-                                <Text className='text-center text-2xl font-bold' style={{ color: darkMode ? 'white' : 'black' }}>No QR Codes Available</Text>
+                                <Text className='text-center text-2xl font-bold' style={{ color: darkMode ? 'white' : 'black' }}>
+                                    No QR Codes Available
+                                </Text>
                             </View>
                         )}
-                        {event.signInPoints !== null && event.signInPoints !== undefined && event.signInPoints >= 0 && (
+
+                        {event.signInPoints !== null && event.signInPoints !== undefined && (
                             <View
                                 className={`my-4 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'} rounded-md border-1 p-2 w-[85%] h-20 px-5`}
                                 style={{
@@ -121,7 +124,7 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                                 </TouchableOpacity>
                             </View>
                         )}
-                        {event.signOutPoints !== null && event.signOutPoints !== undefined && event.signOutPoints >= 0 && (
+                        {event.signOutPoints !== null && event.signOutPoints !== undefined && (
                             <View
                                 className={`my-4 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'} rounded-md border-1 p-2 w-[85%] h-20 px-5`}
                                 style={{
