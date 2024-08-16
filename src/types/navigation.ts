@@ -97,6 +97,7 @@ export type EventsStackParams = {
     EventVerificationScreen: { id: string; mode: "sign-in" | "sign-out"; };
 
     PublicProfile: { uid: string; };
+    Home: undefined;
 }
 
 export type CommitteesStackParams = {

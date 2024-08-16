@@ -1,5 +1,5 @@
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { Octicons } from '@expo/vector-icons';
@@ -19,6 +19,7 @@ import { EventType, SHPEEvent } from '../../types/events';
 import EventCard from '../events/EventCard';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 import { doc, getDoc } from 'firebase/firestore';
+import { useFocusEffect } from '@react-navigation/core';
 
 /**
  * Renders the home screen of the application.
@@ -58,7 +59,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         try {
             setIsLoading(true);
 
-            const events = await getMyEvents(userCommittees, userInterests, 3);
+            const events = await getMyEvents(userCommittees, userInterests, 4);
             events.sort((a, b) => (a.startTime?.toDate().getTime() || 0) - (b.startTime?.toDate().getTime() || 0));
             setMyEvents(events);
         } catch (error) {
@@ -133,6 +134,15 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             getOfficerStatus();
         }
     }, [currentUser]);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (hasPrivileges) {
+
+                fetchEvents();
+            }
+        }, [hasPrivileges])
+    );
 
     const isInterestChanged = () => {
         if (!userInfo?.publicInfo?.interests) {

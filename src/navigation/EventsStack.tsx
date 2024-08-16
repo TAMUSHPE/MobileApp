@@ -13,6 +13,7 @@ import SetLocationEventDetails from "../screens/events/SetLocationEventDetails";
 import EventVerification from "../screens/events/EventVerification";
 import PublicProfileScreen from "../screens/userProfile/PublicProfile";
 import PastEvents from "../screens/events/PastEvents";
+import Home from "../screens/home/Home";
 
 const EventsStack = () => {
     const Stack = createNativeStackNavigator<EventsStackParams>();
@@ -35,6 +36,8 @@ const EventsStack = () => {
             </Stack.Group>
 
             <Stack.Screen name="PublicProfile" component={PublicProfileScreen}></Stack.Screen>
+            <Stack.Screen name="Home" component={Home}></Stack.Screen>
+
         </Stack.Navigator>
     );
 };

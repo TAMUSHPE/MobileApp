@@ -1291,7 +1291,9 @@ export const getMyEvents = async (committees: string[], interests: string[], max
         querySnapshots.forEach(querySnapshot => {
             querySnapshot.forEach(doc => {
                 if (!allEvents.has(doc.id)) {
-                    allEvents.set(doc.id, doc.data());
+                    const eventData = doc.data();
+                    eventData.id = doc.id;
+                    allEvents.set(doc.id, eventData);
                 }
             });
         });
