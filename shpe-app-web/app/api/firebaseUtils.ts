@@ -5,7 +5,11 @@ import { PrivateUserInfo, PublicUserInfo, User } from "@/types/user"
 import { SHPEEvent, SHPEEventLog } from "@/types/events";
 import { Committee } from "@/types/committees";
 
-export const getMembers = async (): Promise<User[]> => {
+interface MemberWithEventLogs extends PublicUserInfo {
+    eventLogs?: SHPEEventLog[];
+  }
+
+export const getMembers = async (): Promise<MemberWithEventLogs[]> => {
     try {
         const userRef = collection(db, 'users');
         const q = query(userRef, orderBy("points", "desc"));
