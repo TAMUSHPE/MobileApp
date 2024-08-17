@@ -47,10 +47,22 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
                     const committeeCollectionRef = collection(db, 'committees');
                     const q = query(committeeCollectionRef, where("isOpen", "==", false));
                     const snapshot = await getDocs(q);
-                    const committees = snapshot.docs.map(doc => ({
-                        firebaseDocName: doc.id,
-                        ...doc.data() as Committee
-                    }))
+
+                    const committees = await Promise.all(snapshot.docs.map(async doc => {
+                        const firebaseDocName = doc.id;
+                        const requestSnapshot = await getDocs(collection(db, `committeeVerification/${firebaseDocName}/requests`));
+                        const requestCount = requestSnapshot.size; // Count the number of requests
+
+                        return {
+                            firebaseDocName,
+                            requestCount, // Include request count
+                            ...doc.data() as Committee
+                        };
+                    }));
+
+                    // Sort committees by request count in descending order
+                    committees.sort((a, b) => b.requestCount - a.requestCount);
+
                     setCommittees(committees);
                 } catch (err) {
                     console.error("Error fetching open committees:", err);

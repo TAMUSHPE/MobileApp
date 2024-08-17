@@ -126,7 +126,7 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
         };
 
         const { animation, haptic, bgColor } = statusComponents[logStatus];
-        const message = getStatusMessage(logStatus);
+        const message = getStatusMessage(logStatus, mode);
 
         return (
             <View className={`w-screen h-[70%] items-center justify-center ${bgColor}`}>

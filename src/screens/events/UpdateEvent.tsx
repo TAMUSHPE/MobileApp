@@ -1,7 +1,7 @@
 import { View, Text, TouchableOpacity, TextInput, Image, Platform, TouchableHighlight, Modal, Alert, ActivityIndicator, useColorScheme } from 'react-native'
 import React, { useContext, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation'
-import { useRoute } from '@react-navigation/core';
+import { useNavigationState, useRoute } from '@react-navigation/core';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
 import { CommitteeMeeting, EventType, GeneralMeeting, IntramuralEvent, CustomEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop } from '../../types/events';
@@ -26,9 +26,11 @@ import DismissibleModal from '../../components/DismissibleModal';
 const UpdateEvent = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
     const { event } = route.params;
-
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
+    const routes = useNavigationState(state => state.routes);
+    const isInHomeStack = routes.some(route => route.name === 'Home');
+
 
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
@@ -157,9 +159,14 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     };
 
     const handleDestroyEvent = async () => {
+        console.log("Destroying event with ID:", event.id);
         const isDeleted = await destroyEvent(event.id!);
         if (isDeleted) {
-            navigation.navigate("EventsScreen", {})
+            if (isInHomeStack) {
+                navigation.navigate("Home")
+            } else {
+                navigation.navigate("EventsScreen", {})
+            }
         } else {
             console.log("Failed to delete the event.");
         }
