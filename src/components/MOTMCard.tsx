@@ -37,6 +37,9 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
             const fetchedMOTM = await getMOTM();
             if (fetchedMOTM?.uid) {
                 const motmData = await getPublicUserData(fetchedMOTM.uid);
+                if (motmData) {
+                    motmData.uid = fetchedMOTM.uid;
+                }
                 setMOTM(motmData);
             }
         } catch (error) {
