@@ -1,6 +1,7 @@
 import { db, auth } from "@/config/firebaseConfig";
-import { collection, getDocs, getDoc, doc, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, query, orderBy, where, Timestamp } from 'firebase/firestore';
 import { PrivateUserInfo, PublicUserInfo } from "@/types/user"
+import { RequestWithDoc } from "@/types/membership";
 import { SHPEEvent, SHPEEventLog } from "@/types/events";
 import { Committee } from "@/types/committees";
 
@@ -93,7 +94,39 @@ export const getEventLogs = async (eventId: string): Promise<SHPEEventLog[]> => 
     }
 };
 
+export const getMembersToVerify = async (): Promise<RequestWithDoc[]> => {
+    const memberSHPERef = collection(db, 'memberSHPE');
+    const memberSHPEQuery = query(memberSHPERef, where('nationalURL', '!=', ''));
+    const memberSHPESnapshot = await getDocs(memberSHPEQuery);
 
+    const members: RequestWithDoc[] = [];
+    for (const document of memberSHPESnapshot.docs) {
+        
+        const memberSHPEData = document.data();
+        if (memberSHPEData.chapterURL && memberSHPEData.nationalURL) {
+            const userId = document.id;
+            const userDocRef = doc(db, 'users', userId);
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+                //get the name from the doc snap
+                const name = userDocSnap.data().name;
+                const member: RequestWithDoc = {
+                    name: name,
+                    uid: userId,
+                    chapterURL: memberSHPEData.chapterURL,
+                    nationalURL: memberSHPEData.nationalURL,
+                    chapterExpiration: memberSHPEData.chapterExpiration,
+                    nationalExpiration: memberSHPEData.nationalExpiration,
+                    shirtSize: memberSHPEData.shirtSize,
+                    // Add other properties as needed
+                };
+                members.push(member);
+            }
+
+        }
+    }
+    return members;
+};
 
 
 /** ===================================================================================
