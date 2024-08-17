@@ -3,7 +3,7 @@ import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { MemberCardProp } from '../types/navigation'
 import { Images } from '../../assets'
 import { PublicUserInfo } from '../types/user'
-import { getMOTM } from '../api/firebaseUtils'
+import { getMOTM, getPublicUserData } from '../api/firebaseUtils'
 import { useFocusEffect } from '@react-navigation/core'
 import { UserContext } from '../context/UserContext'
 import { truncateStringWithEllipsis } from '../helpers/stringUtils'
@@ -11,7 +11,7 @@ import { auth } from '../config/firebaseConfig'
 
 const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext!;
+    const { userInfo } = userContext!;
 
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
@@ -35,7 +35,10 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
     const fetchMOTM = async () => {
         try {
             const fetchedMOTM = await getMOTM();
-            setMOTM(fetchedMOTM);
+            if (fetchedMOTM?.uid) {
+                const motmData = await getPublicUserData(fetchedMOTM.uid);
+                setMOTM(motmData);
+            }
         } catch (error) {
             console.error('Error fetching member of the month:', error);
         }
@@ -83,7 +86,7 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
                     }}
                 >
                     <Image
-                        className="flex w-32 h-32 rounded-l-lg"
+                        className="flex w-32 rounded-l-lg"
                         defaultSource={Images.DEFAULT_USER_PICTURE}
                         source={MOTM?.photoURL ? { uri: MOTM?.photoURL as string } : Images.DEFAULT_USER_PICTURE}
                     />
