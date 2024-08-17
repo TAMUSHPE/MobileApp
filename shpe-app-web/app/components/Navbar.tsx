@@ -23,9 +23,9 @@ const Navbar = () => {
                     </div>
 
                     {path == '/dashboard' ?
-                    <Image src="Polygon1.svg" alt="Dashboard" width={25} height={20}
-                        style={{ position: 'absolute', top: 9, right: -2, zIndex: 0 }} />
-                    : ''
+                        <Image src="Polygon1.svg" alt="Dashboard" width={25} height={20}
+                            style={{ position: 'absolute', top: 9, right: -2, zIndex: 0 }} />
+                        : ''
                     }
                 </Link>
 
@@ -96,22 +96,6 @@ const Navbar = () => {
 
                     }
 
-                </Link>
-
-                <Link href={'/users'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/users' ? 'bg-[#794141]' : 'bg-[#500000]'}`} >
-                    <div className="flex flex-row ">
-                        <Image src="user-solid.svg" alt="Dashboard" width={20} height={20} />
-                        <div className=" pl-3 "> Users </div>
-                    </div>
-
-                    {
-
-                        path == '/users' ?
-                            <Image src="Polygon1.svg" alt="Dashboard" width={25} height={20}
-                                style={{ position: 'absolute', top: 9, right: -2, zIndex: 0 }} />
-                            : ''
-
-                    }
                 </Link>
 
                 <Link href={'/tools'} className={`pr-5 pl-5 hover:shadow-inner-strong relative w-full  h-[45px] pt-2 ${path == '/tools' ? 'bg-[#794141]' : 'bg-[#500000]'}`} >

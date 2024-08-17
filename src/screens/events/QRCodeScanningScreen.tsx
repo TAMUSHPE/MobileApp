@@ -1,6 +1,6 @@
-import { View, Text, Button, StyleSheet, TouchableHighlight, TouchableOpacity, Alert } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { BarCodeScanner } from 'expo-barcode-scanner';
+import { View, Text, Button, StyleSheet, TouchableHighlight, TouchableOpacity, Alert, Animated, Easing } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { CameraView, Camera } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MainStackParams } from '../../types/navigation';
 import { Octicons } from '@expo/vector-icons';
@@ -9,15 +9,37 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const [hasCameraPermissions, setHasCameraPermissions] = useState<boolean | null>(null);
     const [scanned, setScanned] = useState(false);
+    const pulseAnim = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
         const getBarCodeScannerPermissions = async () => {
-            const { status } = await BarCodeScanner.requestPermissionsAsync();
+            const { status } = await Camera.requestCameraPermissionsAsync();
             setHasCameraPermissions(status === 'granted');
         };
 
         getBarCodeScannerPermissions();
     }, []);
+
+    useEffect(() => {
+        const pulse = () => {
+            Animated.sequence([
+                Animated.timing(pulseAnim, {
+                    toValue: 1.1,
+                    duration: 800,
+                    easing: Easing.inOut(Easing.ease),
+                    useNativeDriver: true,
+                }),
+                Animated.timing(pulseAnim, {
+                    toValue: 1,
+                    duration: 800,
+                    easing: Easing.inOut(Easing.ease),
+                    useNativeDriver: true,
+                }),
+            ]).start(() => pulse());
+        };
+
+        pulse();
+    }, [pulseAnim]);
 
     const handleBarCodeScanned = ({ type, data }: { type: string, data: string }) => {
         console.log('Data Received', `Bar code with type ${type} and data ${data} has been scanned!`);
@@ -51,22 +73,41 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
     }
 
     return (
-        <SafeAreaView className='flex flex-col h-full w-screen bg-black'>
+        <SafeAreaView className='flex flex-col h-full w-screen bg-primary-blue'>
             {/* Header */}
-            <View className={`flex-row items-center h-10 my-4`}>
+            <View className={`flex-row items-center mb-4 bg-primary-blue`}>
                 <View className='w-screen absolute'>
-                    <Text className={`text-2xl font-bold justify-center text-center text-white`}>Scan Event QR Code</Text>
+                    <Text className={`text-2xl font-bold justify-center text-center text-white`}>Scanner</Text>
                 </View>
                 <TouchableOpacity className='px-6' onPress={() => navigation.goBack()} >
-                    <Octicons name="x" size={30} color="white" />
+                    <Octicons name="x" size={24} color="white" />
                 </TouchableOpacity>
             </View>
-            <BarCodeScanner
-                className='h-[50%] w-full'
-                barCodeTypes={[BarCodeScanner.Constants.BarCodeType.qr]}
-                onBarCodeScanned={scanned ? () => { } : handleBarCodeScanned}
-            />
-            <Text className='text-white text-center text-xl py-6 px-1'>Scan a QR code to sign in/out of an event</Text>
+
+            <CameraView
+                onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
+                barcodeScannerSettings={{
+                    barcodeTypes: ["qr", "pdf417"],
+                }}
+                className='flex-1'
+            >
+                {/* Pulsing Effect */}
+                <View className="flex justify-center items-center h-full">
+                    <Animated.View className="flex justify-center items-center" style={{ transform: [{ scale: pulseAnim }] }}>
+                        <View className='w-60 h-60'>
+                            <View className='absolute top-0 left-0 w-11 h-11 border-t-4 border-l-4 border-white rounded-tl-lg' />
+                            <View className='absolute top-0 right-0 w-11 h-11 border-t-4 border-r-4 border-white rounded-tr-lg' />
+                            <View className='absolute bottom-0 left-0 w-11 h-11 border-b-4 border-l-4 border-white rounded-bl-lg' />
+                            <View className='absolute bottom-0 right-0 w-11 h-11 border-b-4 border-r-4 border-white rounded-br-lg' />
+                        </View>
+                    </Animated.View>
+                </View>
+            </CameraView>
+
+            <View className='my-2'>
+                <Text className='text-white text-center font-bold text-xl'>Using Scanner</Text>
+                <Text className='text-white text-center text-lg'>Scan the QRCode provided by the event host.</Text>
+            </View>
         </SafeAreaView>
     );
 };

@@ -2,30 +2,27 @@
 import * as functions from 'firebase-functions';
 import { db } from "./firebaseConfig"
 
-
 const resetOffice = async () => {
-    const setOfficer = db.doc(`office-hours/officer-count`);
-    const officersRef = db.collection('office-hours/officers-status/officers');
+    const officersRef = db.collection('office-hours');
 
-    try{
-        await setOfficer.update({'zachary-office': 0});
-        officersRef.get().then(async (snapshot) => {
-            snapshot.forEach(doc => {
-                doc.ref.update({
-                    signedIn: false,
-                });
-            });
-        });
+    try {
+        const snapshot = await officersRef.get();
+        const updatePromises = snapshot.docs.map((doc) =>
+            doc.ref.update({
+                signedIn: false,
+            })
+        );
+
+        await Promise.all(updatePromises);
         return { success: true };
-    }
-    catch (error) {
+    } catch (error) {
         console.error('Update failure:', error);
-        throw new functions.https.HttpsError('internal', 'Could not reset officer count');
+        throw new functions.https.HttpsError('internal', 'Could not reset officer statuses');
     }
+};
 
-}
 
-export const resetOfficeScheduler = functions.pubsub.schedule('0 21 * * *') .onRun(async (context) => {
+export const resetOfficeScheduler = functions.pubsub.schedule('0 21 * * *').onRun(async (context) => {
     resetOffice()
 });
 

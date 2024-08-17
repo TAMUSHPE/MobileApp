@@ -1,5 +1,5 @@
 import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { Octicons } from '@expo/vector-icons';
@@ -12,12 +12,14 @@ import { Images } from '../../../assets';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserContext } from '../../context/UserContext';
 import { isMemberVerified } from '../../helpers/membership';
-import { auth } from '../../config/firebaseConfig';
+import { auth, db } from '../../config/firebaseConfig';
 import DismissibleModal from '../../components/DismissibleModal';
-import { fetchOfficeCount, fetchOfficerStatus, getMyEvents, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
+import { fetchOfficeCount, fetchOfficerStatus, getMyEvents, getUser, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
 import { EventType, SHPEEvent } from '../../types/events';
 import EventCard from '../events/EventCard';
 import { reverseFormattedFirebaseName } from '../../types/committees';
+import { doc, getDoc } from 'firebase/firestore';
+import { useFocusEffect } from '@react-navigation/core';
 
 /**
  * Renders the home screen of the application.
@@ -28,7 +30,7 @@ import { reverseFormattedFirebaseName } from '../../types/committees';
  */
 const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) => {
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext!;
+    const { userInfo, setUserInfo, signOutUser } = userContext!;
     const nationalExpiration = userInfo?.publicInfo?.nationalExpiration;
     const chapterExpiration = userInfo?.publicInfo?.chapterExpiration
     const userCommittees = userInfo?.publicInfo?.committees || [];
@@ -38,7 +40,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf());
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
 
     const [isVerified, setIsVerified] = useState<boolean>(true); // By default hide "become a member" banner
     const [isSignedIn, setIsSignedIn] = useState<boolean | undefined>(undefined);
@@ -53,12 +55,11 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const [interestOptionsModal, setInterestOptionsModal] = useState<boolean>(false);
     const [savedInterestLoading, setSavedInterestLoading] = useState<boolean>(false);
 
-
     const fetchEvents = async () => {
         try {
             setIsLoading(true);
 
-            const events = await getMyEvents(userCommittees, userInterests, 3);
+            const events = await getMyEvents(userCommittees, userInterests, 4);
             events.sort((a, b) => (a.startTime?.toDate().getTime() || 0) - (b.startTime?.toDate().getTime() || 0));
             setMyEvents(events);
         } catch (error) {
@@ -68,6 +69,21 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         }
     };
 
+    const fetchUserData = async () => {
+        console.log("Fetching user data...");
+        try {
+            const firebaseUser = await getUser(auth.currentUser?.uid!)
+            if (firebaseUser) {
+                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+            }
+            else {
+                console.warn("User data undefined. Data was likely deleted from Firebase.");
+            }
+            setUserInfo(firebaseUser);
+        } catch (error) {
+            console.error("Error updating user:", error);
+        }
+    }
 
     useEffect(() => {
         manageNotificationPermissions();
@@ -78,8 +94,19 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     }, [nationalExpiration, chapterExpiration])
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(user => {
+        const unsubscribe = auth.onAuthStateChanged(async user => {
             setCurrentUser(user);
+
+            if (user) {
+                const userDocRef = doc(db, "users", user.uid);
+                const userDoc = await getDoc(userDocRef);
+
+                if (!userDoc.exists()) {
+                    signOutUser(true);
+                } else {
+                    fetchUserData();
+                }
+            }
         });
         return unsubscribe;
     }, []);
@@ -107,6 +134,15 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             getOfficerStatus();
         }
     }, [currentUser]);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (hasPrivileges) {
+
+                fetchEvents();
+            }
+        }, [hasPrivileges])
+    );
 
     const isInterestChanged = () => {
         if (!userInfo?.publicInfo?.interests) {

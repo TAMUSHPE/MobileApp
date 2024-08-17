@@ -9,7 +9,7 @@ import { SHPEEvent } from '@/types/events';
 
 const Page = () => {
   const [events, setEvents] = useState<SHPEEvent[]>([]);
-  const pendingEvents: SHPEEvent[] = [];
+  const [pendingEvents, setPendingEvents] = useState<SHPEEvent[]>([]);
 
   const listRef = useRef<HTMLOListElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -17,16 +17,29 @@ const Page = () => {
   const [startScrollLeft, setStartScrollLeft] = useState(0);
 
   useEffect(() => {
-    const getData = async () => {
-      setEvents(await getEvents());
-      for (const event of events) {
-        // Check if the event requires approval
-        if ((await getEventLogs(event.id!)).some((log) => !log.verified)) {
-          pendingEvents.push(event);
-        }
+    const fetchData = async () => {
+      try {
+        const events = await getEvents();
+        setEvents(events);
+
+        const pendingApprovalEvents = await Promise.all(
+          events.map(async (event) => {
+            const logs = await getEventLogs(event.id!);
+            return logs.some((log) => !log.verified) ? event : null;
+          })
+        );
+
+        const validPendingEvents = pendingApprovalEvents.filter(
+          (event): event is SHPEEvent => event !== null
+        );
+
+        setPendingEvents(validPendingEvents);
+      } catch (error) {
+        console.error("Error fetching data:", error);
       }
     };
-    getData();
+
+    fetchData();
   }, []);
 
   // Dragging functionality for horizontal scroll

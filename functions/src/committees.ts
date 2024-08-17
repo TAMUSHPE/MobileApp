@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
-import { db } from "./firebaseConfig"
+import { db } from "./firebaseConfig";
 
-export const updateCommitteeCount = functions.https.onCall(async (data, context) => {
+async function updateCommitteeCounts() {
     const committeesCount: CommitteeCounts = {};
 
     const usersRef = db.collection('users');
@@ -24,10 +24,16 @@ export const updateCommitteeCount = functions.https.onCall(async (data, context)
 
     console.log('Committee counts updated:', committeesCount);
     return { message: 'Committee counts updated successfully', committeesCount };
+}
 
+export const updateCommitteeCount = functions.https.onCall(async (data, context) => {
+    return updateCommitteeCounts();
+});
+
+export const scheduleCommitteeCount = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
+    return updateCommitteeCounts();
 });
 
 interface CommitteeCounts {
     [key: string]: number;
 }
-

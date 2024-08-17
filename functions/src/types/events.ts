@@ -406,19 +406,20 @@ export type UserEventData = {
     eventLog?: SHPEEventLog,
 }
 
-export const getStatusMessage = (status: EventLogStatus): string => {
+export const getStatusMessage = (status: EventLogStatus, mode?: "sign-in" | "sign-out"): string => {
     const statusMessages = {
-        [EventLogStatus.SUCCESS]: "Successfully signed in/out.",
+        [EventLogStatus.SUCCESS]: `Successfully ${mode === "sign-in" ? "signed in" : "signed out"}.`,
         [EventLogStatus.EVENT_OVER]: "The event is already over.",
         [EventLogStatus.EVENT_ONGOING]: "The event is ongoing.",
-        [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
         [EventLogStatus.EVENT_NOT_FOUND]: "The event was not found.",
-        [EventLogStatus.ALREADY_LOGGED]: "You have already signed in/out.",
-        [EventLogStatus.NOT_A_STUDENT]: "Only student can sign in/out of events..",
+        [EventLogStatus.ALREADY_LOGGED]: `You have already ${mode === "sign-in" ? "signed in" : "signed out"}.`,
+        [EventLogStatus.NOT_A_STUDENT]: "Only students can sign in/out of events.",
+        [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
         [EventLogStatus.OUT_OF_RANGE]: "You are not close enough to the event to sign in/out.",
         [EventLogStatus.ERROR]: "An internal error occurred. Please try again.",
     };
 
     return statusMessages[status] || "An unknown error occurred.";
 };
+
 
