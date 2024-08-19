@@ -338,7 +338,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                             </View>
 
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>
-                                1. Create a <TouchableOpacity onPress={() => handleLinkPress((tamuLink?.url || ""))}>
+                                1. Create a <TouchableOpacity onPress={() => handleLinkPress((nationalsLink?.url || ""))}>
                                     <Text className='text-primary-blue font-bold text-xl underline' style={{ lineHeight: 0 }}>national account</Text>
                                 </TouchableOpacity>
                             </Text>
