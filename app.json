@@ -2,7 +2,7 @@
   "expo": {
     "name": "TAMU SHPE",
     "slug": "TAMU-SHPE",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "owner": "tamu-shpe",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -54,13 +54,13 @@
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ],
-      "versionCode": 41,
+      "versionCode": 50,
       "userInterfaceStyle": "automatic"
     },
     "ios": {
       "bundleIdentifier": "com.tamu.shpe",
       "userInterfaceStyle": "automatic",
-      "buildNumber": "2"
+      "buildNumber": "1"
     },
     "extra": {
       "eas": {
