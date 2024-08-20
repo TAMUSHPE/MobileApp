@@ -294,9 +294,8 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                             </View>
 
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>
-                                Pay the <TouchableOpacity onPress={() => handleLinkPress((tamuLink?.url || ""))}>
-                                    <Text className='text-primary-blue font-bold text-xl underline' style={{ lineHeight: 0 }}>chapter dues</Text>
-                                </TouchableOpacity>, which include a t-shirt. Be sure to take a screenshot of your <Text className='font-bold'>receipt</Text> and upload it below.
+                                Pay the <Text onPress={() => handleLinkPress((tamuLink?.url || ""))} className='text-primary-blue font-bold text-xl underline'>chapter dues</Text>
+                                , which include a t-shirt. Be sure to take a screenshot of your <Text className='font-bold'>receipt</Text> and upload it below.
                             </Text>
 
 
@@ -338,9 +337,9 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                             </View>
 
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>
-                                1. Create a <TouchableOpacity onPress={() => handleLinkPress((nationalsLink?.url || ""))}>
-                                    <Text className='text-primary-blue font-bold text-xl underline' style={{ lineHeight: 0 }}>national account</Text>
-                                </TouchableOpacity>
+                                1. Create a <Text onPress={() => handleLinkPress((nationalsLink?.url || ""))} className='text-primary-blue font-bold text-xl underline'>
+                                    national account
+                                </Text>
                             </Text>
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>2. Select the "Join Membership" or "Renew Membership" tab.</Text>
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>3. Choose the appropriate membership type.</Text>
