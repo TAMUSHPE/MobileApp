@@ -1,6 +1,6 @@
 import { SHPEEvent } from '@/types/events';
 import { format } from 'date-fns';
-import { el } from 'date-fns/locale';
+import { Timestamp } from 'firebase/firestore';
 import { useState } from 'react';
 import ReactDOM from 'react-dom';
 
@@ -12,10 +12,37 @@ interface EventPageProps {
 
 export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide }) => {
   const [loading, setLoading] = useState(false);
+  const currentDate = new Date();
 
   const [formData, setFormData] = useState({
     description: event?.description ?? '',
     locationName: event?.locationName ?? 'ZACH 420',
+    startDate: event?.startTime?.toDate().toDateString() ?? format(new Date(), 'yyyy-MM-dd'),
+    startTime:
+      event?.startTime?.toDate().toTimeString() ??
+      format(
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDay(),
+          currentDate.getHours() + 1,
+          0
+        ),
+        'HH:mm'
+      ),
+    endDate: event?.endTime?.toDate().toDateString() ?? format(new Date(), 'yyyy-MM-dd'),
+    endTime:
+      event?.endTime?.toDate().toTimeString() ??
+      format(
+        new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          currentDate.getDay(),
+          currentDate.getHours() + 2,
+          0
+        ),
+        'HH:mm'
+      ),
     eventType: event?.eventType ?? 'CUSTOM_EVENT',
     committee: event?.committee ?? 'NONE',
     signInPoints: event?.signInPoints ?? 0,
@@ -38,7 +65,23 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    console.log(formData);
+    
+    const startCombined = new Date(`${formData.startDate}T${formData.startTime}`);
+    const endCombined = new Date(`${formData.endDate}T${formData.endTime}`);
+
+    const startTimeFirebase = Timestamp.fromDate(startCombined);
+    const endTimeFirebase = Timestamp.fromDate(endCombined);
+    
+    const submissionData = {
+      ...formData,
+      startTime: startTimeFirebase,
+      endTime: endTimeFirebase,
+    };
+
+    delete (submissionData as {startDate?: string}).startDate;
+    delete (submissionData as {endDate?: string}).endDate;
+
+    console.log(submissionData);
   };
 
   const modal = (
@@ -65,32 +108,52 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
             <div className="flex flex-row w-full gap-5 items-center flex-wrap">
               <div className="flex flex-row w-full gap-10 justify-around flex-wrap">
                 {/* Date */}
-                <div className="flex flex-col shrink-0 gap-2">
-                  <p className="text-xl font-semibold">Date</p>
-                  <div className="flex flex-row gap-5 font-medium">
-                    <button className="bg-gray-300 p-2 rounded-lg">
-                      {event?.startTime?.toDate().toDateString() ?? 'TODAY'}
-                    </button>
+                <label className="flex flex-col shrink-0 gap-2 text-xl font-semibold">
+                  Date
+                  <div className="flex flex-row gap-5 font-medium text-base">
+                    <input
+                      name="startDate"
+                      type="date"
+                      className="bg-gray-300 p-2 rounded-lg"
+                      defaultValue={formData.startDate}
+                      onChange={handleChange}
+                      required
+                    />
                     <p className="content-center">to</p>
-                    <button className="bg-gray-300 p-2 rounded-lg">
-                      {event?.startTime?.toDate().toDateString() ?? 'TODAY'}
-                    </button>
+                    <input
+                      name="endDate"
+                      type="date"
+                      className="bg-gray-300 p-2 rounded-lg"
+                      defaultValue={formData.endDate}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
-                </div>
+                </label>
 
                 {/* Time */}
-                <div className="flex flex-col shrink-0 gap-2">
-                  <p className="text-xl font-semibold">Time</p>
-                  <div className="flex flex-row gap-5 font-medium">
-                    <button className="bg-gray-300 p-2 rounded-lg">
-                      {event?.startTime?.toDate().toDateString() ?? 'NOW'}
-                    </button>
+                <label className="flex flex-col shrink-0 gap-2 text-xl font-semibold">
+                  Time
+                  <div className="flex flex-row gap-5 font-medium text-base">
+                    <input
+                      name="startTime"
+                      type="time"
+                      className="bg-gray-300 p-2 rounded-lg"
+                      defaultValue={formData.startTime}
+                      onChange={handleChange}
+                      required
+                    />
                     <p className="content-center">to</p>
-                    <button className="bg-gray-300 p-2 rounded-lg">
-                      {event?.startTime?.toDate().toDateString() ?? 'NOW'}
-                    </button>
+                    <input
+                      name="endTime"
+                      type="time"
+                      className="bg-gray-300 p-2 rounded-lg"
+                      defaultValue={formData.endTime}
+                      onChange={handleChange}
+                      required
+                    />
                   </div>
-                </div>
+                </label>
 
                 {/* Location */}
                 <label className="flex flex-col shrink-0 gap-2 text-xl font-semibold">
@@ -167,7 +230,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                     <p className="content-center text-lg">Sign In</p>
                     <input
                       name="signInPoints"
-                      type='number'
+                      type="number"
                       className="bg-gray-300 font-medium p-2 rounded-lg w-10 text-center"
                       defaultValue={formData.signInPoints}
                       min={0}
@@ -179,7 +242,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                     <p className="content-center text-lg">Sign Out</p>
                     <input
                       name="signOutPoints"
-                      type='number'
+                      type="number"
                       className="bg-gray-300 font-medium p-2 rounded-lg w-10 text-center"
                       defaultValue={formData.signOutPoints}
                       min={0}
@@ -191,7 +254,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                     <p className="content-center text-lg">Hourly</p>
                     <input
                       name="pointsPerHour"
-                      type='number'
+                      type="number"
                       className="bg-gray-300 font-medium p-2 rounded-lg w-10 text-center"
                       defaultValue={formData.pointsPerHour}
                       min={0}
@@ -212,7 +275,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                           name="startTimeBuffer"
                           type="number"
                           className="bg-gray-300 font-medium p-2 rounded-lg w-10 text-center"
-                          defaultValue={formData.endTimeBuffer ? formData.endTimeBuffer / (1000 * 60) : 0}
+                          defaultValue={formData.startTimeBuffer ? formData.startTimeBuffer / (1000 * 60) : 0}
                           min="0"
                           onChange={handleChange}
                           required
