@@ -69,21 +69,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         }
     };
 
-    const fetchUserData = async () => {
-        console.log("Fetching user data...");
-        try {
-            const firebaseUser = await getUser(auth.currentUser?.uid!)
-            if (firebaseUser) {
-                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-            }
-            else {
-                console.warn("User data undefined. Data was likely deleted from Firebase.");
-            }
-            setUserInfo(firebaseUser);
-        } catch (error) {
-            console.error("Error updating user:", error);
-        }
-    }
 
     useEffect(() => {
         manageNotificationPermissions();
@@ -92,24 +77,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     useEffect(() => {
         setIsVerified(isMemberVerified(nationalExpiration, chapterExpiration));
     }, [nationalExpiration, chapterExpiration])
-
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(async user => {
-            setCurrentUser(user);
-
-            if (user) {
-                const userDocRef = doc(db, "users", user.uid);
-                const userDoc = await getDoc(userDocRef);
-
-                if (!userDoc.exists()) {
-                    signOutUser(true);
-                } else {
-                    fetchUserData();
-                }
-            }
-        });
-        return unsubscribe;
-    }, []);
 
     useEffect(() => {
         if (!currentUser) return;
