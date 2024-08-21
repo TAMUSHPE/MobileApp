@@ -1,7 +1,7 @@
-import { SHPEEvent } from '@/types/events';
+import { SHPEEvent, EventType } from '@/types/events';
 import { format } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
 interface EventPageProps {
@@ -10,48 +10,103 @@ interface EventPageProps {
   hide: () => void;
 }
 
+interface FormData {
+  [key: string]: any;
+}
+
 export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide }) => {
   const [loading, setLoading] = useState(false);
   const currentDate = new Date();
 
-  const [formData, setFormData] = useState({
-    description: event?.description ?? '',
-    locationName: event?.locationName ?? 'ZACH 420',
-    startDate: event?.startTime?.toDate().toDateString() ?? format(new Date(), 'yyyy-MM-dd'),
-    startTime:
-      event?.startTime?.toDate().toTimeString() ??
-      format(
-        new Date(
-          currentDate.getFullYear(),
-          currentDate.getMonth(),
-          currentDate.getDay(),
-          currentDate.getHours() + 1,
-          0
+  const [formData, setFormData] = useState<FormData>({});
+
+  useEffect(() => {
+    console.log(event);
+    if (event) {
+      setFormData({
+        name: event?.name ?? null,
+        description: event?.description ?? null,
+        locationName: event?.locationName ?? null,
+        startDate: event?.startTime
+          ? format(event?.startTime?.toDate(), 'yyyy-MM-dd')
+          : format(new Date(), 'yyyy-MM-dd'),
+        startTime: event?.startTime
+          ? format(event.startTime.toDate(), 'HH:mm')
+          : format(
+              new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                currentDate.getDay(),
+                currentDate.getHours() + 1,
+                0
+              ),
+              'HH:mm'
+            ),
+        endDate: event?.endTime ? format(event?.endTime?.toDate(), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+        endTime: event?.endTime
+          ? format(event.endTime.toDate(), 'HH:mm')
+          : format(
+              new Date(
+                currentDate.getFullYear(),
+                currentDate.getMonth(),
+                currentDate.getDay(),
+                currentDate.getHours() + 2,
+                0
+              ),
+              'HH:mm'
+            ),
+        eventType: event?.eventType ?? 'CUSTOM_EVENT',
+        committee: event?.committee ?? 'NONE',
+        signInPoints: event?.signInPoints ?? null,
+        signOutPoints: event?.signOutPoints,
+        pointsPerHour: event?.pointsPerHour ?? null,
+        startTimeBuffer: event?.startTimeBuffer ?? null,
+        endTimeBuffer: event?.endTimeBuffer ?? null,
+        notificationSent: event?.notificationSent ?? false,
+        general: event?.general ?? false,
+        nationalConventionEligible: event?.nationalConventionEligible ?? false,
+      });
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        locationName: 'ZACH',
+        startDate: format(currentDate, 'yyyy-MM-dd'),
+        startTime: format(
+          new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDay(),
+            currentDate.getHours() + 1,
+            0
+          ),
+          'HH:mm'
         ),
-        'HH:mm'
-      ),
-    endDate: event?.endTime?.toDate().toDateString() ?? format(new Date(), 'yyyy-MM-dd'),
-    endTime:
-      event?.endTime?.toDate().toTimeString() ??
-      format(
-        new Date(
-          currentDate.getFullYear(),
-          currentDate.getMonth(),
-          currentDate.getDay(),
-          currentDate.getHours() + 2,
-          0
+        endDate: format(currentDate, 'yyyy-MM-dd'),
+        endTime: format(
+          new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDay(),
+            currentDate.getHours() + 2,
+            0
+          ),
+          'HH:mm'
         ),
-        'HH:mm'
-      ),
-    eventType: event?.eventType ?? 'CUSTOM_EVENT',
-    committee: event?.committee ?? 'NONE',
-    signInPoints: event?.signInPoints ?? 0,
-    signOutPoints: event?.signOutPoints ?? 0,
-    pointsPerHour: event?.pointsPerHour ?? 0,
-    startTimeBuffer: event?.startTimeBuffer ?? 1200000,
-    endTimeBuffer: event?.endTimeBuffer ?? 1200000,
-    eligibleForNationalConvention: event?.nationalConventionEligible ?? false,
-  });
+        eventType: 'CUSTOM_EVENT',
+        committee: 'NONE',
+        signInPoints: 0,
+        signOutPoints: 0,
+        pointsPerHour: 0,
+        startTimeBuffer: 1200000,
+        endTimeBuffer: 1200000,
+        notificationSent: false,
+        general: false,
+        nationalConventionEligible: false,
+      });
+    }
+    console.log(formData);
+  }, [event]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
@@ -59,30 +114,35 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : (name === 'startTimeBuffer' || name == 'endTimeBuffer' ? parseInt(value) * 1000 * 60 : value),
+      [name]:
+        type === 'checkbox'
+          ? checked
+          : name === 'startTimeBuffer' || name == 'endTimeBuffer'
+          ? parseInt(value) * 1000 * 60
+          : value,
     }));
   };
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    
+
     const startCombined = new Date(`${formData.startDate}T${formData.startTime}`);
     const endCombined = new Date(`${formData.endDate}T${formData.endTime}`);
 
     const startTimeFirebase = Timestamp.fromDate(startCombined);
     const endTimeFirebase = Timestamp.fromDate(endCombined);
-    
+
     const submissionData = {
       ...formData,
       startTime: startTimeFirebase,
       endTime: endTimeFirebase,
     };
 
-    delete (submissionData as {startDate?: string}).startDate;
-    delete (submissionData as {endDate?: string}).endDate;
+    delete (submissionData as { startDate?: string }).startDate;
+    delete (submissionData as { endDate?: string }).endDate;
 
     console.log(submissionData);
-  };
+  }
 
   const modal = (
     <div className="fixed flex flex-col top-0 right-0 w-full h-full bg-white z-50 overflow-auto pb-8">
@@ -97,10 +157,18 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
       ) : (
         <div className="flex flex-col w-full px-24 text-black">
           <form className="flex flex-col gap-8" onSubmit={handleSubmit}>
-            {/* Title */}
+            {/* Name */}
             <div className="relative flex flex-row gap-5 w-fit px-10 items-center">
               <button className="p-8 rounded-md bg-pink-500 text-xl font-bold">IMG</button>
-              <p className="text-3xl font-semibold">{event?.name ?? 'Event Name'}</p>
+              <input
+                name="name"
+                type="text"
+                placeholder="Type Name Here"
+                className="appearance-none text-3xl font-semibold outline-none"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
               <div className="rounded-full bg-yellow-300 w-5 h-5 absolute top-0 right-0"></div>
             </div>
 
@@ -115,7 +183,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                       name="startDate"
                       type="date"
                       className="bg-gray-300 p-2 rounded-lg"
-                      defaultValue={formData.startDate}
+                      value={formData.startDate}
                       onChange={handleChange}
                       required
                     />
@@ -124,7 +192,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                       name="endDate"
                       type="date"
                       className="bg-gray-300 p-2 rounded-lg"
-                      defaultValue={formData.endDate}
+                      value={formData.endDate}
                       onChange={handleChange}
                       required
                     />
@@ -139,7 +207,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                       name="startTime"
                       type="time"
                       className="bg-gray-300 p-2 rounded-lg"
-                      defaultValue={formData.startTime}
+                      value={formData.startTime}
                       onChange={handleChange}
                       required
                     />
@@ -148,7 +216,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                       name="endTime"
                       type="time"
                       className="bg-gray-300 p-2 rounded-lg"
-                      defaultValue={formData.endTime}
+                      value={formData.endTime}
                       onChange={handleChange}
                       required
                     />
@@ -161,8 +229,10 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                   <input
                     name="locationName"
                     className="bg-gray-300 font-medium text-base p-2 rounded-lg w-24"
-                    defaultValue={formData.locationName}
+                    placeholder="ZACH 420"
+                    value={formData.locationName}
                     onChange={handleChange}
+                    required
                   />
                 </label>
 
@@ -175,8 +245,11 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                     defaultValue={formData.eventType}
                     onChange={handleChange}
                   >
-                    <option value="CUSTOM_EVENT">Custom Event</option>
-                    <option value="GENERAL_MEETING">General Meeting</option>
+                    {Object.keys(EventType).map((key) => (
+                      <option key={key} value={key}>
+                        {EventType[key as keyof typeof EventType]}
+                      </option>
+                    ))}
                   </select>
                 </label>
 
@@ -193,16 +266,20 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                         onChange={handleChange}
                       >
                         <option value="NONE">None</option>
-                        <option value="APP_DEV">App Development</option>
+                        {Object.keys(EventType).map((key) => (
+                          <option key={key} value={key}>
+                            {EventType[key as keyof typeof EventType]}
+                          </option>
+                        ))}
                       </select>
                     </label>
 
                     <label className="flex flex-row items-center gap-2">
                       Club-Wide
                       <input
-                        name="CLUB_WIDE"
+                        name="general"
                         type="checkbox"
-                        defaultChecked={false}
+                        checked={formData.general}
                         onChange={handleChange}
                         className="cursor-pointer appearance-none p-2 rounded-lg border-2 h-8 w-8 checked:bg-[#500000]"
                       />
@@ -211,9 +288,9 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                     <label className="flex flex-row items-center gap-2">
                       Notifications
                       <input
-                        name="NOTIFICATIONS"
+                        name="notificationSent"
                         type="checkbox"
-                        defaultChecked={false}
+                        checked={formData.notificationSent}
                         onChange={handleChange}
                         className="cursor-pointer appearance-none p-2 rounded-lg border-2 h-8 w-8 checked:bg-[#500000]"
                       />
@@ -232,7 +309,8 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                       name="signInPoints"
                       type="number"
                       className="bg-gray-300 font-medium p-2 rounded-lg w-10 text-center"
-                      defaultValue={formData.signInPoints}
+                      placeholder="0"
+                      value={formData.signInPoints ?? 0}
                       min={0}
                       onChange={handleChange}
                       required
@@ -244,7 +322,8 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                       name="signOutPoints"
                       type="number"
                       className="bg-gray-300 font-medium p-2 rounded-lg w-10 text-center"
-                      defaultValue={formData.signOutPoints}
+                      placeholder="0"
+                      value={formData.signOutPoints ?? 0}
                       min={0}
                       onChange={handleChange}
                       required
@@ -256,7 +335,8 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                       name="pointsPerHour"
                       type="number"
                       className="bg-gray-300 font-medium p-2 rounded-lg w-10 text-center"
-                      defaultValue={formData.pointsPerHour}
+                      placeholder="0"
+                      value={formData.pointsPerHour ?? 0}
                       min={0}
                       onChange={handleChange}
                       required
@@ -275,7 +355,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                           name="startTimeBuffer"
                           type="number"
                           className="bg-gray-300 font-medium p-2 rounded-lg w-10 text-center"
-                          defaultValue={formData.startTimeBuffer ? formData.startTimeBuffer / (1000 * 60) : 0}
+                          value={formData.startTimeBuffer ? formData.startTimeBuffer / (1000 * 60) : 0}
                           min="0"
                           onChange={handleChange}
                           required
@@ -294,7 +374,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                           name="endTimeBuffer"
                           type="number"
                           className="bg-gray-300 font-medium p-2 rounded-lg w-10 text-center"
-                          defaultValue={formData.endTimeBuffer ? formData.endTimeBuffer / (1000 * 60) : 0}
+                          value={formData.endTimeBuffer ? formData.endTimeBuffer / (1000 * 60) : 0}
                           min="0"
                           onChange={handleChange}
                           required
@@ -311,7 +391,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                       <input
                         name="eligibleForNationalConvention"
                         type="checkbox"
-                        defaultChecked={formData.eligibleForNationalConvention}
+                        checked={formData.eligibleForNationalConvention}
                         onChange={handleChange}
                         className="cursor-pointer appearance-none p-2 rounded-lg border-2 h-8 w-8 checked:bg-[#500000]"
                       />
