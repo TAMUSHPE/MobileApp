@@ -13,6 +13,7 @@ import { LinkData } from '../../types/links';
 import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
 import ResumeIcon from '../../../assets/resume-icon.svg';
 import ExamIcon from '../../../assets/exam-icon.svg';
+import { isMemberVerified } from '../../helpers/membership';
 
 const linkIDs = ["1", "2", "3", "4", "5"]; // First 5 links are reserved for social media links
 
@@ -95,10 +96,14 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                 elevation: 5,
             }}
             onPress={() => {
-                if (userInfo?.publicInfo?.isStudent || navigateTo == "PointsLeaderboard") {
+                if (!userInfo?.publicInfo?.isStudent){
+                    alert("You must be a student of Texas A&M to access this resource")
+                    return;
+                }
+                if (isMemberVerified(userInfo?.publicInfo?.nationalExpiration, userInfo?.publicInfo?.chapterExpiration) || navigateTo == "PointsLeaderboard") {
                     navigation.navigate(navigateTo);
                 } else {
-                    alert("You must be a student to access this resource.");
+                    alert("You must be a member of TAMU SHPE to access this resource. Visit the home screen to learn more to become a member!");
                 }
             }}
         >
