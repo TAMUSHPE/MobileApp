@@ -34,11 +34,11 @@ const EventCalendar: React.FC<EventCalendarProps> = ({ events, toggleEventPage }
           <h2 className="font-semibold text-2xl mb-5">Filters</h2>
           <div className="w-full h-fit flex flex-row items-center gap-3">
             <button className="w-9 h-9 bg-red-300 rounded-md"></button>
-            <p className="text-lg font-medium">General</p>
+            <p className="text-lg font-medium">WIP</p>
           </div>
         </div>
         {/* Small Calendar */}
-        <div className="bg-blue-500 w-full h-44 justify-self-end mb-3"></div>
+        <div className="bg-blue-500 w-full h-44 justify-self-end mb-3 text-center font-bold text-white content-center text-4xl">WIP</div>
       </div>
 
       <div className="flex-grow flex flex-col">

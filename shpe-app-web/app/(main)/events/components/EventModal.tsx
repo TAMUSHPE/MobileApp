@@ -1,7 +1,8 @@
-import { SHPEEvent, EventType } from '@/types/events';
+import { SHPEEvent, EventType, SHPEEventLog } from '@/types/events';
 import { format } from 'date-fns';
 import { Timestamp } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
+import { getEventLogs, getPublicUserData } from '@/api/firebaseUtils';
 import ReactDOM from 'react-dom';
 
 interface EventPageProps {
@@ -18,11 +19,21 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
   const [loading, setLoading] = useState(false);
   const currentDate = new Date();
 
+  const [eventLogs, setEventLogs] = useState<SHPEEventLog[]>([]);
   const [formData, setFormData] = useState<FormData>({});
 
   useEffect(() => {
     console.log(event);
     if (event) {
+      const fetchLogs = async () => {
+        setLoading(true);
+        const logs = await getEventLogs(event.id!);
+        setEventLogs(logs);
+        setLoading(false);
+      };
+
+      fetchLogs();
+
       setFormData({
         name: event?.name ?? null,
         description: event?.description ?? null,
@@ -313,7 +324,6 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                       value={formData.signInPoints ?? 0}
                       min={0}
                       onChange={handleChange}
-                      required
                     />
                   </label>
                   <label className="flex flex-row gap-2 justify-between">
@@ -326,7 +336,6 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                       value={formData.signOutPoints ?? 0}
                       min={0}
                       onChange={handleChange}
-                      required
                     />
                   </label>
                   <label className="flex flex-row gap-2 justify-between">
@@ -339,7 +348,6 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                       value={formData.pointsPerHour ?? 0}
                       min={0}
                       onChange={handleChange}
-                      required
                     />
                   </label>
                 </div>
@@ -431,33 +439,36 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
               </button>
             </div>
           </form>
+          {eventLogs.length != 0 && (
+            <div className="w-full flex flex-col gap-2">
+              <button className="p-3 w-fit bg-[#500000] text-white text-lg font-semibold rounded-lg self-end">
+                Approve All
+              </button>
 
-          <div className="w-full flex flex-col gap-2">
-            <button className="p-3 w-fit bg-[#500000] text-white text-lg font-semibold rounded-lg self-end">
-              Approve All
-            </button>
-
-            <table className="w-full border-collapse">
-              <thead className="border-collapse border-black border-2 bg-gray-300">
-                <tr className="divide-x-2 divide-black">
-                  <th>User</th>
-                  <th>Points</th>
-                  <th>Sign In Time</th>
-                  <th>Sign Out Time</th>
-                </tr>
-              </thead>
-              <tbody className="border-collapse border-black border-2">
-                <tr className="divide-x-2 divide-black text-center">
-                  <td>John Doe</td>
-                  <td>
-                    <button className="bg-gray-300 px-1 rounded-md my-1">+0</button>
-                  </td>
-                  <td>6:00 PM</td>
-                  <td>7:00 PM</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+              <table className="w-full border-collapse">
+                <thead className="border-collapse border-black border-2 bg-gray-300">
+                  <tr className="divide-x-2 divide-black">
+                    <th>User</th>
+                    <th>Points</th>
+                    <th>Sign In Time</th>
+                    <th>Sign Out Time</th>
+                  </tr>
+                </thead>
+                <tbody className="border-collapse border-black border-2 divide-y-2 divide-gray-400">
+                  {eventLogs.map((log) => (
+                    <tr key={log.uid} className="divide-x-2 divide-black text-center">
+                      <td>{log.uid}</td>
+                      <td>
+                        <input className="bg-gray-300 px-2 py-1 rounded-md w-7 text-center" defaultValue={log.points} />
+                      </td>
+                      <td>{log.signInTime && format(log.signInTime.toDate(), 'h:mm a')}</td>
+                      <td>{log.signOutTime && format(log.signOutTime.toDate(), 'h:mm a')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       )}
     </div>
