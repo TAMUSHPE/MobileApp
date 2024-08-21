@@ -11,8 +11,6 @@ interface MemberCardProps{
 
 const MemberCard : React.FC<MemberCardProps> = ({request, onApprove, onDeny}) => {
     
-    //const [isVisible, setVisibility] = useState(true)
-    console.log("MemberCard for ", request.name)
     
         return(
             // flex text-gray-400  justify-evenly text-2xl
