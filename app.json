@@ -54,7 +54,7 @@
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ],
-      "versionCode": 52,
+      "versionCode": 56,
       "userInterfaceStyle": "automatic"
     },
     "ios": {

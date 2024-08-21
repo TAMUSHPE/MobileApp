@@ -80,7 +80,7 @@ const Members = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
             <StatusBar style={darkMode ? "light" : "dark"} />
             <ScrollView
                 onScroll={handleScroll}
-                scrollEventThrottle={200}
+                // scrollEventThrottle={200}
                 showsVerticalScrollIndicator={false}
             >
                 {/* Header */}
