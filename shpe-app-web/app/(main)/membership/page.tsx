@@ -100,7 +100,10 @@ const Membership = () => {
       return "Representative"
     }
     if(user.publicInfo?.roles?.reader){
-      if(user.publicInfo.isStudent){
+      if(user.publicInfo.isStudent && isMemberVerified(user.publicInfo?.chapterExpiration, user.publicInfo?.nationalExpiration)){
+        return "SHPE Member"
+      }
+      else if(user.publicInfo.isStudent){
         return "Student"
       }
       return "Guest"
