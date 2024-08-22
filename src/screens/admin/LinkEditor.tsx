@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TextInput, Button, Image, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackParams } from '../../types/navigation';
 import { Octicons } from '@expo/vector-icons';
@@ -9,8 +10,6 @@ import { updateLink, fetchLink } from '../../api/firebaseUtils';
 import { LinkData } from '../../types/links';
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { UserContext } from '../../context/UserContext';
-
-
 
 /**
  * Link Editor is a management tool for all links displayed in the app.
@@ -31,7 +30,7 @@ const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const numberOfLinks = 7;
+    const numberOfLinks = 8;
     const linkIDs = generateLinkIDs(numberOfLinks);
     const [links, setLinks] = useState<LinkData[]>(
         linkIDs.map(id => ({
@@ -44,6 +43,7 @@ const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
 
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [editedUrl, setEditedUrl] = useState<string>("");
+    const [editedName, setEditedName] = useState<string>("");
     const [originalLink, setOriginalLink] = useState<LinkData | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -67,10 +67,6 @@ const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
 
     const handleUpdateLink = async (index: number) => {
         const link = links[index];
-        if (!link.name || !link.url) {
-            alert('Name and URL are required');
-            return;
-        }
 
         if (originalLink && (
             originalLink.name !== link.name ||
@@ -121,27 +117,30 @@ const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
         );
     }
 
-    const startEditing = (index: number, url: string) => {
+    const startEditing = (index: number, url: string, name: string) => {
         setEditingIndex(index);
         setEditedUrl(url);
+        setEditedName(name);
         setOriginalLink({ ...links[index] });
     };
 
     const cancelEditing = () => {
         setEditingIndex(null);
         setEditedUrl("");
+        setEditedName("");
         setOriginalLink(null);
     };
 
     const confirmEditing = (index: number) => {
         handleLinkChange(index, 'url', editedUrl);
+        handleLinkChange(index, 'name', editedName);
         handleUpdateLink(index);
         cancelEditing();
     };
 
 
     return (
-        <ScrollView className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <KeyboardAwareScrollView className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <SafeAreaView>
                 {/* Header */}
                 <View className="flex-row items-center mx-5 mt-1">
@@ -196,27 +195,35 @@ const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                         {/* Edit Form */}
                         <View className='flex-row items-center'>
                             {editingIndex === index ? (
-                                <View className="flex-row items-center">
+                                <View className="flex-1">
+                                    <TextInput
+                                        placeholder="Name"
+                                        value={editedName}
+                                        onChangeText={text => setEditedName(text)}
+                                        className={`border-b ${darkMode ? "border-white text-white" : "border-black text-black"} mb-2`}
+                                        placeholderTextColor={darkMode ? "gray" : "darkgray"}
+                                    />
                                     <TextInput
                                         placeholder="URL"
                                         value={editedUrl}
                                         onChangeText={text => setEditedUrl(text)}
-                                        className={`flex-1 border-b ${darkMode ? "border-white text-white" : "border-black text-black"} mx-5`}
+                                        className={`border-b ${darkMode ? "border-white text-white" : "border-black text-black"} mb-2`}
                                         placeholderTextColor={darkMode ? "gray" : "darkgray"}
                                     />
                                     <TouchableOpacity
                                         onPress={() => confirmEditing(index)}
-                                        className="mx-2 w-[20%] items-center justify-center"
+                                        className="w-full items-center justify-center mt-2"
                                     >
                                         <Text className="text-primary-blue font-semibold text-lg">Done</Text>
                                     </TouchableOpacity>
                                 </View>
                             ) : (
-                                <View className="flex-row items-center">
-                                    <Text className={`flex-1 mx-5 ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(link.url, 25)}</Text>
+                                <View className="flex-1">
+                                    <Text className={`mb-2 ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(link.name, 25)}</Text>
+                                    <Text className={`mb-2 ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(link.url, 25)}</Text>
                                     <TouchableOpacity
-                                        onPress={() => startEditing(index, link.url)}
-                                        className="mx-2 w-[20%] items-center justify-center"
+                                        onPress={() => startEditing(index, link.url, link.name)}
+                                        className="w-full items-center justify-center"
                                     >
                                         <Text className="text-primary-blue font-semibold text-lg">Edit</Text>
                                     </TouchableOpacity>
@@ -226,7 +233,7 @@ const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                     </View>
                 ))}
             </SafeAreaView>
-        </ScrollView>
+        </KeyboardAwareScrollView>
     );
 };
 
