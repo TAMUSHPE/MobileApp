@@ -297,7 +297,7 @@ export const EventModal: React.FC<EventPageProps> = ({ event, isShowing, hide })
                     </label>
 
                     <label className="flex flex-row items-center gap-2">
-                      Notifications
+                      Sent Notifications
                       <input
                         name="notificationSent"
                         type="checkbox"
