@@ -167,7 +167,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
         const document = await selectDocument();
         if (document) {
             setLoading(true);
-            const path = `user-docs/${auth.currentUser?.uid}/$-verification`;
+            const path = `user-docs/${auth.currentUser?.uid}/chapter-verification`;
             const onSuccess = onChapterUploadSuccess;
             uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
         }
