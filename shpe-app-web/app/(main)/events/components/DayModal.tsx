@@ -7,9 +7,10 @@ interface DayModalProps {
   events: SHPEEvent[];
   isShowing: boolean;
   hide: () => void;
+  toggleEventPage: (event?: SHPEEvent) => void;
 }
 
-export const DayModal: React.FC<DayModalProps> = ({ day, events, isShowing, hide }) => {
+export const DayModal: React.FC<DayModalProps> = ({ day, events, isShowing, hide, toggleEventPage }) => {
   const modal = (
     <>
       {/* Filter */}
@@ -25,7 +26,7 @@ export const DayModal: React.FC<DayModalProps> = ({ day, events, isShowing, hide
           <div className="flex flex-col gap-2 w-5/6 mt-3 overflow-auto">
             {events.map((event) => {
               return (
-                <div key={event.id} className="flex bg-red-300 rounded-lg text-center font-medium p-1">
+                <div key={event.id} onClick={() => toggleEventPage(event)} className="flex bg-red-300 cursor-pointer rounded-lg text-center font-medium p-1">
                   <div className="flex flex-col items-start w-full text-black ml-6">
                     <p className="text-md font-semibold">{event.name}</p>
                     <p className="text-sm ml-4">
@@ -42,7 +43,7 @@ export const DayModal: React.FC<DayModalProps> = ({ day, events, isShowing, hide
             onClick={hide}
             className="absolute left-5 bg-[#500000] text-white text-sm font-semibold rounded-md p-2"
           >
-            <img src="plus-icon.svg" className="rotate-45" />
+            <img src="plus-icon.svg" alt="X" className="rotate-45" />
           </button>
         </div>
       </div>
