@@ -6,7 +6,6 @@ import { Committee } from "@/types/committees";
 import Header from "@/components/Header";
 import CommitteeCard from "./components/CommitteeCard";
 
-
 const Committees = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);

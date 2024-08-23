@@ -18,11 +18,12 @@ interface WeekViewProps {
   eventsByDate: { [key: string]: SHPEEvent[] };
   focusDate: Date;
   setFocusDate: (date: Date) => void;
+  toggleEventPage: (event?: SHPEEvent) => void;
 }
 
 const HOUR_HEIGHT = 4; // Height of each hour in rem
 
-const WeekView: React.FC<WeekViewProps> = ({ eventsByDate, focusDate, setFocusDate }) => {
+const WeekView: React.FC<WeekViewProps> = ({ eventsByDate, focusDate, setFocusDate, toggleEventPage }) => {
   const firstDayOfWeek = startOfWeek(focusDate);
   const lastDayOfWeek = endOfWeek(focusDate);
   const daysInWeek = eachDayOfInterval({ start: firstDayOfWeek, end: lastDayOfWeek });
@@ -61,12 +62,13 @@ const WeekView: React.FC<WeekViewProps> = ({ eventsByDate, focusDate, setFocusDa
         if (isSameDay(event.startTime!.toDate(), event.endTime!.toDate())) {
           return (
             <div
+              onClick={() => toggleEventPage(event)}
               key={event.id}
               style={{
                 height: `${(duration / 60) * HOUR_HEIGHT}rem`,
                 top: `${(startMinutes / 60) * HOUR_HEIGHT}rem`,
               }}
-              className="absolute left-0 right-3 bg-red-300 rounded-md font-medium p-1 text-nowrap overflow-hidden"
+              className="absolute left-0 right-3 cursor-pointer bg-red-300 rounded-md font-medium p-1 text-nowrap overflow-hidden"
             >
               <p className="text-sm font-semibold">{event.name}</p>
               <p className="text-xs ml-2">
@@ -112,6 +114,7 @@ const WeekView: React.FC<WeekViewProps> = ({ eventsByDate, focusDate, setFocusDa
                   if (!isSameDay(event.startTime!.toDate(), event.endTime!.toDate())) {
                     return (
                       <div
+                        onClick={() => toggleEventPage(event)}
                         key={event.id}
                         className="bg-red-300 rounded-md font-medium mr-3 p-1 text-nowrap overflow-hidden"
                       >
@@ -159,7 +162,7 @@ const WeekView: React.FC<WeekViewProps> = ({ eventsByDate, focusDate, setFocusDa
             {daysInWeek.map((day, index) => (
               <DayCell key={index} day={day} index={index} />
             ))}
-            <DayModal day={selectedDay} events={selectedDayEvents} isShowing={isShowing} hide={() => toggle()} />
+            <DayModal day={selectedDay} events={selectedDayEvents} isShowing={isShowing} hide={() => toggle()} toggleEventPage={toggleEventPage} />
           </div>
         </div>
       </div>
