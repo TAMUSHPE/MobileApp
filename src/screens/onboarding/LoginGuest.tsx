@@ -112,7 +112,7 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
         >
             <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
                 <SafeAreaView className="flex-1 h-screen">
-                    <ScrollView>
+                    <ScrollView contentContainerStyle={{ minHeight: "100%" }}>
                         {/* Header */}
                         <View className='px-4 mt-5'>
                             <TouchableOpacity
