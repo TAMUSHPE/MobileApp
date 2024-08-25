@@ -208,9 +208,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                                     }
                                                     else {
                                                         setStartTime(Timestamp.fromDate(date));
-                                                        if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
-                                                            setEndTime(Timestamp.fromMillis(date.getTime() + MillisecondTimes.HOUR));
-                                                        }
                                                     }
                                                     setShowStartDatePicker(false);
                                                 }}
@@ -226,9 +223,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                                     }
                                                     else if (!date) {
                                                         console.warn("Date picked is undefined.")
-                                                    }
-                                                    else if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
-                                                        Alert.alert("Invalid Start Time", "Event cannot start after end time.")
                                                     }
                                                     else {
                                                         setStartTime(Timestamp.fromDate(date));
@@ -287,9 +281,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                                     if (!date) {
                                                         console.warn("Date picked is undefined.")
                                                     }
-                                                    else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
-                                                        Alert.alert("Invalid End Date", "Event cannot end before start date.")
-                                                    }
                                                     else {
                                                         setEndTime(Timestamp.fromDate(date));
                                                     }
@@ -303,9 +294,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                                 onChange={(_, date) => {
                                                     if (!date) {
                                                         console.warn("Date picked is undefined.")
-                                                    }
-                                                    else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
-                                                        Alert.alert("Invalid End Time", "Event cannot end before start time.")
                                                     }
                                                     else {
                                                         setEndTime(Timestamp.fromDate(date));
@@ -417,9 +405,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                         else if (!date) {
                             console.warn("Date picked is undefined.")
                         }
-                        else if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
-                            Alert.alert("Invalid Start Time", "Event cannot start after end time.")
-                        }
                         else {
                             setStartTime(Timestamp.fromDate(date));
                         }
@@ -440,9 +425,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                         if (!date) {
                             console.warn("Date picked is undefined.")
                         }
-                        else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
-                            Alert.alert("Invalid End Date", "Event cannot end before start date.")
-                        }
                         else {
                             setEndTime(Timestamp.fromDate(date));
                         }
@@ -457,9 +439,6 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                     onChange={(_, date) => {
                         if (!date) {
                             console.warn("Date picked is undefined.")
-                        }
-                        else if (startTime && date.valueOf() < startTime?.toDate().valueOf()) {
-                            Alert.alert("Invalid End Time", "Event cannot end before start time.")
                         }
                         else {
                             setEndTime(Timestamp.fromDate(date));
