@@ -418,15 +418,15 @@ export type UserEventData = {
 
 export const getStatusMessage = (status: EventLogStatus, mode?: "sign-in" | "sign-out"): string => {
     const statusMessages = {
-        [EventLogStatus.SUCCESS]: `Successfully ${mode === "sign-in" ? "signed in" : "signed out"}.`,
-        [EventLogStatus.EVENT_OVER]: "The event is already over.",
-        [EventLogStatus.EVENT_ONGOING]: "The event is ongoing.",
-        [EventLogStatus.EVENT_NOT_FOUND]: "The event was not found.",
-        [EventLogStatus.ALREADY_LOGGED]: `You have already ${mode === "sign-in" ? "signed in" : "signed out"}.`,
-        [EventLogStatus.NOT_A_STUDENT]: "Only students can sign in/out of events.",
-        [EventLogStatus.EVENT_NOT_STARTED]: "The event has not started yet.",
-        [EventLogStatus.OUT_OF_RANGE]: "You are not close enough to the event to sign in/out.",
-        [EventLogStatus.ERROR]: "An internal error occurred. Please try again.",
+        [EventLogStatus.SUCCESS]: `Successfully ${mode === `sign-in` ? `signed in` : `signed out`}.`,
+        [EventLogStatus.EVENT_OVER]: `The event is already over.`,
+        [EventLogStatus.EVENT_ONGOING]: `The event is ongoing.`,
+        [EventLogStatus.EVENT_NOT_FOUND]: `The event was not found.`,
+        [EventLogStatus.ALREADY_LOGGED]: `You have already ${mode === `sign-in` ? `signed in` : `signed out`}.`,
+        [EventLogStatus.NOT_A_STUDENT]: `Only students can ${mode === `sign-in` ? `sign in` : `sign out`} of events.`,
+        [EventLogStatus.EVENT_NOT_STARTED]: `The event has not started yet.`,
+        [EventLogStatus.OUT_OF_RANGE]: `You are not close enough to the event to ${mode === `sign-in` ? `sign in` : `sign out`}.`,
+        [EventLogStatus.ERROR]: `An internal error occurred. Please try again.`,
     };
 
     return statusMessages[status] || "An unknown error occurred.";

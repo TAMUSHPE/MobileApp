@@ -38,6 +38,12 @@ const geographicDistance = (pos1: GeoPoint, pos2: GeoPoint): number => {
 }
 
 /**
+ * Meters that are acceptable to be beyond the geofencing bubble.
+ * This deals with bad geolocation data that assumes people are further away from their actual physical location
+ */
+const ACCEPTABLE_DISTANCE_ERROR = 20;
+
+/**
  * Handles a request from a user to sign into an event.
  */
 export const eventSignIn = functions.https.onCall(async (data, context) => {
@@ -64,22 +70,35 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     };
 
     if (eventLog !== undefined && eventLog.signInTime !== undefined) {
-        throw new functions.https.HttpsError("already-exists", "Sign in time already exists.");
+        const message = "Sign in time already exists.";
+        functions.logger.error(message);
+        throw new functions.https.HttpsError("already-exists", message);
     }
     else if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
-        throw new functions.https.HttpsError("deadline-exceeded", "Event has already ended.");
+        const message = "Event has already ended.";
+        functions.logger.error(message);
+        throw new functions.https.HttpsError("deadline-exceeded", message);
     }
     else if (event.startTime && (event.startTime.toMillis() - (event.startTimeBuffer ?? 0) > Date.now())) {
-        throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
+        const message = "Event has not started.";
+        functions.logger.error(message)
+        throw new functions.https.HttpsError("failed-precondition", message);
     }
     else if (event.geolocation && event.geofencingRadius) {
         if (typeof data.location.latitude != "number" || typeof data.location.longitude != "number" || !isFinite(data.location.latitude) || !isFinite(data.location.longitude)) {
-            throw new functions.https.HttpsError("invalid-argument", "Invalid geopoint object passed into function.");
+            const message = "Invalid geopoint object passed into function.";
+            functions.logger.error(message);
+            throw new functions.https.HttpsError("invalid-argument", message);
         }
 
         const distance = geographicDistance(event.geolocation, data.location);
-        if (distance > event.geofencingRadius + 10) {
-            throw new functions.https.HttpsError("out-of-range", `This event has geofencing enabled and the given user is ${distance} meters away when required radius is ${event.geofencingRadius} meters.`);
+        const message = `${event.name} has geofencing enabled and the given user is ${distance} meters away when required radius is ${event.geofencingRadius} + ${ACCEPTABLE_DISTANCE_ERROR} meters.`;
+        if (distance > event.geofencingRadius + ACCEPTABLE_DISTANCE_ERROR) {
+            functions.logger.error(message);
+            throw new functions.https.HttpsError("out-of-range", message);
+        }
+        else {
+            functions.logger.debug(message);
         }
     }
 
@@ -145,8 +164,13 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
         }
 
         const distance = geographicDistance(event.geolocation, data.location);
-        if (distance > event.geofencingRadius + 10) {
-            throw new functions.https.HttpsError("out-of-range", `This event has geofencing enabled and the given user is ${distance} meters away when required radius is ${event.geofencingRadius} meters.`);
+        const message = `${event.name} has geofencing enabled and the given user is ${distance} meters away when required radius is ${event.geofencingRadius} + ${ACCEPTABLE_DISTANCE_ERROR} meters.`;
+        if (distance > event.geofencingRadius + ACCEPTABLE_DISTANCE_ERROR) {
+            functions.logger.error(message);
+            throw new functions.https.HttpsError("out-of-range", message);
+        }
+        else {
+            functions.logger.debug(message);
         }
     }
 
