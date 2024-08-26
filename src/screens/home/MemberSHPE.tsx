@@ -294,7 +294,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                             </View>
 
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>
-                                1. Pay the <Text
+                                1. Pay for the <Text
                                     onPress={() => {
                                         const url = tamuLink?.url?.trim() || "";
                                         if (!url) {
@@ -305,8 +305,8 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                                     }}
                                     className='text-primary-blue font-bold text-xl underline'
                                 >
-                                    chapter dues
-                                </Text>, which include a t-shirt. Be sure to take a screenshot of your
+                                    t-shirt
+                                </Text>, and be sure to take a screenshot of your
                                 <Text className='font-bold'> receipt</Text> and upload it below.
                             </Text>
 
