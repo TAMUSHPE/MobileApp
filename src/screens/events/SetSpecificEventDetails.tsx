@@ -45,6 +45,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const [endTimeBuffer, setEndTimeBuffer] = useState<number | undefined>(event.endTimeBuffer ?? 20 * 60000);
     const [hiddenEvent, setHiddenEvent] = useState<boolean | undefined>(event.hiddenEvent ?? undefined);
     const [isGeneral, setIsGeneral] = useState<boolean>(event.general ?? false);
+    const [noPoints, setNoPoints] = useState<boolean | undefined>(event.noPoints ?? undefined);
 
 
     const eventTypeNotification = ["Study Hours", "Workshop", "Volunteer Event", "Social Event", "Intramural Event"]
@@ -413,6 +414,28 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 ios_backgroundColor="#999796"
                                 onValueChange={() => setHiddenEvent(previousState => !previousState)}
                                 value={hiddenEvent}
+                            />
+                        </View>
+
+                        <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
+                        >
+                            <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Event No Points</Text>
+                            <Switch
+                                trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
+                                thumbColor={"white"}
+                                ios_backgroundColor="#999796"
+                                onValueChange={() => setNoPoints(previousState => !previousState)}
+                                value={noPoints}
                             />
                         </View>
 
