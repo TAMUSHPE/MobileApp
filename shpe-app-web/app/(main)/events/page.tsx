@@ -6,8 +6,12 @@ import PendingEvent from './components/PendingEvent';
 import EventCalendar from './components/EventCalendar';
 import { getEvents, getEventLogs } from '@/api/firebaseUtils';
 import { SHPEEvent } from '@/types/events';
+import { EventModal } from './components/EventModal';
+import { useEventModal } from './components/useEventModal';
 
 const Page = () => {
+  const { selectedEvent, isShowing, toggle } = useEventModal();
+
   const [events, setEvents] = useState<SHPEEvent[]>([]);
   const [pendingEvents, setPendingEvents] = useState<SHPEEvent[]>([]);
 
@@ -108,12 +112,14 @@ const Page = () => {
 
       {/* Event Calendar */}
       <div className="flex flex-col w-full h-fit">
-        <button className="h-12 w-44 my-3 mr-10 bg-[#500000] place-self-end rounded-lg font-semibold flex flex-row justify-center items-center gap-2 flex-shrink-0">
+        <button onClick={() => toggle()} className="h-12 w-44 my-3 mr-10 bg-[#500000] place-self-end rounded-lg font-semibold flex flex-row justify-center items-center gap-2 flex-shrink-0">
           <img src="plus-icon.svg" className="" />
           Create Event
         </button>
-        <EventCalendar events={events} />
+        <EventCalendar events={events} toggleEventPage={toggle}/>
       </div>
+
+      <EventModal event={selectedEvent} isShowing={isShowing} hide={() => toggle()} />
     </div>
   );
 };

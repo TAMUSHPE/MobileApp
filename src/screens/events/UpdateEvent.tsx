@@ -91,6 +91,14 @@ const UpdateEvent = ({ navigation }: EventProps) => {
     }
 
     const handleUpdateEvent = async () => {
+        if (!name) {
+            Alert.alert("Empty Name", "Event must have a name!")
+            return;
+        } else if (startTime!.toMillis() > endTime!.toMillis()) {
+            Alert.alert("Event ends before start time", "Event cannot end before it starts.")
+            return;
+        }
+
         setLoading(true)
         let updatedEvent: SHPEEvent = {};
         switch (event.eventType) {
@@ -149,9 +157,6 @@ const UpdateEvent = ({ navigation }: EventProps) => {
         if (updatedEvent.copyFromObject) {
             updatedEvent.copyFromObject(eventData);
         }
-
-        console.log(updatedEvent.geofencingRadius, 'this is updatedEvent Variable geofencing');
-        console.log(updatedEvent, 'updated event');
 
         await setEvent(event.id!, updatedEvent);
         setLoading(false)
@@ -340,9 +345,6 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                                     else if (!date) {
                                                         console.warn("Date picked is undefined.")
                                                     }
-                                                    else if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
-                                                        Alert.alert("Invalid Start Time", "Event cannot start after end time.")
-                                                    }
                                                     else {
                                                         setStartTime(Timestamp.fromDate(date));
                                                     }
@@ -518,9 +520,6 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                         }
                         else if (!date) {
                             console.warn("Date picked is undefined.")
-                        }
-                        else if (endTime && date.valueOf() > endTime?.toDate().valueOf()) {
-                            Alert.alert("Invalid Start Time", "Event cannot start after end time.")
                         }
                         else {
                             setStartTime(Timestamp.fromDate(date));

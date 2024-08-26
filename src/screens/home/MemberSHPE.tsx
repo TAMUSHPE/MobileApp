@@ -20,7 +20,7 @@ import { HomeStackParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Images } from '../../../assets';
 
-const linkIDs = ["6", "7"]; // ids reserved for TAMU and SHPE National links
+const linkIDs = ["6", "7", "8"]; // ids reserved for TAMU and SHPE National links
 
 const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const userContext = useContext(UserContext);
@@ -42,6 +42,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
 
     const tamuLink = links.find(link => link.id === "6");
     const nationalsLink = links.find(link => link.id === "7");
+    const chapterAppLink = links.find(link => link.id === "8");
 
     const fetchLinks = async () => {
         const fetchedLinks = await Promise.all(
@@ -157,7 +158,6 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
         }
     };
 
-
     const handleSubmitShirt = async () => {
         if (!shirtSize) {
             Alert.alert("Missing Shirt Size", "You must enter a shirt size");
@@ -167,7 +167,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
         const document = await selectDocument();
         if (document) {
             setLoading(true);
-            const path = `user-docs/${auth.currentUser?.uid}/$-verification`;
+            const path = `user-docs/${auth.currentUser?.uid}/chapter-verification`;
             const onSuccess = onChapterUploadSuccess;
             uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
         }
@@ -294,12 +294,38 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                             </View>
 
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>
-                                Pay the <TouchableOpacity onPress={() => handleLinkPress((tamuLink?.url || ""))}>
-                                    <Text className='text-primary-blue font-bold text-xl underline' style={{ lineHeight: 0 }}>chapter dues</Text>
-                                </TouchableOpacity>, which include a t-shirt. Be sure to take a screenshot of your <Text className='font-bold'>receipt</Text> and upload it below.
+                                1. Pay the <Text
+                                    onPress={() => {
+                                        const url = tamuLink?.url?.trim() || "";
+                                        if (!url) {
+                                            Alert.alert("Link Not Available", "The link will be updated soon.");
+                                        } else {
+                                            handleLinkPress(url);
+                                        }
+                                    }}
+                                    className='text-primary-blue font-bold text-xl underline'
+                                >
+                                    chapter dues
+                                </Text>, which include a t-shirt. Be sure to take a screenshot of your
+                                <Text className='font-bold'> receipt</Text> and upload it below.
                             </Text>
 
 
+                            <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>
+                                2. Using a <Text className='text-red-1 font-bold'>non-tamu email</Text> fill out this <Text
+                                    onPress={() => {
+                                        const url = chapterAppLink?.url?.trim() || "";
+                                        if (!url) {
+                                            Alert.alert("Link Not Available", "The link will be updated soon.");
+                                        } else {
+                                            handleLinkPress(url);
+                                        }
+                                    }}
+                                    className='text-primary-blue font-bold text-xl underline'
+                                >
+                                    google form
+                                </Text>.
+                            </Text>
                             <TouchableOpacity
                                 className={`px-3 py-2 rounded-lg items-center mt-8 ${uploadedChapter ? "bg-grey-dark" : "bg-primary-blue"}`}
                                 onPress={() => uploadedChapter ? handleRetractChapter() : uploadDocument('chapter')}
@@ -338,10 +364,21 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                             </View>
 
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>
-                                1. Create a <TouchableOpacity onPress={() => handleLinkPress((nationalsLink?.url || ""))}>
-                                    <Text className='text-primary-blue font-bold text-xl underline' style={{ lineHeight: 0 }}>national account</Text>
-                                </TouchableOpacity>
+                                1. Create a <Text
+                                    onPress={() => {
+                                        const url = nationalsLink?.url?.trim() || "";
+                                        if (!url) {
+                                            Alert.alert("Link Not Available", "The link will be updated soon.");
+                                        } else {
+                                            handleLinkPress(url);
+                                        }
+                                    }}
+                                    className='text-primary-blue font-bold text-xl underline'
+                                >
+                                    national account
+                                </Text>
                             </Text>
+
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>2. Select the "Join Membership" or "Renew Membership" tab.</Text>
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>3. Choose the appropriate membership type.</Text>
                             <Text className={`text-xl mt-4 ${darkMode ? "text-white" : "text-black"}`}>4. Select <Text className="font-bold">Region 5</Text> and Texas A&M University, College Station. </Text>

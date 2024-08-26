@@ -486,7 +486,7 @@ export const getEvent = async (eventID: string): Promise<null | SHPEEvent> => {
 export const getUpcomingEvents = async () => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
-    const q = query(eventsRef, where("endTime", ">", currentTime));
+    const q = query(eventsRef, where("endTime", ">=", currentTime));
     const querySnapshot = await getDocs(q);
     const events: SHPEEvent[] = [];
 
