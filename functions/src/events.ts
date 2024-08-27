@@ -191,12 +191,10 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
             }
 
             // Ensures the points are capped to the amount of hours the event lasts.
-            // If, for whatever reason, study hours does not have a start or end time, gives the points calculated (after all, we don't want to give no points)
+            // Only do this when endTime and startTime are truthy (They should be, but we have to take into the case where they're not)
             if (event.endTime && event.startTime) {
-                const eventDurationHours = ((event.endTime.toMillis() ?? 0) - (event.startTime.toMillis() ?? 0)) / MillisecondTimes.HOUR;
-                if (eventDurationHours !== 0 && accumulatedPoints > eventDurationHours * (event.pointsPerHour ?? 0)) {
-                    accumulatedPoints = eventDurationHours * (event.pointsPerHour ?? 0);
-                }
+                const eventDurationHours = (event.endTime.toMillis() - event.startTime.toMillis()) / MillisecondTimes.HOUR;
+                accumulatedPoints = Math.min(eventDurationHours * (event.pointsPerHour ?? 0), accumulatedPoints);
             }
 
             eventLog.points = (eventLog.points ?? 0) + (event.signOutPoints ?? 0) + accumulatedPoints;
