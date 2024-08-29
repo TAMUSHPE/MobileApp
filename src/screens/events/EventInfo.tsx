@@ -92,11 +92,6 @@ const EventInfo = ({ navigation }: EventProps) => {
     const getEventButtonState = (event: SHPEEvent, userEventLog: SHPEEventLog | null): EventButtonState => {
         const now = new Date();
 
-        //Event does not give points
-        if (!event?.noPoints){
-            return EventButtonState.NO_POINTS;
-        }
-
         // Event has not started
         if (now < new Date(startTime!.toDate().getTime() - (startTimeBuffer || 0))) {
             return EventButtonState.NOT_STARTED;
@@ -229,7 +224,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                         </View>
                     </SafeAreaView>
 
-                    {hasPrivileges && event.noPoints && (
+                    {hasPrivileges && (
                         <TouchableOpacity
                             onPress={() => {
                                 navigation.navigate("QRCode", { event: event })
@@ -369,9 +364,6 @@ const EventInfo = ({ navigation }: EventProps) => {
                             {eventButtonState === EventButtonState.SIGN_OUT && (
                                 <Text className='text-center text-white text-2xl font-bold'>Sign Out</Text>
                             )}
-                            {eventButtonState === EventButtonState.NO_POINTS && (
-                                <Text className={`text-center ${darkMode ? 'text-grey-light' : 'text-grey-dark'} text-xl`}>This event does not give points</Text>
-                            )}
                             {eventButtonState === EventButtonState.NOT_STARTED && (
                                 <Text className={`text-center ${darkMode ? 'text-grey-light' : 'text-grey-dark'} text-xl`}>This event has not started</Text>
                             )}
@@ -479,7 +471,6 @@ enum EventButtonState {
     RECEIVED_POINTS = "You receive points for this event",
     SIGN_OUT = "Sign out of this event",
     SIGN_IN = "Sign in",
-    NO_POINTS = "No Points for this event"
 }
 
 export type EventInfoScreenRouteProp = RouteProp<EventsStackParams, "EventInfo">;

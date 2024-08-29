@@ -48,7 +48,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
                 <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>{formatDate(event.startTime?.toDate()!)}</Text>
             </View>
 
-            {hasPrivileges && event.noPoints && (
+            {hasPrivileges && (
                 <View className='h-full  items-center justify-center mx-2'>
                     <TouchableOpacity
                         onPress={() => { navigation.navigate("QRCode", { event: event }) }}
