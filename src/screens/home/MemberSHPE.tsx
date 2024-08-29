@@ -306,7 +306,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                                     className='text-primary-blue font-bold text-xl underline'
                                 >
                                     t-shirt
-                                </Text>, and be sure to take a screenshot of your
+                                </Text> and be sure to take a screenshot of your
                                 <Text className='font-bold'> receipt</Text> and upload it below.
                             </Text>
 

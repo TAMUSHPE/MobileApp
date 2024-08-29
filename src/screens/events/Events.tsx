@@ -358,7 +358,7 @@ const Events = ({ navigation }: EventsProps) => {
                                                             <Text className='text-md font-semibold text-white'>{formatTime(event.startTime?.toDate()!)}</Text>
                                                         </View>
                                                     </LinearGradient>
-                                                    {hasPrivileges && event.noPoints && (
+                                                    {hasPrivileges && (
                                                         <TouchableOpacity
                                                             onPress={() => { navigation.navigate("QRCode", { event: event }) }}
                                                             className='absolute right-0 top-0 p-2 m-2 rounded-full'
