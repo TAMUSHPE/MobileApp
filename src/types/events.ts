@@ -60,8 +60,6 @@ export abstract class SHPEEvent {
     public notificationSent?: boolean | null;
     /** Hide event from Events Screen */
     public hiddenEvent?: boolean | null;
-    /** A flag to indicate if an event should count towards points or not */
-    public noPoints?: boolean | null;
 
 
     /**
@@ -85,7 +83,6 @@ export abstract class SHPEEvent {
         this.endTimeBuffer = null;
         this.startTimeBuffer = null;
         this.hiddenEvent = false;
-        this.noPoints = false;
     }
 
     /**
