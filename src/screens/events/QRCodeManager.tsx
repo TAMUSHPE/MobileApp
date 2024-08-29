@@ -11,6 +11,7 @@ import DismissibleModal from '../../components/DismissibleModal';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { EventsStackParams } from '../../types/navigation';
 import { UserContext } from '../../context/UserContext';
+import { Images } from '../../../assets';
 
 const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) => {
     const { event } = route.params;
@@ -117,8 +118,10 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                                             getRef={(c) => { signInQRCodeRef.current = c; }}
                                             size={60}
                                             value={`tamu-shpe://event?id=${event.id}&mode=sign-in`}
+                                            logo={Images.SIGN_IN_LOGO}
                                             backgroundColor={darkMode ? '#121212' : '#fff'}
                                             color={darkMode ? '#fff' : '#000'}
+                                            logoBackgroundColor='white'
                                         />
                                     </View>
                                 </TouchableOpacity>
@@ -147,8 +150,10 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                                             getRef={(c) => { signOutQRCodeRef.current = c; }}
                                             size={60}
                                             value={`tamu-shpe://event?id=${event.id}&mode=sign-out`}
+                                            logo={Images.SIGN_OUT_LOGO}
                                             backgroundColor={darkMode ? '#121212' : '#fff'}
                                             color={darkMode ? '#fff' : '#000'}
+                                            logoBackgroundColor='white'
                                         />
                                     </View>
                                 </TouchableOpacity>
@@ -165,8 +170,12 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                             getRef={(c) => { signInQRCodeRef.current = c; }}
                             size={350}
                             value={`tamu-shpe://event?id=${event.id}&mode=sign-in`}
+                            logo={Images.SIGN_IN_LOGO}
                             backgroundColor={darkMode ? '#121212' : '#fff'}
                             color={darkMode ? '#fff' : '#000'}
+                            logoBackgroundColor='white'
+                            logoSize={50}
+
                         />
                         <View className='pt-2'>
                             <Button title="Save QR Code" onPress={saveSignInQRCode} color={darkMode ? "#1E90FF" : undefined} />
@@ -181,8 +190,11 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                             getRef={(c) => { signOutQRCodeRef.current = c; }}
                             size={350}
                             value={`tamu-shpe://event?id=${event.id}&mode=sign-out`}
+                            logo={Images.SIGN_OUT_LOGO}
                             backgroundColor={darkMode ? '#121212' : '#fff'}
                             color={darkMode ? '#fff' : '#000'}
+                            logoBackgroundColor='white'
+                            logoSize={50}
                         />
                         <View className='pt-2'>
                             <Button title="Save QR Code" onPress={saveSignOutQRCode} color={darkMode ? "#1E90FF" : undefined} />
