@@ -160,9 +160,13 @@ const Points = () => {
   const getEventsForMonth = (month: Date) => {
     return events.filter(event => {
       const eventDate = event.startTime?.toDate();
-      return eventDate && eventDate.getFullYear() === month.getFullYear() && eventDate.getMonth() === month.getMonth();
+      const isSameMonth = eventDate && eventDate.getFullYear() === month.getFullYear() && eventDate.getMonth() === month.getMonth();
+      const isNotInstagramEvent = event.name !== 'Instagram Points';
+
+      return isSameMonth && isNotInstagramEvent;
     });
   };
+
 
   const handleCellClick = (userId: string | undefined, eventId: string | undefined, initialValue: number | null) => {
     if (!userId || !eventId) return;
@@ -332,6 +336,7 @@ const Points = () => {
           key: `event${eventIndex}`,
           width: 20,
         })),
+        { header: 'Instagram Points', key: 'instagramPoints', width: 15 }
       ];
 
       sheet.columns = sheetColumns;
@@ -344,6 +349,14 @@ const Points = () => {
             type: 'pattern',
             pattern: 'solid',
             fgColor: { argb: getColumnColor(colNumber - 5).replace('#', '') },
+          };
+        }
+        // Apply the same color for Instagram Points header using column index
+        if (colNumber === sheetColumns.length) {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFF9DB' }, // Light yellow
           };
         }
         cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
@@ -363,6 +376,16 @@ const Points = () => {
           rowValues[`event${eventIndex}`] = eventPoints > 0 ? eventPoints : '';
         });
 
+        // Calculate Instagram Points for the month, handling possible undefined values
+        const instagramPoints = member.eventLogs?.reduce((total, log) => {
+          if (log.instagramLogs) {
+            return total + calculateInstagramPoints(log.instagramLogs, month);
+          }
+          return total;
+        }, 0) || 0;
+
+        rowValues['instagramPoints'] = instagramPoints > 0 ? instagramPoints : '';
+
         const row = sheet.addRow(rowValues);
 
         // Style the officer's name in red
@@ -378,12 +401,21 @@ const Points = () => {
             fgColor: { argb: getColumnColor(eventIndex).replace('#', '') },
           };
         });
+
+        // Apply the same color to the Instagram Points column header and cells
+        const instagramColor = 'FFF9DB'; // Light yellow for Instagram Points
+        row.getCell(sheetColumns.length).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: instagramColor },
+        };
       });
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(new Blob([buffer]), `SHPE_Points_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
+
 
   if (loading) {
     return (
@@ -582,7 +614,7 @@ const Points = () => {
                       );
                     })}
                     {/* Display Instagram points */}
-                    <td className="px-4 py-2 text-right">
+                    <td className="px-4 py-2 text-right" style={{ backgroundColor: '#FFF9DB' }}>
                       {member.eventLogs?.reduce((total, log) => total + calculateInstagramPoints(log.instagramLogs || [], months[currentMonthIndex]), 0)}
                     </td>
                   </>
