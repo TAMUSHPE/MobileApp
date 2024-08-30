@@ -101,26 +101,23 @@ const Points = () => {
   }, [router]);
 
   const getPointsForMonth = (eventLogs: SHPEEventLog[], month: Date): number => {
-    // Find the event ID corresponding to "Instagram Points"
     const instagramEventIds = events
       .filter(event => event.name === 'Instagram Points')
       .map(event => event.id);
 
-    // Calculate regular event points, excluding "Instagram Points" events
     const eventPoints = eventLogs
       .filter(log => {
         const eventDate = log.creationTime?.toDate();
         const isSameMonth = eventDate && eventDate.getFullYear() === month.getFullYear() && eventDate.getMonth() === month.getMonth();
-        const isNotInstagramEvent = !instagramEventIds.includes(log.eventId); // Exclude Instagram Points events by eventId
+        const isNotInstagramEvent = !instagramEventIds.includes(log.eventId);
 
-        return isSameMonth && isNotInstagramEvent; // Only include events that are not Instagram Points
+        return isSameMonth && isNotInstagramEvent;
       })
       .reduce((total, log) => {
         const pointsToAdd = log.points || 0;
         return total + pointsToAdd;
       }, 0);
 
-    // Calculate Instagram points
     const instagramPoints = eventLogs.reduce((total, log) => {
       let pointsForLog = 0;
       if (log.instagramLogs) {
@@ -129,7 +126,6 @@ const Points = () => {
       return total + pointsForLog;
     }, 0);
 
-    // Combine both regular and Instagram points
     return eventPoints + instagramPoints;
   };
 
@@ -351,7 +347,7 @@ const Points = () => {
             fgColor: { argb: getColumnColor(colNumber - 5).replace('#', '') },
           };
         }
-        // Apply the same color for Instagram Points header using column index
+
         if (colNumber === sheetColumns.length) {
           cell.fill = {
             type: 'pattern',
@@ -376,7 +372,6 @@ const Points = () => {
           rowValues[`event${eventIndex}`] = eventPoints > 0 ? eventPoints : '';
         });
 
-        // Calculate Instagram Points for the month, handling possible undefined values
         const instagramPoints = member.eventLogs?.reduce((total, log) => {
           if (log.instagramLogs) {
             return total + calculateInstagramPoints(log.instagramLogs, month);
@@ -402,8 +397,7 @@ const Points = () => {
           };
         });
 
-        // Apply the same color to the Instagram Points column header and cells
-        const instagramColor = 'FFF9DB'; // Light yellow for Instagram Points
+        const instagramColor = 'FFF9DB';
         row.getCell(sheetColumns.length).fill = {
           type: 'pattern',
           pattern: 'solid',
