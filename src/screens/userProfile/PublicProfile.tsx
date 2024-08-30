@@ -32,8 +32,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
     const { userInfo, setUserInfo } = userContext!;
     const isCurrentUser = uid === auth.currentUser?.uid;
     const routes = useNavigationState(state => state.routes);
-    const isInMemberDirectoryStack = routes.some(route => route.name === 'Home');
-
+    const isInProfileStack = routes.some(route => route.name === 'PublicProfile') && routes.length === 1;
 
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
@@ -141,7 +140,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                     <SafeAreaView edges={['top']}>
                         {/* Back and Edit Button */}
                         <View>
-                            {(isInMemberDirectoryStack) &&
+                            {(!isInProfileStack) &&
                                 <TouchableOpacity
                                     onPress={() => navigation.goBack()}
                                     className="mx-4 w-10 h-10 items-center justify-center rounded-full"
@@ -150,7 +149,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                                     <Octicons name="chevron-left" size={30} color="white" />
                                 </TouchableOpacity>
                             }
-                            {(isCurrentUser && !isInMemberDirectoryStack) &&
+                            {(isInProfileStack) &&
                                 <View className='flex-row justify-end'>
                                     <TouchableOpacity
                                         onPress={() => navigation.navigate("ProfileSettingsScreen")}
@@ -209,9 +208,10 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                             }
                         </View>
                         {/* MemberSHPE Button */}
-                        {(isVerified && isCurrentUser && !isInMemberDirectoryStack) &&
+                        {(isVerified) &&
                             <TouchableOpacity
                                 onPress={() => navigation.navigate("MemberSHPE")}
+                                disabled={!isCurrentUser}
                                 className="m-3 rounded-full absolute bottom-0 left-0 items-center justify-center"
                                 style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
                             >
