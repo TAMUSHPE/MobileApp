@@ -29,4 +29,5 @@ export const Images = {
     SHPE_WHITE: require("./SHPE_WHITE.png"),
     SIGN_IN_LOGO: require("./sign-in-icon.png"),
     SIGN_OUT_LOGO: require("./sign-out-icon.png"),
+    QR_CODE_LOGO: require("./qr-code.png")
 };
