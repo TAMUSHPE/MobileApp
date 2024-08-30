@@ -800,6 +800,33 @@ export const getUserEventLogs = async (
     return { events, lastVisibleDoc };
 }
 
+export const fetchEventLogs = async (eventId: string) => {
+    const signInUserIds: string[] = [];
+    const signOutUserIds: string[] = [];
+
+    try {
+        const logsRef = collection(db, `events/${eventId}/logs`);
+        const logsSnapshot = await getDocs(logsRef);
+
+        logsSnapshot.docs.forEach((log) => {
+            const logData = log.data();
+            const userId = log.id;
+
+            if (logData.signInTime) {
+                signInUserIds.push(userId);
+            }
+            if (logData.signOutTime) {
+                signOutUserIds.push(userId);
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching user logs:', error);
+        throw error;
+    }
+
+    return { signInUserIds, signOutUserIds };
+};
+
 // ============================================================================
 // Committee Utilities
 // ============================================================================

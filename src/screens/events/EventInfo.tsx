@@ -4,7 +4,7 @@ import { RouteProp, useRoute } from '@react-navigation/core';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome6, Entypo } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
-import { getAttendanceNumber, getPublicUserData, getUsers, signInToEvent, signOutOfEvent, getUserEventLog } from '../../api/firebaseUtils';
+import { getAttendanceNumber, getPublicUserData, getUsers, signInToEvent, signOutOfEvent, getUserEventLog, fetchEventLogs } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { MillisecondTimes, formatEventDate, formatEventTime } from '../../helpers/timeUtils';
 import { SHPEEvent, SHPEEventLog, getStatusMessage } from '../../types/events';
@@ -20,7 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<EventInfoScreenRouteProp>();
     const { event } = route.params;
-    const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, geofencingRadius, workshopType, committee, creator, nationalConventionEligible, startTimeBuffer, endTimeBuffer } = event || {};
+    const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, geofencingRadius, workshopType, committee, creator, nationalConventionEligible, startTimeBuffer, endTimeBuffer, id } = event || {};
 
     const insets = useSafeAreaInsets();
 
@@ -46,6 +46,12 @@ const EventInfo = ({ navigation }: EventProps) => {
     const [userSignInOut, setUserSignInOut] = useState<string>("signIn");
     const [userModalVisible, setUserModalVisible] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
+    const [signInUsers, setSignInUsers] = useState<PublicUserInfo[]>([]);
+    const [signOutUsers, setSignOutUsers] = useState<PublicUserInfo[]>([]);
+    const [signInModalVisible, setSignInModalVisible] = useState<boolean>(false);
+    const [signOutModalVisible, setSignOutModalVisible] = useState<boolean>(false);
+    const [loadingLog, setLoadingLog] = useState<boolean>(false);
+
 
     const fetchAttendanceCounts = async () => {
         setLoading(true);
@@ -77,15 +83,36 @@ const EventInfo = ({ navigation }: EventProps) => {
         fetchCreatorInfo();
     }, [creator])
 
-    const fetchAllUsers = async () => {
+    const fetchAllData = async () => {
+        setLoadingLog(true)
         try {
-            const fetchedUsers = await getUsers();
-            setUsers(fetchedUsers);
-            setAllUserFetched(true);
+            // Fetch sign-in and sign-out user IDs from event logs
+            const { signInUserIds, signOutUserIds } = await fetchEventLogs(id!);
+
+            let filteredSignInUsers: PublicUserInfo[] = [];
+            let filteredSignOutUsers: PublicUserInfo[] = []
+            if (!allUserFetched) {
+                const fetchedUsers = await getUsers();
+
+                filteredSignInUsers = fetchedUsers.filter((user) => signInUserIds.includes(user.uid!));
+                filteredSignOutUsers = fetchedUsers.filter((user) => signOutUserIds.includes(user.uid!));
+
+                setUsers(fetchedUsers);
+                setAllUserFetched(true)
+                setForceUpdate((prev) => prev + 1);
+
+            } else {
+                filteredSignInUsers = users.filter((user) => signInUserIds.includes(user.uid!));
+                filteredSignOutUsers = users.filter((user) => signOutUserIds.includes(user.uid!));
+            }
+
+            setSignInUsers(filteredSignInUsers);
+            setSignOutUsers(filteredSignOutUsers);
         } catch (error) {
-            console.error("An error occurred while fetching users: ", error);
+            console.error('Error fetching user logs:', error);
+        } finally {
+            setLoadingLog(false)
         }
-        setForceUpdate(prev => prev + 1);
     };
 
 
@@ -196,8 +223,9 @@ const EventInfo = ({ navigation }: EventProps) => {
                                                         setUserSignInOut("signIn")
                                                         setUserModalVisible(true)
                                                         if (!allUserFetched) {
-                                                            fetchAllUsers();
+                                                            fetchAllData();
                                                         }
+
                                                     }}
                                                 >
                                                     <Text className='text-white text-xl py-3 font-medium'>Manual Sign In</Text>
@@ -210,11 +238,34 @@ const EventInfo = ({ navigation }: EventProps) => {
                                                         setUserSignInOut("signOut")
                                                         setUserModalVisible(true)
                                                         if (!allUserFetched) {
-                                                            fetchAllUsers();
+                                                            fetchAllData();
                                                         }
+
                                                     }}
                                                 >
                                                     <Text className='text-white text-xl font-medium'>Manual Sign Out</Text>
+                                                </TouchableOpacity>
+                                                <View className='w-[70%] bg-white' style={{ height: 1 }} />
+                                                <TouchableOpacity
+                                                    className="px-4 py-3"
+                                                    onPress={() => {
+                                                        setShowOptionMenu(false);
+                                                        setSignInModalVisible(true);
+                                                        fetchAllData();
+                                                    }}
+                                                >
+                                                    <Text className="text-white text-xl font-medium">Delete Sign In Log</Text>
+                                                </TouchableOpacity>
+                                                <View className='w-[70%] bg-white' style={{ height: 1 }} />
+                                                <TouchableOpacity
+                                                    className="px-4 py-3"
+                                                    onPress={() => {
+                                                        setShowOptionMenu(false);
+                                                        setSignOutModalVisible(true);
+                                                        fetchAllData();
+                                                    }}
+                                                >
+                                                    <Text className="text-white text-xl font-medium">Delete Sign Out Log</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
@@ -447,6 +498,97 @@ const EventInfo = ({ navigation }: EventProps) => {
                             }}
                             users={users}
                         />
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={signInModalVisible}
+                onRequestClose={() => {
+                    setSignInModalVisible(false);
+                }}
+            >
+                <View
+                    style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                >
+                    <View className="flex-row items-center h-10 mb-4">
+                        <View className="w-screen absolute">
+                            <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>
+                                Select a Member (Sign In)
+                            </Text>
+                        </View>
+
+                        <TouchableOpacity
+                            className="ml-6 px-4"
+                            onPress={() => setSignInModalVisible(false)}
+                        >
+                            <Octicons name="x" size={26} color={darkMode ? 'white' : 'black'} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {loadingLog && (
+                        <ActivityIndicator className="mb-2" size="small" />
+                    )}
+
+                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+
+                        {!loadingLog && (
+                            <MembersList
+                                handleCardPress={(uid) => {
+                                    setLoading(true);
+                                    setSignInModalVisible(false);
+                                }}
+                                users={signInUsers}
+                            />
+                        )}
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={signOutModalVisible}
+                onRequestClose={() => {
+                    setSignOutModalVisible(false);
+                }}
+            >
+                <View
+                    style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                >
+                    <View className="flex-row items-center h-10 mb-4">
+                        <View className="w-screen absolute">
+                            <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>
+                                Select a Member (Sign Out)
+                            </Text>
+                        </View>
+
+                        <TouchableOpacity
+                            className="ml-6 px-4"
+                            onPress={() => setSignOutModalVisible(false)}
+                        >
+                            <Octicons name="x" size={26} color={darkMode ? 'white' : 'black'} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {loadingLog && (
+                        <ActivityIndicator className="mb-2" size="small" />
+                    )}
+
+                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                        {!loadingLog && (
+                            <MembersList
+                                handleCardPress={(uid) => {
+                                    setLoading(true);
+                                    setSignOutModalVisible(false);
+                                }}
+                                users={signOutUsers}
+                            />
+                        )}
                     </View>
                 </View>
             </Modal>
