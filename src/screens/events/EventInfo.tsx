@@ -473,28 +473,52 @@ const EventInfo = ({ navigation }: EventProps) => {
                         <MembersList
                             key={forceUpdate}
                             handleCardPress={(uid) => {
-                                if (userSignInOut === "signIn") {
-                                    setLoading(true);
-                                    signInToEvent(event.id!, uid).then((status) => {
-                                        Alert.alert(
-                                            'Status',
-                                            getStatusMessage(status),
-                                            [{ text: 'OK', onPress: () => { fetchAttendanceCounts(); } }],
-                                            { cancelable: false }
-                                        );
-                                    });
-                                } else if (userSignInOut === "signOut") {
-                                    setLoading(true);
-                                    signOutOfEvent(event.id!, uid).then((status) => {
-                                        Alert.alert(
-                                            'Status',
-                                            getStatusMessage(status),
-                                            [{ text: 'OK', onPress: () => { fetchAttendanceCounts(); } }],
-                                            { cancelable: false }
-                                        );
-                                    });
-                                }
-                                setUserModalVisible(false);
+                                const action = userSignInOut === 'signIn' ? 'sign in' : 'sign out';
+
+                                Alert.alert(
+                                    `Confirm ${action}`,
+                                    `Are you sure you want to ${action} this member?`,
+                                    [
+                                        {
+                                            text: 'Cancel',
+                                            style: 'cancel',
+                                            onPress: () => {
+                                                setLoading(false);
+                                            },
+                                        },
+                                        {
+                                            text: 'Yes',
+                                            onPress: async () => {
+                                                setLoading(true);
+                                                if (userSignInOut === 'signIn') {
+                                                    await signInToEvent(event.id!, uid).then((status) => {
+                                                        Alert.alert('Status', getStatusMessage(status), [
+                                                            {
+                                                                text: 'OK',
+                                                                onPress: () => {
+                                                                    fetchAttendanceCounts();
+                                                                },
+                                                            },
+                                                        ]);
+                                                    });
+                                                } else if (userSignInOut === 'signOut') {
+                                                    await signOutOfEvent(event.id!, uid).then((status) => {
+                                                        Alert.alert('Status', getStatusMessage(status), [
+                                                            {
+                                                                text: 'OK',
+                                                                onPress: () => {
+                                                                    fetchAttendanceCounts();
+                                                                },
+                                                            },
+                                                        ]);
+                                                    });
+                                                }
+                                                setUserModalVisible(false);
+                                            },
+                                        },
+                                    ],
+                                    { cancelable: false }
+                                );
                             }}
                             users={users}
                         />
@@ -517,7 +541,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                     <View className="flex-row items-center h-10 mb-4">
                         <View className="w-screen absolute">
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>
-                                Select a Member (Sign In)
+                                Select a Member
                             </Text>
                         </View>
 
@@ -538,8 +562,6 @@ const EventInfo = ({ navigation }: EventProps) => {
                         {!loadingLog && (
                             <MembersList
                                 handleCardPress={(uid) => {
-                                    setLoading(true);
-                                    setSignInModalVisible(false);
                                 }}
                                 users={signInUsers}
                             />
@@ -563,7 +585,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                     <View className="flex-row items-center h-10 mb-4">
                         <View className="w-screen absolute">
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>
-                                Select a Member (Sign Out)
+                                Select a Member
                             </Text>
                         </View>
 
@@ -583,8 +605,6 @@ const EventInfo = ({ navigation }: EventProps) => {
                         {!loadingLog && (
                             <MembersList
                                 handleCardPress={(uid) => {
-                                    setLoading(true);
-                                    setSignOutModalVisible(false);
                                 }}
                                 users={signOutUsers}
                             />
