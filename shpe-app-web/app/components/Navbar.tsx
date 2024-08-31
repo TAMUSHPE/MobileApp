@@ -36,7 +36,7 @@ const Navbar = () => {
                     <div className={`flex  items-center h-full rounded-full pr-5 pl-5 transition duration-300
                     ${ path =="/points" ?"bg-gray-400" :'hover:bg-gray-400'} `}>
                         <Image src="ranking-star-solid 2.svg" alt="Dashboard" width={20} height={20} />
-                        <div className='pl-3'>Points </div>
+                        <div className='pl-3'>Points                </div>
                     </div>
                 </Link>
 
