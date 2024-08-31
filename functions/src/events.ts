@@ -3,6 +3,7 @@ import { db } from './firebaseConfig';
 import { GeoPoint, Timestamp } from 'firebase-admin/firestore';
 import { SHPEEvent, SHPEEventLog } from './types/events'
 import { MillisecondTimes } from './helpers/timeUtils';
+import { firestore } from 'firebase-admin';
 
 /**
  * Converts an angle in degrees to radians
@@ -262,12 +263,23 @@ export const eventLogDelete = functions.https.onCall(async (data, context) => {
     try {
         const eventLogRef = db.collection(`events/${eventID}/logs`).doc(uid);
         const userEventLogRef = db.collection(`users/${uid}/event-logs`).doc(eventID);
+        const backupLogRef = db.collection(`deleted-events/${eventID}/logs`).doc(uid);
 
-        const eventLogSnapshot = await eventLogRef.get();
-        const userEventLogSnapshot = await userEventLogRef.get();
+        const [eventLogSnapshot, userEventLogSnapshot] = await Promise.all([
+            eventLogRef.get(),
+            userEventLogRef.get()
+        ]);
 
         if (!eventLogSnapshot.exists && !userEventLogSnapshot.exists) {
             throw new functions.https.HttpsError('not-found', 'Log not found in either collection.');
+        }
+
+        if (eventLogSnapshot.exists) {
+            const eventLogData = eventLogSnapshot.data();
+            await backupLogRef.set({
+                ...eventLogData,
+                deletedAt: firestore.Timestamp.now()
+            });
         }
 
         await Promise.all([
