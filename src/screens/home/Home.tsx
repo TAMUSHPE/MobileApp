@@ -253,11 +253,11 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                             elevation: 5,
                         }}
                     >
-                        <Image
+                        {/* <Image
                             resizeMode='contain'
                             className="h-16 w-16 absolute left-7"
                             source={Images.SHPE_WHITE}
-                        />
+                        /> */}
                         <Text className='text-2xl font-bold text-white mx-auto'>Become a Member</Text>
                     </TouchableOpacity>
                 )}
