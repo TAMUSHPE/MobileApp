@@ -19,7 +19,7 @@ const Navbar = () => {
                     <div className={`flex  items-center h-full rounded-full pr-5 pl-5 transition duration-300
                     ${ path =="/dashboard" ?"bg-gray-400" :'hover:bg-gray-400'} `}>
                         <Image src="house-solid.svg" alt="Dashboard" width={20} height={20} />
-                        <div className='pl-3'> Dashboard </div>
+                        <div className='pl-3'>Dashboard</div>
 
                     </div>
                 </Link>
@@ -28,7 +28,7 @@ const Navbar = () => {
                     <div className={`flex  items-center h-full rounded-full pr-5 pl-5 transition duration-300
                     ${ path =="/events" ?"bg-gray-400" :'hover:bg-gray-400'} `}>
                         <Image src="calendar-solid.svg" alt="Dashboard" width={15} height={20} />
-                        <div className='pl-3 h-fit'> Events </div>
+                        <div className='pl-3 h-fit'>Events</div>
                     </div>
                 </Link>
 
@@ -36,7 +36,7 @@ const Navbar = () => {
                     <div className={`flex  items-center h-full rounded-full pr-5 pl-5 transition duration-300
                     ${ path =="/points" ?"bg-gray-400" :'hover:bg-gray-400'} `}>
                         <Image src="ranking-star-solid 2.svg" alt="Dashboard" width={20} height={20} />
-                        <div className='pl-3'>Points                </div>
+                        <div className='pl-3'>Points</div>
                     </div>
                 </Link>
 
@@ -44,7 +44,7 @@ const Navbar = () => {
                     <div className={`flex  items-center h-full rounded-full pr-5 pl-5 transition duration-300
                     ${ path =="/committees" ?"bg-gray-400" :'hover:bg-gray-400'} `}>
                         <Image src="layer-group.svg" alt="Dashboard" width={20} height={20} />
-                        <div className='pl-3'> Committees</div>
+                        <div className='pl-3'>Committees</div>
                     </div>
                 </Link>
 
@@ -52,7 +52,7 @@ const Navbar = () => {
                     <div className={`flex  items-center h-full rounded-full pr-5 pl-5 transition duration-300
                     ${ path =="/membership" ?"bg-gray-400" :'hover:bg-gray-400'} `}>
                         <Image src="Vector.svg" alt="Dashboard" width={20} height={20} />
-                        <div className='pl-3'> Membership</div>
+                        <div className='pl-3'>Membership</div>
                     </div>
                 </Link>
 
@@ -60,7 +60,7 @@ const Navbar = () => {
                     <div className={`flex  items-center h-full rounded-full pr-5 pl-5 transition duration-300
                     ${ path =="/tools" ?"bg-gray-400" :'hover:bg-gray-400'} `}>
                         <Image src="screwdriver-sold.svg" alt="Dashboard" width={20} height={20} />
-                        <div className='pl-3'> Tools</div>
+                        <div className='pl-3'>Tools</div>
                     </div>
                 </Link>
 
@@ -69,7 +69,7 @@ const Navbar = () => {
             <button onClick={() => { handleLogout(router) }}
                 className='flex  text-[18px] items-center  rounded-full pr-5 pl-5 transition duration-300  hover:bg-gray-400 '>
                 <Image src="sign-out-icon.svg" alt="Dashboard" width={20} height={20} />
-                <div className=" pl-3 font-normal whitespace-nowrap"> Sign out </div>
+                <div className=" pl-3 font-normal whitespace-nowrap">Sign out</div>
             </button>
 
         </nav>
