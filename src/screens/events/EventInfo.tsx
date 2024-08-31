@@ -440,49 +440,51 @@ const EventInfo = ({ navigation }: EventProps) => {
                         </TouchableOpacity>
                     </View>
 
-                    {!allUserFetched && (
+                    {(!allUserFetched || loadingLog) && (
                         <ActivityIndicator className="mb-2" size="small" />
                     )}
 
                     <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
-                        <MembersList
-                            key={forceUpdate}
-                            handleCardPress={(uid) => {
-                                Alert.alert(
-                                    `Confirm sign in`,
-                                    `Are you sure you want to sign in this member?`,
-                                    [
-                                        {
-                                            text: 'Cancel',
-                                            style: 'cancel',
-                                            onPress: () => {
-                                                setLoading(false);
+                        {!loadingLog && (
+                            <MembersList
+                                key={forceUpdate}
+                                handleCardPress={(uid) => {
+                                    Alert.alert(
+                                        `Confirm sign in`,
+                                        `Are you sure you want to sign in this member?`,
+                                        [
+                                            {
+                                                text: 'Cancel',
+                                                style: 'cancel',
+                                                onPress: () => {
+                                                    setLoading(false);
+                                                },
                                             },
-                                        },
-                                        {
-                                            text: 'Yes',
-                                            onPress: async () => {
-                                                setLoading(true);
+                                            {
+                                                text: 'Yes',
+                                                onPress: async () => {
+                                                    setLoading(true);
 
-                                                await signInToEvent(event.id!, uid).then((status) => {
-                                                    Alert.alert('Status', getStatusMessage(status), [
-                                                        {
-                                                            text: 'OK',
-                                                            onPress: () => {
-                                                                fetchAttendanceCounts();
+                                                    await signInToEvent(event.id!, uid).then((status) => {
+                                                        Alert.alert('Status', getStatusMessage(status), [
+                                                            {
+                                                                text: 'OK',
+                                                                onPress: () => {
+                                                                    fetchAttendanceCounts();
+                                                                },
                                                             },
-                                                        },
-                                                    ]);
-                                                });
-                                                setSignInModalVisible(false);
+                                                        ]);
+                                                    });
+                                                    setSignInModalVisible(false);
+                                                },
                                             },
-                                        },
-                                    ],
-                                    { cancelable: false }
-                                );
-                            }}
-                            users={users}
-                        />
+                                        ],
+                                        { cancelable: false }
+                                    );
+                                }}
+                                users={users}
+                            />
+                        )}
                     </View>
                 </View>
             </Modal>
@@ -513,49 +515,51 @@ const EventInfo = ({ navigation }: EventProps) => {
                         </TouchableOpacity>
                     </View>
 
-                    {!allUserFetched && (
+                    {(!allUserFetched || loadingLog) && (
                         <ActivityIndicator className="mb-2" size="small" />
                     )}
 
                     <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
-                        <MembersList
-                            key={forceUpdate + 1}
-                            handleCardPress={(uid) => {
-                                Alert.alert(
-                                    `Confirm sign in`,
-                                    `Are you sure you want to sign in this member?`,
-                                    [
-                                        {
-                                            text: 'Cancel',
-                                            style: 'cancel',
-                                            onPress: () => {
-                                                setLoading(false);
+                        {!loadingLog && (
+                            <MembersList
+                                key={forceUpdate + 1}
+                                handleCardPress={(uid) => {
+                                    Alert.alert(
+                                        `Confirm sign out`,
+                                        `Are you sure you want to sign out this member?`,
+                                        [
+                                            {
+                                                text: 'Cancel',
+                                                style: 'cancel',
+                                                onPress: () => {
+                                                    setLoading(false);
+                                                },
                                             },
-                                        },
-                                        {
-                                            text: 'Yes',
-                                            onPress: async () => {
-                                                setLoading(true);
+                                            {
+                                                text: 'Yes',
+                                                onPress: async () => {
+                                                    setLoading(true);
 
-                                                await signOutOfEvent(event.id!, uid).then((status) => {
-                                                    Alert.alert('Status', getStatusMessage(status), [
-                                                        {
-                                                            text: 'OK',
-                                                            onPress: () => {
-                                                                fetchAttendanceCounts();
+                                                    await signOutOfEvent(event.id!, uid).then((status) => {
+                                                        Alert.alert('Status', getStatusMessage(status), [
+                                                            {
+                                                                text: 'OK',
+                                                                onPress: () => {
+                                                                    fetchAttendanceCounts();
+                                                                },
                                                             },
-                                                        },
-                                                    ]);
-                                                });
-                                                setSignOutModalVisible(false);
+                                                        ]);
+                                                    });
+                                                    setSignOutModalVisible(false);
+                                                },
                                             },
-                                        },
-                                    ],
-                                    { cancelable: false }
-                                );
-                            }}
-                            users={users}
-                        />
+                                        ],
+                                        { cancelable: false }
+                                    );
+                                }}
+                                users={users}
+                            />
+                        )}
                     </View>
                 </View>
             </Modal>
