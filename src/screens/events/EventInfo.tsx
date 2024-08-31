@@ -4,7 +4,7 @@ import { RouteProp, useRoute } from '@react-navigation/core';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome6, Entypo } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
-import { getAttendanceNumber, getPublicUserData, getUsers, signInToEvent, signOutOfEvent, getUserEventLog, fetchEventLogs } from '../../api/firebaseUtils';
+import { getAttendanceNumber, getPublicUserData, getUsers, signInToEvent, signOutOfEvent, getUserEventLog, fetchEventLogs, deleteEventLog } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { MillisecondTimes, formatEventDate, formatEventTime } from '../../helpers/timeUtils';
 import { SHPEEvent, SHPEEventLog, getStatusMessage } from '../../types/events';
@@ -600,6 +600,40 @@ const EventInfo = ({ navigation }: EventProps) => {
                         {!loadingLog && (
                             <MembersList
                                 handleCardPress={(uid) => {
+                                    Alert.alert(
+                                        `Confirm Deletion`,
+                                        `Are you sure you want to delete the log for this member?`,
+                                        [
+                                            {
+                                                text: 'Cancel',
+                                                style: 'cancel',
+                                                onPress: () => {
+                                                    setLoading(false);
+                                                },
+                                            },
+                                            {
+                                                text: 'Yes',
+                                                onPress: async () => {
+                                                    setLoading(true);
+
+                                                    await deleteEventLog(event.id!, uid).then((status) => {
+                                                        Alert.alert("Status", status, [
+                                                            {
+                                                                text: 'OK',
+                                                                onPress: () => {
+                                                                    fetchAttendanceCounts();
+                                                                },
+                                                            }
+                                                        ])
+                                                    })
+
+                                                    setUsersLoggedModalVisible(false)
+
+                                                },
+                                            },
+                                        ],
+                                        { cancelable: false }
+                                    );
                                 }}
                                 users={usersLogged}
                             />

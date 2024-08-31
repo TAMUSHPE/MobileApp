@@ -819,6 +819,33 @@ export const fetchEventLogs = async (eventId: string) => {
     return userIds;
 };
 
+export const deleteEventLog = async (eventID: string, uid: string): Promise<string> => {
+    return await httpsCallable(functions, 'eventLogDelete')
+        .call(null, { eventID, uid })
+        .then((result) => {
+            if (typeof result.data == 'object' && result.data && (result.data as any).success) {
+                return 'Log deleted successfully.';
+            } else {
+                return 'Failed to delete log.';
+            }
+        })
+        .catch((err) => {
+            switch (err.code) {
+                case 'functions/not-found':
+                    return 'Log not found.';
+                case 'functions/unauthenticated':
+                    return 'You are not authenticated.';
+                case 'functions/invalid-argument':
+                    return 'Invalid arguments provided.';
+                default:
+                    console.error('Error deleting event log:', err);
+                    return 'An unexpected error occurred. Please try again.';
+            }
+        });
+};
+
+
+
 // ============================================================================
 // Committee Utilities
 // ============================================================================

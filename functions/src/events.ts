@@ -248,3 +248,38 @@ export const addInstagramPoints = functions.https.onCall(async (data, context) =
     return { success: true };
 });
 
+
+export const eventLogDelete = functions.https.onCall(async (data, context) => {
+    const uid = data.uid || context.auth?.uid;
+    const eventID = data.eventID;
+
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'Function cannot be called without authentication.');
+    } else if (typeof data !== 'object' || typeof data.eventID !== 'string' || typeof uid !== 'string') {
+        throw new functions.https.HttpsError('invalid-argument', 'Invalid data types passed into function');
+    }
+
+    try {
+        const eventLogRef = db.collection(`events/${eventID}/logs`).doc(uid);
+        const userEventLogRef = db.collection(`users/${uid}/event-logs`).doc(eventID);
+
+        const eventLogSnapshot = await eventLogRef.get();
+        const userEventLogSnapshot = await userEventLogRef.get();
+
+        if (!eventLogSnapshot.exists && !userEventLogSnapshot.exists) {
+            throw new functions.https.HttpsError('not-found', 'Log not found in either collection.');
+        }
+
+        await Promise.all([
+            eventLogRef.delete(),
+            userEventLogRef.delete(),
+        ]);
+
+        functions.logger.info(`Successfully deleted logs for user ${uid} in event ${eventID}`);
+        return { success: true, message: 'Event log deleted successfully.' };
+    } catch (error) {
+        functions.logger.error('Error deleting event log:', error);
+        throw new functions.https.HttpsError('internal', 'Failed to delete event log.');
+    }
+});
+
