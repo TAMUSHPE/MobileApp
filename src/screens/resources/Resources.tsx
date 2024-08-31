@@ -26,6 +26,9 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+
+
     const [isLoading, setIsLoading] = useState(true);
     const [links, setLinks] = useState<LinkData[]>([]);
 
@@ -96,11 +99,11 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                 elevation: 5,
             }}
             onPress={() => {
-                if (!userInfo?.publicInfo?.isStudent){
+                if (!userInfo?.publicInfo?.isStudent) {
                     alert("You must be a student of Texas A&M to access this resource")
                     return;
                 }
-                if (isMemberVerified(userInfo?.publicInfo?.nationalExpiration, userInfo?.publicInfo?.chapterExpiration) || navigateTo == "PointsLeaderboard") {
+                if (navigateTo == "PointsLeaderboard" || hasPrivileges || isMemberVerified(userInfo?.publicInfo?.nationalExpiration, userInfo?.publicInfo?.chapterExpiration)) {
                     navigation.navigate(navigateTo);
                 } else {
                     alert("You must be a member of TAMU SHPE to access this resource. Visit the home screen to learn more to become a member!");
