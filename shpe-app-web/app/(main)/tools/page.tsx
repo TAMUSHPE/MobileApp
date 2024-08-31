@@ -88,7 +88,7 @@ const Tools = () => {
 
   return (
     <div className="w-full h-full">
-      <Header title="Tools" iconPath="screwdriver-sold.svg" />
+      
 
       <div className="mt-8 flex flex-col items-center">
         <button

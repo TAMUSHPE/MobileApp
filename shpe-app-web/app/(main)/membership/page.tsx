@@ -142,7 +142,7 @@ const Membership = () => {
 
   return (
     <div className="w-full h-full flex flex-col">
-      <Header title="MemberSHPE" iconPath="calendar-solid-gray.svg" />
+
       <div className="text-white bg-[#500000] text-center text-2xl flex">
         <button onClick={() => setTab('members')} className="w-1/2">
           Offical Members
