@@ -35,7 +35,7 @@ const Dashboard = () => {
 
     return (
         <div className="w-full h-full">
-            <Header title="Dashboard" iconPath="house-solid-gray.svg" />
+            
         </div>
     );
 };

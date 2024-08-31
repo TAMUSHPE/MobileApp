@@ -11,6 +11,7 @@ import { auth, functions } from "@/config/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { Timestamp } from "firebase/firestore";
 
 interface UserWithLogs extends User {
   eventLogs?: SHPEEventLog[];
@@ -33,7 +34,6 @@ const Points = () => {
   const schoolYear = generateSchoolYear();
   const months = generateSchoolYearMonths();
   const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
-  const updateRanksOnCall = httpsCallable(functions, 'updateRanksOnCall');
 
   // Set the initial current month index to the real current month
   const currentMonthDate = new Date();
@@ -53,8 +53,17 @@ const Points = () => {
           if (log.eventId) {
             acc[`${member.publicInfo?.uid}-${log.eventId}`] = log.points || 0;
           }
+
+          // Calculate Instagram points per month
+          if (log.instagramLogs) {
+            months.forEach((month, index) => {
+              const pointsForInstagram = calculateInstagramPoints(log.instagramLogs!, month);
+              acc[`${member.publicInfo?.uid}-instagram-${index}`] = pointsForInstagram;
+            });
+          }
         });
       }
+
       return acc;
     }, {});
 
@@ -91,15 +100,46 @@ const Points = () => {
     return () => unsubscribe();
   }, [router]);
 
-
   const getPointsForMonth = (eventLogs: SHPEEventLog[], month: Date): number => {
-    return eventLogs
+    const instagramEventIds = events
+      .filter(event => event.name === 'Instagram Points')
+      .map(event => event.id);
+
+    const eventPoints = eventLogs
       .filter(log => {
         const eventDate = log.creationTime?.toDate();
-        return eventDate && eventDate.getFullYear() === month.getFullYear() && eventDate.getMonth() === month.getMonth();
+        const isSameMonth = eventDate && eventDate.getFullYear() === month.getFullYear() && eventDate.getMonth() === month.getMonth();
+        const isNotInstagramEvent = !instagramEventIds.includes(log.eventId);
+
+        return isSameMonth && isNotInstagramEvent;
       })
-      .reduce((total, log) => total + (log.points || 0), 0);
+      .reduce((total, log) => {
+        const pointsToAdd = log.points || 0;
+        return total + pointsToAdd;
+      }, 0);
+
+    const instagramPoints = eventLogs.reduce((total, log) => {
+      let pointsForLog = 0;
+      if (log.instagramLogs) {
+        pointsForLog = calculateInstagramPoints(log.instagramLogs, month);
+      }
+      return total + pointsForLog;
+    }, 0);
+
+    return eventPoints + instagramPoints;
   };
+
+
+
+  const calculateInstagramPoints = (instagramLogs: Timestamp[], month: Date): number => {
+    // Count logs within the given month
+    return instagramLogs.filter(log => {
+      const logDate = log.toDate();
+      return logDate.getFullYear() === month.getFullYear() && logDate.getMonth() === month.getMonth();
+    }).length;
+  };
+
+
 
   const handleNextMonth = () => {
     if (currentMonthIndex < months.length - 1) {
@@ -116,9 +156,13 @@ const Points = () => {
   const getEventsForMonth = (month: Date) => {
     return events.filter(event => {
       const eventDate = event.startTime?.toDate();
-      return eventDate && eventDate.getFullYear() === month.getFullYear() && eventDate.getMonth() === month.getMonth();
+      const isSameMonth = eventDate && eventDate.getFullYear() === month.getFullYear() && eventDate.getMonth() === month.getMonth();
+      const isNotInstagramEvent = event.name !== 'Instagram Points';
+
+      return isSameMonth && isNotInstagramEvent;
     });
   };
+
 
   const handleCellClick = (userId: string | undefined, eventId: string | undefined, initialValue: number | null) => {
     if (!userId || !eventId) return;
@@ -288,6 +332,7 @@ const Points = () => {
           key: `event${eventIndex}`,
           width: 20,
         })),
+        { header: 'Instagram Points', key: 'instagramPoints', width: 15 }
       ];
 
       sheet.columns = sheetColumns;
@@ -300,6 +345,14 @@ const Points = () => {
             type: 'pattern',
             pattern: 'solid',
             fgColor: { argb: getColumnColor(colNumber - 5).replace('#', '') },
+          };
+        }
+
+        if (colNumber === sheetColumns.length) {
+          cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFF9DB' }, // Light yellow
           };
         }
         cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
@@ -319,6 +372,15 @@ const Points = () => {
           rowValues[`event${eventIndex}`] = eventPoints > 0 ? eventPoints : '';
         });
 
+        const instagramPoints = member.eventLogs?.reduce((total, log) => {
+          if (log.instagramLogs) {
+            return total + calculateInstagramPoints(log.instagramLogs, month);
+          }
+          return total;
+        }, 0) || 0;
+
+        rowValues['instagramPoints'] = instagramPoints > 0 ? instagramPoints : '';
+
         const row = sheet.addRow(rowValues);
 
         // Style the officer's name in red
@@ -334,12 +396,20 @@ const Points = () => {
             fgColor: { argb: getColumnColor(eventIndex).replace('#', '') },
           };
         });
+
+        const instagramColor = 'FFF9DB';
+        row.getCell(sheetColumns.length).fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: instagramColor },
+        };
       });
     });
 
     const buffer = await workbook.xlsx.writeBuffer();
     saveAs(new Blob([buffer]), `SHPE_Points_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
+
 
   if (loading) {
     return (
@@ -445,19 +515,19 @@ const Points = () => {
                   </th>
                 ))
               ) : (
-                getEventsForMonth(months[currentMonthIndex]).map((event, index) => (
-                  <th
-                    key={index}
-                    className="px-4 py-2 text-md font-bold text-right"
-                    style={{ width: '2%', minWidth: '40px', backgroundColor: getColumnColor(index) }}>
-                    {event.name}
+                <>
+                  {getEventsForMonth(months[currentMonthIndex]).map((event, index) => (
+                    <th
+                      key={index}
+                      className="px-4 py-2 text-md font-bold text-right"
+                      style={{ width: '2%', minWidth: '40px', backgroundColor: getColumnColor(index) }}>
+                      {event.name}
+                    </th>
+                  ))}
+                  <th className="px-4 py-2 text-md font-bold text-right" style={{ width: '7%', backgroundColor: '#FFF9DB' }}>
+                    Instagram Points
                   </th>
-                ))
-              )}
-              {filterType === 'monthly' && getEventsForMonth(months[currentMonthIndex]).length < 7 && (
-                Array.from({ length: 7 - getEventsForMonth(months[currentMonthIndex]).length }).map((_, index) => (
-                  <th key={`blank-${index}`} className="px-4 py-2 text-md font-bold text-right" style={{ width: '7%', minWidth: '100px' }} />
-                ))
+                </>
               )}
             </tr>
             {filterType === 'monthly' && (
@@ -474,11 +544,9 @@ const Points = () => {
                     {format(event.startTime!.toDate(), 'MM/dd/yyyy')}
                   </th>
                 ))}
-                {getEventsForMonth(months[currentMonthIndex]).length < 7 && (
-                  Array.from({ length: 7 - getEventsForMonth(months[currentMonthIndex]).length }).map((_, index) => (
-                    <th key={`blank-date-${index}`} className="px-4 py-2 text-right text-sm" style={{ width: '7%', minWidth: '100px' }} />
-                  ))
-                )}
+                <th className="px-4 py-2 text-right text-sm" style={{ width: '7%', backgroundColor: '#FFF9DB' }}>
+                  Instagram Points
+                </th>
               </tr>
             )}
           </thead>
@@ -539,10 +607,10 @@ const Points = () => {
                         </td>
                       );
                     })}
-                    {getEventsForMonth(months[currentMonthIndex]).length < 7 &&
-                      Array.from({ length: 7 - getEventsForMonth(months[currentMonthIndex]).length }).map((_, index) => (
-                        <td key={`blank-${index}`} className="px-4 py-2 text-right text-sm" />
-                      ))}
+                    {/* Display Instagram points */}
+                    <td className="px-4 py-2 text-right" style={{ backgroundColor: '#FFF9DB' }}>
+                      {member.eventLogs?.reduce((total, log) => total + calculateInstagramPoints(log.instagramLogs || [], months[currentMonthIndex]), 0)}
+                    </td>
                   </>
                 )}
               </tr>
