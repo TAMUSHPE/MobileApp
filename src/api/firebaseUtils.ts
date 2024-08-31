@@ -801,30 +801,22 @@ export const getUserEventLogs = async (
 }
 
 export const fetchEventLogs = async (eventId: string) => {
-    const signInUserIds: string[] = [];
-    const signOutUserIds: string[] = [];
+    const userIds: string[] = [];
 
     try {
         const logsRef = collection(db, `events/${eventId}/logs`);
         const logsSnapshot = await getDocs(logsRef);
 
         logsSnapshot.docs.forEach((log) => {
-            const logData = log.data();
             const userId = log.id;
-
-            if (logData.signInTime) {
-                signInUserIds.push(userId);
-            }
-            if (logData.signOutTime) {
-                signOutUserIds.push(userId);
-            }
+            userIds.push(userId);
         });
     } catch (error) {
         console.error('Error fetching user logs:', error);
         throw error;
     }
 
-    return { signInUserIds, signOutUserIds };
+    return userIds;
 };
 
 // ============================================================================
