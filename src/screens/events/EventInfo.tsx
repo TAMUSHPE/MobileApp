@@ -440,7 +440,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                         </TouchableOpacity>
                     </View>
 
-                    {(!allUserFetched || loadingLog) && (
+                    {(!allUserFetched || loadingLog || loading) && (
                         <ActivityIndicator className="mb-2" size="small" />
                     )}
 
