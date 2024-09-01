@@ -298,6 +298,14 @@ export const eventLogDelete = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('invalid-argument', 'Invalid data types passed into function');
     }
 
+    // Only allow privileged users to sign-out for other users
+    const token = context.auth.token;
+    if (uid !== context.auth.uid && (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.lead !== true && token.representative !== true)) {
+        functions.logger.warn(`${context.auth.token} attempted to sign in as ${uid} with invalid permissions.`);
+        throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
+    }
+
+
     try {
         const eventLogRef = db.collection(`events/${eventID}/logs`).doc(uid);
         const userEventLogRef = db.collection(`users/${uid}/event-logs`).doc(eventID);
