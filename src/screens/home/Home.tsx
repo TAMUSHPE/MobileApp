@@ -14,7 +14,7 @@ import { UserContext } from '../../context/UserContext';
 import { isMemberVerified } from '../../helpers/membership';
 import { auth, db } from '../../config/firebaseConfig';
 import DismissibleModal from '../../components/DismissibleModal';
-import { fetchOfficeCount, fetchOfficerStatus, getMyEvents, getUser, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
+import { fetchAndStoreUser, fetchOfficeCount, fetchOfficerStatus, getMyEvents, getUser, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
 import { EventType, SHPEEvent } from '../../types/events';
 import EventCard from '../events/EventCard';
 import { reverseFormattedFirebaseName } from '../../types/committees';
@@ -55,30 +55,30 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const [interestOptionsModal, setInterestOptionsModal] = useState<boolean>(false);
     const [savedInterestLoading, setSavedInterestLoading] = useState<boolean>(false);
 
-    const fetchUserData = async () => {
-        const MAX_ATTEMPTS = 15;
+    /**
+     * Fetches user data, stores it, and identifies accounts that have been deleted.
+     * If the account is deleted or data is undefined, it retries and signs out the user after max attempts.
+     * The purpose of retries is to prevent random sign outs
+     */
+    const fetchUserDataOrSignOut = async () => {
+        const MAX_ATTEMPTS = 8;
         let attempts = 0;
 
         console.log("Fetching user data...");
 
         while (attempts < MAX_ATTEMPTS) {
-            try {
-                const firebaseUser = await getUser(auth.currentUser?.uid!);
+            const firebaseUser = await fetchAndStoreUser();
 
-                if (firebaseUser) {
-                    await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                    setUserInfo(firebaseUser);
-                    return;
-                } else {
-                    console.warn("User data undefined. Data was likely deleted from Firebase.");
-                    attempts++;
-                }
-            } catch (error) {
-                console.error("Error updating user:", error);
+            if (firebaseUser) {
+                setUserInfo(firebaseUser);
+                return;
+            } else {
+                console.warn("User data undefined. Data was likely deleted from Firebase.");
                 attempts++;
             }
         }
 
+        console.warn("Max attempts reached. Signing out user.");
         signOutUser(true);
     };
 
@@ -102,7 +102,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             setCurrentUser(user);
 
             if (user) {
-                await fetchUserData();
+                await fetchUserDataOrSignOut();
             }
         });
         return unsubscribe;
