@@ -56,20 +56,31 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const [savedInterestLoading, setSavedInterestLoading] = useState<boolean>(false);
 
     const fetchUserData = async () => {
+        const MAX_ATTEMPTS = 15;
+        let attempts = 0;
+
         console.log("Fetching user data...");
-        try {
-            const firebaseUser = await getUser(auth.currentUser?.uid!)
-            if (firebaseUser) {
-                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+
+        while (attempts < MAX_ATTEMPTS) {
+            try {
+                const firebaseUser = await getUser(auth.currentUser?.uid!);
+
+                if (firebaseUser) {
+                    await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+                    setUserInfo(firebaseUser);
+                    return;
+                } else {
+                    console.warn("User data undefined. Data was likely deleted from Firebase.");
+                    attempts++;
+                }
+            } catch (error) {
+                console.error("Error updating user:", error);
+                attempts++;
             }
-            else {
-                console.warn("User data undefined. Data was likely deleted from Firebase.");
-            }
-            setUserInfo(firebaseUser);
-        } catch (error) {
-            console.error("Error updating user:", error);
         }
-    }
+
+        signOutUser(true);
+    };
 
     const fetchEvents = async () => {
         try {
@@ -85,40 +96,13 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         }
     };
 
-    const attemptFetchUserDoc = async (user: any, attempts = 0) => {
-        const MAX_ATTEMPTS = 15
-        try {
-            const userDocRef = doc(db, "users", user.uid);
-            const userDoc = await getDoc(userDocRef);
-
-            if (!userDoc.exists()) {
-                if (attempts < MAX_ATTEMPTS) {
-                    console.warn(`Attempt ${attempts + 1} failed. Retrying...`);
-                    await attemptFetchUserDoc(user, attempts + 1);
-                } else {
-                    console.warn("Max attempts reached. Signing out user.");
-                    signOutUser(true);
-                }
-            } else {
-                fetchUserData();
-            }
-        } catch (error) {
-            console.error("Error fetching user document:", error);
-            if (attempts < MAX_ATTEMPTS) {
-                await attemptFetchUserDoc(user, attempts + 1);
-            } else {
-                console.warn("Max attempts reached. Signing out user.");
-                signOutUser(true);
-            }
-        }
-    };
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             setCurrentUser(user);
 
             if (user) {
-                await attemptFetchUserDoc(user);
+                await fetchUserData();
             }
         });
         return unsubscribe;
