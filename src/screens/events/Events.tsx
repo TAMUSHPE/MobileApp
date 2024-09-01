@@ -8,7 +8,7 @@ import { Octicons, FontAwesome6 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { auth } from '../../config/firebaseConfig';
-import { getUpcomingEvents, getPastEvents, getUser, getCommittees } from '../../api/firebaseUtils';
+import { getUpcomingEvents, getPastEvents, getCommittees, fetchAndStoreUser } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { Images } from '../../../assets';
 import { formatTime } from '../../helpers/timeUtils';
@@ -71,22 +71,6 @@ const Events = ({ navigation }: EventsProps) => {
         }
     };
 
-    const fetchUserData = async () => {
-        console.log("Fetching user data...");
-        try {
-            const firebaseUser = await getUser(auth.currentUser?.uid!)
-            if (firebaseUser) {
-                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-            }
-            else {
-                console.warn("User data undefined. Data was likely deleted from Firebase.");
-            }
-            setUserInfo(firebaseUser);
-        } catch (error) {
-            console.error("Error updating user:", error);
-        }
-    }
-
     const fetchCommittees = async () => {
         const committeeData = await getCommittees();
         setCommittees(committeeData);
@@ -94,6 +78,13 @@ const Events = ({ navigation }: EventsProps) => {
 
 
     useEffect(() => {
+        const fetchUserData = async () => {
+            const firebaseUser = await fetchAndStoreUser();
+            if (firebaseUser) {
+                setUserInfo(firebaseUser);
+            }
+        };
+
         fetchEvents();
         fetchUserData();
         fetchCommittees();

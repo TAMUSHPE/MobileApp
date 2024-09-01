@@ -5,7 +5,7 @@ import { Octicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext'
 import { auth } from '../../config/firebaseConfig';
-import { getCommittees, getUser } from '../../api/firebaseUtils'
+import { fetchAndStoreUser, getCommittees } from '../../api/firebaseUtils'
 import { Committee } from "../../types/committees"
 import CommitteeCard from './CommitteeCard'
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -40,22 +40,6 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
         setIsLoading(false);
     }
 
-    const fetchUserData = async () => {
-        console.log("Fetching user data...");
-        try {
-            const firebaseUser = await getUser(auth.currentUser?.uid!)
-            if (firebaseUser) {
-                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-            }
-            else {
-                console.warn("User data undefined. Data was likely deleted from Firebase.");
-            }
-            setUserInfo(firebaseUser);
-        } catch (error) {
-            console.error("Error updating user:", error);
-        }
-    }
-
     const updateFilteredCommittees = (searchQuery: string) => {
         const filtered = committees.filter(committee =>
             committee.name?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -65,6 +49,13 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
 
 
     useEffect(() => {
+        const fetchUserData = async () => {
+            const firebaseUser = await fetchAndStoreUser();
+            if (firebaseUser) {
+                setUserInfo(firebaseUser);
+            }
+        };
+
         fetchCommittees();
         fetchUserData();
     }, []);
