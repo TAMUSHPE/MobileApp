@@ -214,6 +214,8 @@ export class StudyHours extends SHPEEvent {
         this.geolocation = null;
         this.general = true;
         this.notificationSent = true;
+        this.startTimeBuffer = MillisecondTimes.MINUTE * 0;
+        this.endTimeBuffer = MillisecondTimes.MINUTE * 15;
     }
 }
 

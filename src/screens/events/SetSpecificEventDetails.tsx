@@ -7,12 +7,11 @@ import { UserContext } from '../../context/UserContext';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import InteractButton from '../../components/InteractButton';
 import { WorkshopType } from '../../types/events';
-import { StatusBar } from 'expo-status-bar';
 import { Committee, reverseFormattedFirebaseName } from '../../types/committees';
 import { getCommittees } from '../../api/firebaseUtils';
 import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
-import DismissibleModal from '../../components/DismissibleModal';
+import { MillisecondTimes } from '../../helpers';
 
 const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const route = useRoute<UpdateEventScreenRouteProp>();
@@ -41,8 +40,8 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const [pointsPerHour, setPointsPerHour] = useState<number | undefined>(event.pointsPerHour ?? undefined);
     const [nationalConventionEligible, setNationalConventionEligible] = useState<boolean | undefined>(event.nationalConventionEligible ?? undefined);
     const [notificationSent, setNotificationSent] = useState<boolean | undefined>(event.notificationSent ?? undefined);
-    const [startTimeBuffer, setStartTimeBuffer] = useState<number | undefined>(event.startTimeBuffer ?? 20 * 60000);
-    const [endTimeBuffer, setEndTimeBuffer] = useState<number | undefined>(event.endTimeBuffer ?? 20 * 60000);
+    const [startTimeBuffer, setStartTimeBuffer] = useState<number | undefined>(event.startTimeBuffer ?? 20 * MillisecondTimes.MINUTE);
+    const [endTimeBuffer, setEndTimeBuffer] = useState<number | undefined>(event.endTimeBuffer ?? 20 * MillisecondTimes.MINUTE);
     const [hiddenEvent, setHiddenEvent] = useState<boolean | undefined>(event.hiddenEvent ?? undefined);
     const [isGeneral, setIsGeneral] = useState<boolean>(event.general ?? false);
 
@@ -433,20 +432,27 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 <View className='flex-row flex-wrap w-[60%]'>
                                     <CustomDropDownMenu
                                         data={TIMES}
-                                        onSelect={(item) => setStartTimeBuffer(Number(item.iso) * 60000)} // Convert Minute to Milliseconds
+                                        onSelect={(item) => setStartTimeBuffer(Number(item.iso) * MillisecondTimes.MINUTE)}
                                         searchKey="time"
                                         label="Select Time"
                                         isOpen={openDropdown === 'startTimeBuffer'}
                                         onToggle={() => toggleDropdown('startTimeBuffer')}
                                         displayType='iso'
                                         disableSearch
-                                        selectedItemProp={startTimeBuffer ? { value: ((startTimeBuffer / 60000).toFixed(0)).toString(), iso: ((startTimeBuffer / 60000).toFixed(0)).toString() } : null}
+                                        selectedItemProp={
+                                            startTimeBuffer !== undefined
+                                                ? {
+                                                    value: ((startTimeBuffer / MillisecondTimes.MINUTE).toFixed(0)).toString(),
+                                                    iso: ((startTimeBuffer / MillisecondTimes.MINUTE).toFixed(0)).toString(),
+                                                }
+                                                : null
+                                        }
                                         darkMode={darkMode}
                                     />
                                 </View>
                             </View>
                             <View className='mt-1 w-full justify-center items-center -z-10'>
-                                <Text className={`text-center ${darkMode ? "text-white" : "text-black"}`}>Allow to scan QRCode <Text className='text-primary-blue font-semibold'>{startTimeBuffer && ((startTimeBuffer / 60000).toFixed(0)).toString()} mins </Text>before event starts</Text>
+                                <Text className={`text-center ${darkMode ? "text-white" : "text-black"}`}>Allow to scan QRCode <Text className='text-primary-blue font-semibold'>{startTimeBuffer && ((startTimeBuffer / MillisecondTimes.MINUTE).toFixed(0)).toString()} mins </Text>before event starts</Text>
                             </View>
                         </View>
 
@@ -467,21 +473,28 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 <View className='flex-row flex-wrap w-[60%]'>
                                     <CustomDropDownMenu
                                         data={TIMES}
-                                        onSelect={(item) => setEndTimeBuffer(Number(item.iso) * 60000)} // Convert Minute to Milliseconds
+                                        onSelect={(item) => setEndTimeBuffer(Number(item.iso) * MillisecondTimes.MINUTE)}
                                         searchKey="time"
                                         label="Select Time"
                                         isOpen={openDropdown === 'endTimeBuffer'}
                                         onToggle={() => toggleDropdown('endTimeBuffer')}
                                         displayType='iso'
                                         disableSearch
-                                        selectedItemProp={endTimeBuffer ? { value: ((endTimeBuffer / 60000).toFixed(0)).toString(), iso: ((endTimeBuffer / 60000).toFixed(0)).toString() } : null}
+                                        selectedItemProp={
+                                            endTimeBuffer !== undefined
+                                                ? {
+                                                    value: ((endTimeBuffer / MillisecondTimes.MINUTE).toFixed(0)).toString(),
+                                                    iso: ((endTimeBuffer / MillisecondTimes.MINUTE).toFixed(0)).toString(),
+                                                }
+                                                : null
+                                        }
                                         darkMode={darkMode}
                                     />
                                 </View>
                             </View>
 
                             <View className='mt-1 w-full justify-center items-center -z-20'>
-                                <Text className={`text-center ${darkMode ? "text-white" : "text-black"}`}>Allow to scan QRCode <Text className='text-primary-blue font-semibold'>{endTimeBuffer && ((endTimeBuffer / 60000).toFixed(0)).toString()} mins </Text>after event ends</Text>
+                                <Text className={`text-center ${darkMode ? "text-white" : "text-black"}`}>Allow to scan QRCode <Text className='text-primary-blue font-semibold'>{endTimeBuffer && ((endTimeBuffer / MillisecondTimes.MINUTE).toFixed(0)).toString()} mins </Text>after event ends</Text>
                             </View>
                         </View>
                     </View>

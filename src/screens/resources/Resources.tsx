@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { auth } from '../../config/firebaseConfig';
-import { fetchLink, getUser } from '../../api/firebaseUtils';
+import { fetchAndStoreUser, fetchLink } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { handleLinkPress } from '../../helpers/links';
 import { ResourcesStackParams } from '../../types/navigation';
@@ -26,6 +26,9 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
+    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+
+
     const [isLoading, setIsLoading] = useState(true);
     const [links, setLinks] = useState<LinkData[]>([]);
 
@@ -40,23 +43,15 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
         setIsLoading(false)
     };
 
-    const fetchUserData = async () => {
-        console.log("Fetching user data...");
-        try {
-            const firebaseUser = await getUser(auth.currentUser?.uid!)
-            if (firebaseUser) {
-                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-            }
-            else {
-                console.warn("User data undefined. Data was likely deleted from Firebase.");
-            }
-            setUserInfo(firebaseUser);
-        } catch (error) {
-            console.error("Error updating user:", error);
-        }
-    }
-
     useEffect(() => {
+        const fetchUserData = async () => {
+            const firebaseUser = await fetchAndStoreUser();
+            if (firebaseUser) {
+                setUserInfo(firebaseUser);
+            }
+        };
+
+
         fetchLinks();
         fetchUserData();
     }, [])
@@ -96,11 +91,11 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                 elevation: 5,
             }}
             onPress={() => {
-                if (!userInfo?.publicInfo?.isStudent){
+                if (!userInfo?.publicInfo?.isStudent) {
                     alert("You must be a student of Texas A&M to access this resource")
                     return;
                 }
-                if (isMemberVerified(userInfo?.publicInfo?.nationalExpiration, userInfo?.publicInfo?.chapterExpiration) || navigateTo == "PointsLeaderboard") {
+                if (navigateTo == "PointsLeaderboard" || hasPrivileges || isMemberVerified(userInfo?.publicInfo?.nationalExpiration, userInfo?.publicInfo?.chapterExpiration)) {
                     navigation.navigate(navigateTo);
                 } else {
                     alert("You must be a member of TAMU SHPE to access this resource. Visit the home screen to learn more to become a member!");

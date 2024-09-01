@@ -58,7 +58,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
     useEffect(() => {
-        const fetchUserData = async () => {
+        const fetchTeamMembersData = async () => {
             if (committeeData) {
                 const { head, representatives, leads } = committeeData;
                 const newTeamMembers: TeamMembersState = { leads: [], representatives: [], head: null };
@@ -82,7 +82,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
             }
         };
 
-        fetchUserData();
+        fetchTeamMembersData();
     }, [committeeData]);
 
     useEffect(() => {
