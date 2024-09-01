@@ -79,7 +79,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         }
 
         console.warn("Max attempts reached. Signing out user.");
-        signOutUser(true);
+        // signOutUser(true);
     };
 
     const fetchEvents = async () => {
