@@ -267,23 +267,23 @@ const EventInfo = ({ navigation }: EventProps) => {
                 <View className='-z-10'>
                     {hasPrivileges && !loading && (
                         <View
-                            className={`flex-row w-full mx-4 mt-2 mb-2 ${signInPoints !== undefined && signOutPoints !== undefined ? 'justify-between' : 'justify-center'
+                            className={`flex-row w-full mx-4 mt-2 mb-1 ${signInPoints !== undefined && signOutPoints !== undefined ? 'justify-between' : 'justify-center'
                                 }`}
                         >
                             {signInPoints !== undefined && (
-                                <View className={`flex-row ${signOutPoints === undefined ? 'w-full justify-center' : 'w-[50%]'}`}>
+                                <View className={`flex-row ${signOutPoints === undefined ? 'w-full' : 'w-[50%]'}`}>
                                     <Octicons name="sign-in" size={24} color={darkMode ? 'white' : 'black'} />
                                     <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {signInPoints} Member
+                                        {attendanceCounts.signedInCount} Member
                                     </Text>
                                 </View>
                             )}
 
                             {signOutPoints !== undefined && (
-                                <View className={`flex-row ${signInPoints === undefined ? 'w-full justify-center' : 'w-[50%]'}`}>
+                                <View className={`flex-row ${signInPoints === undefined ? 'w-full' : 'w-[50%]'}`}>
                                     <Octicons name="sign-out" size={24} color={darkMode ? 'white' : 'black'} />
                                     <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {signOutPoints} Member
+                                        {attendanceCounts.signedOutCount} Member
                                     </Text>
                                 </View>
                             )}
@@ -292,13 +292,12 @@ const EventInfo = ({ navigation }: EventProps) => {
 
                     {/* General Details */}
                     {nationalConventionEligible && (
-                        <Text className={`text-center mt-1 text-md mx-5 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
-                            This event is eligible for national convention requirements*
+                        <Text className={`mt-2 text-md mx-4 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>This event is eligible for national convention requirements*
                         </Text>
                     )}
 
                     {(eventType === EventType.STUDY_HOURS) && (
-                        <Text className={`mt-1 text-md mx-5 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
+                        <Text className={`mt-2 text-md mx-4 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
                             Feel free to leave the area. Just be sure to scan in and out at the event location to fully earn your points!
                         </Text>
                     )}
