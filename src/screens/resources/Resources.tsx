@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { auth } from '../../config/firebaseConfig';
-import { fetchLink, getUser } from '../../api/firebaseUtils';
+import { fetchAndStoreUser, fetchLink } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { handleLinkPress } from '../../helpers/links';
 import { ResourcesStackParams } from '../../types/navigation';
@@ -43,23 +43,15 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
         setIsLoading(false)
     };
 
-    const fetchUserData = async () => {
-        console.log("Fetching user data...");
-        try {
-            const firebaseUser = await getUser(auth.currentUser?.uid!)
-            if (firebaseUser) {
-                await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-            }
-            else {
-                console.warn("User data undefined. Data was likely deleted from Firebase.");
-            }
-            setUserInfo(firebaseUser);
-        } catch (error) {
-            console.error("Error updating user:", error);
-        }
-    }
-
     useEffect(() => {
+        const fetchUserData = async () => {
+            const firebaseUser = await fetchAndStoreUser();
+            if (firebaseUser) {
+                setUserInfo(firebaseUser);
+            }
+        };
+
+
         fetchLinks();
         fetchUserData();
     }, [])

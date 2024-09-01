@@ -8,7 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
-import { getPublicUserData, getUser, getUserEventLogs, setUserRoles } from '../../api/firebaseUtils';
+import { fetchAndStoreUser, getPublicUserData, getUser, getUserEventLogs, setUserRoles } from '../../api/firebaseUtils';
 import { isMemberVerified } from '../../helpers/membership';
 import { handleLinkPress } from '../../helpers/links';
 import { UserProfileStackParams } from '../../types/navigation';
@@ -55,20 +55,11 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
 
     useEffect(() => {
         const fetchUserData = async () => {
-            console.log("Fetching user data...");
-            try {
-                const firebaseUser = await getUser(auth.currentUser?.uid!)
-                if (firebaseUser) {
-                    await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
-                }
-                else {
-                    console.warn("User data undefined. Data was likely deleted from Firebase.");
-                }
+            const firebaseUser = await fetchAndStoreUser();
+            if (firebaseUser) {
                 setUserInfo(firebaseUser);
-            } catch (error) {
-                console.error("Error updating user:", error);
             }
-        }
+        };
 
         const fetchInitialEventLogs = async () => {
             setEvents([]);

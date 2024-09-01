@@ -1,4 +1,5 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject, getDownloadURL, uploadBytes } from "firebase/storage";
 import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot, serverTimestamp, QueryConstraint } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
@@ -459,6 +460,28 @@ export const deleteAccount = async (userId: string) => {
         console.error('Error deleting account:', error);
     }
 };
+
+
+/**
+ * Fetch data from firebase and store data locally on device
+ * This main purpose of this function is to keep user data update 
+ */
+export const fetchAndStoreUser = async () => {
+    try {
+        const firebaseUser = await getUser(auth.currentUser?.uid!);
+        if (firebaseUser) {
+            await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
+        } else {
+            console.warn("User data undefined. Data was likely deleted from Firebase.");
+        }
+        return firebaseUser;
+    } catch (error) {
+        console.error("Error fetching and storing user data:", error);
+        return null;
+    }
+};
+
+
 
 // ============================================================================
 // Event Utilities
