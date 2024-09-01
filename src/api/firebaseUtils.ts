@@ -823,6 +823,52 @@ export const getUserEventLogs = async (
     return { events, lastVisibleDoc };
 }
 
+export const fetchEventLogs = async (eventId: string) => {
+    const userIds: string[] = [];
+
+    try {
+        const logsRef = collection(db, `events/${eventId}/logs`);
+        const logsSnapshot = await getDocs(logsRef);
+
+        logsSnapshot.docs.forEach((log) => {
+            const userId = log.id;
+            userIds.push(userId);
+        });
+    } catch (error) {
+        console.error('Error fetching user logs:', error);
+        throw error;
+    }
+
+    return userIds;
+};
+
+export const deleteEventLog = async (eventID: string, uid: string): Promise<string> => {
+    return await httpsCallable(functions, 'eventLogDelete')
+        .call(null, { eventID, uid })
+        .then((result) => {
+            if (typeof result.data == 'object' && result.data && (result.data as any).success) {
+                return 'Log deleted successfully.';
+            } else {
+                return 'Failed to delete log.';
+            }
+        })
+        .catch((err) => {
+            switch (err.code) {
+                case 'functions/not-found':
+                    return 'Log not found.';
+                case 'functions/unauthenticated':
+                    return 'You are not authenticated.';
+                case 'functions/invalid-argument':
+                    return 'Invalid arguments provided.';
+                default:
+                    console.error('Error deleting event log:', err);
+                    return 'An unexpected error occurred. Please try again.';
+            }
+        });
+};
+
+
+
 // ============================================================================
 // Committee Utilities
 // ============================================================================
