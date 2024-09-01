@@ -273,7 +273,7 @@ const EventInfo = ({ navigation }: EventProps) => {
 
                     {(eventType === EventType.STUDY_HOURS) && (
                         <Text className={`mt-1 text-md mx-5 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
-                            Feel free to leave the area—just be sure to scan in and out at the event location to fully earn your points*
+                            Feel free to leave the area. Just be sure to scan in and out at the event location to fully earn your points!
                         </Text>
                     )}
 
