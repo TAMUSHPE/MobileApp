@@ -7,7 +7,7 @@ import { auth } from "../../config/firebaseConfig";
 import { getAttendanceNumber, getPublicUserData, getUsers, signInToEvent, signOutOfEvent, getUserEventLog, fetchEventLogs, deleteEventLog } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { MillisecondTimes, formatEventDate, formatEventTime } from '../../helpers/timeUtils';
-import { SHPEEvent, SHPEEventLog, getStatusMessage } from '../../types/events';
+import { EventType, SHPEEvent, SHPEEventLog, getStatusMessage } from '../../types/events';
 import { Images } from '../../../assets';
 import { StatusBar } from 'expo-status-bar';
 import { handleLinkPress } from '../../helpers/links';
@@ -265,29 +265,46 @@ const EventInfo = ({ navigation }: EventProps) => {
                 </View>
 
                 <View className='-z-10'>
+                    {hasPrivileges && !loading && (
+                        <View
+                            className={`flex-row w-full mx-4 mt-2 mb-2 ${signInPoints !== undefined && signOutPoints !== undefined ? 'justify-between' : 'justify-center'
+                                }`}
+                        >
+                            {signInPoints !== undefined && (
+                                <View className={`flex-row ${signOutPoints === undefined ? 'w-full justify-center' : 'w-[50%]'}`}>
+                                    <Octicons name="sign-in" size={24} color={darkMode ? 'white' : 'black'} />
+                                    <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>
+                                        {signInPoints} Member
+                                    </Text>
+                                </View>
+                            )}
+
+                            {signOutPoints !== undefined && (
+                                <View className={`flex-row ${signInPoints === undefined ? 'w-full justify-center' : 'w-[50%]'}`}>
+                                    <Octicons name="sign-out" size={24} color={darkMode ? 'white' : 'black'} />
+                                    <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>
+                                        {signOutPoints} Member
+                                    </Text>
+                                </View>
+                            )}
+                        </View>
+                    )}
+
                     {/* General Details */}
                     {nationalConventionEligible && (
-                        <Text className={`text-center mt-1 text-md ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
+                        <Text className={`text-center mt-1 text-md mx-5 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
                             This event is eligible for national convention requirements*
+                        </Text>
+                    )}
+
+                    {(eventType === EventType.STUDY_HOURS) && (
+                        <Text className={`mt-1 text-md mx-5 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
+                            Feel free to leave the area. Just be sure to scan in and out at the event location to fully earn your points!
                         </Text>
                     )}
 
                     {loading && (<ActivityIndicator size="small" className='mt-3' />)}
 
-                    {(hasPrivileges && !loading) && (
-                        <View className="flex-row w-full mx-4 mt-2">
-                            <View className='flex-row w-[50%]'>
-                                <Octicons name="sign-in" size={24} color={darkMode ? "white" : "black"} />
-                                <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>{attendanceCounts.signedInCount || 0} Member</Text>
-                            </View>
-
-                            <View className='flex-row w-[50%]'>
-                                <Octicons name="sign-out" size={24} color={darkMode ? "white" : "black"} />
-                                <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>{attendanceCounts.signedOutCount || 0} Member</Text>
-                            </View>
-
-                        </View>
-                    )}
 
                     <View className='mx-4 mt-3'>
                         <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{name}</Text>

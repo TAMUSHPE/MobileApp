@@ -51,16 +51,25 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     const uid = data.uid || context.auth?.uid;
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
-    } else if (typeof data !== "object" || typeof data.eventID !== "string" || typeof data.location !== "object") {
+    } else if (typeof data !== "object" || typeof data.eventID !== "string" || typeof uid !== "string" || typeof data.location !== "object") {
         throw new functions.https.HttpsError("invalid-argument", "Invalid data types passed into function");
+    }
+
+    // Only allow privileged users to sign-in for other users
+    const token = context.auth.token;
+    if (uid !== context.auth.uid && (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.lead !== true && token.representative !== true)) {
+        functions.logger.warn(`${context.auth.token} attempted to sign in as ${uid} with invalid permissions.`);
+        throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
     }
 
     const eventDocRef = db.collection("events").doc(data.eventID);
     const event: SHPEEvent | undefined = (await eventDocRef.get()).data();
     if (typeof event !== "object") {
-        throw new functions.https.HttpsError("not-found", `Event with id ${data.eventID} could not be found`);
+        const message = `Event with id ${data.eventID} could not be found`;
+        functions.logger.log(message);
+        throw new functions.https.HttpsError("not-found", message);
     }
-    console.info(data.location);
+
     // Used to check if user has already signed into event
     const eventLogDocRef = db.collection(`events/${data.eventID}/logs`).doc(uid);
     const eventLog: SHPEEventLog = (await eventLogDocRef.get()).data() ?? {
@@ -70,30 +79,27 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
         verified: true,
     };
 
+    // Check for any possible errors on the user's part
     if (eventLog !== undefined && eventLog.signInTime !== undefined) {
-        const message = "Sign in time already exists.";
-        functions.logger.error(message);
-        throw new functions.https.HttpsError("already-exists", message);
+        functions.logger.error(`User ${uid} attempted sign-in again`);
+        throw new functions.https.HttpsError("already-exists", "Sign in time already exists.");
     }
     else if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
-        const message = "Event has already ended.";
-        functions.logger.error(message);
-        throw new functions.https.HttpsError("deadline-exceeded", message);
+        functions.logger.error(`User ${uid} has attempted sign-in after event named ${event.name} ended`);
+        throw new functions.https.HttpsError("deadline-exceeded", "Event has already ended.");
     }
     else if (event.startTime && (event.startTime.toMillis() - (event.startTimeBuffer ?? 0) > Date.now())) {
-        const message = "Event has not started.";
-        functions.logger.error(message)
-        throw new functions.https.HttpsError("failed-precondition", message);
+        functions.logger.error(`User ${uid} has attempted sign-in before event named ${event.name} started`);
+        throw new functions.https.HttpsError("failed-precondition", "Event has not started.");
     }
     else if (event.geolocation && event.geofencingRadius) {
-        if (typeof data.location.latitude != "number" || typeof data.location.longitude != "number" || !isFinite(data.location.latitude) || !isFinite(data.location.longitude)) {
-            const message = "Invalid geopoint object passed into function.";
-            functions.logger.error(message);
-            throw new functions.https.HttpsError("invalid-argument", message);
+        if (!data.location || typeof data.location.latitude != "number" || typeof data.location.longitude != "number" || !isFinite(data.location.latitude) || !isFinite(data.location.longitude)) {
+            functions.logger.error(`User ${uid} has passed an invalid location object: ${data.location}`);
+            throw new functions.https.HttpsError("invalid-argument", "Invalid geopoint object passed into function.");
         }
 
         const distance = geographicDistance(event.geolocation, data.location);
-        const message = `${event.name} has geofencing enabled and the given user is ${distance} meters away when required radius is ${event.geofencingRadius} + ${ACCEPTABLE_DISTANCE_ERROR} meters.`;
+        const message = `${event.name} has geofencing enabled and the given user (${uid}) is reported as ${distance} meters away when required radius is ${event.geofencingRadius} + ${ACCEPTABLE_DISTANCE_ERROR} meters.`;
         if (distance > event.geofencingRadius + ACCEPTABLE_DISTANCE_ERROR) {
             functions.logger.error(message);
             throw new functions.https.HttpsError("out-of-range", message);
@@ -118,6 +124,7 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     // Sets log in both event and user collection and ensures both happen by the end of the function. 
     await eventLogDocRef.set(eventLog, { merge: true });
     await db.collection(`users/${uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
+    functions.logger.log(`User ${uid} successfully signed in and earned ${eventLog.points} points`);
 
     return { success: true };
 });
@@ -128,17 +135,25 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
  */
 export const eventSignOut = functions.https.onCall(async (data, context) => {
     const uid = data.uid || context.auth?.uid;
-
     if (!context.auth) {
         throw new functions.https.HttpsError("unauthenticated", "Function cannot be called without authentication.");
-    } else if (typeof data !== "object" || typeof data.eventID !== "string" || typeof data.location !== "object") {
+    } else if (typeof data !== "object" || typeof data.eventID !== "string" || typeof uid !== "string" || typeof data.location !== "object") {
         throw new functions.https.HttpsError("invalid-argument", "Invalid data types passed into function");
+    }
+
+    // Only allow privileged users to sign-out for other users
+    const token = context.auth.token;
+    if (uid !== context.auth.uid && (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.lead !== true && token.representative !== true)) {
+        functions.logger.warn(`${context.auth.token} attempted to sign in as ${uid} with invalid permissions.`);
+        throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
     }
 
     const eventDocRef = db.collection("events").doc(data.eventID);
     const event: SHPEEvent | undefined = (await eventDocRef.get()).data();
     if (typeof event !== "object") {
-        throw new functions.https.HttpsError("not-found", `Event with id ${data.eventID} could not be found`);
+        const message = `Event with id ${data.eventID} could not be found`;
+        functions.logger.log(message);
+        throw new functions.https.HttpsError("not-found", message);
     }
 
     // Used to check if user has already signed into event
@@ -150,22 +165,27 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
         verified: true,
     };
 
+    // Check for any possible errors on the user's part
     if (eventLog !== undefined && eventLog.signOutTime !== undefined) {
+        functions.logger.error(`User ${uid} attempted sign-out again`);
         throw new functions.https.HttpsError("already-exists", "Sign out time already exists.");
     }
     else if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
+        functions.logger.error(`User ${uid} has attempted sign-out after event named ${event.name} ended`);
         throw new functions.https.HttpsError("deadline-exceeded", "Event has already ended.");
     }
     else if (event.startTime && (event.startTime.toMillis() - (event.startTimeBuffer ?? 0) > Date.now())) {
-        throw new functions.https.HttpsError("failed-precondition", "Event has not started.")
+        functions.logger.error(`User ${uid} has attempted sign-out before event named ${event.name} started`);
+        throw new functions.https.HttpsError("failed-precondition", "Event has not started.");
     }
     else if (event.geolocation && event.geofencingRadius) {
-        if (typeof data.location.latitude != "number" || typeof data.location.longitude != "number" || !isFinite(data.location.latitude) || !isFinite(data.location.longitude)) {
+        if (!data.location || typeof data.location.latitude != "number" || typeof data.location.longitude != "number" || !isFinite(data.location.latitude) || !isFinite(data.location.longitude)) {
+            functions.logger.error(`User ${uid} has passed an invalid location object: ${data.location}`);
             throw new functions.https.HttpsError("invalid-argument", "Invalid geopoint object passed into function.");
         }
 
         const distance = geographicDistance(event.geolocation, data.location);
-        const message = `${event.name} has geofencing enabled and the given user is ${distance} meters away when required radius is ${event.geofencingRadius} + ${ACCEPTABLE_DISTANCE_ERROR} meters.`;
+        const message = `${event.name} has geofencing enabled and the given user (${uid}) is reported as ${distance} meters away when required radius is ${event.geofencingRadius} + ${ACCEPTABLE_DISTANCE_ERROR} meters.`;
         if (distance > event.geofencingRadius + ACCEPTABLE_DISTANCE_ERROR) {
             functions.logger.error(message);
             throw new functions.https.HttpsError("out-of-range", message);
@@ -183,6 +203,14 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
             if (eventLog.signInTime && eventLog.signInTime.toMillis() < eventLog.signOutTime.toMillis()) {
                 accumulatedPoints = (eventLog.signOutTime.toMillis() - eventLog.signInTime.toMillis()) / MillisecondTimes.HOUR * (event.pointsPerHour ?? 0);
             }
+
+            // Ensures the points are capped to the amount of hours the event lasts.
+            // Only do this when endTime and startTime are truthy (They should be, but we have to take into the case where they're not)
+            if (event.endTime && event.startTime) {
+                const eventDurationHours = (event.endTime.toMillis() - event.startTime.toMillis()) / MillisecondTimes.HOUR;
+                accumulatedPoints = Math.min(eventDurationHours * (event.pointsPerHour ?? 0), accumulatedPoints);
+            }
+
             eventLog.points = (eventLog.points ?? 0) + (event.signOutPoints ?? 0) + accumulatedPoints;
             break;
         case "Volunteer Event":
@@ -192,8 +220,10 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
             eventLog.points = (eventLog.points ?? 0) + (event.signOutPoints ?? 0) + accumulatedPoints;
             break;
         case undefined:
+            functions.logger.error("Event type is undefined. This means that an issue has occurred during event creation/updating.");
             throw new functions.https.HttpsError("internal", "Event type is undefined. This means that an issue has occurred during event creation/updating.");
         case null:
+            functions.logger.error("Event type is undefined. This means that an issue has occurred during event creation/updating.");
             throw new functions.https.HttpsError("internal", "Event type is null. This means that an issue has occurred during event creation/updating.");
         default:
             eventLog.points = (eventLog.points ?? 0) + (event.signOutPoints ?? 0);
@@ -203,6 +233,7 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     // Sets log in both event and user collection and ensures both happen by the end of the function. 
     await eventLogDocRef.set(eventLog, { merge: true });
     await db.collection(`users/${uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
+    functions.logger.log(`User ${uid} successfully signed in and earned ${eventLog.points} points`);
 
     return { success: true };
 });
@@ -224,7 +255,9 @@ export const addInstagramPoints = functions.https.onCall(async (data, context) =
     const eventDocRef = db.collection("events").doc(data.eventID);
     const event: SHPEEvent | undefined = (await eventDocRef.get()).data();
     if (typeof event !== "object") {
-        throw new functions.https.HttpsError("not-found", `Event with id ${data.eventID} could not be found`);
+        const message = `Event with id ${data.eventID} could not be found`;
+        functions.logger.log(message);
+        throw new functions.https.HttpsError("not-found", message);
     }
 
     const eventLogDocRef = db.collection(`events/${data.eventID}/logs`).doc(uid);
@@ -245,6 +278,7 @@ export const addInstagramPoints = functions.https.onCall(async (data, context) =
 
     await eventLogDocRef.set(eventLog, { merge: true });
     await db.collection(`users/${uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
+    functions.logger.log(`User ${uid} successfully signed in and earned ${eventLog.points} points`);
 
     return { success: true };
 });

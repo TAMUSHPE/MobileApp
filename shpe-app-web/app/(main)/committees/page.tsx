@@ -42,7 +42,7 @@ const Committees = () => {
 
   return (
     <div className='flex flex-col w-full'>
-      <Header title="Committee Collection" iconPath='layer-group.svg' />
+      
 
       <div className="flex flex-wrap text-black pt-20 pl-20 gap-10 pb-10 bg-white">
         {!loading && committees.map((committees) => (

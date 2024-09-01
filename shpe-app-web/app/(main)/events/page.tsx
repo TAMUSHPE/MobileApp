@@ -69,7 +69,7 @@ const Page = () => {
 
   return (
     <div className="w-full h-full flex flex-col min-w-fit">
-      <Header title="Event Management" iconPath="calendar-solid-gray.svg" />
+      
 
       {/* Pending Approval Subheading */}
       <div className="flex flex-row items-center flex-nowrap">
