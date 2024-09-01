@@ -250,6 +250,10 @@ export const addInstagramPoints = functions.https.onCall(async (data, context) =
 });
 
 
+/**
+ * Delete an event log for a user. Deletes the event log from both the event's logs and user's event logs.
+ * A backup of the logs is created before deletion
+ */
 export const eventLogDelete = functions.https.onCall(async (data, context) => {
     const uid = data.uid || context.auth?.uid;
     const eventID = data.eventID;
