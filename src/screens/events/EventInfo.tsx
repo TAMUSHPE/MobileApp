@@ -4,7 +4,7 @@ import { RouteProp, useRoute } from '@react-navigation/core';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome6, Entypo } from '@expo/vector-icons';
 import { auth } from "../../config/firebaseConfig";
-import { getAttendanceNumber, getPublicUserData, getUsers, signInToEvent, signOutOfEvent, getUserEventLog } from '../../api/firebaseUtils';
+import { getAttendanceNumber, getPublicUserData, getUsers, signInToEvent, signOutOfEvent, getUserEventLog, fetchEventLogs, deleteEventLog } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { MillisecondTimes, formatEventDate, formatEventTime } from '../../helpers/timeUtils';
 import { EventType, SHPEEvent, SHPEEventLog, getStatusMessage } from '../../types/events';
@@ -20,7 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 const EventInfo = ({ navigation }: EventProps) => {
     const route = useRoute<EventInfoScreenRouteProp>();
     const { event } = route.params;
-    const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, geofencingRadius, workshopType, committee, creator, nationalConventionEligible, startTimeBuffer, endTimeBuffer } = event || {};
+    const { name, description, eventType, startTime, endTime, coverImageURI, signInPoints, signOutPoints, pointsPerHour, locationName, geolocation, geofencingRadius, workshopType, committee, creator, nationalConventionEligible, startTimeBuffer, endTimeBuffer, id } = event || {};
 
     const insets = useSafeAreaInsets();
 
@@ -43,9 +43,14 @@ const EventInfo = ({ navigation }: EventProps) => {
     const [users, setUsers] = useState<PublicUserInfo[]>([]);
     const [allUserFetched, setAllUserFetched] = useState<boolean>(false);
     const [forceUpdate, setForceUpdate] = useState<number>(0);
-    const [userSignInOut, setUserSignInOut] = useState<string>("signIn");
-    const [userModalVisible, setUserModalVisible] = useState<boolean>(false);
+    const [signInModalVisible, setSignInModalVisible] = useState<boolean>(false);
+    const [signOutModalVisible, setSignOutModalVisible] = useState<boolean>(false);
+
     const [loading, setLoading] = useState<boolean>(false);
+    const [usersLogged, setUsersLogged] = useState<PublicUserInfo[]>([]);
+    const [usersLoggedModalVisible, setUsersLoggedModalVisible] = useState<boolean>(false);
+    const [loadingLog, setLoadingLog] = useState<boolean>(false);
+
 
     const fetchAttendanceCounts = async () => {
         setLoading(true);
@@ -77,16 +82,32 @@ const EventInfo = ({ navigation }: EventProps) => {
         fetchCreatorInfo();
     }, [creator])
 
-    const fetchAllUsers = async () => {
+    const fetchAllData = async () => {
+        setLoadingLog(true);
         try {
-            const fetchedUsers = await getUsers();
-            setUsers(fetchedUsers);
-            setAllUserFetched(true);
+            const userIds = await fetchEventLogs(id!);
+
+            let filteredUsers: PublicUserInfo[] = [];
+
+            if (!allUserFetched) {
+                const fetchedUsers = await getUsers();
+                filteredUsers = fetchedUsers.filter((user) => userIds.includes(user.uid!));
+
+                setUsers(fetchedUsers);
+                setAllUserFetched(true);
+                setForceUpdate((prev) => prev + 1);
+            } else {
+                filteredUsers = users.filter((user) => userIds.includes(user.uid!));
+            }
+
+            setUsersLogged(filteredUsers);
         } catch (error) {
-            console.error("An error occurred while fetching users: ", error);
+            console.error('Error fetching user logs:', error);
+        } finally {
+            setLoadingLog(false);
         }
-        setForceUpdate(prev => prev + 1);
     };
+
 
 
     const getEventButtonState = (event: SHPEEvent, userEventLog: SHPEEventLog | null): EventButtonState => {
@@ -193,11 +214,8 @@ const EventInfo = ({ navigation }: EventProps) => {
                                                     className='px-4'
                                                     onPress={() => {
                                                         setShowOptionMenu(false);
-                                                        setUserSignInOut("signIn")
-                                                        setUserModalVisible(true)
-                                                        if (!allUserFetched) {
-                                                            fetchAllUsers();
-                                                        }
+                                                        setSignInModalVisible(true)
+                                                        fetchAllData();
                                                     }}
                                                 >
                                                     <Text className='text-white text-xl py-3 font-medium'>Manual Sign In</Text>
@@ -207,14 +225,22 @@ const EventInfo = ({ navigation }: EventProps) => {
                                                     className='px-4 py-3'
                                                     onPress={() => {
                                                         setShowOptionMenu(false);
-                                                        setUserSignInOut("signOut")
-                                                        setUserModalVisible(true)
-                                                        if (!allUserFetched) {
-                                                            fetchAllUsers();
-                                                        }
+                                                        setSignOutModalVisible(true)
+                                                        fetchAllData();
                                                     }}
                                                 >
                                                     <Text className='text-white text-xl font-medium'>Manual Sign Out</Text>
+                                                </TouchableOpacity>
+                                                <View className='w-[70%] bg-white' style={{ height: 1 }} />
+                                                <TouchableOpacity
+                                                    className="px-4 py-3"
+                                                    onPress={() => {
+                                                        setShowOptionMenu(false);
+                                                        setUsersLoggedModalVisible(true);
+                                                        fetchAllData();
+                                                    }}
+                                                >
+                                                    <Text className="text-white text-xl font-medium">Manual Delete Log</Text>
                                                 </TouchableOpacity>
                                             </View>
                                         </View>
@@ -241,23 +267,23 @@ const EventInfo = ({ navigation }: EventProps) => {
                 <View className='-z-10'>
                     {hasPrivileges && !loading && (
                         <View
-                            className={`flex-row w-full mx-4 mt-2 mb-2 ${signInPoints !== undefined && signOutPoints !== undefined ? 'justify-between' : 'justify-center'
+                            className={`flex-row w-full mx-4 mt-2 mb-1 ${signInPoints !== undefined && signOutPoints !== undefined ? 'justify-between' : 'justify-center'
                                 }`}
                         >
                             {signInPoints !== undefined && (
-                                <View className={`flex-row ${signOutPoints === undefined ? 'w-full justify-center' : 'w-[50%]'}`}>
+                                <View className={`flex-row ${signOutPoints === undefined ? 'w-full' : 'w-[50%]'}`}>
                                     <Octicons name="sign-in" size={24} color={darkMode ? 'white' : 'black'} />
                                     <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {signInPoints} Member
+                                        {attendanceCounts.signedInCount} Member
                                     </Text>
                                 </View>
                             )}
 
                             {signOutPoints !== undefined && (
-                                <View className={`flex-row ${signInPoints === undefined ? 'w-full justify-center' : 'w-[50%]'}`}>
+                                <View className={`flex-row ${signInPoints === undefined ? 'w-full' : 'w-[50%]'}`}>
                                     <Octicons name="sign-out" size={24} color={darkMode ? 'white' : 'black'} />
                                     <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {signOutPoints} Member
+                                        {attendanceCounts.signedOutCount} Member
                                     </Text>
                                 </View>
                             )}
@@ -266,13 +292,12 @@ const EventInfo = ({ navigation }: EventProps) => {
 
                     {/* General Details */}
                     {nationalConventionEligible && (
-                        <Text className={`text-center mt-1 text-md mx-5 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
-                            This event is eligible for national convention requirements*
+                        <Text className={`mt-2 text-md mx-4 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>This event is eligible for national convention requirements*
                         </Text>
                     )}
 
                     {(eventType === EventType.STUDY_HOURS) && (
-                        <Text className={`mt-1 text-md mx-5 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
+                        <Text className={`mt-2 text-md mx-4 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
                             Feel free to leave the area. Just be sure to scan in and out at the event location to fully earn your points!
                         </Text>
                     )}
@@ -409,9 +434,9 @@ const EventInfo = ({ navigation }: EventProps) => {
             <Modal
                 animationType="slide"
                 transparent={true}
-                visible={userModalVisible}
+                visible={signInModalVisible}
                 onRequestClose={() => {
-                    setUserModalVisible(false);
+                    setSignInModalVisible(false);
                 }}
             >
                 <View
@@ -420,50 +445,215 @@ const EventInfo = ({ navigation }: EventProps) => {
                 >
                     <View className='flex-row items-center h-10 mb-4'>
                         <View className='w-screen absolute'>
-                            <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>Select a Member</Text>
+                            <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>Manual Sign In</Text>
                         </View>
 
                         <TouchableOpacity
                             className='ml-6 px-4'
-                            onPress={() => setUserModalVisible(false)}
+                            onPress={() => setSignInModalVisible(false)}
                         >
                             <Octicons name="x" size={26} color={darkMode ? "white" : "black"} />
                         </TouchableOpacity>
                     </View>
 
-                    {!allUserFetched && (
+                    {(!allUserFetched || loadingLog || loading) && (
                         <ActivityIndicator className="mb-2" size="small" />
                     )}
 
                     <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
-                        <MembersList
-                            key={forceUpdate}
-                            handleCardPress={(uid) => {
-                                if (userSignInOut === "signIn") {
-                                    setLoading(true);
-                                    signInToEvent(event.id!, uid).then((status) => {
-                                        Alert.alert(
-                                            'Status',
-                                            getStatusMessage(status),
-                                            [{ text: 'OK', onPress: () => { fetchAttendanceCounts(); } }],
-                                            { cancelable: false }
-                                        );
-                                    });
-                                } else if (userSignInOut === "signOut") {
-                                    setLoading(true);
-                                    signOutOfEvent(event.id!, uid).then((status) => {
-                                        Alert.alert(
-                                            'Status',
-                                            getStatusMessage(status),
-                                            [{ text: 'OK', onPress: () => { fetchAttendanceCounts(); } }],
-                                            { cancelable: false }
-                                        );
-                                    });
-                                }
-                                setUserModalVisible(false);
-                            }}
-                            users={users}
-                        />
+                        {!loadingLog && (
+                            <MembersList
+                                key={forceUpdate}
+                                handleCardPress={(uid) => {
+                                    Alert.alert(
+                                        `Confirm sign in`,
+                                        `Are you sure you want to sign in this member?`,
+                                        [
+                                            {
+                                                text: 'Cancel',
+                                                style: 'cancel',
+                                                onPress: () => {
+                                                    setLoading(false);
+                                                },
+                                            },
+                                            {
+                                                text: 'Yes',
+                                                onPress: async () => {
+                                                    setLoading(true);
+
+                                                    await signInToEvent(event.id!, uid).then((status) => {
+                                                        Alert.alert('Status', getStatusMessage(status), [
+                                                            {
+                                                                text: 'OK',
+                                                                onPress: () => {
+                                                                    fetchAttendanceCounts();
+                                                                },
+                                                            },
+                                                        ]);
+                                                    });
+                                                    setSignInModalVisible(false);
+                                                },
+                                            },
+                                        ],
+                                        { cancelable: false }
+                                    );
+                                }}
+                                users={users}
+                            />
+                        )}
+                    </View>
+                </View>
+            </Modal>
+
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={signOutModalVisible}
+                onRequestClose={() => {
+                    setSignOutModalVisible(false);
+                }}
+            >
+                <View
+                    style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                >
+                    <View className='flex-row items-center h-10 mb-4'>
+                        <View className='w-screen absolute'>
+                            <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>Manual Sign Out</Text>
+                        </View>
+
+                        <TouchableOpacity
+                            className='ml-6 px-4'
+                            onPress={() => setSignOutModalVisible(false)}
+                        >
+                            <Octicons name="x" size={26} color={darkMode ? "white" : "black"} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {(!allUserFetched || loadingLog) && (
+                        <ActivityIndicator className="mb-2" size="small" />
+                    )}
+
+                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                        {!loadingLog && (
+                            <MembersList
+                                key={forceUpdate + 1}
+                                handleCardPress={(uid) => {
+                                    Alert.alert(
+                                        `Confirm sign out`,
+                                        `Are you sure you want to sign out this member?`,
+                                        [
+                                            {
+                                                text: 'Cancel',
+                                                style: 'cancel',
+                                                onPress: () => {
+                                                    setLoading(false);
+                                                },
+                                            },
+                                            {
+                                                text: 'Yes',
+                                                onPress: async () => {
+                                                    setLoading(true);
+
+                                                    await signOutOfEvent(event.id!, uid).then((status) => {
+                                                        Alert.alert('Status', getStatusMessage(status), [
+                                                            {
+                                                                text: 'OK',
+                                                                onPress: () => {
+                                                                    fetchAttendanceCounts();
+                                                                },
+                                                            },
+                                                        ]);
+                                                    });
+                                                    setSignOutModalVisible(false);
+                                                },
+                                            },
+                                        ],
+                                        { cancelable: false }
+                                    );
+                                }}
+                                users={users}
+                            />
+                        )}
+                    </View>
+                </View>
+            </Modal>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={usersLoggedModalVisible}
+                onRequestClose={() => {
+                    setUsersLoggedModalVisible(false);
+                }}
+            >
+                <View
+                    style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
+                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                >
+                    <View className="flex-row items-center h-10 mb-4">
+                        <View className="w-screen absolute">
+                            <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>
+                                Select a Member
+                            </Text>
+                        </View>
+
+                        <TouchableOpacity
+                            className="ml-6 px-4"
+                            onPress={() => setUsersLoggedModalVisible(false)}
+                        >
+                            <Octicons name="x" size={26} color={darkMode ? 'white' : 'black'} />
+                        </TouchableOpacity>
+                    </View>
+
+                    {loadingLog && (
+                        <ActivityIndicator className="mb-2" size="small" />
+                    )}
+
+                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+
+                        {!loadingLog && (
+                            <MembersList
+                                handleCardPress={(uid) => {
+                                    Alert.alert(
+                                        `Confirm Deletion`,
+                                        `Are you sure you want to delete the log for this member?`,
+                                        [
+                                            {
+                                                text: 'Cancel',
+                                                style: 'cancel',
+                                                onPress: () => {
+                                                    setLoading(false);
+                                                },
+                                            },
+                                            {
+                                                text: 'Yes',
+                                                onPress: async () => {
+                                                    setLoading(true);
+
+                                                    await deleteEventLog(event.id!, uid).then((status) => {
+                                                        Alert.alert("Status", status, [
+                                                            {
+                                                                text: 'OK',
+                                                                onPress: () => {
+                                                                    fetchAttendanceCounts();
+                                                                },
+                                                            }
+                                                        ])
+                                                    })
+
+                                                    setUsersLoggedModalVisible(false)
+
+                                                },
+                                            },
+                                        ],
+                                        { cancelable: false }
+                                    );
+                                }}
+                                users={usersLogged}
+                            />
+                        )}
                     </View>
                 </View>
             </Modal>

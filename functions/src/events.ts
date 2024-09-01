@@ -3,6 +3,7 @@ import { db } from './firebaseConfig';
 import { GeoPoint, Timestamp } from 'firebase-admin/firestore';
 import { SHPEEvent, SHPEEventLog } from './types/events'
 import { MillisecondTimes } from './helpers/timeUtils';
+import { firestore } from 'firebase-admin';
 
 /**
  * Converts an angle in degrees to radians
@@ -280,5 +281,63 @@ export const addInstagramPoints = functions.https.onCall(async (data, context) =
     functions.logger.log(`User ${uid} successfully signed in and earned ${eventLog.points} points`);
 
     return { success: true };
+});
+
+
+/**
+ * Delete an event log for a user. Deletes the event log from both the event's logs and user's event logs.
+ * A backup of the logs is created before deletion
+ */
+export const eventLogDelete = functions.https.onCall(async (data, context) => {
+    const uid = data.uid || context.auth?.uid;
+    const eventID = data.eventID;
+
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'Function cannot be called without authentication.');
+    } else if (typeof data !== 'object' || typeof data.eventID !== 'string' || typeof uid !== 'string') {
+        throw new functions.https.HttpsError('invalid-argument', 'Invalid data types passed into function');
+    }
+
+    // Only allow privileged users to sign-out for other users
+    const token = context.auth.token;
+    if (uid !== context.auth.uid && (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.lead !== true && token.representative !== true)) {
+        functions.logger.warn(`${context.auth.token} attempted to sign in as ${uid} with invalid permissions.`);
+        throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
+    }
+
+
+    try {
+        const eventLogRef = db.collection(`events/${eventID}/logs`).doc(uid);
+        const userEventLogRef = db.collection(`users/${uid}/event-logs`).doc(eventID);
+        const backupLogRef = db.collection(`deleted-events/${eventID}/logs`).doc(uid);
+
+        const [eventLogSnapshot, userEventLogSnapshot] = await Promise.all([
+            eventLogRef.get(),
+            userEventLogRef.get()
+        ]);
+
+        if (!eventLogSnapshot.exists && !userEventLogSnapshot.exists) {
+            throw new functions.https.HttpsError('not-found', 'Log not found in either collection.');
+        }
+
+        if (eventLogSnapshot.exists) {
+            const eventLogData = eventLogSnapshot.data();
+            await backupLogRef.set({
+                ...eventLogData,
+                deletedAt: firestore.Timestamp.now()
+            });
+        }
+
+        await Promise.all([
+            eventLogRef.delete(),
+            userEventLogRef.delete(),
+        ]);
+
+        functions.logger.info(`Successfully deleted logs for user ${uid} in event ${eventID}`);
+        return { success: true, message: 'Event log deleted successfully.' };
+    } catch (error) {
+        functions.logger.error('Error deleting event log:', error);
+        throw new functions.https.HttpsError('internal', 'Failed to delete event log.');
+    }
 });
 
