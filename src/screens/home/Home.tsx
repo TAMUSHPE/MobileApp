@@ -12,13 +12,12 @@ import { Images } from '../../../assets';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { UserContext } from '../../context/UserContext';
 import { isMemberVerified } from '../../helpers/membership';
-import { auth, db } from '../../config/firebaseConfig';
+import { auth } from '../../config/firebaseConfig';
 import DismissibleModal from '../../components/DismissibleModal';
-import { fetchAndStoreUser, fetchOfficeCount, fetchOfficerStatus, getMyEvents, getUser, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
+import { fetchOfficeCount, fetchOfficerStatus, getMyEvents, getUser, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
 import { EventType, SHPEEvent } from '../../types/events';
 import EventCard from '../events/EventCard';
 import { reverseFormattedFirebaseName } from '../../types/committees';
-import { doc, getDoc } from 'firebase/firestore';
 import { useFocusEffect } from '@react-navigation/core';
 
 /**
@@ -48,39 +47,11 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const [knockOnWallConfirmMenu, setKnockOnWallConfirmMenu] = useState<boolean>(false);
     const [officeHourInfoMenu, setOfficeHourInfoMenu] = useState<boolean>(false);
     const [signInConfirmMenu, setSignInConfirmMenu] = useState<boolean>(false);
-    const [currentUser, setCurrentUser] = useState(auth.currentUser);
     const [userInterests, setUserInterests] = useState<string[]>(userInfo?.publicInfo?.interests || []);
     const [isLoading, setIsLoading] = useState<boolean>(true)
     const [myEvents, setMyEvents] = useState<SHPEEvent[]>([]);
     const [interestOptionsModal, setInterestOptionsModal] = useState<boolean>(false);
     const [savedInterestLoading, setSavedInterestLoading] = useState<boolean>(false);
-
-    /**
-     * Fetches user data, stores it, and identifies accounts that have been deleted.
-     * If the account is deleted or data is undefined, it retries and signs out the user after max attempts.
-     * The purpose of retries is to prevent random sign outs
-     */
-    const fetchUserDataOrSignOut = async () => {
-        const MAX_ATTEMPTS = 8;
-        let attempts = 0;
-
-        console.log("Fetching user data...");
-
-        while (attempts < MAX_ATTEMPTS) {
-            const firebaseUser = await fetchAndStoreUser();
-
-            if (firebaseUser) {
-                setUserInfo(firebaseUser);
-                return;
-            } else {
-                console.warn("User data undefined. Data was likely deleted from Firebase.");
-                attempts++;
-            }
-        }
-
-        console.warn("Max attempts reached. Signing out user.");
-        // signOutUser(true);
-    };
 
     const fetchEvents = async () => {
         try {
@@ -96,18 +67,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         }
     };
 
-
-    useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(async (user) => {
-            setCurrentUser(user);
-
-            if (user) {
-                await fetchUserDataOrSignOut();
-            }
-        });
-        return unsubscribe;
-    }, []);
-
     useEffect(() => {
         manageNotificationPermissions();
     }, []);
@@ -117,7 +76,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     }, [nationalExpiration, chapterExpiration])
 
     useEffect(() => {
-        if (!currentUser) return;
+        if (!auth.currentUser) return
 
         const getOfficeCount = async () => {
             const count = await fetchOfficeCount();
@@ -126,7 +85,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
         const getOfficerStatus = async () => {
             try {
-                const status = await fetchOfficerStatus(currentUser.uid);
+                const status = await fetchOfficerStatus(auth.currentUser?.uid!);
                 setIsSignedIn(status?.signedIn || false);
             } catch (err) {
                 console.error("Failed to fetch officer status:", err);
@@ -138,12 +97,11 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         if (hasPrivileges) {
             getOfficerStatus();
         }
-    }, [currentUser]);
+    }, [auth.currentUser]);
 
     useFocusEffect(
         useCallback(() => {
             if (hasPrivileges) {
-
                 fetchEvents();
             }
         }, [hasPrivileges])
