@@ -40,7 +40,7 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
                     <Image
                         resizeMode='contain'
                         className='w-10 h-10'
-                        source={Images.SHPE_NAVY}
+                        source={darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
                     />
                 </View>
             )}

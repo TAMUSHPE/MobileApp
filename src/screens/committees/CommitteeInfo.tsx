@@ -268,7 +268,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                                                     );
                                                 }}
                                             >
-                                                <Text className={`text-lg text-red-1 underline mt-1 line`}>Leave?</Text>
+                                                <Text className={`text-lg font-medium text-red-1 mt-1 line`}>Leave</Text>
                                             </TouchableOpacity>
                                         )}
                                 </View>
