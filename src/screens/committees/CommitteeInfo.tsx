@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme, Image, Modal } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme, Image, Modal, Alert } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -242,6 +242,37 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                                     <LogoComponent height={height * .9} width={width * .9} />
                                 }
                             </View>
+                            {isInCommittee && (
+                                <View>
+                                    {loadingLabel ?
+                                        (
+                                            <ActivityIndicator className="mb-2" size="small" />
+                                        ) : (
+
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    Alert.alert(
+                                                        "Leave Committee",
+                                                        "Are you sure you want to leave?",
+                                                        [
+                                                            {
+                                                                text: "Cancel",
+                                                                style: "cancel",
+                                                            },
+                                                            {
+                                                                text: "Yes",
+                                                                onPress: handleJoinLeave,
+                                                            },
+                                                        ],
+                                                        { cancelable: true }
+                                                    );
+                                                }}
+                                            >
+                                                <Text className={`text-lg text-red-1 underline mt-1 line`}>Leave?</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                </View>
+                            )}
                         </View>
 
                         {/* General Details */}
@@ -253,6 +284,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                             >
                                 {name}
                             </Text>
+
                             <View className='flex-row items-center'>
                                 <TouchableOpacity
                                     onPress={async () => {
@@ -274,7 +306,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                                 <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{isOpen ? "Open" : "Private"}</Text>
                             </View>
 
-                            <View className='mt-1'>
+                            <View>
                                 {applicationLink && (
                                     <TouchableOpacity
                                         onPress={() => handleLinkPress(applicationLink)}
@@ -288,7 +320,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
                     {/* About */}
                     {(description && description.trim()) && (
-                        <View className='mt-10'>
+                        <View className='mt-4'>
                             <View className='mb-4'>
                                 <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>
                                     About the committee
@@ -339,7 +371,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                             }}
                         >
                             {loadingEvent ? (
-                                <ActivityIndicator className="mb-2" size="small" />
+                                <ActivityIndicator className="mt-2" size="small" />
                             ) : (
                                 <View>
                                     {(events && events.length > 0) ? (
@@ -459,33 +491,36 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                     </View>
                 </View>
 
-                <View className='pb-60' />
+                <View className='pb-52' />
             </ScrollView>
 
             {/* Action Button */}
-            <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0 mb-14'>
-                <TouchableOpacity
-                    className={`py-1 rounded-xl mx-4 h-14 items-center justify-center ${isLeaveOrCancel ? (darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light') : 'bg-primary-blue'} border ${isLeaveOrCancel ? 'border-grey-dark' : 'border-transparent'}`}
-                    style={{
-                        shadowColor: "#000",
-                        shadowOffset: {
-                            width: 0,
-                            height: 2,
-                        },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 3.84,
+            {!isInCommittee && (
 
-                        elevation: 5,
-                    }}
-                    onPress={handleJoinLeave}
-                >
-                    {loadingLabel ? (
-                        <ActivityIndicator size="small" />
-                    ) : (
-                        <Text className={`text-center ${isLeaveOrCancel ? `${darkMode ? "text-white" : "text-black"}` : 'text-white'} text-2xl font-bold`}>{buttonLabel}</Text>
-                    )}
-                </TouchableOpacity>
-            </SafeAreaView>
+                <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0 mb-14'>
+                    <TouchableOpacity
+                        className={`py-1 rounded-xl mx-4 h-14 items-center justify-center ${isLeaveOrCancel ? (darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light') : 'bg-primary-blue'} border ${isLeaveOrCancel ? 'border-grey-dark' : 'border-transparent'}`}
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                                width: 0,
+                                height: 2,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 3.84,
+
+                            elevation: 5,
+                        }}
+                        onPress={handleJoinLeave}
+                    >
+                        {loadingLabel ? (
+                            <ActivityIndicator size="small" />
+                        ) : (
+                            <Text className={`text-center ${isLeaveOrCancel ? `${darkMode ? "text-white" : "text-black"}` : 'text-white'} text-2xl font-bold`}>{buttonLabel}</Text>
+                        )}
+                    </TouchableOpacity>
+                </SafeAreaView>
+            )}
 
             <Modal
                 animationType="slide"

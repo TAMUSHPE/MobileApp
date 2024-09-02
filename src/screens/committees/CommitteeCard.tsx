@@ -1,8 +1,9 @@
-import { View, Text, TouchableOpacity, useColorScheme } from 'react-native';
+import { View, Text, TouchableOpacity, useColorScheme, Image } from 'react-native';
 import React, { useContext } from 'react';
 import { UserContext } from '../../context/UserContext';
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { Committee, getLogoComponent } from "../../types/committees";
+import { Images } from '../../../assets';
 
 const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) => {
     const { name, logo, memberCount, firebaseDocName } = committee;
@@ -35,8 +36,12 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
         >
             {/* Joined Label */}
             {isUserInCommittee && (
-                <View style={{ position: 'absolute', top: 8, left: 8 }}>
-                    <Text className="font-bold">Joined</Text>
+                <View style={{ position: 'absolute', top: 4, left: 4 }}>
+                    <Image
+                        resizeMode='contain'
+                        className='w-10 h-10'
+                        source={Images.SHPE_NAVY}
+                    />
                 </View>
             )}
 
