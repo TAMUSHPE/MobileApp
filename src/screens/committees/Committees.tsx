@@ -35,10 +35,23 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
     const fetchCommittees = async () => {
         setIsLoading(true);
         const response = await getCommittees();
-        setCommittees(response);
-        setFilteredCommittees(response); // Initialize filtered committees
+
+        const userCommittees = userInfo?.publicInfo?.committees || [];
+
+        const sortedCommittees = response.sort((a, b) => {
+            const isUserInA = userCommittees.includes(a.firebaseDocName!);
+            const isUserInB = userCommittees.includes(b.firebaseDocName!);
+
+            if (isUserInA && !isUserInB) return -1;
+            if (!isUserInA && isUserInB) return 1;
+            return (b.memberCount || 0) - (a.memberCount || 0);
+        });
+
+        setCommittees(sortedCommittees);
+        setFilteredCommittees(sortedCommittees);
         setIsLoading(false);
-    }
+    };
+
 
     const updateFilteredCommittees = (searchQuery: string) => {
         const filtered = committees.filter(committee =>

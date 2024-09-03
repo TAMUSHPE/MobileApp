@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme, Image, Modal } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator, useColorScheme, Image, Modal, Alert } from 'react-native'
 import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -37,7 +37,6 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
 
     const [events, setEvents] = useState<SHPEEvent[]>([]);
-    const [localTeamMemberOnlyCount, setLocalTeamMemberOnlyCount] = useState<number>(memberCount || 0);
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
     const [membersListVisible, setMembersListVisible] = useState<boolean>(false);
     const [isInCommittee, setIsInCommittee] = useState<boolean>();
@@ -46,6 +45,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
     const [loadingEvent, setEventLoading] = useState<boolean>(true);
     const [loadingMembers, setLoadingMembers] = useState<boolean>(false);
     const [loadingLabel, setLoadingLabel] = useState<boolean>(true);
+    const [loadingTeamMembers, setLoadingTeamMembers] = useState<boolean>(true);
 
     const [localTeamMembers, setLocalTeamMembers] = useState<TeamMembersState>({
         leads: [],
@@ -91,6 +91,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
             }
 
             setLocalTeamMembers(newTeamMembers);
+            setLoadingTeamMembers(false)
         }
     };
 
@@ -124,28 +125,6 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
         const committeeExists = userInfo?.publicInfo?.committees?.includes(firebaseDocName!);
         setIsInCommittee(committeeExists);
     }, [userInfo]);
-
-    useEffect(() => {
-        const fetchLocalMemberOnlyCount = () => {
-            const { leads, representatives, head } = localTeamMembers;
-            let totalTeamMemberCount = 0;
-
-            if (head) {
-                totalTeamMemberCount += 1;
-            }
-
-            totalTeamMemberCount += leads.length;
-            totalTeamMemberCount += representatives.length;
-
-            if ((memberCount || 0) - totalTeamMemberCount < 0) {
-                setLocalTeamMemberOnlyCount(0);
-            } else {
-                setLocalTeamMemberOnlyCount((memberCount || 0) - totalTeamMemberCount);
-            }
-        };
-
-        fetchLocalMemberOnlyCount();
-    }, [localTeamMembers])
 
     useFocusEffect(
         useCallback(() => {
@@ -220,14 +199,13 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
     const buttonLabel = getButtonLabel();
     const isLeaveOrCancel = buttonLabel === 'Leave' || buttonLabel === 'Cancel Request';
 
-
     return (
         <SafeAreaView edges={['top']} className={`flex flex-col h-screen ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}
                 <View className='flex-row items-center justify-between'>
-                    <TouchableOpacity onPress={() => navigation.goBack()} className='py-1 px-4'>
+                    <TouchableOpacity onPress={() => navigation.goBack()} className='py-2 px-4'>
                         <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
                     {hasPrivileges && (
@@ -240,110 +218,131 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                     )}
                 </View>
 
-                {/* Logo */}
-                <View className='items-center justify-center mt-4'>
-                    <View
-                        className={`h-28 w-28 rounded-lg items-center justify-center ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
-                        style={{
-                            shadowColor: "#000",
-                            shadowOffset: {
-                                width: 0,
-                                height: 2,
-                            },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 3.84,
-
-                            elevation: 5,
-                        }}>
-                        {darkMode ?
-                            <LightLogoComponent height={height * .9} width={width * .9} />
-                            :
-                            <LogoComponent height={height * .9} width={width * .9} />
-                        }
-                    </View>
-                </View>
 
                 <View className='mx-4'>
-                    {/* General Details */}
-                    <View className='mt-7'>
-                        <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{name}</Text>
-                        <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{memberCount} members • {isOpen ? "Open" : "Private"}</Text>
-                        <View className='flex-row flex-wrap'>
-                            {localTeamMembers.head && (
-                                <Image
-                                    className="flex w-9 h-9 rounded-full mr-2"
-                                    defaultSource={Images.DEFAULT_USER_PICTURE}
-                                    source={localTeamMembers.head.photoURL ? { uri: localTeamMembers.head.photoURL } : Images.DEFAULT_USER_PICTURE}
-                                />
+                    <View className='flex-row mt-5 w-full'>
+                        {/* Logo */}
+                        <View className='items-center justify-center'>
+                            <View
+                                className={`h-28 w-28 rounded-lg items-center justify-center ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                                style={{
+                                    shadowColor: "#000",
+                                    shadowOffset: {
+                                        width: 0,
+                                        height: 2,
+                                    },
+                                    shadowOpacity: 0.25,
+                                    shadowRadius: 3.84,
+
+                                    elevation: 5,
+                                }}>
+                                {darkMode ?
+                                    <LightLogoComponent height={height * .9} width={width * .9} />
+                                    :
+                                    <LogoComponent height={height * .9} width={width * .9} />
+                                }
+                            </View>
+                            {isInCommittee && (
+                                <View>
+                                    {loadingLabel ?
+                                        (
+                                            <ActivityIndicator className="mb-2" size="small" />
+                                        ) : (
+
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    Alert.alert(
+                                                        "Leave Committee",
+                                                        "Are you sure you want to leave?",
+                                                        [
+                                                            {
+                                                                text: "Cancel",
+                                                                style: "cancel",
+                                                            },
+                                                            {
+                                                                text: "Yes",
+                                                                onPress: handleJoinLeave,
+                                                            },
+                                                        ],
+                                                        { cancelable: true }
+                                                    );
+                                                }}
+                                            >
+                                                <Text className={`text-lg font-medium text-red-1 mt-1 line`}>Leave</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                </View>
                             )}
+                        </View>
 
-                            {localTeamMembers.representatives.map((rep, index) => (
-                                <Image
-                                    key={index}
-                                    className="flex w-9 h-9 rounded-full mr-2"
-                                    defaultSource={Images.DEFAULT_USER_PICTURE}
-                                    source={rep?.photoURL ? { uri: rep.photoURL } : Images.DEFAULT_USER_PICTURE}
-                                />
-                            ))}
-
-                            {localTeamMembers.leads.map((lead, index) => (
-                                <Image
-                                    key={index}
-                                    className="flex w-9 h-9 rounded-full mr-2"
-                                    defaultSource={Images.DEFAULT_USER_PICTURE}
-                                    source={lead?.photoURL ? { uri: lead.photoURL } : Images.DEFAULT_USER_PICTURE}
-                                />
-                            ))}
-
-                            <TouchableOpacity
-                                className='bg-primary-blue w-9 h-9 rounded-full items-center justify-center'
-                                onPress={async () => {
-                                    setMembersListVisible(true);
-                                    if (forceUpdate == 1) {
-                                        return;
-                                    }
-
-                                    setLoadingMembers(true);
-                                    const committeeMembersRes = await getCommitteeMembers(firebaseDocName!);
-                                    setMembers(committeeMembersRes);
-                                    setLoadingMembers(false);
-                                    setForceUpdate(1);
-                                }}
+                        {/* General Details */}
+                        <View className='ml-4 flex-1'>
+                            {/* Special request from pres. to make this pink :) */}
+                            <Text
+                                className={`text-3xl font-bold text-wrap ${name!.toLowerCase() === "shpetinas" ? "text-pink-500" : darkMode ? "text-white" : "text-black"
+                                    }`}
                             >
-                                <Text className='text-white text-lg'>+{localTeamMemberOnlyCount}</Text>
-                            </TouchableOpacity>
+                                {name}
+                            </Text>
+
+                            <View className='flex-row items-center'>
+                                <TouchableOpacity
+                                    onPress={async () => {
+                                        setMembersListVisible(true);
+                                        if (forceUpdate == 1) {
+                                            return;
+                                        }
+
+                                        setLoadingMembers(true);
+                                        const committeeMembersRes = await getCommitteeMembers(firebaseDocName!);
+                                        setMembers(committeeMembersRes);
+                                        setLoadingMembers(false);
+                                        setForceUpdate(1);
+                                    }}
+                                >
+                                    <Text className={`text-lg font-medium ${darkMode ? "text-white" : "text-black"}`}>{memberCount} members</Text>
+                                </TouchableOpacity>
+                                <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}> • </Text>
+                                <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{isOpen ? "Open" : "Private"}</Text>
+                            </View>
+
+                            <View>
+                                {applicationLink && (
+                                    <TouchableOpacity
+                                        onPress={() => handleLinkPress(applicationLink)}
+                                    >
+                                        <Text className={`text-lg text-primary-blue underline`}>View Applications</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
                         </View>
                     </View>
 
                     {/* About */}
-                    <View className='mt-10'>
-                        <View className='mb-4'>
-                            <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>About the committee</Text>
-                            {applicationLink && (
-                                <TouchableOpacity
-                                    onPress={() => handleLinkPress(applicationLink)}
-                                >
-                                    <Text className={`text-lg text-primary-blue underline`}>View Applications</Text>
-                                </TouchableOpacity>
-                            )}
-                        </View>
+                    {(description && description.trim()) && (
+                        <View className='mt-4'>
+                            <View className='mb-4'>
+                                <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>
+                                    About the committee
+                                </Text>
+                            </View>
 
-                        <View
-                            className={`px-3 py-2 rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
-                            style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 3.84,
-
-                                elevation: 5,
-                            }}>
-                            <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(description, 170)}</Text>
+                            <View
+                                className={`px-3 py-2 rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                                style={{
+                                    shadowColor: "#000",
+                                    shadowOffset: { width: 0, height: 2 },
+                                    shadowOpacity: 0.25,
+                                    shadowRadius: 3.84,
+                                    elevation: 5,
+                                }}>
+                                <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>
+                                    {truncateStringWithEllipsis(description.trim(), 170)}
+                                </Text>
+                            </View>
                         </View>
-                    </View>
+                    )}
+
 
                     {/* Upcoming Events */}
                     <View className='mt-10'>
@@ -372,7 +371,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                             }}
                         >
                             {loadingEvent ? (
-                                <ActivityIndicator className="mb-2" size="small" />
+                                <ActivityIndicator className="mt-2" size="small" />
                             ) : (
                                 <View>
                                     {(events && events.length > 0) ? (
@@ -395,35 +394,133 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                             )}
                         </View>
                     </View>
+
+                    {/* Meet the Team */}
+                    <View className='mt-10'>
+                        <View className='flex-row mb-4'>
+                            <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Meet the Team</Text>
+                        </View>
+
+                        <View
+                            className={`px-3 py-4 rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+
+                                elevation: 5,
+                            }}
+                        >
+
+                            {loadingTeamMembers ? (
+                                <ActivityIndicator className="mb-2" size="small" />
+                            ) : (
+
+                                <View>
+                                    {localTeamMembers.head && (
+                                        <View className='flex-row'>
+                                            <Image
+                                                className="flex w-12 h-12 rounded-full mr-2"
+                                                defaultSource={Images.DEFAULT_USER_PICTURE}
+                                                source={localTeamMembers.head.photoURL ? { uri: localTeamMembers.head.photoURL } : Images.DEFAULT_USER_PICTURE}
+                                            />
+                                            <View className='flex-col'>
+                                                <Text
+                                                    className={`font-medium text-lg ${name!.toLowerCase() === "shpetinas" ? "text-pink-500" : darkMode ? 'text-grey-light' : 'text-grey-dark'
+                                                        }`}
+                                                >
+                                                    Committee Head
+                                                </Text>
+
+                                                <Text className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                    {localTeamMembers.head.name}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    )}
+
+                                    {localTeamMembers.representatives.map((rep, index) => (
+                                        <View key={index} className='flex-row items-center mt-7'>
+                                            <Image
+                                                className="flex w-12 h-12 rounded-full mr-2"
+                                                defaultSource={Images.DEFAULT_USER_PICTURE}
+                                                source={rep?.photoURL ? { uri: rep.photoURL } : Images.DEFAULT_USER_PICTURE}
+                                            />
+                                            <View className='flex-col'>
+                                                <Text
+                                                    className={`font-medium text-lg ${name!.toLowerCase() === "shpetinas" ? "text-pink-500" : darkMode ? 'text-grey-light' : 'text-grey-dark'
+                                                        }`}
+                                                >
+                                                    Representative
+                                                </Text>
+
+                                                <Text className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                    {rep?.name}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    ))}
+
+                                    {localTeamMembers.leads.map((lead, index) => (
+                                        <View key={index} className='flex-row items-center mt-7'>
+                                            <Image
+                                                className="flex w-12 h-12 rounded-full mr-2"
+                                                defaultSource={Images.DEFAULT_USER_PICTURE}
+                                                source={lead?.photoURL ? { uri: lead.photoURL } : Images.DEFAULT_USER_PICTURE}
+                                            />
+                                            <View className='flex-col'>
+                                                <Text
+                                                    className={`font-medium text-lg ${name!.toLowerCase() === "shpetinas" ? "text-pink-500" : darkMode ? 'text-grey-light' : 'text-grey-dark'
+                                                        }`}
+                                                >
+                                                    Lead
+                                                </Text>
+                                                <Text className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-black'}`}>
+                                                    {lead?.name}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    ))}
+                                </View>
+                            )}
+                        </View>
+                    </View>
                 </View>
 
-                <View className='pb-40' />
+                <View className='pb-52' />
             </ScrollView>
 
             {/* Action Button */}
-            <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0 mb-14'>
-                <TouchableOpacity
-                    className={`py-1 rounded-xl mx-4 h-14 items-center justify-center ${isLeaveOrCancel ? (darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light') : 'bg-primary-blue'} border ${isLeaveOrCancel ? 'border-grey-dark' : 'border-transparent'}`}
-                    style={{
-                        shadowColor: "#000",
-                        shadowOffset: {
-                            width: 0,
-                            height: 2,
-                        },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 3.84,
+            {!isInCommittee && (
 
-                        elevation: 5,
-                    }}
-                    onPress={handleJoinLeave}
-                >
-                    {loadingLabel ? (
-                        <ActivityIndicator size="small" />
-                    ) : (
-                        <Text className={`text-center ${isLeaveOrCancel ? `${darkMode ? "text-white" : "text-black"}` : 'text-white'} text-2xl font-bold`}>{buttonLabel}</Text>
-                    )}
-                </TouchableOpacity>
-            </SafeAreaView>
+                <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0 mb-14'>
+                    <TouchableOpacity
+                        className={`py-1 rounded-xl mx-4 h-14 items-center justify-center ${isLeaveOrCancel ? (darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light') : 'bg-primary-blue'} border ${isLeaveOrCancel ? 'border-grey-dark' : 'border-transparent'}`}
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                                width: 0,
+                                height: 2,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 3.84,
+
+                            elevation: 5,
+                        }}
+                        onPress={handleJoinLeave}
+                    >
+                        {loadingLabel ? (
+                            <ActivityIndicator size="small" />
+                        ) : (
+                            <Text className={`text-center ${isLeaveOrCancel ? `${darkMode ? "text-white" : "text-black"}` : 'text-white'} text-2xl font-bold`}>{buttonLabel}</Text>
+                        )}
+                    </TouchableOpacity>
+                </SafeAreaView>
+            )}
 
             <Modal
                 animationType="slide"
