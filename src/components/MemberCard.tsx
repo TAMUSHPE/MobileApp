@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { MemberCardProp } from '../types/navigation'
 import { Images } from '../../assets'
 import { UserContext } from '../context/UserContext'
+import { isMemberVerified } from '../helpers/membership';
 
 const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation, displayPoints }) => {
     if (!userData) { return }
@@ -14,7 +15,7 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const { name, uid, displayName, photoURL, pointsThisMonth } = userData
+    const { nationalExpiration, chapterExpiration, name, uid, displayName, photoURL, pointsThisMonth } = userData
 
     return (
         <TouchableOpacity
@@ -39,10 +40,18 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
                 />
                 <View className='ml-2 my-1'>
                     <View>
-                        <Text className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-black'}`}>{name}</Text>
-
-                        <Text className={`text-md ${darkMode ? 'text-grey-light' : 'text-grey'}`}>{displayName}</Text>
-                        {displayPoints && pointsThisMonth?.valueOf && (
+                        <View className="flex-row items-center">
+                            <Text className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-black'}`}>{name}</Text>
+                            {isMemberVerified(nationalExpiration, chapterExpiration) && (
+                                <Image 
+                                    resizeMode='contain'
+                                    className='w-6 h-6 ml-1'
+                                    source={Images.SHPE_NAVY}
+                                />
+                                )}
+                            </View>
+                            <Text className={`text-md ${darkMode ? 'text-grey-light' : 'text-grey'}`}>{displayName}</Text>
+                            {displayPoints && pointsThisMonth?.valueOf && (
                             <Text className={darkMode ? 'text-white' : 'text-black'}>{parseFloat(pointsThisMonth.toFixed(3))} pts</Text>
                         )}
                     </View>
