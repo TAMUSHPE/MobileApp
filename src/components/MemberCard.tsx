@@ -15,8 +15,6 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const memberIcon = darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY;
-
     const { nationalExpiration, chapterExpiration, name, uid, displayName, photoURL, pointsThisMonth } = userData
 
     return (
@@ -41,22 +39,25 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
                     source={photoURL ? { uri: photoURL as string } : Images.DEFAULT_USER_PICTURE}
                 />
                 <View className='ml-2 my-1'>
-                    <View>
-                        <View className="flex-row items-center">
+                    <View className='flex-row items-center'>
+                        <View>
                             <Text className={`font-semibold text-lg ${darkMode ? 'text-white' : 'text-black'}`}>{name}</Text>
-                            {isMemberVerified(nationalExpiration, chapterExpiration) && (
-                                <Image 
-                                    resizeMode='contain'
-                                    className='w-8 h-8 ml-1'
-                                    source={memberIcon}
-                                />
-                                )}
-                            </View>
                             <Text className={`text-md ${darkMode ? 'text-grey-light' : 'text-grey'}`}>{displayName}</Text>
                             {displayPoints && pointsThisMonth?.valueOf && (
-                            <Text className={darkMode ? 'text-white' : 'text-black'}>{parseFloat(pointsThisMonth.toFixed(3))} pts</Text>
-                        )}
+                                <Text className={darkMode ? 'text-white' : 'text-black'}>{parseFloat(pointsThisMonth.toFixed(3))} pts</Text>
+                            )}
+                        </View>
+                        <View>
+                            {isMemberVerified(nationalExpiration, chapterExpiration) && (
+                                <Image
+                                    resizeMode='contain'
+                                    className='w-9 h-9 ml-2'
+                                    source={darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
+                                />
+                            )}
+                        </View>
                     </View>
+
                 </View>
             </View>
         </TouchableOpacity>
