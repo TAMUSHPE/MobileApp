@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { getMembers, getMembersToVerify } from '@/api/firebaseUtils';
+import { FaSync } from "react-icons/fa";
 import { SHPEEventLog } from '@/types/events';
 import { User } from '@/types/user';
 import { isMemberVerified, RequestWithDoc } from '@/types/membership';
@@ -27,18 +28,70 @@ const Membership = () => {
 
   const fetchMembers = async () => {
     setLoading(true);
-    const response = await getMembers();
-    setStudents(response);
-    const filteredMembers = response.filter((member) => {
-      console.log(member.publicInfo?.chapterExpiration);
-      return isMemberVerified(member.publicInfo?.chapterExpiration, member.publicInfo?.nationalExpiration);
-    });
-    setMembers(filteredMembers);
+    try {
+      const response = await getMembers();
+      setStudents(response);
 
-    const incomingReqs = await getMembersToVerify();
-    setRequestsWithDocuments(incomingReqs);
-    setLoading(false);
+      const filteredMembers = response.filter((member) => {
+        console.log(member.publicInfo?.chapterExpiration);
+        return isMemberVerified(
+          member.publicInfo?.chapterExpiration,
+          member.publicInfo?.nationalExpiration
+        );
+      });
+      setMembers(filteredMembers);
+
+      localStorage.setItem('cachedMembers', JSON.stringify(response));
+      localStorage.setItem('cachedOfficialMembers', JSON.stringify(filteredMembers));
+      localStorage.setItem('cachedMembersTimestamp', Date.now().toString());
+
+      const incomingReqs = await getMembersToVerify();
+      setRequestsWithDocuments(incomingReqs);
+      localStorage.setItem('cachedRequests', JSON.stringify(incomingReqs));
+      localStorage.setItem('cachedRequestsTimestamp', Date.now().toString());
+
+    } catch (error) {
+      console.error('Error fetching members:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const checkCacheAndFetchMembers = () => {
+    const cachedMembers = localStorage.getItem('cachedMembers');
+    const cachedOfficialMembers = localStorage.getItem('cachedOfficialMembers');
+    const cachedMembersTimestamp = localStorage.getItem('cachedMembersTimestamp');
+    const cachedRequests = localStorage.getItem('cachedRequests');
+    const cachedRequestsTimestamp = localStorage.getItem('cachedRequestsTimestamp');
+
+    const isCacheValid = (timestamp: string): boolean => {
+      return Date.now() - parseInt(timestamp, 10) < 24 * 60 * 60 * 1000;
+    };
+
+    if (
+      cachedMembers &&
+      cachedOfficialMembers &&
+      cachedMembersTimestamp &&
+      isCacheValid(cachedMembersTimestamp) &&
+      cachedRequests &&
+      cachedRequestsTimestamp &&
+      isCacheValid(cachedRequestsTimestamp)
+    ) {
+      const studentsData = JSON.parse(cachedMembers);
+      setStudents(studentsData);
+
+      setMembers(JSON.parse(cachedOfficialMembers));
+
+      setRequestsWithDocuments(JSON.parse(cachedRequests));
+      setLoading(false);
+    } else {
+      fetchMembers();
+    }
+  };
+
+  useEffect(() => {
+    checkCacheAndFetchMembers();
+  }, []);
 
   const handleApprove = async (member: RequestWithDoc) => {
     const userDocRef = doc(db, 'users', member.uid);
@@ -110,10 +163,12 @@ const Membership = () => {
     }
   };
 
-  useEffect(() => {
-    fetchMembers();
-    setLoading(false);
-  }, []);
+  const handleReload = async () => {
+    if (window.confirm("Are you sure you want to reload the members?")) {
+      setLoading(true);
+      await fetchMembers();
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -142,7 +197,6 @@ const Membership = () => {
 
   return (
     <div className="w-full h-full flex flex-col">
-
       <div className="text-white bg-[#500000] text-center text-2xl flex">
         <button onClick={() => setTab('members')} className="w-1/2">
           Offical Members
@@ -232,6 +286,14 @@ const Membership = () => {
             })}
         </table>
       )}
+
+      {/* Reload Button */}
+      <button
+        onClick={handleReload}
+        className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
+      >
+        <FaSync />
+      </button>
     </div>
   );
 };
