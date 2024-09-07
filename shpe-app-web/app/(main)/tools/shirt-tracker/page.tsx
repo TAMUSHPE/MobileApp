@@ -16,11 +16,6 @@ const ShirtTracker = () => {
     const [members, setMembers] = useState<UserWithLogs[]>([]);
     const [shirtList, setShirtList] = useState<ShirtWithMember[]>([]);
 
-    const fetchMembers = async () => {
-        setLoading(true);
-        const response = await getMembers();
-        setMembers(response);
-    };
 
     const fetchShirts = async () => {
         const shirts = await getShirtsToVerify();
@@ -78,8 +73,38 @@ const ShirtTracker = () => {
         }
     };
 
+    const fetchMembers = async () => {
+        setLoading(true);
+        try {
+            const response = await getMembers() as UserWithLogs[];
+            setMembers(response);
+
+            localStorage.setItem('cachedMembers', JSON.stringify(response));
+            localStorage.setItem('cachedMembersTimestamp', Date.now().toString());
+
+        } catch (error) {
+            console.error('Error fetching members:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const checkCacheAndFetchMembers = () => {
+        const cachedMembers = localStorage.getItem('cachedMembers');
+        const cachedTimestamp = localStorage.getItem('cachedMembersTimestamp');
+
+        if (cachedMembers && cachedTimestamp && Date.now() - parseInt(cachedTimestamp, 10) < 24 * 60 * 60 * 1000) {
+            const membersData = JSON.parse(cachedMembers) as UserWithLogs[];
+            setMembers(membersData);
+
+            setLoading(false);
+        } else {
+            fetchMembers();
+        }
+    };
+
     useEffect(() => {
-        fetchMembers();
+        checkCacheAndFetchMembers();
     }, []);
 
     useEffect(() => {

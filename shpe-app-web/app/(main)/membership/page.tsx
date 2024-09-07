@@ -27,18 +27,54 @@ const Membership = () => {
 
   const fetchMembers = async () => {
     setLoading(true);
-    const response = await getMembers();
-    setStudents(response);
-    const filteredMembers = response.filter((member) => {
-      console.log(member.publicInfo?.chapterExpiration);
-      return isMemberVerified(member.publicInfo?.chapterExpiration, member.publicInfo?.nationalExpiration);
-    });
-    setMembers(filteredMembers);
+    try {
+      const response = await getMembers();
+      setStudents(response);
+      const filteredMembers = response.filter((member) => {
+        console.log(member.publicInfo?.chapterExpiration);
+        return isMemberVerified(member.publicInfo?.chapterExpiration, member.publicInfo?.nationalExpiration);
+      });
+      setMembers(filteredMembers);
 
-    const incomingReqs = await getMembersToVerify();
-    setRequestsWithDocuments(incomingReqs);
-    setLoading(false);
+      localStorage.setItem('cachedMembers', JSON.stringify(filteredMembers));
+      localStorage.setItem('cachedMembersTimestamp', Date.now().toString());
+
+      const incomingReqs = await getMembersToVerify();
+      setRequestsWithDocuments(incomingReqs);
+      localStorage.setItem('cachedRequests', JSON.stringify(incomingReqs));
+      localStorage.setItem('cachedRequestsTimestamp', Date.now().toString());
+
+    } catch (error) {
+      console.error('Error fetching members:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const checkCacheAndFetchMembers = () => {
+    const cachedMembers = localStorage.getItem('cachedMembers');
+    const cachedMembersTimestamp = localStorage.getItem('cachedMembersTimestamp');
+    const cachedRequests = localStorage.getItem('cachedRequests');
+    const cachedRequestsTimestamp = localStorage.getItem('cachedRequestsTimestamp');
+
+    const isCacheValid = (timestamp: string): boolean => {
+      return Date.now() - parseInt(timestamp, 10) < 24 * 60 * 60 * 1000;
+    };
+
+    if (cachedMembers && cachedMembersTimestamp && isCacheValid(cachedMembersTimestamp) &&
+      cachedRequests && cachedRequestsTimestamp && isCacheValid(cachedRequestsTimestamp)) {
+
+      setMembers(JSON.parse(cachedMembers));
+      setRequestsWithDocuments(JSON.parse(cachedRequests));
+      setLoading(false);
+    } else {
+      fetchMembers();
+    }
+  };
+
+  useEffect(() => {
+    checkCacheAndFetchMembers();
+  }, []);
 
   const handleApprove = async (member: RequestWithDoc) => {
     const userDocRef = doc(db, 'users', member.uid);
@@ -109,11 +145,6 @@ const Membership = () => {
       return 'Guest';
     }
   };
-
-  useEffect(() => {
-    fetchMembers();
-    setLoading(false);
-  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {

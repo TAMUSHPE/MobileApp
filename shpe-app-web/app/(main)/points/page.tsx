@@ -35,7 +35,6 @@ const Points = () => {
   const months = generateSchoolYearMonths();
   const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
 
-  // Set the initial current month index to the real current month
   const currentMonthDate = new Date();
   const realCurrentMonthIndex = months.findIndex(
     (month) => month.getFullYear() === currentMonthDate.getFullYear() && month.getMonth() === currentMonthDate.getMonth()
@@ -43,42 +42,69 @@ const Points = () => {
   const [currentMonthIndex, setCurrentMonthIndex] = useState<number>(realCurrentMonthIndex !== -1 ? realCurrentMonthIndex : 0);
 
   const fetchMembers = async () => {
-    const response = await getMembers() as UserWithLogs[];
-    setMembers(response);
+    try {
+      const response = await getMembers() as UserWithLogs[];
+      setMembers(response);
 
-    // Initialize the original points state
-    const initialPoints = response.reduce((acc: PointsRecord, member) => {
-      if (member.publicInfo?.uid && member.eventLogs) {
-        member.eventLogs.forEach(log => {
-          if (log.eventId) {
-            acc[`${member.publicInfo?.uid}-${log.eventId}`] = log.points || 0;
-          }
+      const initialPoints = response.reduce((acc: PointsRecord, member) => {
+        if (member.publicInfo?.uid && member.eventLogs) {
+          member.eventLogs.forEach(log => {
+            if (log.eventId) {
+              acc[`${member.publicInfo?.uid}-${log.eventId}`] = log.points || 0;
+            }
 
-          // Calculate Instagram points per month
-          if (log.instagramLogs) {
-            months.forEach((month, index) => {
-              const pointsForInstagram = calculateInstagramPoints(log.instagramLogs!, month);
-              acc[`${member.publicInfo?.uid}-instagram-${index}`] = pointsForInstagram;
-            });
-          }
-        });
-      }
+            if (log.instagramLogs) {
+              months.forEach((month, index) => {
+                const pointsForInstagram = calculateInstagramPoints(log.instagramLogs!, month);
+                acc[`${member.publicInfo?.uid}-instagram-${index}`] = pointsForInstagram;
+              });
+            }
+          });
+        }
 
-      return acc;
-    }, {});
+        return acc;
+      }, {});
 
-    setOriginalPoints(initialPoints);
+      setOriginalPoints(initialPoints);
+      localStorage.setItem('cachedMembers', JSON.stringify(response));
+      localStorage.setItem('cachedPoints', JSON.stringify(initialPoints));
+      localStorage.setItem('cachedMembersTimestamp', Date.now().toString());
+    } catch (error) {
+      console.error('Error fetching members:', error);
+    }
+  };
+
+  const checkCacheAndFetchMembers = () => {
+    const cachedMembers = localStorage.getItem('cachedMembers');
+    const cachedPoints = localStorage.getItem('cachedPoints');
+    const cachedTimestamp = localStorage.getItem('cachedMembersTimestamp');
+
+    const isCacheValid = (timestamp: string): boolean => {
+      return Date.now() - parseInt(timestamp, 10) < 24 * 60 * 60 * 1000;
+    };
+
+    if (cachedMembers && cachedPoints && cachedTimestamp && isCacheValid(cachedTimestamp)) {
+      setMembers(JSON.parse(cachedMembers));
+      setOriginalPoints(JSON.parse(cachedPoints));
+    } else {
+      fetchMembers();
+    }
   };
 
   const fetchEvents = async () => {
-    const response = await getEvents();
-    setEvents(response);
+    try {
+      const response = await getEvents();
+      setEvents(response);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    }
   };
 
   useEffect(() => {
-    fetchMembers();
+    checkCacheAndFetchMembers();
     fetchEvents();
   }, []);
+
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
