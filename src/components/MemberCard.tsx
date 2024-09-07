@@ -15,6 +15,8 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
+    const memberIcon = darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY;
+
     const { nationalExpiration, chapterExpiration, name, uid, displayName, photoURL, pointsThisMonth } = userData
 
     return (
@@ -45,8 +47,8 @@ const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navig
                             {isMemberVerified(nationalExpiration, chapterExpiration) && (
                                 <Image 
                                     resizeMode='contain'
-                                    className='w-6 h-6 ml-1'
-                                    source={Images.SHPE_NAVY}
+                                    className='w-8 h-8 ml-1'
+                                    source={memberIcon}
                                 />
                                 )}
                             </View>
