@@ -11,6 +11,8 @@ import { auth, db, functions } from '@/config/firebaseConfig';
 import { httpsCallable } from 'firebase/functions';
 import MemberCard from '@/components/MemberCard';
 import { onAuthStateChanged } from 'firebase/auth';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 interface UserWithLogs extends User {
   eventLogs?: SHPEEventLog[];
@@ -80,6 +82,41 @@ const Membership = () => {
       type: 'denied',
     });
   };
+
+  const exportMembersToExcel = async (members: UserWithLogs[]) => {
+    // Create a new workbook and add a worksheet
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Members');
+  
+    // Define columns
+    worksheet.columns = [
+      { header: 'Name', key: 'name', width: 20 },
+      { header: 'Email', key: 'email', width: 30 },
+      { header: 'Major', key: 'major', width: 20 },
+      { header: 'Class Year', key: 'classYear', width: 15 },
+      { header: 'Role', key: 'role', width: 15 },
+     
+    ];
+  
+    // Populate the worksheet with data from members
+    members.forEach((member) => {
+      worksheet.addRow({
+        name: member.publicInfo?.displayName || '',
+        email: member.publicInfo?.email || member.private?.privateInfo?.email || 'Email not available',
+        major: member.publicInfo?.major || '',
+        classYear: member.publicInfo?.classYear || '',
+        role: getRole(member) || '',
+        
+      });
+    });
+  
+    // Write the workbook to a buffer
+    const buffer = await workbook.xlsx.writeBuffer();
+  
+    // Save the buffer as an Excel file
+    saveAs(new Blob([buffer]), `Members_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+  
 
   const getRole = (user: User) => {
     if (user.publicInfo?.roles?.admin) {
@@ -163,7 +200,7 @@ const Membership = () => {
             <th className=" px-4 py-2">Major</th>
             <th className=" px-4 py-2">Class Year</th>
             <th className=" px-4 py-2">Role</th>
-            <th className=" px-4 py-2">Email</th>
+            <th className=" px-4 py-2">Email <button onClick = {() =>exportMembersToExcel(members)}> Export</button></th>
           </tr>
           {members &&
             members.map((member) => {
@@ -187,6 +224,9 @@ const Membership = () => {
             <th className=" px-4 py-2">Name</th>
             <th className=" px-4 py-2" colSpan={2}>
               Links
+            </th>
+            <th className='className=" px-4 py-2"'>
+              Shirt Size
             </th>
             <th className=" px-4 py-2" colSpan={2}>
               Action

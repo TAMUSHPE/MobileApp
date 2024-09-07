@@ -16,8 +16,9 @@ const MemberCard : React.FC<MemberCardProps> = ({request, onApprove, onDeny}) =>
             // flex text-gray-400  justify-evenly text-2xl
     <tr className="bg-gray-300">
       <td className="bg-gray-500 px-4 py-2">{request.name}</td>
-      <td className="px-4 py-2"><a href={request.chapterURL}>Chapter</a></td>
-      <td className="px-4 py-2"><a href={request.nationalURL}>National</a></td>
+      <td className="px-4 py-2"><a href={request.chapterURL} target="_blank">Chapter</a></td>
+      <td className="px-4 py-2"><a href={request.nationalURL} target ="_blank">National</a></td>
+      <td className="px-4 py-2">{request.shirtSize}</td>
       <td className="bg-green-400 px-4 py-2"><button onClick={() => {onApprove(request); }}>Approve</button></td>
       <td className="bg-red-400 px-4 py-2"><button onClick={() => {onDeny(request); }}>Deny</button></td>
     </tr>
