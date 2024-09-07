@@ -17,6 +17,7 @@ import { EventsStackParams } from '../../types/navigation';
 import { EventType, ExtendedEventType, SHPEEvent } from '../../types/events';
 import EventCard from './EventCard';
 import { Committee } from '../../types/committees';
+import DismissibleModal from '../../components/DismissibleModal';
 
 const Events = ({ navigation }: EventsProps) => {
     const route = useRoute<EventsScreenRouteProp>();
@@ -39,6 +40,7 @@ const Events = ({ navigation }: EventsProps) => {
     const [selectedFilter, setSelectedFilter] = useState<ExtendedEventType | null>(route.params?.filter || null);
     const [committees, setCommittees] = useState<Committee[]>([]);
     const [selectedCommittee, setSelectedCommittee] = useState<string | null>(route.params?.committee || null);
+    const [infoVisible, setInfoVisible] = useState(false);
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
 
@@ -195,8 +197,11 @@ const Events = ({ navigation }: EventsProps) => {
             <StatusBar style={darkMode ? "light" : "dark"} />
             <ScrollView showsVerticalScrollIndicator={false}>
                 {/* Header */}
-                <View className='flex-row px-4'>
+                <View className='flex-row px-4 items-center'>
                     <Text className={`text-4xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Events</Text>
+                    <TouchableOpacity className="ml-2" activeOpacity={1} onPress={() => setInfoVisible(true)}>
+                        <Octicons name="info" size={25} color={darkMode ? "white" : "black"} />
+                    </TouchableOpacity>
                 </View>
 
                 {/* Filters */}
@@ -424,6 +429,46 @@ const Events = ({ navigation }: EventsProps) => {
                     <Octicons name="plus" size={24} color="white" />
                 </TouchableOpacity>
             )}
+
+            <DismissibleModal
+                visible={infoVisible}
+                setVisible={setInfoVisible}
+            >
+                <View
+                    className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    style={{ minWidth: 325 }}
+                >
+                    <View className='flex-row items-center justify-between'>
+                        <View className='flex-row items-center'>
+                            <Octicons name="info" size={24} color={darkMode ? "white" : "black"} />
+                            <Text className={`text-2xl font-semibold ml-2 ${darkMode ? "text-white" : "text-black"}`}>FAQ</Text>
+                        </View>
+                        <View>
+                            <TouchableOpacity onPress={() => setInfoVisible(false)}>
+                                <Octicons name="x" size={24} color={darkMode ? "white" : "black"} />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    <View className='w-[85%]'>
+                        <Text className={`text-lg font-semibold ${darkMode ? "text-white" : "text-black"}`}>
+                            How to Find Committee Meetings
+                        </Text>
+                        <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>
+                            Meetings are listed under the respective committee in the committee tab or can be filtered by "committee meetings" on this screen.
+                        </Text>
+                    </View>
+
+                    <View className='w-[85%]'>
+                        <Text className={`text-lg font-semibold ${darkMode ? "text-white" : "text-black"}`}>
+                            Event Location Check
+                        </Text>
+                        <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>
+                            The location check only happens during scans; we do not track you continuously. You are free to leave the area, but if a sign-out scan is required, you must be at the location to sign out.
+                        </Text>
+                    </View>
+                </View>
+            </DismissibleModal>
         </SafeAreaView>
     );
 };
