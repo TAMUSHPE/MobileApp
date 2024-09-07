@@ -84,13 +84,14 @@ const Points = () => {
     };
 
     if (cachedMembers && cachedPoints && cachedTimestamp && isCacheValid(cachedTimestamp)) {
-      setMembers(JSON.parse(cachedMembers));
+      const members = JSON.parse(cachedMembers);
+      const convertedMembers = convertMembersLogsToTimestamps(members);
+      setMembers(convertedMembers);
       setOriginalPoints(JSON.parse(cachedPoints));
     } else {
       fetchMembers();
     }
   };
-
   const fetchEvents = async () => {
     try {
       const response = await getEvents();
@@ -708,8 +709,55 @@ const getColumnColor = (index: number): string => {
   return colors[index % colors.length];
 };
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const isPlainDateObject = (obj: any): obj is Date => {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.getFullYear === 'function' &&
+    typeof obj.getMonth === 'function' &&
+    typeof obj.getDate === 'function'
+  );
+};
+
+// Helper function to check if an object is structured like a Firebase Timestamp
+const isPlainTimestampObject = (obj: any): obj is { seconds: number; nanoseconds: number } => {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.seconds === 'number' &&
+    typeof obj.nanoseconds === 'number'
+  );
+};
+
+// Convert the object back to a Timestamp if it's structured like one
+const convertToTimestamp = (obj: any): Timestamp | null => {
+  if (isPlainDateObject(obj)) {
+    return Timestamp.fromDate(obj);
+  } else if (isPlainTimestampObject(obj)) {
+    return new Timestamp(obj.seconds, obj.nanoseconds);
+  }
+  return null;
+};
 
 
+
+// Conversion function to convert Date objects or Timestamp-like objects back to Timestamps
+const convertDatesToTimestamps = (log: SHPEEventLog): SHPEEventLog => {
+  return {
+    ...log,
+    signInTime: convertToTimestamp(log.signInTime) || log.signInTime,
+    signOutTime: convertToTimestamp(log.signOutTime) || log.signOutTime,
+    creationTime: convertToTimestamp(log.creationTime) || log.creationTime,
+    instagramLogs: log.instagramLogs?.map(log => convertToTimestamp(log) || log),
+  };
+};
+
+// Utility function to convert all event logs in members
+const convertMembersLogsToTimestamps = (members: UserWithLogs[]): UserWithLogs[] => {
+  return members.map(member => ({
+    ...member,
+    eventLogs: member.eventLogs?.map(convertDatesToTimestamps),
+  }));
+};
 
 export default Points;
