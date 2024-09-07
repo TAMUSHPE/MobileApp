@@ -1144,6 +1144,29 @@ export const removeCommitteeRequest = async (firebaseDocName: string, uid: strin
     }
 };
 
+
+export const getCommitteeMeetings = async () => {
+    try {
+        const eventsRef = collection(db, 'events');
+
+        const today = Timestamp.fromDate(new Date());
+
+        const q = query(
+            eventsRef,
+            where('eventType', '==', 'Committee Meeting'),
+            where('endTime', '>=', today)
+        );
+
+        const querySnapshot = await getDocs(q);
+
+        const committeeMeetings = querySnapshot.docs.map((doc) => doc.data());
+
+        return committeeMeetings;
+    } catch (error) {
+        console.error('Error fetching committee meetings:', error);
+    }
+};
+
 // ============================================================================
 // Resources Utilities
 // ============================================================================

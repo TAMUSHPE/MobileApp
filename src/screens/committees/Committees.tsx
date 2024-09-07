@@ -5,13 +5,14 @@ import { Octicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../../context/UserContext'
 import { auth } from '../../config/firebaseConfig';
-import { fetchAndStoreUser, getCommittees } from '../../api/firebaseUtils'
+import { fetchAndStoreUser, getCommitteeEvents, getCommitteeMeetings, getCommittees } from '../../api/firebaseUtils'
 import { Committee } from "../../types/committees"
 import CommitteeCard from './CommitteeCard'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CommitteesStackParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
+import { SHPEEvent } from '../../types/events';
 
 const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams>) => {
     const userContext = useContext(UserContext);
@@ -24,21 +25,52 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
 
-    const [committees, setCommittees] = useState<Committee[]>([]);
-    const [filteredCommittees, setFilteredCommittees] = useState<Committee[]>([]);
+    const [committees, setCommittees] = useState<CommitteeWithCount[]>([]);
+    const [filteredCommittees, setFilteredCommittees] = useState<CommitteeWithCount[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const [search, setSearch] = useState<string>("");
 
     const inputRef = useRef<TextInput>(null);
 
+    const countCommitteeMeetings = (committees: Committee[], events: SHPEEvent[]) => {
+        const meetingCounts: { [key: string]: number } = {};
+
+        committees.forEach((committee) => {
+            if (committee.firebaseDocName) {
+                meetingCounts[committee.firebaseDocName] = 0;
+            }
+        });
+
+        events.forEach((event) => {
+            const committeeName = event.committee;
+
+            if (committeeName && meetingCounts.hasOwnProperty(committeeName)) {
+                meetingCounts[committeeName] += 1;
+            }
+        });
+
+        return meetingCounts;
+    };
+
+
+
     const fetchCommittees = async () => {
         setIsLoading(true);
-        const response = await getCommittees();
+        const committeesRes = await getCommittees();
+        const meetingsRes = await getCommitteeMeetings() as SHPEEvent[];
+
+        // Get the count of meetings for each committee
+        const meetingCounts = countCommitteeMeetings(committeesRes, meetingsRes);
 
         const userCommittees = userInfo?.publicInfo?.committees || [];
 
-        const sortedCommittees = response.sort((a, b) => {
+        // Sort committees based on user membership and member count
+        const sortedCommittees = committeesRes.map((committee) => {
+            // Attach event count to each committee
+            const eventCount = meetingCounts[committee.firebaseDocName!] || 0;
+            return { ...committee, eventCount };
+        }).sort((a, b) => {
             const isUserInA = userCommittees.includes(a.firebaseDocName!);
             const isUserInB = userCommittees.includes(b.firebaseDocName!);
 
@@ -51,7 +83,6 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
         setFilteredCommittees(sortedCommittees);
         setIsLoading(false);
     };
-
 
     const updateFilteredCommittees = (searchQuery: string) => {
         const filtered = committees.filter(committee =>
@@ -142,7 +173,11 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
                 <View className='flex-row flex-wrap mt-10 mx-4 justify-between'>
                     {filteredCommittees.map((committee, index) => (
                         <View key={index} className='w-[46%]'>
-                            <CommitteeCard committee={committee} navigation={navigation} />
+                            <CommitteeCard
+                                committee={committee}
+                                navigation={navigation}
+                                eventCount={committee.eventCount || 0}
+                            />
                         </View>
                     ))}
                 </View>
@@ -172,6 +207,10 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
             )}
         </SafeAreaView>
     )
+}
+
+interface CommitteeWithCount extends Committee {
+    eventCount: number;
 }
 
 export default Committees;

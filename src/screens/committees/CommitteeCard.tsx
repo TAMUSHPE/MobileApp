@@ -5,7 +5,7 @@ import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { Committee, getLogoComponent } from "../../types/committees";
 import { Images } from '../../../assets';
 
-const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) => {
+const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, eventCount, navigation }) => {
     const { name, logo, memberCount, firebaseDocName } = committee;
     const { LogoComponent, LightLogoComponent, height, width } = getLogoComponent(logo);
 
@@ -43,10 +43,11 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
                         source={darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
                     />
                 </View>
-            )}
 
+            )}
             {/* Logo */}
             <View className='items-center justify-center flex-1'>
+                <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{eventCount} Upcoming Event</Text>
                 {darkMode ?
                     <LightLogoComponent height={height * .9} width={width * .9} />
                     :
@@ -65,8 +66,8 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
 
 interface CommitteeCardProps {
     committee: Committee;
+    eventCount?: number;
     navigation: any;
-    handleCardPress?: (uid: string) => string | void;
 }
 
 export default CommitteeCard;
