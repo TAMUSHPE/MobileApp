@@ -5,7 +5,7 @@ import { getEvents, getMembers, updatePointsInFirebase } from "@/api/firebaseUti
 import { SHPEEvent, SHPEEventLog } from '@/types/events';
 import { format } from 'date-fns';
 import { User } from "@/types/user";
-import { FaChevronLeft, FaChevronRight, FaFilter, FaUndo, FaSave } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaFilter, FaUndo, FaSave, FaSync } from "react-icons/fa";
 import { httpsCallable } from "firebase/functions";
 import { auth, functions } from "@/config/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
@@ -40,8 +40,8 @@ const Points = () => {
     (month) => month.getFullYear() === currentMonthDate.getFullYear() && month.getMonth() === currentMonthDate.getMonth()
   );
   const [currentMonthIndex, setCurrentMonthIndex] = useState<number>(realCurrentMonthIndex !== -1 ? realCurrentMonthIndex : 0);
-
   const fetchMembers = async () => {
+    setLoading(true);
     try {
       const response = await getMembers() as UserWithLogs[];
       setMembers(response);
@@ -61,7 +61,6 @@ const Points = () => {
             }
           });
         }
-
         return acc;
       }, {});
 
@@ -71,6 +70,8 @@ const Points = () => {
       localStorage.setItem('cachedMembersTimestamp', Date.now().toString());
     } catch (error) {
       console.error('Error fetching members:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -438,6 +439,14 @@ const Points = () => {
   };
 
 
+  const handleReload = async () => {
+    if (window.confirm("Are you sure you want to reload the points?")) {
+      setLoading(true);
+      await fetchMembers();
+    }
+  };
+
+
   if (loading) {
     return (
       <div className="flex flex-col w-full h-screen items-center justify-center bg-white">
@@ -663,6 +672,14 @@ const Points = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Reload Button */}
+      <button
+        onClick={handleReload}
+        className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
+      >
+        <FaSync />
+      </button>
     </div>
   );
 }

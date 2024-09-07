@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import { getMembers, getMembersToVerify } from '@/api/firebaseUtils';
+import { FaSync } from "react-icons/fa";
 import { SHPEEventLog } from '@/types/events';
 import { User } from '@/types/user';
 import { isMemberVerified, RequestWithDoc } from '@/types/membership';
@@ -162,6 +163,13 @@ const Membership = () => {
     }
   };
 
+  const handleReload = async () => {
+    if (window.confirm("Are you sure you want to reload the members?")) {
+      setLoading(true);
+      await fetchMembers();
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -189,7 +197,6 @@ const Membership = () => {
 
   return (
     <div className="w-full h-full flex flex-col">
-
       <div className="text-white bg-[#500000] text-center text-2xl flex">
         <button onClick={() => setTab('members')} className="w-1/2">
           Offical Members
@@ -279,6 +286,14 @@ const Membership = () => {
             })}
         </table>
       )}
+
+      {/* Reload Button */}
+      <button
+        onClick={handleReload}
+        className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
+      >
+        <FaSync />
+      </button>
     </div>
   );
 };
