@@ -7,6 +7,7 @@ import { auth } from "@/config/firebaseConfig";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/config/firebaseConfig";
+import Link from "next/link";
 
 const Tools = () => {
   const router = useRouter();
@@ -87,27 +88,35 @@ const Tools = () => {
   };
 
   return (
-    <div className="w-full h-full">
-      
-
-      <div className="mt-8 flex flex-col items-center">
+    <div className="w-full flex-row flex flex-wrap">
+      <div className="flex-col items-center mt-4 ml-4">
         <button
           onClick={zipResumes}
-          className="bg-blue-500 text-white py-2 px-4 rounded mb-4"
+          className="bg-blue-500 text-white py-2 px-4 rounded mr-4"
         >
           Update Resume Download Link
         </button>
 
-        {isGenerated && resumeDownloadInfo && !isExpired(resumeDownloadInfo.expiresAt) ? (
-          <button
-            onClick={handleDownloadResume}
-            className="bg-[#500000] text-white py-2 px-4 rounded"
-          >
-            Open Link to Download Resume
-          </button>
-        ) : (
-          <p className="text-gray-500 mt-4">Link is being generated.</p>
+        {isGenerated && (
+          resumeDownloadInfo && !isExpired(resumeDownloadInfo.expiresAt) ? (
+            <button
+              onClick={handleDownloadResume}
+              className="bg-[#500000] text-white py-2 px-4 rounded mr-4"
+            >
+              Open Link to Download Resume
+            </button>
+          ) : (
+            <span className="text-gray-500 mt-4 mr-4">Link is being generated.</span>
+          )
         )}
+      </div>
+
+      <div className="mt-4">
+        <Link href={"tools/shirt-tracker"}>
+          <div className="bg-blue-500 text-white py-2 px-4 rounded mr-4">
+            <div className='text-white'>Shirt Tracker</div>
+          </div>
+        </Link>
       </div>
     </div>
   );
