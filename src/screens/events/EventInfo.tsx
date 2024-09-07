@@ -378,7 +378,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                         </View>
                     )}
 
-                    <View className='pb-20' />
+                    <View className='pb-40' />
                 </View>
             </ScrollView>
 

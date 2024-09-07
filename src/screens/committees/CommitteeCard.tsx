@@ -1,15 +1,12 @@
-import { View, Text, Image, TouchableOpacity, useColorScheme } from 'react-native';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
-import { useFocusEffect } from '@react-navigation/core';
-import { getPublicUserData } from '../../api/firebaseUtils';
+import { View, Text, TouchableOpacity, useColorScheme, Image } from 'react-native';
+import React, { useContext } from 'react';
 import { UserContext } from '../../context/UserContext';
-import { Images } from "../../../assets";
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { Committee, getLogoComponent } from "../../types/committees";
-import { PublicUserInfo } from '../../types/user';
+import { Images } from '../../../assets';
 
 const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) => {
-    const { name, logo, head, memberCount, isOpen, firebaseDocName } = committee;
+    const { name, logo, memberCount, firebaseDocName } = committee;
     const { LogoComponent, LightLogoComponent, height, width } = getLogoComponent(logo);
 
     const userContext = useContext(UserContext);
@@ -19,29 +16,6 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
-
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
-
-    const [localHead, setLocalHead] = useState<PublicUserInfo | null>(null);
-
-    const fetchHeadData = async () => {
-        if (head) {
-            const headData = await getPublicUserData(head);
-            setLocalHead(headData || null);
-        }
-    }
-
-    useEffect(() => {
-        fetchHeadData();
-    }, []);
-
-    useFocusEffect(
-        useCallback(() => {
-            if (hasPrivileges) {
-                fetchHeadData();
-            }
-        }, [fetchHeadData, userInfo])
-    );
 
     const isUserInCommittee = userInfo?.publicInfo?.committees?.includes(firebaseDocName || "");
 
@@ -62,15 +36,14 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
         >
             {/* Joined Label */}
             {isUserInCommittee && (
-                <View style={{ position: 'absolute', top: 8, left: 8 }}>
-                    <Text className="text-primary-blue font-bold">Joined</Text>
+                <View style={{ position: 'absolute', top: 4, left: 4 }}>
+                    <Image
+                        resizeMode='contain'
+                        className='w-10 h-10'
+                        source={darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
+                    />
                 </View>
             )}
-
-            {/* Committee Status and Head */}
-            <View className='flex-row justify-end'>
-                <Image source={localHead?.photoURL ? { uri: localHead.photoURL } : Images.DEFAULT_USER_PICTURE} className='h-9 w-9 rounded-full' />
-            </View>
 
             {/* Logo */}
             <View className='items-center justify-center flex-1'>

@@ -1,7 +1,7 @@
-import { View, Text, Switch, useColorScheme } from 'react-native';
+import { View, Text, Switch, useColorScheme, Platform } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { GooglePlacesAutocomplete, GooglePlaceDetail } from 'react-native-google-places-autocomplete';
-import MapView, { Marker, Circle, LatLng, Region } from 'react-native-maps';
+import MapView, { Marker, Circle, LatLng, Region, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location'
 import { GooglePlacesApiKey, presetLocationList, reverseGeocode } from '../helpers/geolocationUtils';
 import Slider from '@react-native-community/slider';
@@ -56,6 +56,8 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
     return (
         <View className='flex-1'>
             <MapView
+                // IOS devices will use apple maps
+                provider={Platform.OS === 'android' ? PROVIDER_GOOGLE : undefined}
                 className='flex-1'
                 region={mapRegion}
             >
