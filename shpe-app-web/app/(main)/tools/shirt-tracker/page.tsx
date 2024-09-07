@@ -5,34 +5,34 @@ import Header from '@/components/Header';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '@/config/firebaseConfig';
 import { getMembers, getShirtsToVerify } from '@/api/firebaseUtils';
-import { User } from '@/types/user';
+import { PublicUserInfo, User } from '@/types/user';
 import { SHPEEventLog } from '@/types/events';
 import { doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { isMemberVerified } from '@/types/membership';
+import { FaSync } from 'react-icons/fa';
 
 const ShirtTracker = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(true);
     const [members, setMembers] = useState<UserWithLogs[]>([]);
     const [shirtList, setShirtList] = useState<ShirtWithMember[]>([]);
-
-    const fetchMembers = async () => {
-        setLoading(true);
-        const response = await getMembers();
-        setMembers(response);
-    };
-
     const fetchShirts = async () => {
         const shirts = await getShirtsToVerify();
         const updatedShirtList: ShirtWithMember[] = shirts.map((shirt) => {
-            const matchedMember = members.find((member) => member.publicInfo?.uid === shirt.uid);
+            const shirtUid = shirt.uid?.trim().toLowerCase();
+            const matchedMember = members.find((member) =>
+                member.publicInfo?.uid?.trim().toLowerCase() === shirtUid
+            );
 
             const email = matchedMember?.publicInfo?.email?.trim()
                 ? matchedMember.publicInfo.email
                 : matchedMember?.private?.privateInfo?.email || 'N/A';
 
             const isOfficialMember = matchedMember
-                ? isMemberVerified(matchedMember.publicInfo?.chapterExpiration, matchedMember.publicInfo?.nationalExpiration)
+                ? isMemberVerified(
+                    matchedMember.publicInfo?.chapterExpiration,
+                    matchedMember.publicInfo?.nationalExpiration
+                )
                     ? 'Yes'
                     : 'No'
                 : 'No';
@@ -78,8 +78,38 @@ const ShirtTracker = () => {
         }
     };
 
+    const fetchMembers = async () => {
+        setLoading(true);
+        try {
+            const response = await getMembers() as UserWithLogs[];
+            setMembers(response);
+
+            localStorage.setItem('cachedMembers', JSON.stringify(response));
+            localStorage.setItem('cachedMembersTimestamp', Date.now().toString());
+
+        } catch (error) {
+            console.error('Error fetching members:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const checkCacheAndFetchMembers = () => {
+        const cachedMembers = localStorage.getItem('cachedMembers');
+        const cachedTimestamp = localStorage.getItem('cachedMembersTimestamp');
+
+        if (cachedMembers && cachedTimestamp && Date.now() - parseInt(cachedTimestamp, 10) < 24 * 60 * 60 * 1000) {
+            const membersData = JSON.parse(cachedMembers) as UserWithLogs[];
+            const convertedMembers = convertMembersLogsAndPublicInfoToTimestamps(membersData);
+            setMembers(convertedMembers);
+            setLoading(false);
+        } else {
+            fetchMembers();
+        }
+    };
+
     useEffect(() => {
-        fetchMembers();
+        checkCacheAndFetchMembers();
     }, []);
 
     useEffect(() => {
@@ -99,6 +129,14 @@ const ShirtTracker = () => {
 
         return () => unsubscribe();
     }, [router]);
+
+    const handleReload = async () => {
+        if (window.confirm("Are you sure you want to reload the points?")) {
+            setLoading(true);
+            await fetchMembers();
+        }
+    };
+
 
     if (loading) {
         return (
@@ -153,6 +191,14 @@ const ShirtTracker = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Reload Button */}
+            <button
+                onClick={handleReload}
+                className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
+            >
+                <FaSync />
+            </button>
         </div>
     );
 };
@@ -173,6 +219,62 @@ interface ShirtWithMember extends ShirtData {
     email: string;
     isOfficialMember: string;
 }
+
+const isPlainDateObject = (obj: any): obj is Date => {
+    return (
+        obj &&
+        typeof obj === 'object' &&
+        typeof obj.getFullYear === 'function' &&
+        typeof obj.getMonth === 'function' &&
+        typeof obj.getDate === 'function'
+    );
+};
+
+
+const isPlainTimestampObject = (obj: any): obj is { seconds: number; nanoseconds: number } => {
+    return (
+        obj &&
+        typeof obj === 'object' &&
+        typeof obj.seconds === 'number' &&
+        typeof obj.nanoseconds === 'number'
+    );
+};
+
+const convertToTimestamp = (obj: any): Timestamp | null => {
+    if (isPlainDateObject(obj)) {
+        return Timestamp.fromDate(obj);
+    } else if (isPlainTimestampObject(obj)) {
+        return new Timestamp(obj.seconds, obj.nanoseconds);
+    }
+    return null;
+};
+
+const convertPublicUserInfoDatesToTimestamps = (publicInfo: PublicUserInfo): PublicUserInfo => {
+    return {
+        ...publicInfo,
+        chapterExpiration: convertToTimestamp(publicInfo.chapterExpiration) || publicInfo.chapterExpiration,
+        nationalExpiration: convertToTimestamp(publicInfo.nationalExpiration) || publicInfo.nationalExpiration,
+    };
+};
+
+const convertDatesToTimestamps = (log: SHPEEventLog): SHPEEventLog => {
+    return {
+        ...log,
+        signInTime: convertToTimestamp(log.signInTime) || log.signInTime,
+        signOutTime: convertToTimestamp(log.signOutTime) || log.signOutTime,
+        creationTime: convertToTimestamp(log.creationTime) || log.creationTime,
+        instagramLogs: log.instagramLogs?.map(log => convertToTimestamp(log) || log),
+    };
+};
+
+const convertMembersLogsAndPublicInfoToTimestamps = (members: UserWithLogs[]): UserWithLogs[] => {
+    return members.map(member => ({
+        ...member,
+        publicInfo: member.publicInfo ? convertPublicUserInfoDatesToTimestamps(member.publicInfo) : undefined,
+        eventLogs: member.eventLogs?.map(convertDatesToTimestamps),
+    }));
+};
+
 
 
 export default ShirtTracker;
