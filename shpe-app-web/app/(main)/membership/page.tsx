@@ -30,13 +30,18 @@ const Membership = () => {
     try {
       const response = await getMembers();
       setStudents(response);
+
       const filteredMembers = response.filter((member) => {
         console.log(member.publicInfo?.chapterExpiration);
-        return isMemberVerified(member.publicInfo?.chapterExpiration, member.publicInfo?.nationalExpiration);
+        return isMemberVerified(
+          member.publicInfo?.chapterExpiration,
+          member.publicInfo?.nationalExpiration
+        );
       });
       setMembers(filteredMembers);
 
-      localStorage.setItem('cachedMembers', JSON.stringify(filteredMembers));
+      localStorage.setItem('cachedMembers', JSON.stringify(response));
+      localStorage.setItem('cachedOfficialMembers', JSON.stringify(filteredMembers));
       localStorage.setItem('cachedMembersTimestamp', Date.now().toString());
 
       const incomingReqs = await getMembersToVerify();
@@ -53,6 +58,7 @@ const Membership = () => {
 
   const checkCacheAndFetchMembers = () => {
     const cachedMembers = localStorage.getItem('cachedMembers');
+    const cachedOfficialMembers = localStorage.getItem('cachedOfficialMembers');
     const cachedMembersTimestamp = localStorage.getItem('cachedMembersTimestamp');
     const cachedRequests = localStorage.getItem('cachedRequests');
     const cachedRequestsTimestamp = localStorage.getItem('cachedRequestsTimestamp');
@@ -61,10 +67,20 @@ const Membership = () => {
       return Date.now() - parseInt(timestamp, 10) < 24 * 60 * 60 * 1000;
     };
 
-    if (cachedMembers && cachedMembersTimestamp && isCacheValid(cachedMembersTimestamp) &&
-      cachedRequests && cachedRequestsTimestamp && isCacheValid(cachedRequestsTimestamp)) {
+    if (
+      cachedMembers &&
+      cachedOfficialMembers &&
+      cachedMembersTimestamp &&
+      isCacheValid(cachedMembersTimestamp) &&
+      cachedRequests &&
+      cachedRequestsTimestamp &&
+      isCacheValid(cachedRequestsTimestamp)
+    ) {
+      const studentsData = JSON.parse(cachedMembers);
+      setStudents(studentsData);
 
-      setMembers(JSON.parse(cachedMembers));
+      setMembers(JSON.parse(cachedOfficialMembers));
+
       setRequestsWithDocuments(JSON.parse(cachedRequests));
       setLoading(false);
     } else {
