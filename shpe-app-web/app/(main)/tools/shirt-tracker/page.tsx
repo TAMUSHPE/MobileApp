@@ -8,22 +8,7 @@ import { getMembers, getShirtsToVerify } from '@/api/firebaseUtils';
 import { User } from '@/types/user';
 import { SHPEEventLog } from '@/types/events';
 import { doc, updateDoc, Timestamp } from 'firebase/firestore';
-
-interface UserWithLogs extends User {
-    eventLogs?: SHPEEventLog[];
-}
-
-interface ShirtData {
-    uid: string;
-    shirtSize: string;
-    shirtUploadDate: Timestamp;
-    shirtPickedUp: boolean;
-}
-
-interface ShirtWithMember extends ShirtData {
-    name?: string;
-    email: string;
-}
+import { isMemberVerified } from '@/types/membership';
 
 const ShirtTracker = () => {
     const router = useRouter();
@@ -46,6 +31,12 @@ const ShirtTracker = () => {
                 ? matchedMember.publicInfo.email
                 : matchedMember?.private?.privateInfo?.email || 'N/A';
 
+            const isOfficialMember = matchedMember
+                ? isMemberVerified(matchedMember.publicInfo?.chapterExpiration, matchedMember.publicInfo?.nationalExpiration)
+                    ? 'Yes'
+                    : 'No'
+                : 'No';
+
             if (!matchedMember || !matchedMember.publicInfo?.name) {
                 console.log(`Shirt UID: ${shirt.uid}`);
                 console.log('Matched Member:', matchedMember);
@@ -56,6 +47,7 @@ const ShirtTracker = () => {
                 ...shirt,
                 name: matchedMember?.publicInfo?.name || 'N/A',
                 email,
+                isOfficialMember,
                 shirtPickedUp: shirt.shirtPickedUp ?? false,
             };
         });
@@ -129,6 +121,7 @@ const ShirtTracker = () => {
                             <th className="py-2 px-4 border text-black">Name</th>
                             <th className="py-2 px-4 border text-black">Email</th>
                             <th className="py-2 px-4 border text-black">Upload Date</th>
+                            <th className="py-2 px-4 border text-black">Official Member</th>
                             <th className="py-2 px-4 border text-black">Shirt Size</th>
                             <th className="py-2 px-4 border text-black">Picked Up</th>
                         </tr>
@@ -140,6 +133,12 @@ const ShirtTracker = () => {
                                 <td className="py-2 px-4 border text-black">{shirt.email}</td>
                                 <td className="py-2 px-4 border text-black">
                                     {shirt.shirtUploadDate.toDate().toLocaleDateString()}
+                                </td>
+                                <td
+                                    className={`py-2 px-4 border text-black ${shirt.isOfficialMember === 'Yes' ? 'bg-green-200' : 'bg-red-200'
+                                        }`}
+                                >
+                                    {shirt.isOfficialMember}
                                 </td>
                                 <td className="py-2 px-4 border text-black">{shirt.shirtSize}</td>
                                 <td className="py-2 px-4 border">
@@ -157,5 +156,23 @@ const ShirtTracker = () => {
         </div>
     );
 };
+
+interface UserWithLogs extends User {
+    eventLogs?: SHPEEventLog[];
+}
+
+interface ShirtData {
+    uid: string;
+    shirtSize: string;
+    shirtUploadDate: Timestamp;
+    shirtPickedUp: boolean;
+}
+
+interface ShirtWithMember extends ShirtData {
+    name?: string;
+    email: string;
+    isOfficialMember: string;
+}
+
 
 export default ShirtTracker;
