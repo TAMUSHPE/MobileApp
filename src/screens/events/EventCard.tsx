@@ -19,7 +19,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
 
     return (
         <TouchableOpacity
-            className={`h-20 rounded-md flex-row ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+            className={`h-[90px] rounded-md flex-row ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
             style={{
                 shadowColor: "#000",
                 shadowOffset: {
@@ -40,7 +40,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
                 source={event?.coverImageURI ? { uri: event.coverImageURI } : darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
             />
 
-            <View className='flex-1 px-4 justify-center' >
+            <View className='flex-1 px-4 mt-2' >
                 <Text className={`text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(event.name)}</Text>
                 {event.locationName ? (
                     <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(event.locationName)}</Text>
