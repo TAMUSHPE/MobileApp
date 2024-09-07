@@ -97,15 +97,17 @@ const Tools = () => {
           Update Resume Download Link
         </button>
 
-        {isGenerated && resumeDownloadInfo && !isExpired(resumeDownloadInfo.expiresAt) ? (
-          <button
-            onClick={handleDownloadResume}
-            className="bg-[#500000] text-white py-2 px-4 rounded mr-4"
-          >
-            Open Link to Download Resume
-          </button>
-        ) : (
-          <button className="text-gray-500 mt-4 mr-4">Link is being generated.</button>
+        {isGenerated && (
+          resumeDownloadInfo && !isExpired(resumeDownloadInfo.expiresAt) ? (
+            <button
+              onClick={handleDownloadResume}
+              className="bg-[#500000] text-white py-2 px-4 rounded mr-4"
+            >
+              Open Link to Download Resume
+            </button>
+          ) : (
+            <span className="text-gray-500 mt-4 mr-4">Link is being generated.</span>
+          )
         )}
       </div>
 
