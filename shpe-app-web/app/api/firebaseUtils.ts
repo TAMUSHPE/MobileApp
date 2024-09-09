@@ -304,3 +304,28 @@ export const getPrivateUserData = async (uid: string = ""): Promise<PrivateUserI
 };
 
 
+/**
+ * Obtains all data related to a user. Any undefined fields mean the currently logged-in user does not have permissions to those fields.
+ * 
+ * @param uid - Universal ID tied to a registered user.
+ * @returns - User data formatted according to User interface defined in "./src/types/User.tsx".
+ */
+export const getUser = async (uid: string): Promise<User | undefined> => {
+    if (!auth.currentUser?.uid) {
+        throw new Error("Authentication Error", { cause: "User uid is undefined" });
+    }
+    const publicData = await getPublicUserData(uid);
+    const privateData = await getPrivateUserData(uid);
+    if (publicData == undefined) {
+        return undefined;
+    }
+    else {
+        return {
+            publicInfo: publicData,
+            private: {
+                privateInfo: privateData,
+            },
+        };
+    }
+};
+
