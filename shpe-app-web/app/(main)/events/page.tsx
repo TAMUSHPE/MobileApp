@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Header from '../../components/Header';
 import PendingEvent from './components/PendingEvent';
 import EventCalendar from './components/EventCalendar';
 import { getEvents, getEventLogs } from '@/api/firebaseUtils';
@@ -68,8 +67,8 @@ const Page = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col min-w-fit">
-      
+    <div className="w-full flex flex-col min-w-fit h-[91%] overflow-auto">
+
 
       {/* Pending Approval Subheading */}
       <div className="flex flex-row items-center flex-nowrap">
@@ -116,7 +115,7 @@ const Page = () => {
           <img src="plus-icon.svg" className="" />
           Create Event
         </button>
-        <EventCalendar events={events} toggleEventPage={toggle}/>
+        <EventCalendar events={events} toggleEventPage={toggle} />
       </div>
 
       <EventModal event={selectedEvent} isShowing={isShowing} hide={() => toggle()} />

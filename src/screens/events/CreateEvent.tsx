@@ -88,7 +88,9 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                 <View className='px-4'>
                     <View className='flex-row justify-between'>
                         <EventTypeButton eventType={EventType.GENERAL_MEETING} label='General Meeting' Image={GeneralMeetingIcon} />
+
                         <EventTypeButton eventType={EventType.COMMITTEE_MEETING} label='Committee Meeting' Image={CommitteeMeetingIcon} />
+
                     </View>
 
                     <View className='flex-row justify-between'>
@@ -110,49 +112,54 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
 
                 <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0 mb-16'>
                     {selectedEventType && (
-                        <InteractButton
-                            buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
-                            textClassName='text-center text-white text-2xl font-bold'
-                            underlayColor="#468DC6"
-                            label='Next'
-                            onPress={() => {
-                                let newEvent: SHPEEvent | undefined = undefined;
+                        <View>
+                            {selectedEventType === EventType.COMMITTEE_MEETING && (
+                                <Text className={`mx-2 mb-2 text-center ${darkMode ? "text-white" : "text-black"}`}>Committee meetings are only listed under each committee in the committee tab for their members.</Text>
+                            )}
+                            <InteractButton
+                                buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
+                                textClassName='text-center text-white text-2xl font-bold'
+                                underlayColor="#468DC6"
+                                label='Next'
+                                onPress={() => {
+                                    let newEvent: SHPEEvent | undefined = undefined;
 
-                                switch (selectedEventType) {
-                                    case EventType.GENERAL_MEETING:
-                                        newEvent = new GeneralMeeting();
-                                        break;
-                                    case EventType.COMMITTEE_MEETING:
-                                        newEvent = new CommitteeMeeting();
-                                        break;
-                                    case EventType.STUDY_HOURS:
-                                        newEvent = new StudyHours();
-                                        break;
-                                    case EventType.WORKSHOP:
-                                        newEvent = new Workshop();
-                                        break;
-                                    case EventType.VOLUNTEER_EVENT:
-                                        newEvent = new VolunteerEvent();
-                                        break;
-                                    case EventType.SOCIAL_EVENT:
-                                        newEvent = new SocialEvent();
-                                        break;
-                                    case EventType.INTRAMURAL_EVENT:
-                                        newEvent = new IntramuralEvent();
-                                        break;
-                                    case EventType.CUSTOM_EVENT:
-                                        newEvent = new CustomEvent();
-                                        break;
-                                    default:
-                                        Alert.alert("Select an event type", "Please select an event type to continue.");
-                                        break;
-                                }
+                                    switch (selectedEventType) {
+                                        case EventType.GENERAL_MEETING:
+                                            newEvent = new GeneralMeeting();
+                                            break;
+                                        case EventType.COMMITTEE_MEETING:
+                                            newEvent = new CommitteeMeeting();
+                                            break;
+                                        case EventType.STUDY_HOURS:
+                                            newEvent = new StudyHours();
+                                            break;
+                                        case EventType.WORKSHOP:
+                                            newEvent = new Workshop();
+                                            break;
+                                        case EventType.VOLUNTEER_EVENT:
+                                            newEvent = new VolunteerEvent();
+                                            break;
+                                        case EventType.SOCIAL_EVENT:
+                                            newEvent = new SocialEvent();
+                                            break;
+                                        case EventType.INTRAMURAL_EVENT:
+                                            newEvent = new IntramuralEvent();
+                                            break;
+                                        case EventType.CUSTOM_EVENT:
+                                            newEvent = new CustomEvent();
+                                            break;
+                                        default:
+                                            Alert.alert("Select an event type", "Please select an event type to continue.");
+                                            break;
+                                    }
 
-                                if (newEvent != undefined) {
-                                    navigation.navigate("SetGeneralEventDetails", { event: newEvent });
-                                }
-                            }}
-                        />
+                                    if (newEvent != undefined) {
+                                        navigation.navigate("SetGeneralEventDetails", { event: newEvent });
+                                    }
+                                }}
+                            />
+                        </View>
                     )}
                 </SafeAreaView>
             </View>
