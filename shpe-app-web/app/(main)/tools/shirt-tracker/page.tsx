@@ -1,7 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/Header';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '@/config/firebaseConfig';
 import { getMembers, getShirtsToVerify } from '@/api/firebaseUtils';
@@ -141,7 +140,6 @@ const ShirtTracker = () => {
     if (loading) {
         return (
             <div className="flex w-full h-screen flex-col">
-                <Header title="Dashboard" iconPath="calendar-solid-gray.svg" />
                 <div className="flex w-full h-full items-center justify-center">
                     <object type="image/svg+xml" data="spinner.svg" className="animate-spin -ml-1 mr-3 h-14 w-14 text-white"></object>
 
@@ -151,8 +149,8 @@ const ShirtTracker = () => {
     }
 
     return (
-        <div className="flex w-full items-center justify-center">
-            <div className="w-4/5">
+        <div className="w-full flex flex-col h-[91%] overflow-auto items-center">
+            <div className="w-4/5 mt-5">
                 <table className="min-w-full bg-white border rounded shadow">
                     <thead className="bg-gray-200">
                         <tr>
@@ -191,6 +189,9 @@ const ShirtTracker = () => {
                     </tbody>
                 </table>
             </div>
+
+
+            <div className='mb-60'></div>
 
             {/* Reload Button */}
             <button

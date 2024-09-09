@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Header from "@/components/Header";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/config/firebaseConfig";
 import { getFunctions, httpsCallable } from "firebase/functions";

@@ -456,7 +456,7 @@ const Points = () => {
   }
 
   return (
-    <div className="bg-white h-full overflow-auto w-screen">
+    <div className="flex flex-col bg-white w-screen h-[91%] overflow-auto">
       <div className="m-5">
         <h1 className="text-2xl font-bold text-[#500000]">Main Point Sheets {schoolYear}</h1>
       </div>
@@ -526,12 +526,10 @@ const Points = () => {
             <FaSave color="black" className="mr-2" />
             <p className="text-black text-lg font-bold">Export to Excel</p>
           </button>
-
-
         </div>
       </div>
 
-      <div className="bg-white flex flex-col h-[84%] w-full overflow-x-auto">
+      <div className="bg-white flex flex-col w-full overflow-x-auto">
         <table className="table-fixed text-left">
           <thead className="bg-gray-200">
             <tr className="text-black border-b-2 border-gray-400">
