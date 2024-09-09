@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { onAuthStateChanged } from 'firebase/auth';
 import { db, auth } from '@/config/firebaseConfig';
-import { getMembers, getShirtsToVerify } from '@/api/firebaseUtils';
+import { getMembers, getShirtsToVerify, getUser } from '@/api/firebaseUtils';
 import { PublicUserInfo, User } from '@/types/user';
 import { SHPEEventLog } from '@/types/events';
 import { doc, updateDoc, Timestamp } from 'firebase/firestore';
@@ -15,41 +15,45 @@ const ShirtTracker = () => {
     const [loading, setLoading] = useState(true);
     const [members, setMembers] = useState<UserWithLogs[]>([]);
     const [shirtList, setShirtList] = useState<ShirtWithMember[]>([]);
+
     const fetchShirts = async () => {
         const shirts = await getShirtsToVerify();
-        const updatedShirtList: ShirtWithMember[] = shirts.map((shirt) => {
-            const shirtUid = shirt.uid?.trim().toLowerCase();
-            const matchedMember = members.find((member) =>
-                member.publicInfo?.uid?.trim().toLowerCase() === shirtUid
-            );
+        const updatedShirtList: ShirtWithMember[] = await Promise.all(
+            shirts.map(async (shirt) => {
+                const shirtUid = shirt.uid?.trim().toLowerCase();
+                let matchedMember = members.find((member) =>
+                    member.publicInfo?.uid?.trim().toLowerCase() === shirtUid
+                );
 
-            const email = matchedMember?.publicInfo?.email?.trim()
-                ? matchedMember.publicInfo.email
-                : matchedMember?.private?.privateInfo?.email || 'N/A';
+                // If not found, fetch the member data manually using getUser
+                if (!matchedMember) {
+                    console.log(`Member not found locally for UID: ${shirt.uid}, fetching full user data from database...`);
+                    matchedMember = await getUser(shirt.uid);
+                }
 
-            const isOfficialMember = matchedMember
-                ? isMemberVerified(
-                    matchedMember.publicInfo?.chapterExpiration,
-                    matchedMember.publicInfo?.nationalExpiration
-                )
-                    ? 'Yes'
-                    : 'No'
-                : 'No';
+                const email = matchedMember?.publicInfo?.email?.trim()
+                    ? matchedMember.publicInfo.email
+                    : matchedMember?.private?.privateInfo?.email || 'N/A';
 
-            if (!matchedMember || !matchedMember.publicInfo?.name) {
-                console.log(`Shirt UID: ${shirt.uid}`);
-                console.log('Matched Member:', matchedMember);
-                console.log(`Name is missing for UID: ${shirt.uid}`);
-            }
+                const isOfficialMember = matchedMember
+                    ? isMemberVerified(
+                        matchedMember.publicInfo?.chapterExpiration,
+                        matchedMember.publicInfo?.nationalExpiration
+                    )
+                        ? 'Yes'
+                        : 'No'
+                    : 'No';
 
-            return {
-                ...shirt,
-                name: matchedMember?.publicInfo?.name || 'N/A',
-                email,
-                isOfficialMember,
-                shirtPickedUp: shirt.shirtPickedUp ?? false,
-            };
-        });
+
+                return {
+                    ...shirt,
+                    name: matchedMember?.publicInfo?.name || 'N/A',
+                    email,
+                    isOfficialMember,
+                    shirtPickedUp: shirt.shirtPickedUp ?? false,
+                };
+            })
+        );
 
         updatedShirtList.sort(
             (a, b) => a.shirtUploadDate.toDate().getTime() - b.shirtUploadDate.toDate().getTime()
