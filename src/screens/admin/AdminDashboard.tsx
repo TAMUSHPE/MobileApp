@@ -207,24 +207,7 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<HomeStackParams>)
                             <Text className='text-xl font-semibold text-black text-center'>App Feedback</Text>
                         </TouchableOpacity>
                     </View>
-                    <View className='flex-row justify-between mt-4'>
-                        <TouchableOpacity
-                            className={`bg-secondary-blue-2 items-center justify-center h-20 rounded-lg w-[48%]`}
-                            style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 3.84,
-                                elevation: 5,
-                            }}
-                            onPress={() => navigation.navigate('RestrictionsEditor')}
-                        >
-                            <Text className='text-xl font-semibold text-black text-center'>App Restriction</Text>
-                        </TouchableOpacity>
-                    </View>
+
 
                     <Text className={`mt-8 font-bold text-2xl ${darkMode ? "text-white" : "text-black"}`}>Developer Tools</Text>
                     <View>
