@@ -50,7 +50,6 @@ export type HomeStackParams = {
     MOTMEditor: undefined;
     ResumeDownloader: undefined;
     LinkEditor: undefined;
-    RestrictionsEditor: undefined;
     FeedbackEditor: undefined;
     MemberSHPEConfirm: undefined;
     CommitteeConfirm: undefined;
