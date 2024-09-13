@@ -20,7 +20,7 @@ import { HomeStackParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Images } from '../../../assets';
 
-const linkIDs = ["6", "7", "8"]; // ids reserved for TAMU and SHPE National links
+const linkIDs = ["6", "7", "8"]; // ids reserved for TAMU, SHPE National links, Google Form
 
 const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
     const userContext = useContext(UserContext);
@@ -95,10 +95,18 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
         else {
             const document = await selectDocument();
             if (document) {
-                setLoading(true);
-                const path = `user-docs/${auth.currentUser?.uid}/${type}-verification`;
+                const { blob, extension } = document;
+
+                if (!blob) {
+                    alert("File Selection Error: The selected file is invalid.");
+                    setLoading(false);
+                    return;
+                }
+
+                const path = `user-docs/${auth.currentUser?.uid}/${type}-verification.${extension}`;
                 const onSuccess = type === 'national' ? onNationalUploadSuccess : onChapterUploadSuccess;
-                uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
+
+                uploadFile(blob, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
             }
         }
     };
@@ -106,11 +114,22 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
     const selectDocument = async () => {
         const result = await selectFile();
         if (result) {
-            const blob = await getBlobFromURI(result.assets![0].uri);
-            return blob;
+            const fileUri = result.assets![0].uri;
+
+            const fileExtension = fileUri.split('.').pop();
+
+            if (!fileExtension) {
+                alert("The file does not have an extension. Please select a valid file.");
+                return null;
+            }
+
+            const blob = await getBlobFromURI(fileUri);
+
+            return { blob, extension: fileExtension };
         }
         return null;
-    }
+    };
+
 
     const onNationalUploadSuccess = async (URL: string) => {
         const today = new Date();
@@ -166,10 +185,19 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
 
         const document = await selectDocument();
         if (document) {
+            const { blob, extension } = document;
+
+            if (!blob) {
+                Alert.alert("File Selection Error", "The selected file is invalid.");
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
-            const path = `user-docs/${auth.currentUser?.uid}/chapter-verification`;
+            const path = `user-docs/${auth.currentUser?.uid}/chapter-verification.${extension}`;
             const onSuccess = onChapterUploadSuccess;
-            uploadFile(document, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
+
+            uploadFile(blob, [...CommonMimeTypes.IMAGE_FILES, ...CommonMimeTypes.RESUME_FILES], path, onSuccess);
         }
 
         setShowShirtModal(false);
