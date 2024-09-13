@@ -276,6 +276,12 @@ const Points = () => {
       setOriginalPoints(editedPoints);
       setIsEditing(null);
       alert("Points have been updated successfully.");
+
+      // Clear the cached data to force refetch
+      localStorage.removeItem('cachedMembers');
+      localStorage.removeItem('cachedPoints');
+      localStorage.removeItem('cachedMembersTimestamp');
+
     } catch (error) {
       console.error("Failed to save changes:", error);
     }
