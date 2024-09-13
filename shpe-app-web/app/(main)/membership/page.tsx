@@ -102,8 +102,11 @@ const Membership = () => {
 
     const memberDocRef = doc(db, 'memberSHPE', member.uid);
     await deleteDoc(memberDocRef);
+
     const filteredRequests = requestsWithDocuments.filter((req) => req.uid !== member.uid);
     setRequestsWithDocuments(filteredRequests);
+
+    localStorage.setItem('cachedRequests', JSON.stringify(filteredRequests));
 
     const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
     await sendNotificationToMember({
@@ -126,6 +129,9 @@ const Membership = () => {
     //get rid of the member from the lists
     const filteredRequests = requestsWithDocuments.filter((req) => req.uid !== member.uid);
     setRequestsWithDocuments(filteredRequests);
+
+    localStorage.setItem('cachedRequests', JSON.stringify(filteredRequests));
+
     const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
     await sendNotificationToMember({
       uid: member.uid,
