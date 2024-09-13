@@ -1,0 +1,9 @@
+[
+    {
+      "origin": ["http://localhost:3000", "https://tamu-shpe-admin-web.vercel.app"],
+      "method": ["GET"],
+      "maxAgeSeconds": 3600,
+      "responseHeader": ["Content-Type"]
+    }
+  ]
+  
