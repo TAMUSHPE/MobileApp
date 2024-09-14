@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, Animated, Easing, Dimensions } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { CameraView, Camera } from 'expo-camera';
+import { CameraView, Camera, BarcodeBounds } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -11,10 +11,7 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 type BarCodeScannedResult = {
     type: string;
     data: string;
-    bounds?: {
-        origin: { x: number; y: number };
-        size: { width: number; height: number };
-    };
+    bounds?: BarcodeBounds
 };
 
 const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
