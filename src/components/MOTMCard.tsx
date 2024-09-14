@@ -68,6 +68,9 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
         }, [currentUser])
     );
 
+    if (!MOTM) {
+        return null;
+    }
 
     return (
         <View className="mx-4">
