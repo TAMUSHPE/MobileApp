@@ -1,18 +1,31 @@
-import { View, Text, TouchableOpacity, Alert, Animated, Easing } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, Easing, Dimensions } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { CameraView, Camera } from 'expo-camera';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { GestureHandlerRootView, PinchGestureHandler, PinchGestureHandlerGestureEvent, State } from 'react-native-gesture-handler';
-import { MainStackParams } from '../../types/navigation';
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { MainStackParams } from '../../types/navigation';
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+
+type BarCodeScannedResult = {
+    type: string;
+    data: string;
+    bounds?: {
+        origin: { x: number; y: number };
+        size: { width: number; height: number };
+    };
+};
 
 const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const [hasCameraPermissions, setHasCameraPermissions] = useState<boolean | null>(null);
+    const [boxColor, setBoxColor] = useState('#FFFFFF');
+    const [validScanned, setValidScanned] = useState<boolean>(false);
     const pulseAnim = useRef(new Animated.Value(1)).current;
-    const [qrData, setQrData] = useState<{ id: string; mode: string } | null>(null);
-    const cameraRef = useRef<CameraView>(null);
-    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const boxTop = useRef(new Animated.Value((screenHeight / 2) - 240)).current;
+    const boxLeft = useRef(new Animated.Value((screenWidth / 2) - 120)).current;
+    const boxWidth = useRef(new Animated.Value(240)).current;
+    const boxHeight = useRef(new Animated.Value(240)).current;
 
     useEffect(() => {
         const getBarCodeScannerPermissions = async () => {
@@ -30,13 +43,13 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
                     toValue: 1.1,
                     duration: 800,
                     easing: Easing.inOut(Easing.ease),
-                    useNativeDriver: true,
+                    useNativeDriver: false,
                 }),
                 Animated.timing(pulseAnim, {
                     toValue: 1,
                     duration: 800,
                     easing: Easing.inOut(Easing.ease),
-                    useNativeDriver: true,
+                    useNativeDriver: false,
                 }),
             ]).start(() => pulse());
         };
@@ -44,44 +57,56 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
         pulse();
     }, [pulseAnim]);
 
-    const handleBarCodeScanned = ({ type, data }: { type: string, data: string }) => {
-        const dataRegex: RegExp = /^tamu-shpe:\/\/event\?id=[a-zA-z0-9]+&mode=(sign-in|sign-out)$/i;
+    const handleBarCodeScanned = ({ bounds, type, data }: BarCodeScannedResult) => {
+        if (validScanned) {
+            return;
+        }
 
+        const dataRegex = /^tamu-shpe:\/\/event\?id=[a-zA-Z0-9]+&mode=(sign-in|sign-out)$/i;
         if (dataRegex.test(data)) {
-            const linkVariables = data.split('?')[1].split('&');
-            const id = linkVariables[0].split('=')[1];
-            const mode = linkVariables[1].split('=')[1];
-            if (id && (mode === 'sign-in' || mode === 'sign-out')) {
-                setQrData({ id, mode });
+            setValidScanned(true);
+            console.log('Data Received', `Bar code with type ${type} and data ${data} has been scanned!`);
+            if (bounds) {
+                setBoxColor('#FD652F');
 
-                // Clear any existing timeout when valid data is found
-                if (timeoutRef.current) {
-                    clearTimeout(timeoutRef.current);
+                Animated.parallel([
+                    Animated.timing(boxTop, {
+                        toValue: bounds.origin.y,
+                        duration: 90,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: false,
+                    }),
+                    Animated.timing(boxLeft, {
+                        toValue: bounds.origin.x,
+                        duration: 90,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: false,
+                    }),
+                    Animated.timing(boxWidth, {
+                        toValue: bounds.size.width,
+                        duration: 90,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: false,
+                    }),
+                    Animated.timing(boxHeight, {
+                        toValue: bounds.size.height,
+                        duration: 90,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: false,
+                    }),
+                ]).start();
+            }
+
+            setTimeout(() => {
+                const linkVariables = data.split('?')[1].split('&');
+                const id = linkVariables[0].split('=')[1];
+                const mode = linkVariables[1].split('=')[1];
+                if (id && (mode === 'sign-in' || mode === 'sign-out')) {
+                    navigation.navigate('EventVerificationScreen', { id, mode });
                 }
-
-                // Set a timeout to clear qrData after 3 seconds if no new valid QR codes are detected
-                timeoutRef.current = setTimeout(() => {
-                    setQrData(null);
-                }, 5000);
-            }
+            }, 500);
         }
     };
-
-    useEffect(() => {
-        return () => {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
-        };
-    }, []);
-
-    const handleConfirm = () => {
-        if (qrData) {
-            navigation.navigate("EventVerificationScreen", { id: qrData.id, mode: qrData.mode as "sign-in" | "sign-out" });
-            setQrData(null);
-        }
-    };
-
 
     if (hasCameraPermissions === null) {
         return <Text>Requesting for camera permission</Text>;
@@ -91,68 +116,62 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
     }
 
     return (
-        <GestureHandlerRootView>
-            <SafeAreaView className='flex flex-col h-full w-screen bg-primary-blue'>
-                {/* Header */}
-                <View className={`flex-row items-center mb-4 bg-primary-blue`}>
-                    <View className='w-screen absolute'>
-                        <Text className={`text-2xl font-bold justify-center text-center text-white`}>Scanner</Text>
-                    </View>
-                    <TouchableOpacity className='px-6' onPress={() => navigation.goBack()}>
-                        <Octicons name="x" size={24} color="white" />
-                    </TouchableOpacity>
+        <SafeAreaView className='flex flex-col h-full w-screen bg-primary-blue'>
+            <View className={`flex-row items-center mb-4 bg-primary-blue`}>
+                <View className='w-screen absolute'>
+                    <Text className={`text-2xl font-bold justify-center text-center text-white`}>Scanner</Text>
                 </View>
+                <TouchableOpacity className='px-6' onPress={() => navigation.goBack()}>
+                    <Octicons name="x" size={24} color="white" />
+                </TouchableOpacity>
+            </View>
 
-
-                <CameraView
-                    onBarcodeScanned={handleBarCodeScanned}
-                    ref={cameraRef}
-                    barcodeScannerSettings={{
-                        barcodeTypes: ["qr", "pdf417"],
+            <CameraView
+                onBarcodeScanned={handleBarCodeScanned}
+                barcodeScannerSettings={{
+                    barcodeTypes: ['qr', 'pdf417'],
+                }}
+                className='flex-1'
+            >
+                {/* Pulsing Effect with Animated Transition */}
+                <Animated.View
+                    style={{
+                        position: 'absolute',
+                        top: boxTop,
+                        left: boxLeft,
+                        width: boxWidth,
+                        height: boxHeight,
+                        transform: [{ scale: pulseAnim }],
+                        justifyContent: 'center',
+                        alignItems: 'center',
                     }}
-                    className='flex-1'
                 >
-                    {/* Pulsing Effect */}
-                    <View className="flex justify-center items-center h-full">
-                        <Animated.View className="flex justify-center items-center" style={{ transform: [{ scale: pulseAnim }] }}>
-                            <View className='w-60 h-60'>
-                                <View
-                                    className={`absolute top-0 left-0 w-11 h-11 border-t-4 border-l-4 rounded-tl-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
-                                />
-                                <View
-                                    className={`absolute top-0 right-0 w-11 h-11 border-t-4 border-r-4 rounded-tr-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
-                                />
-                                <View
-                                    className={`absolute bottom-0 left-0 w-11 h-11 border-b-4 border-l-4 rounded-bl-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
-                                />
-                                <View
-                                    className={`absolute bottom-0 right-0 w-11 h-11 border-b-4 border-r-4 rounded-br-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
-                                />
-                            </View>
-                        </Animated.View>
+                    <View className='w-full h-full'>
+                        <View
+                            style={{ borderColor: boxColor }}
+                            className='absolute top-0 left-0 w-[20%] h-[20%] border-t-4 border-l-4 rounded-tl-lg'
+                        />
+                        <View
+                            style={{ borderColor: boxColor }}
+                            className='absolute top-0 right-0 w-[20%] h-[20%] border-t-4 border-r-4 rounded-tr-lg'
+                        />
+                        <View
+                            style={{ borderColor: boxColor }}
+                            className='absolute bottom-0 left-0 w-[20%] h-[20%] border-b-4 border-l-4 rounded-bl-lg'
+                        />
+                        <View
+                            style={{ borderColor: boxColor }}
+                            className='absolute bottom-0 right-0 w-[20%] h-[20%] border-b-4 border-r-4 rounded-br-lg'
+                        />
                     </View>
+                </Animated.View>
+            </CameraView>
 
-                    {/* Button for Sign In/Sign Out */}
-                    {qrData && (
-                        <View className='absolute w-full bottom-0 mb-5 z-50 justify-center items-center'>
-                            <TouchableOpacity
-                                onPress={handleConfirm}
-                                className="px-4 py-1 items-center justify-center rounded-lg mx-4 bg-primary-orange"
-                            >
-                                <Text className='text-center text-white text-xl'>
-                                    {qrData.mode === 'sign-in' ? 'Sign in to the event' : 'Sign out of the event'}
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                </CameraView>
-
-                <View className='my-2'>
-                    <Text className='text-white text-center font-bold text-xl'>Using Scanner</Text>
-                    <Text className='text-white text-center text-lg'>Scan the QRCode provided by the event host.</Text>
-                </View>
-            </SafeAreaView>
-        </GestureHandlerRootView>
+            <View className='my-2'>
+                <Text className='text-white text-center font-bold text-xl'>Using Scanner</Text>
+                <Text className='text-white text-center text-lg'>Scan the QRCode provided by the event host.</Text>
+            </View>
+        </SafeAreaView>
     );
 };
 
