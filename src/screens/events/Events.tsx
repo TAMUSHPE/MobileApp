@@ -65,42 +65,42 @@ const Events = ({ navigation }: EventsProps) => {
 
             const mainEventsFiltered = upcomingEventsData.filter(
                 (event: SHPEEvent) =>
-                    !event.hiddenEvent &&
+                    (hasPrivileges || !event.hiddenEvent) &&
                     event.eventType !== EventType.COMMITTEE_MEETING &&
                     event.eventType !== EventType.INTRAMURAL_EVENT
             );
 
             const intramuralEventsFiltered = upcomingEventsData.filter(
                 (event: SHPEEvent) =>
-                    !event.hiddenEvent &&
+                    (hasPrivileges || !event.hiddenEvent) &&
                     event.eventType === EventType.INTRAMURAL_EVENT
             );
 
             const committeeEventsFiltered = upcomingEventsData.filter(
                 (event: SHPEEvent) =>
-                    !event.hiddenEvent &&
+                    (hasPrivileges || !event.hiddenEvent) &&
                     event.eventType === EventType.COMMITTEE_MEETING
             );
 
-
             const pastMainEvents = allPastEvents.filter(
                 (event: SHPEEvent) =>
-                    !event.hiddenEvent &&
+                    (hasPrivileges || !event.hiddenEvent) &&
                     event.eventType !== EventType.COMMITTEE_MEETING &&
                     event.eventType !== EventType.INTRAMURAL_EVENT
             );
 
             const pastIntramuralEvents = allPastEvents.filter(
                 (event: SHPEEvent) =>
-                    !event.hiddenEvent &&
+                    (hasPrivileges || !event.hiddenEvent) &&
                     event.eventType === EventType.INTRAMURAL_EVENT
             );
 
             const pastCommitteeEvents = allPastEvents.filter(
                 (event: SHPEEvent) =>
-                    !event.hiddenEvent &&
+                    (hasPrivileges || !event.hiddenEvent) &&
                     event.eventType === EventType.COMMITTEE_MEETING
             );
+
 
 
             setMainEvents({
