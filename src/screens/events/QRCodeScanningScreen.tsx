@@ -10,11 +10,8 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackParams>) => {
     const [hasCameraPermissions, setHasCameraPermissions] = useState<boolean | null>(null);
     const pulseAnim = useRef(new Animated.Value(1)).current;
-    const [zoom, setZoom] = useState(0);
     const [qrData, setQrData] = useState<{ id: string; mode: string } | null>(null);
     const cameraRef = useRef<CameraView>(null);
-    const lastScale = useRef(1);
-    const maxZoom = 0.05;
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
@@ -85,22 +82,6 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
         }
     };
 
-    const handlePinchGestureEvent = ({ nativeEvent }: PinchGestureHandlerGestureEvent) => {
-        if (nativeEvent.scale !== 0) {
-            const baseZoomFactor = 0.0004;
-            const zoomSensitivity = 0.1;
-            const dynamicFactor = zoom * zoomSensitivity + baseZoomFactor;
-            const scaleChange = (nativeEvent.scale - 1) * dynamicFactor * (nativeEvent.scale > 1 ? 1 : 2);
-            const newZoom = Math.min(Math.max(zoom + scaleChange, 0), maxZoom);
-            setZoom(newZoom);
-        }
-    };
-
-    const handlePinchStateChange = ({ nativeEvent }: PinchGestureHandlerGestureEvent) => {
-        if (nativeEvent.state === State.END || nativeEvent.state === State.CANCELLED) {
-            lastScale.current = 1;
-        }
-    };
 
     if (hasCameraPermissions === null) {
         return <Text>Requesting for camera permission</Text>;
@@ -122,58 +103,49 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
                     </TouchableOpacity>
                 </View>
 
-                <PinchGestureHandler
-                    onGestureEvent={handlePinchGestureEvent}
-                    onHandlerStateChange={handlePinchStateChange}
+
+                <CameraView
+                    onBarcodeScanned={handleBarCodeScanned}
+                    ref={cameraRef}
+                    barcodeScannerSettings={{
+                        barcodeTypes: ["qr", "pdf417"],
+                    }}
+                    className='flex-1'
                 >
-                    <CameraView
-                        onBarcodeScanned={handleBarCodeScanned}
-                        ref={cameraRef}
-                        barcodeScannerSettings={{
-                            barcodeTypes: ["qr", "pdf417"],
-                        }}
-                        zoom={zoom}
-                        className='flex-1'
-                    >
-                        {/* Pulsing Effect */}
-                        <View className="flex justify-center items-center h-full">
-                            <Animated.View className="flex justify-center items-center" style={{ transform: [{ scale: pulseAnim }] }}>
-                                <View className='w-60 h-60'>
-                                    <View
-                                        className={`absolute top-0 left-0 w-11 h-11 border-t-4 border-l-4 rounded-tl-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
-                                    />
-                                    <View
-                                        className={`absolute top-0 right-0 w-11 h-11 border-t-4 border-r-4 rounded-tr-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
-                                    />
-                                    <View
-                                        className={`absolute bottom-0 left-0 w-11 h-11 border-b-4 border-l-4 rounded-bl-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
-                                    />
-                                    <View
-                                        className={`absolute bottom-0 right-0 w-11 h-11 border-b-4 border-r-4 rounded-br-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
-                                    />
-                                </View>
-                            </Animated.View>
-                        </View>
-
-                        <View className="absolute top-2 left-2 bg-black/50 rounded px-2 py-1">
-                            <Text className="text-white font-bold">{(1 + zoom * 100).toFixed(1)}x</Text>
-                        </View>
-
-                        {/* Button for Sign In/Sign Out */}
-                        {qrData && (
-                            <View className='absolute w-full bottom-0 mb-5 z-50 justify-center items-center'>
-                                <TouchableOpacity
-                                    onPress={handleConfirm}
-                                    className="px-4 py-1 items-center justify-center rounded-lg mx-4 bg-primary-orange"
-                                >
-                                    <Text className='text-center text-white text-xl'>
-                                        {qrData.mode === 'sign-in' ? 'Sign in to the event' : 'Sign out of the event'}
-                                    </Text>
-                                </TouchableOpacity>
+                    {/* Pulsing Effect */}
+                    <View className="flex justify-center items-center h-full">
+                        <Animated.View className="flex justify-center items-center" style={{ transform: [{ scale: pulseAnim }] }}>
+                            <View className='w-60 h-60'>
+                                <View
+                                    className={`absolute top-0 left-0 w-11 h-11 border-t-4 border-l-4 rounded-tl-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
+                                />
+                                <View
+                                    className={`absolute top-0 right-0 w-11 h-11 border-t-4 border-r-4 rounded-tr-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
+                                />
+                                <View
+                                    className={`absolute bottom-0 left-0 w-11 h-11 border-b-4 border-l-4 rounded-bl-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
+                                />
+                                <View
+                                    className={`absolute bottom-0 right-0 w-11 h-11 border-b-4 border-r-4 rounded-br-lg ${qrData ? 'border-primary-orange' : 'border-white'}`}
+                                />
                             </View>
-                        )}
-                    </CameraView>
-                </PinchGestureHandler>
+                        </Animated.View>
+                    </View>
+
+                    {/* Button for Sign In/Sign Out */}
+                    {qrData && (
+                        <View className='absolute w-full bottom-0 mb-5 z-50 justify-center items-center'>
+                            <TouchableOpacity
+                                onPress={handleConfirm}
+                                className="px-4 py-1 items-center justify-center rounded-lg mx-4 bg-primary-orange"
+                            >
+                                <Text className='text-center text-white text-xl'>
+                                    {qrData.mode === 'sign-in' ? 'Sign in to the event' : 'Sign out of the event'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </CameraView>
 
                 <View className='my-2'>
                     <Text className='text-white text-center font-bold text-xl'>Using Scanner</Text>
