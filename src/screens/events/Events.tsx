@@ -6,7 +6,7 @@ import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/core';
 import { Octicons, FontAwesome6 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { getUpcomingEvents, getPastEvents, getCommittees, fetchAndStoreUser, getWeekPastEvents } from '../../api/firebaseUtils';
+import { getUpcomingEvents, fetchAndStoreUser, getWeekPastEvents } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { Images } from '../../../assets';
 import { formatTime } from '../../helpers/timeUtils';
@@ -14,7 +14,6 @@ import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { EventsStackParams } from '../../types/navigation';
 import { EventType, ExtendedEventType, SHPEEvent } from '../../types/events';
 import EventCard from './EventCard';
-import { Committee } from '../../types/committees';
 import DismissibleModal from '../../components/DismissibleModal';
 
 interface EventGroups {
@@ -35,21 +34,9 @@ const Events = ({ navigation }: EventsProps) => {
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const [isLoading, setIsLoading] = useState(true);
-    const [mainEvents, setMainEvents] = useState<EventGroups>({
-        today: [],
-        upcoming: [],
-        past: [],
-    });
-    const [intramuralEvents, setIntramuralEvents] = useState<EventGroups>({
-        today: [],
-        upcoming: [],
-        past: [],
-    });
-    const [committeeEvents, setCommitteeEvents] = useState<EventGroups>({
-        today: [],
-        upcoming: [],
-        past: [],
-    });
+    const [mainEvents, setMainEvents] = useState<EventGroups>({ today: [], upcoming: [], past: [] });
+    const [intramuralEvents, setIntramuralEvents] = useState<EventGroups>({ today: [], upcoming: [], past: [] });
+    const [committeeEvents, setCommitteeEvents] = useState<EventGroups>({ today: [], upcoming: [], past: [] });
     const [infoVisible, setInfoVisible] = useState(false);
     const [filter, setFilter] = useState<"main" | "intramural" | "committee">("main");
 
@@ -62,11 +49,11 @@ const Events = ({ navigation }: EventsProps) => {
             setIsLoading(true);
 
             const upcomingEventsData = await getUpcomingEvents();
+            const allPastEvents = await getWeekPastEvents();
 
             const currentTime = new Date();
             const today = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate());
 
-            // Filter today's and upcoming events
             const todayEvents = upcomingEventsData.filter(event => {
                 const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
                 return startTime >= today && startTime < new Date(today.getTime() + 24 * 60 * 60 * 1000);
@@ -95,8 +82,6 @@ const Events = ({ navigation }: EventsProps) => {
                     event.eventType === EventType.COMMITTEE_MEETING
             );
 
-
-            const allPastEvents = await getWeekPastEvents();
 
             const pastMainEvents = allPastEvents.filter(
                 (event: SHPEEvent) =>
