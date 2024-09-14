@@ -1,20 +1,18 @@
 import { View, Text, TouchableOpacity, ActivityIndicator, ScrollView, Image, useColorScheme } from 'react-native'
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RouteProp, useFocusEffect, useRoute } from '@react-navigation/core';
 import { Octicons, FontAwesome6 } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
-import { auth } from '../../config/firebaseConfig';
 import { getUpcomingEvents, getPastEvents, getCommittees, fetchAndStoreUser } from '../../api/firebaseUtils';
 import { UserContext } from '../../context/UserContext';
 import { Images } from '../../../assets';
 import { formatTime } from '../../helpers/timeUtils';
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { EventsStackParams } from '../../types/navigation';
-import { EventType, ExtendedEventType, SHPEEvent } from '../../types/events';
+import { ExtendedEventType, SHPEEvent } from '../../types/events';
 import EventCard from './EventCard';
 import { Committee } from '../../types/committees';
 import DismissibleModal from '../../components/DismissibleModal';
@@ -34,9 +32,8 @@ const Events = ({ navigation }: EventsProps) => {
     const [todayEvents, setTodayEvents] = useState<SHPEEvent[]>([]);
     const [upcomingEvents, setUpcomingEvents] = useState<SHPEEvent[]>([]);
     const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
-    const [committees, setCommittees] = useState<Committee[]>([]);
-    const [selectedCommittee, setSelectedCommittee] = useState<string | null>(route.params?.committee || null);
     const [infoVisible, setInfoVisible] = useState(false);
+    const [filter, setFilter] = useState<"main" | "intramural" | "committee">("main");
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
 
@@ -69,12 +66,6 @@ const Events = ({ navigation }: EventsProps) => {
         }
     };
 
-    const fetchCommittees = async () => {
-        const committeeData = await getCommittees();
-        setCommittees(committeeData);
-    };
-
-
     useEffect(() => {
         const fetchUserData = async () => {
             const firebaseUser = await fetchAndStoreUser();
@@ -85,7 +76,6 @@ const Events = ({ navigation }: EventsProps) => {
 
         fetchEvents();
         fetchUserData();
-        fetchCommittees();
     }, [])
 
 
@@ -110,6 +100,58 @@ const Events = ({ navigation }: EventsProps) => {
                     </TouchableOpacity>
                 </View>
 
+                {/* Filters */}
+                <View
+                    className={`flex-row mt-8 mx-4 rounded-3xl ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    style={{
+                        shadowColor: "#000",
+                        shadowOffset: {
+                            width: 0,
+                            height: 2,
+                        },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 3.84,
+                        elevation: 5,
+                    }}
+                >
+                    <TouchableOpacity
+                        className={`items-center justify-center flex-1 rounded-3xl m-1 py-2 ${filter == "main" && "bg-primary-blue"}`}
+                        onPress={() => {
+                            setFilter("main")
+                        }}
+                    >
+                        <Text
+                            className={`text-xl font-bold ${darkMode ? "text-white" : filter === "main" ? "text-white" : "text-black"}`}
+                        >
+                            Main
+                        </Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        className={`items-center justify-center flex-1 rounded-3xl m-1 py-2 ${filter == "intramural" && "bg-primary-blue"}`}
+                        onPress={() => {
+                            setFilter("intramural")
+                        }}
+                    >
+                        <Text
+                            className={`text-xl font-bold ${darkMode ? "text-white" : filter === "intramural" ? "text-white" : "text-black"}`}
+                        >
+                            Intramural
+                        </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                        className={`items-center justify-center flex-1 rounded-3xl m-1 py-2 ${filter == "committee" && "bg-primary-blue"}`}
+                        onPress={() => {
+                            setFilter("committee")
+                        }}
+                    >
+                        <Text
+                            className={`text-xl font-bold ${darkMode ? "text-white" : filter === "committee" ? "text-white" : "text-black"}`}
+                        >
+                            Committee
+                        </Text>
+                    </TouchableOpacity>
+                </View>
 
                 {isLoading &&
                     <View className='mt-10 justify-center items-center'>
@@ -275,7 +317,7 @@ const Events = ({ navigation }: EventsProps) => {
                             Event Location Check
                         </Text>
                         <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>
-                            The location check only happens during scans; we do not track you continuously. You are free to leave the area, but if a sign-out scan is required, you must be at the location to sign out.
+                            The location check only happens during scans; we do not track you continuously. If a sign-out scan is required, you must be at the location to sign out.
                         </Text>
                     </View>
                 </View>
