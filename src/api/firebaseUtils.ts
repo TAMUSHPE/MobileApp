@@ -528,6 +528,29 @@ export const getUpcomingEvents = async () => {
     return events;
 };
 
+export const getWeekPastEvents = async (): Promise<SHPEEvent[]> => {
+    const currentTime = new Date();
+    const twoWeeksAgo = new Date(currentTime);
+    twoWeeksAgo.setDate(currentTime.getDate() - 8);
+
+    const eventsRef = collection(db, "events");
+    const q = query(
+        eventsRef,
+        where("endTime", "<", currentTime),
+        where("endTime", ">", twoWeeksAgo),
+        orderBy("endTime", "desc")
+    );
+
+    const querySnapshot = await getDocs(q);
+    const events: SHPEEvent[] = [];
+
+    querySnapshot.forEach(doc => {
+        events.push({ id: doc.id, ...doc.data() } as SHPEEvent);
+    });
+
+    return events;
+};
+
 export const getPastEvents = async (numLimit: number, startAfterDoc: any, setEndOfData?: (endOfData: boolean) => void) => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
