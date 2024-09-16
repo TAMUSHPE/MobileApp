@@ -6,14 +6,21 @@ import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext';
 import { RouteProp, useRoute } from '@react-navigation/core';
 import { Images } from '../../../assets';
-import { MillisecondTimes, formatEventDate, formatEventTime } from '../../helpers/timeUtils';
+import { MillisecondTimes, formatEventDate, formatEventDateTime, formatEventTime } from '../../helpers/timeUtils';
 import { StatusBar } from 'expo-status-bar';
 import { handleLinkPress } from '../../helpers/links';
-import { SHPEEvent } from '../../types/events';
+import { EventType, SHPEEvent } from '../../types/events';
 import { LinearGradient } from 'expo-linear-gradient';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 import InteractButton from '../../components/InteractButton';
 import { createEvent } from '../../api/firebaseUtils';
+import CalendarIconBlack from '../../../assets/calendar-days-solid_black.svg'
+import CalendarIconWhite from '../../../assets/calendar-days-solid_white.svg'
+import ClockIconBlack from '../../../assets/clock-solid_black.svg'
+import ClockIconWhite from '../../../assets/clock-solid_white.svg'
+import LocationDotIconBlack from '../../../assets/location-dot-solid_black.svg'
+import LocationDotIconWhite from '../../../assets/location-dot-solid_white.svg'
+
 
 const FinalizeEvent = ({ navigation }: EventProps) => {
     const route = useRoute<EventInfoScreenRouteProp>();
@@ -29,6 +36,13 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
+
+    const isSameDay = (startDate: Date, endDate: Date): boolean => {
+        return startDate.getDate() === endDate.getDate() &&
+            startDate.getMonth() === endDate.getMonth() &&
+            startDate.getFullYear() === endDate.getFullYear();
+    };
+    const sameDay = startTime && endTime && isSameDay(startTime.toDate(), endTime.toDate());
 
     return (
         <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`} >
@@ -79,51 +93,57 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                 <View className='-z-10'>
                     {/* General Details */}
                     {nationalConventionEligible && (
-                        <Text className={`text-center mt-1 text-md ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
-                            This event is eligible for national convention requirements*
+                        <Text className={`mt-2 text-md mx-4 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>This event is eligible for national convention requirements*
                         </Text>
                     )}
+
+                    {(eventType === EventType.STUDY_HOURS) && (
+                        <Text className={`mt-2 text-md mx-4 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
+                            Feel free to leave the area. Just be sure to scan in and out at the event location to fully earn your points!
+                        </Text>
+                    )}
+
 
                     <View className='mx-4 mt-3'>
                         <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{name}</Text>
                         <Text className={`text-lg ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>
                             {eventType}
-                            {committee && (" • " + reverseFormattedFirebaseName(committee))} • {calculateMaxPossiblePoints(event)} points
-                        </Text>
-                        <Text className={`text-lg ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>
-                            Hosted By {userInfo?.publicInfo?.name}
+                            {committee && (" • " + reverseFormattedFirebaseName(committee))} • {calculateMaxPossiblePoints(event)} points • {userInfo?.publicInfo?.name}
                         </Text>
                     </View>
 
-                    {/* Date, Time and Location */}
-                    <View className={`mt-6 mx-4 p-4 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
-                        style={{
-                            shadowColor: "#000",
-                            shadowOffset: {
-                                width: 0,
-                                height: 2,
-                            },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 3.84,
-                            elevation: 5,
-                        }}
-                    >
-                        <View className='flex-row'>
-                            <View className='w-[50%]'>
-                                <Text className={`text-lg ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>Date</Text>
-                                <Text className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>{(startTime && endTime) ? formatEventDate(startTime.toDate(), endTime.toDate()) : ""}</Text>
-                            </View>
 
-                            <View className='flex-1'>
-                                <Text className={`text-lg ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>Time</Text>
-                                <Text className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>{startTime && endTime && formatEventTime(startTime.toDate(), endTime.toDate())}</Text>
+                    {/* Date, Time and Location */}
+                    <View className={`mt-6 mx-4`}>
+                        <View className='flex-row items-center'>
+                            <View className='mr-2'>
+                                {darkMode ? <CalendarIconWhite width={25} height={25} /> : <CalendarIconBlack width={25} height={25} />}
                             </View>
+                            <Text className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                {(startTime && endTime) ?
+                                    (sameDay ?
+                                        formatEventDate(startTime.toDate(), endTime.toDate())
+                                        : formatEventDateTime(startTime.toDate(), endTime.toDate())
+                                    )
+                                    : ""
+                                }
+                            </Text>
                         </View>
 
 
+                        {sameDay && (
+                            <View className='flex-row items-center mt-4'>
+                                <View className='mr-2'>
+                                    {darkMode ? <ClockIconWhite width={25} height={25} /> : <ClockIconBlack width={25} height={25} />}
+                                </View>
+                                <Text className={`mt-2 text-lg font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                    {startTime && endTime && formatEventTime(startTime.toDate(), endTime.toDate())}
+                                </Text>
+                            </View>
+                        )}
+
                         {locationName && (
                             <View className='mt-4'>
-                                <Text className={`text-lg ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>Location</Text>
                                 <View className='flex-row flex-wrap items-center'>
                                     {geolocation ? (
                                         <TouchableOpacity
@@ -134,25 +154,31 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                                                     handleLinkPress(`https://www.google.com/maps/dir/?api=1&destination=${geolocation.latitude},${geolocation.longitude}`);
                                                 }
                                             }}
+                                            className='flex-row items-center'
                                         >
-                                            <Text className={`text-xl font-bold underline text-primary-blue`}>
+                                            <View className='mr-2'>
+                                                {darkMode ? <LocationDotIconWhite width={25} height={25} /> : <LocationDotIconBlack width={25} height={25} />}
+                                            </View>
+                                            <Text className={`text-lg font-semibold text-primary-blue`}>
                                                 {locationName}
                                             </Text>
                                         </TouchableOpacity>
                                     ) : (
-                                        <Text className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                        <Text className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>
                                             {locationName}
                                         </Text>
                                     )}
                                 </View>
                             </View>
                         )}
+
                     </View>
+
 
                     {/* Description */}
                     {(description && description.trim() != "") && (
-                        <View className='mx-4 mt-6'>
-                            <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>About Event</Text>
+                        <View className='mx-4 mt-10'>
+                            <Text className={`text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>Description</Text>
                             <Text className={`text-lg ${darkMode ? "text-grey-light" : "text-black"}`}>{description}</Text>
                         </View>
                     )}
@@ -173,9 +199,6 @@ const FinalizeEvent = ({ navigation }: EventProps) => {
                     }}
                 />
             </View>
-
-
-
         </View>
     )
 }

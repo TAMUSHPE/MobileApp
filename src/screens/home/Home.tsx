@@ -381,12 +381,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                                 <Octicons name="gear" size={24} color={darkMode ? "white" : "black"} />
                             </TouchableOpacity>
                         </View>
-                        <TouchableOpacity
-                            className='px-4'
-                            onPress={() => navigation.getParent()?.navigate('EventsTab', { screen: 'EventsScreen', params: { filter: 'myEvents' } })}
-                        >
-                            <Text className='text-lg text-primary-blue font-semibold'>View all</Text>
-                        </TouchableOpacity>
                     </View>
 
 

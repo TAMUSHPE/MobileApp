@@ -1,5 +1,5 @@
 import { db, auth } from "@/config/firebaseConfig";
-import { collection, getDocs, getDoc, doc, query, orderBy, where, Timestamp,writeBatch } from 'firebase/firestore';
+import { collection, getDocs, getDoc, doc, query, orderBy, where, Timestamp, writeBatch } from 'firebase/firestore';
 import { RequestWithDoc } from "@/types/membership";
 import { PrivateUserInfo, PublicUserInfo, User } from "@/types/user"
 import { SHPEEvent, SHPEEventLog } from "@/types/events";
@@ -7,7 +7,7 @@ import { Committee } from "@/types/committees";
 
 interface UserWithLogs extends User {
     eventLogs?: SHPEEventLog[];
-  }
+}
 
 export const getMembers = async (): Promise<UserWithLogs[]> => {
     try {
@@ -106,7 +106,7 @@ export const getMembersToVerify = async (): Promise<RequestWithDoc[]> => {
 
     const members: RequestWithDoc[] = [];
     for (const document of memberSHPESnapshot.docs) {
-        
+
         const memberSHPEData = document.data();
         if (memberSHPEData.chapterURL && memberSHPEData.nationalURL) {
             const userId = document.id;
@@ -132,6 +132,7 @@ export const getMembersToVerify = async (): Promise<RequestWithDoc[]> => {
     }
     return members;
 }
+
 export const updatePointsInFirebase = async (changesToSave: { userId: string, eventId: string, newPoints: number | null }[]) => {
     const batch = writeBatch(db);
 
@@ -196,6 +197,33 @@ export const updatePointsInFirebase = async (changesToSave: { userId: string, ev
         console.error("Error writing batch: ", error);
         throw error;
     }
+};
+
+
+interface ShirtData {
+    uid: string;
+    shirtSize: string;
+    shirtUploadDate: Timestamp;
+    shirtPickedUp: boolean;
+}
+
+export const getShirtsToVerify = async (): Promise<ShirtData[]> => {
+    const shirtSizesRef = collection(db, 'shirt-sizes');
+    const shirtSizesSnapshot = await getDocs(shirtSizesRef);
+
+    const shirts: ShirtData[] = [];
+
+    for (const doc of shirtSizesSnapshot.docs) {
+        const data = doc.data();
+        shirts.push({
+            uid: doc.id,
+            shirtSize: data.shirtSize || 'N/A',
+            shirtUploadDate: data.shirtUploadDate || Timestamp.fromDate(new Date()),
+            shirtPickedUp: data.shirtPickedUp
+        });
+    }
+
+    return shirts;
 };
 
 
@@ -275,4 +303,29 @@ export const getPrivateUserData = async (uid: string = ""): Promise<PrivateUserI
         });
 };
 
+
+/**
+ * Obtains all data related to a user. Any undefined fields mean the currently logged-in user does not have permissions to those fields.
+ * 
+ * @param uid - Universal ID tied to a registered user.
+ * @returns - User data formatted according to User interface defined in "./src/types/User.tsx".
+ */
+export const getUser = async (uid: string): Promise<User | undefined> => {
+    if (!auth.currentUser?.uid) {
+        throw new Error("Authentication Error", { cause: "User uid is undefined" });
+    }
+    const publicData = await getPublicUserData(uid);
+    const privateData = await getPrivateUserData(uid);
+    if (publicData == undefined) {
+        return undefined;
+    }
+    else {
+        return {
+            publicInfo: publicData,
+            private: {
+                privateInfo: privateData,
+            },
+        };
+    }
+};
 

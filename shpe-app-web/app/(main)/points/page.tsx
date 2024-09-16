@@ -5,7 +5,7 @@ import { getEvents, getMembers, updatePointsInFirebase } from "@/api/firebaseUti
 import { SHPEEvent, SHPEEventLog } from '@/types/events';
 import { format } from 'date-fns';
 import { User } from "@/types/user";
-import { FaChevronLeft, FaChevronRight, FaFilter, FaUndo, FaSave } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight, FaFilter, FaUndo, FaSave, FaSync } from "react-icons/fa";
 import { httpsCallable } from "firebase/functions";
 import { auth, functions } from "@/config/firebaseConfig";
 import { onAuthStateChanged } from "firebase/auth";
@@ -35,50 +35,78 @@ const Points = () => {
   const months = generateSchoolYearMonths();
   const updateAllUserPoints = httpsCallable(functions, 'updateAllUserPoints');
 
-  // Set the initial current month index to the real current month
   const currentMonthDate = new Date();
   const realCurrentMonthIndex = months.findIndex(
     (month) => month.getFullYear() === currentMonthDate.getFullYear() && month.getMonth() === currentMonthDate.getMonth()
   );
   const [currentMonthIndex, setCurrentMonthIndex] = useState<number>(realCurrentMonthIndex !== -1 ? realCurrentMonthIndex : 0);
-
   const fetchMembers = async () => {
-    const response = await getMembers() as UserWithLogs[];
-    setMembers(response);
+    setLoading(true);
+    try {
+      const response = await getMembers() as UserWithLogs[];
+      setMembers(response);
 
-    // Initialize the original points state
-    const initialPoints = response.reduce((acc: PointsRecord, member) => {
-      if (member.publicInfo?.uid && member.eventLogs) {
-        member.eventLogs.forEach(log => {
-          if (log.eventId) {
-            acc[`${member.publicInfo?.uid}-${log.eventId}`] = log.points || 0;
-          }
+      const initialPoints = response.reduce((acc: PointsRecord, member) => {
+        if (member.publicInfo?.uid && member.eventLogs) {
+          member.eventLogs.forEach(log => {
+            if (log.eventId) {
+              acc[`${member.publicInfo?.uid}-${log.eventId}`] = log.points || 0;
+            }
 
-          // Calculate Instagram points per month
-          if (log.instagramLogs) {
-            months.forEach((month, index) => {
-              const pointsForInstagram = calculateInstagramPoints(log.instagramLogs!, month);
-              acc[`${member.publicInfo?.uid}-instagram-${index}`] = pointsForInstagram;
-            });
-          }
-        });
-      }
+            if (log.instagramLogs) {
+              months.forEach((month, index) => {
+                const pointsForInstagram = calculateInstagramPoints(log.instagramLogs!, month);
+                acc[`${member.publicInfo?.uid}-instagram-${index}`] = pointsForInstagram;
+              });
+            }
+          });
+        }
+        return acc;
+      }, {});
 
-      return acc;
-    }, {});
-
-    setOriginalPoints(initialPoints);
+      setOriginalPoints(initialPoints);
+      localStorage.setItem('cachedMembers', JSON.stringify(response));
+      localStorage.setItem('cachedPoints', JSON.stringify(initialPoints));
+      localStorage.setItem('cachedMembersTimestamp', Date.now().toString());
+    } catch (error) {
+      console.error('Error fetching members:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  const checkCacheAndFetchMembers = () => {
+    const cachedMembers = localStorage.getItem('cachedMembers');
+    const cachedPoints = localStorage.getItem('cachedPoints');
+    const cachedTimestamp = localStorage.getItem('cachedMembersTimestamp');
+
+    const isCacheValid = (timestamp: string): boolean => {
+      return Date.now() - parseInt(timestamp, 10) < 24 * 60 * 60 * 1000;
+    };
+
+    if (cachedMembers && cachedPoints && cachedTimestamp && isCacheValid(cachedTimestamp)) {
+      const members = JSON.parse(cachedMembers);
+      const convertedMembers = convertMembersLogsToTimestamps(members);
+      setMembers(convertedMembers);
+      setOriginalPoints(JSON.parse(cachedPoints));
+    } else {
+      fetchMembers();
+    }
+  };
   const fetchEvents = async () => {
-    const response = await getEvents();
-    setEvents(response);
+    try {
+      const response = await getEvents();
+      setEvents(response);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    }
   };
 
   useEffect(() => {
-    fetchMembers();
+    checkCacheAndFetchMembers();
     fetchEvents();
   }, []);
+
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -248,6 +276,12 @@ const Points = () => {
       setOriginalPoints(editedPoints);
       setIsEditing(null);
       alert("Points have been updated successfully.");
+
+      // Clear the cached data to force refetch
+      localStorage.removeItem('cachedMembers');
+      localStorage.removeItem('cachedPoints');
+      localStorage.removeItem('cachedMembersTimestamp');
+
     } catch (error) {
       console.error("Failed to save changes:", error);
     }
@@ -411,6 +445,14 @@ const Points = () => {
   };
 
 
+  const handleReload = async () => {
+    if (window.confirm("Are you sure you want to reload the points?")) {
+      setLoading(true);
+      await fetchMembers();
+    }
+  };
+
+
   if (loading) {
     return (
       <div className="flex flex-col w-full h-screen items-center justify-center bg-white">
@@ -420,7 +462,7 @@ const Points = () => {
   }
 
   return (
-    <div className="bg-white h-full overflow-auto w-screen">
+    <div className="flex flex-col bg-white w-screen h-[91%] overflow-auto">
       <div className="m-5">
         <h1 className="text-2xl font-bold text-[#500000]">Main Point Sheets {schoolYear}</h1>
       </div>
@@ -490,12 +532,10 @@ const Points = () => {
             <FaSave color="black" className="mr-2" />
             <p className="text-black text-lg font-bold">Export to Excel</p>
           </button>
-
-
         </div>
       </div>
 
-      <div className="bg-white flex flex-col h-[84%] w-full overflow-x-auto">
+      <div className="bg-white flex flex-col w-full overflow-x-auto">
         <table className="table-fixed text-left">
           <thead className="bg-gray-200">
             <tr className="text-black border-b-2 border-gray-400">
@@ -636,6 +676,14 @@ const Points = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Reload Button */}
+      <button
+        onClick={handleReload}
+        className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
+      >
+        <FaSync />
+      </button>
     </div>
   );
 }
@@ -682,8 +730,55 @@ const getColumnColor = (index: number): string => {
   return colors[index % colors.length];
 };
 
-const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const isPlainDateObject = (obj: any): obj is Date => {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.getFullYear === 'function' &&
+    typeof obj.getMonth === 'function' &&
+    typeof obj.getDate === 'function'
+  );
+};
+
+// Helper function to check if an object is structured like a Firebase Timestamp
+const isPlainTimestampObject = (obj: any): obj is { seconds: number; nanoseconds: number } => {
+  return (
+    obj &&
+    typeof obj === 'object' &&
+    typeof obj.seconds === 'number' &&
+    typeof obj.nanoseconds === 'number'
+  );
+};
+
+// Convert the object back to a Timestamp if it's structured like one
+const convertToTimestamp = (obj: any): Timestamp | null => {
+  if (isPlainDateObject(obj)) {
+    return Timestamp.fromDate(obj);
+  } else if (isPlainTimestampObject(obj)) {
+    return new Timestamp(obj.seconds, obj.nanoseconds);
+  }
+  return null;
+};
 
 
+
+// Conversion function to convert Date objects or Timestamp-like objects back to Timestamps
+const convertDatesToTimestamps = (log: SHPEEventLog): SHPEEventLog => {
+  return {
+    ...log,
+    signInTime: convertToTimestamp(log.signInTime) || log.signInTime,
+    signOutTime: convertToTimestamp(log.signOutTime) || log.signOutTime,
+    creationTime: convertToTimestamp(log.creationTime) || log.creationTime,
+    instagramLogs: log.instagramLogs?.map(log => convertToTimestamp(log) || log),
+  };
+};
+
+// Utility function to convert all event logs in members
+const convertMembersLogsToTimestamps = (members: UserWithLogs[]): UserWithLogs[] => {
+  return members.map(member => ({
+    ...member,
+    eventLogs: member.eventLogs?.map(convertDatesToTimestamps),
+  }));
+};
 
 export default Points;

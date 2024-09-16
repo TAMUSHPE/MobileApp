@@ -45,21 +45,6 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
         setLoading(true);
         initializeCurrentUserData()
             .then(async userFromFirebase => {
-                const functions = getFunctions();
-                const isUserInBlacklist = httpsCallable<{ uid: string }, { isInBlacklist: boolean }>(functions, 'isUserInBlacklist');
-
-                try {
-                    const checkBlackListResponse = await isUserInBlacklist({ uid: auth.currentUser?.uid! });
-
-                    if (checkBlackListResponse.data.isInBlacklist) {
-                        signOut(auth);
-                        setError("You have been banned from the app");
-                        return;
-                    }
-                } catch (error) {
-                    console.error('Error during user authentication:', error);
-                }
-
                 AsyncStorage.setItem("@user", JSON.stringify(userFromFirebase))
                     .then(() => {
                         setUserInfo(userFromFirebase);

@@ -528,6 +528,29 @@ export const getUpcomingEvents = async () => {
     return events;
 };
 
+export const getWeekPastEvents = async (): Promise<SHPEEvent[]> => {
+    const currentTime = new Date();
+    const twoWeeksAgo = new Date(currentTime);
+    twoWeeksAgo.setDate(currentTime.getDate() - 8);
+
+    const eventsRef = collection(db, "events");
+    const q = query(
+        eventsRef,
+        where("endTime", "<", currentTime),
+        where("endTime", ">", twoWeeksAgo),
+        orderBy("endTime", "desc")
+    );
+
+    const querySnapshot = await getDocs(q);
+    const events: SHPEEvent[] = [];
+
+    querySnapshot.forEach(doc => {
+        events.push({ id: doc.id, ...doc.data() } as SHPEEvent);
+    });
+
+    return events;
+};
+
 export const getPastEvents = async (numLimit: number, startAfterDoc: any, setEndOfData?: (endOfData: boolean) => void) => {
     const currentTime = new Date();
     const eventsRef = collection(db, "events");
@@ -1484,67 +1507,6 @@ export const getMOTM = async () => {
 // ============================================================================
 // Misc. Utilities
 // ============================================================================
-
-export const getWatchlist = async () => {
-    const docRef = doc(db, "restrictions/watchlist");
-    const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? docSnap.data().list : [];
-};
-
-export const getBlacklist = async () => {
-    const docRef = doc(db, "restrictions/blacklist");
-    const docSnap = await getDoc(docRef);
-    return docSnap.exists() ? docSnap.data().list : [];
-};
-
-
-export const addToWatchlist = async (userToAdd: PublicUserInfo) => {
-    const currentWatchlist = await getWatchlist() || [];
-
-    if (!currentWatchlist.some((user: PublicUserInfo) => user.uid === userToAdd.uid)) {
-        const updatedWatchlist = [...currentWatchlist, userToAdd];
-        await setDoc(doc(db, "restrictions/watchlist"), { list: updatedWatchlist }, { merge: true });
-    }
-};
-
-export const addToBlacklist = async (userToAdd: PublicUserInfo) => {
-    const currentBlacklist = await getBlacklist() || [];
-
-    if (!currentBlacklist.some((user: PublicUserInfo) => user.uid === userToAdd.uid)) {
-        const updatedBlacklist = [...currentBlacklist, userToAdd];
-        await setDoc(doc(db, "restrictions/blacklist"), { list: updatedBlacklist }, { merge: true });
-    }
-};
-
-export const removeFromWatchlist = async (userToRemove: PublicUserInfo) => {
-    const currentWatchlist = await getWatchlist() || [];
-
-    const updatedWatchlist = currentWatchlist.filter((user: PublicUserInfo) => user.uid !== userToRemove.uid);
-
-    await setDoc(doc(db, "restrictions/watchlist"), { list: updatedWatchlist }, { merge: true });
-};
-
-export const removeFromBlacklist = async (userToRemove: PublicUserInfo) => {
-    const currentBlacklist = await getBlacklist() || [];
-
-    const updatedBlacklist = currentBlacklist.filter((user: PublicUserInfo) => user.uid !== userToRemove.uid);
-
-    await setDoc(doc(db, "restrictions/blacklist"), { list: updatedBlacklist }, { merge: true });
-};
-
-export const isUserInBlacklist = async (uid: string): Promise<boolean> => {
-    const blacklistDocRef = doc(db, "restrictions/blacklist");
-    const docSnap = await getDoc(blacklistDocRef);
-
-    if (docSnap.exists()) {
-        const blacklist = docSnap.data().list;
-        return blacklist.some((user: PublicUserInfo) => user.uid === uid);
-    } else {
-        // Blacklist document does not exist or has no data
-        return false;
-    }
-};
-
 
 export const submitFeedback = async (feedback: string, userInfo: User) => {
     try {

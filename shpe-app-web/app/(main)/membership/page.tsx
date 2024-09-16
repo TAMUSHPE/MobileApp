@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/Header';
 import { getMembers, getMembersToVerify } from '@/api/firebaseUtils';
+import { FaSync } from "react-icons/fa";
 import { SHPEEventLog } from '@/types/events';
 import { User } from '@/types/user';
 import { isMemberVerified, RequestWithDoc } from '@/types/membership';
@@ -27,18 +27,70 @@ const Membership = () => {
 
   const fetchMembers = async () => {
     setLoading(true);
-    const response = await getMembers();
-    setStudents(response);
-    const filteredMembers = response.filter((member) => {
-      console.log(member.publicInfo?.chapterExpiration);
-      return isMemberVerified(member.publicInfo?.chapterExpiration, member.publicInfo?.nationalExpiration);
-    });
-    setMembers(filteredMembers);
+    try {
+      const response = await getMembers();
+      setStudents(response);
 
-    const incomingReqs = await getMembersToVerify();
-    setRequestsWithDocuments(incomingReqs);
-    setLoading(false);
+      const filteredMembers = response.filter((member) => {
+        console.log(member.publicInfo?.chapterExpiration);
+        return isMemberVerified(
+          member.publicInfo?.chapterExpiration,
+          member.publicInfo?.nationalExpiration
+        );
+      });
+      setMembers(filteredMembers);
+
+      localStorage.setItem('cachedMembers', JSON.stringify(response));
+      localStorage.setItem('cachedOfficialMembers', JSON.stringify(filteredMembers));
+      localStorage.setItem('cachedMembersTimestamp', Date.now().toString());
+
+      const incomingReqs = await getMembersToVerify();
+      setRequestsWithDocuments(incomingReqs);
+      localStorage.setItem('cachedRequests', JSON.stringify(incomingReqs));
+      localStorage.setItem('cachedRequestsTimestamp', Date.now().toString());
+
+    } catch (error) {
+      console.error('Error fetching members:', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const checkCacheAndFetchMembers = () => {
+    const cachedMembers = localStorage.getItem('cachedMembers');
+    const cachedOfficialMembers = localStorage.getItem('cachedOfficialMembers');
+    const cachedMembersTimestamp = localStorage.getItem('cachedMembersTimestamp');
+    const cachedRequests = localStorage.getItem('cachedRequests');
+    const cachedRequestsTimestamp = localStorage.getItem('cachedRequestsTimestamp');
+
+    const isCacheValid = (timestamp: string): boolean => {
+      return Date.now() - parseInt(timestamp, 10) < 24 * 60 * 60 * 1000;
+    };
+
+    if (
+      cachedMembers &&
+      cachedOfficialMembers &&
+      cachedMembersTimestamp &&
+      isCacheValid(cachedMembersTimestamp) &&
+      cachedRequests &&
+      cachedRequestsTimestamp &&
+      isCacheValid(cachedRequestsTimestamp)
+    ) {
+      const studentsData = JSON.parse(cachedMembers);
+      setStudents(studentsData);
+
+      setMembers(JSON.parse(cachedOfficialMembers));
+
+      setRequestsWithDocuments(JSON.parse(cachedRequests));
+      setLoading(false);
+    } else {
+      fetchMembers();
+    }
+  };
+
+  useEffect(() => {
+    checkCacheAndFetchMembers();
+  }, []);
 
   const handleApprove = async (member: RequestWithDoc) => {
     const userDocRef = doc(db, 'users', member.uid);
@@ -50,8 +102,11 @@ const Membership = () => {
 
     const memberDocRef = doc(db, 'memberSHPE', member.uid);
     await deleteDoc(memberDocRef);
+
     const filteredRequests = requestsWithDocuments.filter((req) => req.uid !== member.uid);
     setRequestsWithDocuments(filteredRequests);
+
+    localStorage.setItem('cachedRequests', JSON.stringify(filteredRequests));
 
     const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
     await sendNotificationToMember({
@@ -74,6 +129,9 @@ const Membership = () => {
     //get rid of the member from the lists
     const filteredRequests = requestsWithDocuments.filter((req) => req.uid !== member.uid);
     setRequestsWithDocuments(filteredRequests);
+
+    localStorage.setItem('cachedRequests', JSON.stringify(filteredRequests));
+
     const sendNotificationToMember = httpsCallable(functions, 'sendNotificationMemberSHPE');
     await sendNotificationToMember({
       uid: member.uid,
@@ -110,10 +168,12 @@ const Membership = () => {
     }
   };
 
-  useEffect(() => {
-    fetchMembers();
-    setLoading(false);
-  }, []);
+  const handleReload = async () => {
+    if (window.confirm("Are you sure you want to reload the members?")) {
+      setLoading(true);
+      await fetchMembers();
+    }
+  };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -141,97 +201,126 @@ const Membership = () => {
   }
 
   return (
-    <div className="w-full h-full flex flex-col">
+    <div className="w-full flex flex-col h-[91%] overflow-auto items-center">
+      <div className="w-4/5 flex flex-col mt-6 ">
+        <div className="text-white text-center text-2xl flex mb-4">
+          <button
+            onClick={() => setTab('members')}
+            className={`w-1/3 py-2 transition duration-200 mx-2 rounded-lg ${tab === 'members'
+              ? 'bg-white text-[#500000] font-bold border-2 border-[#500000]'
+              : 'bg-[#500000] hover:bg-[#700000] text-white'
+              }`}
+          >
+            Official Members
+          </button>
+          <button
+            onClick={() => setTab('requests')}
+            className={`w-1/3 py-2 transition duration-200 mx-2 rounded-lg ${tab === 'requests'
+              ? 'bg-white text-[#500000] font-bold border-2 border-[#500000]'
+              : 'bg-[#500000] hover:bg-[#700000] text-white'
+              }`}
+          >
+            Requests
+          </button>
+          <button
+            onClick={() => setTab('users')}
+            className={`w-1/3 py-2 transition duration-200 mx-2 rounded-lg ${tab === 'users'
+              ? 'bg-white text-[#500000] font-bold border-2 border-[#500000]'
+              : 'bg-[#500000] hover:bg-[#700000] text-white'
+              }`}
+          >
+            All Users
+          </button>
+        </div>
+        {/* Display the offical members  */}
 
-      <div className="text-white bg-[#500000] text-center text-2xl flex">
-        <button onClick={() => setTab('members')} className="w-1/2">
-          Offical Members
-        </button>
-        <button onClick={() => setTab('requests')} className="w-1/2">
-          Requests
-        </button>
-        <button onClick={() => setTab('users')} className="w-1/2">
-          All Users
+        {tab == 'members' && (
+          <table className="text-center">
+            <tr className="bg-gray-700">
+              <th className=" px-4 py-2">Name</th>
+              <th className=" px-4 py-2">Major</th>
+              <th className=" px-4 py-2">Class Year</th>
+              <th className=" px-4 py-2">Role</th>
+              <th className=" px-4 py-2">Email</th>
+            </tr>
+            {members &&
+              members.map((member) => {
+                return (
+                  <tr key={member.publicInfo?.uid} className="bg-gray-300">
+                    <td className="bg-gray-600 px-4 py-2 "> {member.publicInfo?.displayName} </td>
+                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.major} </td>
+                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.classYear} </td>
+                    <td className="bg-gray-300 px-4 py-2 "> {getRole(member)} </td>
+                    <td className="bg-gray-300 px-4 py-2 "> {member.private?.privateInfo?.email} </td>
+                  </tr>
+                );
+              })}
+          </table>
+        )}
+
+        {/* flex flex-col items-center w-full content-center */}
+        {tab == 'requests' && (
+          <table className=" text-center">
+            <tr className="bg-gray-700">
+              <th className=" px-4 py-2">Name</th>
+              <th className=" px-4 py-2" colSpan={2}>
+                Links
+              </th>
+              <th className=" px-4 py-2" colSpan={2}>
+                Action
+              </th>
+            </tr>
+            {!loading &&
+              requestsWithDocuments.length > 0 &&
+              requestsWithDocuments.map((member) => {
+                return (
+                  <MemberCard
+                    key={member.uid}
+                    request={member}
+                    onApprove={handleApprove}
+                    onDeny={handleDeny}
+                  ></MemberCard>
+                );
+              })}
+            {!loading && requestsWithDocuments.length === 0 && (
+              <div className="text-center text-2xl text-gray-500">No pending requests</div>
+            )}
+          </table>
+        )}
+        {tab == 'users' && (
+          <table className="text-center">
+            <tr className="bg-gray-700">
+              <th className=" px-4 py-2">Name</th>
+              <th className=" px-4 py-2">Major</th>
+              <th className=" px-4 py-2">Class Year</th>
+              <th className=" px-4 py-2">Role</th>
+              <th className=" px-4 py-2">Email</th>
+            </tr>
+            {students &&
+              students.map((member) => {
+                return (
+                  <tr key={member.publicInfo?.uid} className="bg-gray-300">
+                    <td className="bg-gray-500 px-4 py-2 "> {member.publicInfo?.displayName} </td>
+                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.major} </td>
+                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.classYear} </td>
+                    <td className="bg-blue-300 px-4 py-2 "> {getRole(member)} </td>
+                    <td className="bg-gray-300 px-4 py-2 "> {member.private?.privateInfo?.email} </td>
+                  </tr>
+                );
+              })}
+          </table>
+        )}
+
+        <div className='mb-60'></div>
+
+        {/* Reload Button */}
+        <button
+          onClick={handleReload}
+          className="absolute bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition"
+        >
+          <FaSync />
         </button>
       </div>
-      {/* Display the offical members  */}
-
-      {tab == 'members' && (
-        <table className="text-center">
-          <tr className="bg-gray-700">
-            <th className=" px-4 py-2">Name</th>
-            <th className=" px-4 py-2">Major</th>
-            <th className=" px-4 py-2">Class Year</th>
-            <th className=" px-4 py-2">Role</th>
-            <th className=" px-4 py-2">Email</th>
-          </tr>
-          {members &&
-            members.map((member) => {
-              return (
-                <tr key={member.publicInfo?.uid} className="bg-gray-300">
-                  <td className="bg-gray-600 px-4 py-2 "> {member.publicInfo?.displayName} </td>
-                  <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.major} </td>
-                  <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.classYear} </td>
-                  <td className="bg-gray-300 px-4 py-2 "> {getRole(member)} </td>
-                  <td className="bg-gray-300 px-4 py-2 "> {member.private?.privateInfo?.email} </td>
-                </tr>
-              );
-            })}
-        </table>
-      )}
-
-      {/* flex flex-col items-center w-full content-center */}
-      {tab == 'requests' && (
-        <table className=" text-center">
-          <tr className="bg-gray-700">
-            <th className=" px-4 py-2">Name</th>
-            <th className=" px-4 py-2" colSpan={2}>
-              Links
-            </th>
-            <th className=" px-4 py-2" colSpan={2}>
-              Action
-            </th>
-          </tr>
-          {!loading &&
-            requestsWithDocuments.length > 0 &&
-            requestsWithDocuments.map((member) => {
-              return (
-                <MemberCard
-                  key={member.uid}
-                  request={member}
-                  onApprove={handleApprove}
-                  onDeny={handleDeny}
-                ></MemberCard>
-              );
-            })}
-          {!loading && requestsWithDocuments.length === 0 && (
-            <div className="text-center text-2xl text-gray-500">No pending requests</div>
-          )}
-        </table>
-      )}
-      {tab == 'users' && (
-        <table className="text-center">
-          <tr className="bg-gray-700">
-            <th className=" px-4 py-2">Name</th>
-            <th className=" px-4 py-2">Major</th>
-            <th className=" px-4 py-2">Class Year</th>
-            <th className=" px-4 py-2">Role</th>
-            <th className=" px-4 py-2">Email</th>
-          </tr>
-          {students &&
-            students.map((member) => {
-              return (
-                <tr key={member.publicInfo?.uid} className="bg-gray-300">
-                  <td className="bg-gray-500 px-4 py-2 "> {member.publicInfo?.displayName} </td>
-                  <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.major} </td>
-                  <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.classYear} </td>
-                  <td className="bg-blue-300 px-4 py-2 "> {getRole(member)} </td>
-                  <td className="bg-gray-300 px-4 py-2 "> {member.private?.privateInfo?.email} </td>
-                </tr>
-              );
-            })}
-        </table>
-      )}
     </div>
   );
 };

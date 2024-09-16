@@ -76,32 +76,6 @@ const RootNavigator = () => {
     //     }
     // }, [userInfo]);
 
-
-    useEffect(() => {
-        const handleBannedUser = async () => {
-            if (!auth.currentUser?.uid) {
-                return;
-            }
-
-            const functions = getFunctions();
-            const isUserInBlacklist = httpsCallable<{ uid: string }, { isInBlacklist: boolean }>(functions, 'isUserInBlacklist');
-            try {
-                const checkBlackListResponse = await isUserInBlacklist({ uid: auth.currentUser?.uid! });
-
-                if (checkBlackListResponse.data.isInBlacklist) {
-                    signOutUser(true);
-                    alert("You have been banned from the app");
-                    return;
-                }
-            } catch (error) {
-                console.error('Error during user authentication:', error);
-            }
-
-        }
-
-        handleBannedUser();
-    }, [auth.currentUser?.uid])
-
     if (userLoading) {
         return <RenderUserLoading />;
     }

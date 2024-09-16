@@ -189,7 +189,7 @@ export const sendNotificationResumeConfirm = functions.https.onCall(async (data,
 });
 
 
-export const notifyUpcomingEvents = functions.pubsub.schedule('every 5 minutes').onRun(async (context) => {
+export const notifyUpcomingEvents = functions.pubsub.schedule('every 30 minutes').onRun(async (context) => {
     console.log('Running Event Notification Sent');
     const now = new Date();
     const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);

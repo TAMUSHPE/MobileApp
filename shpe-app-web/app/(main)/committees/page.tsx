@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { getPublicUserData, getCommittees } from "@/api/firebaseUtils";
 import { Committee } from "@/types/committees";
-import Header from "@/components/Header";
 import CommitteeCard from "./components/CommitteeCard";
 
 const Committees = () => {
@@ -34,17 +33,17 @@ const Committees = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col w-full h-screen items-center justify-center bg-white">
+      <div className="flex flex-col w-full items-center justify-center bg-white">
         <object type="image/svg+xml" data="spinner.svg" className="animate-spin -ml-1 mr-3 h-14 w-14 text-white"></object>
       </div>
     );
   }
 
   return (
-    <div className='flex flex-col w-full'>
-      
+    <div className='flex flex-col w-full  h-full overflow-auto'>
 
-      <div className="flex flex-wrap text-black pt-20 pl-20 gap-10 pb-10 bg-white">
+
+      <div className="flex flex-wrap text-black gap-10 pb-10 bg-white items-center justify-center mt-20 mb-40">
         {!loading && committees.map((committees) => (
           <CommitteeCard key={committees.name} committee={committees} />
         ))}
