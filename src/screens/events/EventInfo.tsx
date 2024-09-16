@@ -505,7 +505,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                                                     setLoading(true);
 
                                                     await signInToEvent(event.id!, uid).then((status) => {
-                                                        Alert.alert('Status', getStatusMessage(status), [
+                                                        Alert.alert('Status', getStatusMessage(status, "sign-in"), [
                                                             {
                                                                 text: 'OK',
                                                                 onPress: () => {
@@ -580,7 +580,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                                                     setLoading(true);
 
                                                     await signOutOfEvent(event.id!, uid).then((status) => {
-                                                        Alert.alert('Status', getStatusMessage(status), [
+                                                        Alert.alert('Status', getStatusMessage(status, "sign-out"), [
                                                             {
                                                                 text: 'OK',
                                                                 onPress: () => {
