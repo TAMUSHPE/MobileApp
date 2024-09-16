@@ -348,12 +348,6 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                     <View className='mt-10'>
                         <View className='flex-row justify-between items-center mb-4'>
                             <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Upcoming Events</Text>
-                            <TouchableOpacity
-                                className='px-4'
-                                onPress={() => navigation.getParent()?.navigate('EventsTab', { screen: 'EventsScreen', params: { filter: EventType.COMMITTEE_MEETING, committee: firebaseDocName } })}
-                            >
-                                <Text className='text-lg text-primary-blue font-semibold'>View all</Text>
-                            </TouchableOpacity>
                         </View>
 
                         <View
