@@ -5,10 +5,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MainStackParams } from '../../types/navigation';
-import { GestureHandlerRootView, PinchGestureHandler, PinchGestureHandlerGestureEvent, State } from 'react-native-gesture-handler';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-const screenDensity = PixelRatio.get();
 
 type BarCodeScannedResult = {
     type: string;
@@ -20,7 +18,6 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
     const [hasCameraPermissions, setHasCameraPermissions] = useState<boolean | null>(null);
     const [boxColor, setBoxColor] = useState('#FFFFFF');
     const [validScanned, setValidScanned] = useState<boolean>(false);
-    const [zoom, setZoom] = useState<number>(0);
 
     const pulseAnim = useRef(new Animated.Value(1)).current;
     const boxTop = useRef(new Animated.Value((screenHeight / 2) - 240)).current;
@@ -59,26 +56,6 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
 
         pulse();
     }, [pulseAnim]);
-
-    const handlePinchGestureEvent = ({ nativeEvent }: PinchGestureHandlerGestureEvent) => {
-        if (nativeEvent.scale !== 0) {
-            const baseZoomFactor = 0.0004 * screenDensity;
-            const zoomSensitivity = 0.1;
-            const dynamicFactor = zoom * zoomSensitivity + baseZoomFactor;
-            const scaleChange = (nativeEvent.scale - 1) * dynamicFactor * (nativeEvent.scale > 1 ? 1 : 2);
-
-            const maxZoom = 0.05;
-            const newZoom = Math.min(Math.max(zoom + scaleChange, 0), maxZoom);
-
-            setZoom(newZoom);
-        }
-    };
-
-    const handlePinchStateChange = ({ nativeEvent }: any) => {
-        if (nativeEvent.state === State.END || nativeEvent.state === State.CANCELLED) {
-            lastScale.current = 1;
-        }
-    };
 
     const handleBarCodeScanned = ({ bounds, type, data }: BarCodeScannedResult) => {
         if (validScanned) {
@@ -139,74 +116,61 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
     }
 
     return (
-        <GestureHandlerRootView>
-            <SafeAreaView className='flex flex-col h-full w-screen bg-primary-blue'>
-                <View className={`flex-row items-center mb-4 bg-primary-blue`}>
-                    <View className='w-screen absolute'>
-                        <Text className={`text-2xl font-bold justify-center text-center text-white`}>Scanner</Text>
-                    </View>
-                    <TouchableOpacity className='px-6' onPress={() => navigation.goBack()}>
-                        <Octicons name="x" size={24} color="white" />
-                    </TouchableOpacity>
+        <SafeAreaView className='flex flex-col h-full w-screen bg-primary-blue'>
+            <View className={`flex-row items-center mb-4 bg-primary-blue`}>
+                <View className='w-screen absolute'>
+                    <Text className={`text-2xl font-bold justify-center text-center text-white`}>Scanner</Text>
                 </View>
-                <PinchGestureHandler
-                    onGestureEvent={handlePinchGestureEvent}
-                    onHandlerStateChange={handlePinchStateChange}
+                <TouchableOpacity className='px-6' onPress={() => navigation.goBack()}>
+                    <Octicons name="x" size={24} color="white" />
+                </TouchableOpacity>
+            </View>
+            <CameraView
+                onBarcodeScanned={handleBarCodeScanned}
+                barcodeScannerSettings={{
+                    barcodeTypes: ['qr', 'pdf417'],
+                }}
+                className='flex-1'
+            >
+                {/* Pulsing Effect with Animated Transition */}
+                <Animated.View
+                    style={{
+                        position: 'absolute',
+                        top: boxTop,
+                        left: boxLeft,
+                        width: boxWidth,
+                        height: boxHeight,
+                        transform: [{ scale: pulseAnim }],
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
                 >
+                    <View className='w-full h-full'>
+                        <View
+                            style={{ borderColor: boxColor }}
+                            className='absolute top-0 left-0 w-[20%] h-[20%] border-t-4 border-l-4 rounded-tl-lg'
+                        />
+                        <View
+                            style={{ borderColor: boxColor }}
+                            className='absolute top-0 right-0 w-[20%] h-[20%] border-t-4 border-r-4 rounded-tr-lg'
+                        />
+                        <View
+                            style={{ borderColor: boxColor }}
+                            className='absolute bottom-0 left-0 w-[20%] h-[20%] border-b-4 border-l-4 rounded-bl-lg'
+                        />
+                        <View
+                            style={{ borderColor: boxColor }}
+                            className='absolute bottom-0 right-0 w-[20%] h-[20%] border-b-4 border-r-4 rounded-br-lg'
+                        />
+                    </View>
+                </Animated.View>
+            </CameraView>
 
-                    <CameraView
-                        onBarcodeScanned={handleBarCodeScanned}
-                        barcodeScannerSettings={{
-                            barcodeTypes: ['qr', 'pdf417'],
-                        }}
-                        zoom={zoom}
-                        className='flex-1'
-                    >
-                        {/* Pulsing Effect with Animated Transition */}
-                        <Animated.View
-                            style={{
-                                position: 'absolute',
-                                top: boxTop,
-                                left: boxLeft,
-                                width: boxWidth,
-                                height: boxHeight,
-                                transform: [{ scale: pulseAnim }],
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                            }}
-                        >
-                            <View className='w-full h-full'>
-                                <View
-                                    style={{ borderColor: boxColor }}
-                                    className='absolute top-0 left-0 w-[20%] h-[20%] border-t-4 border-l-4 rounded-tl-lg'
-                                />
-                                <View
-                                    style={{ borderColor: boxColor }}
-                                    className='absolute top-0 right-0 w-[20%] h-[20%] border-t-4 border-r-4 rounded-tr-lg'
-                                />
-                                <View
-                                    style={{ borderColor: boxColor }}
-                                    className='absolute bottom-0 left-0 w-[20%] h-[20%] border-b-4 border-l-4 rounded-bl-lg'
-                                />
-                                <View
-                                    style={{ borderColor: boxColor }}
-                                    className='absolute bottom-0 right-0 w-[20%] h-[20%] border-b-4 border-r-4 rounded-br-lg'
-                                />
-                            </View>
-                        </Animated.View>
-
-                        <View className="absolute top-2 left-2 bg-black/50 rounded px-2 py-1">
-                            <Text className="text-white font-bold">{(1 + zoom * 100).toFixed(1)}x</Text>
-                        </View>
-                    </CameraView>
-                </PinchGestureHandler>
-
-                <View className='my-2'>
-                    <Text className='text-white text-center font-bold text-xl'>Using Scanner</Text>
-                    <Text className='text-white text-center text-lg'>Scan the QRCode provided by the event host.</Text>
-                </View>
-            </SafeAreaView>
-        </GestureHandlerRootView>
+            <View className='my-2'>
+                <Text className='text-white text-center font-bold text-xl'>Using Scanner</Text>
+                <Text className='text-white text-center text-lg'>Scan the QRCode provided by the event host.</Text>
+            </View>
+        </SafeAreaView>
     );
 };
 
