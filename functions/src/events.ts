@@ -39,6 +39,61 @@ const geographicDistance = (pos1: GeoPoint, pos2: GeoPoint): number => {
 }
 
 /**
+ * Atomically calculates the amount of points a given event log has accumulated.
+ * This will never return a negative number. If points are negative for whatever reason, it will return 0.
+ * 
+ * @param {SHPEEvent} event 
+ * @param {SHPEEventLog} log 
+ * @returns Amount of points earned by user
+ */
+const calculateEventLogPoints = (event: SHPEEvent, log: SHPEEventLog): number => {
+    if (!event || !log) {
+        return 0;
+    }
+
+    let totalPoints = 0;
+
+    if (log.signInTime) {
+        totalPoints += event.signInPoints ?? 0;
+    }
+
+    if (log.signOutTime) {
+        totalPoints += event.signOutPoints ?? 0;
+    }
+
+    let hourlyPoints = 0;
+    switch (event.eventType) {
+        case "Study Hours":
+            if (log.signInTime && log.signOutTime && log.signInTime.toMillis() < log.signOutTime.toMillis()) {
+                hourlyPoints = (log.signOutTime.toMillis() - log.signInTime.toMillis()) / MillisecondTimes.HOUR * (event.pointsPerHour ?? 0);
+            }
+
+            if (event.endTime && event.startTime) {
+                const eventDurationHours = (event.endTime.toMillis() - event.startTime.toMillis()) / MillisecondTimes.HOUR;
+                hourlyPoints = Math.min(eventDurationHours * (event.pointsPerHour ?? 0), hourlyPoints);
+            }
+            break;
+        case "Volunteer Event":
+            if (log.signInTime && log.signOutTime && log.signInTime.toMillis() < log.signOutTime.toMillis()) {
+                hourlyPoints = Math.round((log.signOutTime.toMillis() - log.signInTime.toMillis()) / MillisecondTimes.HOUR) * (event.pointsPerHour ?? 0);
+            }
+            log.points = (log.points ?? 0) + (event.signOutPoints ?? 0) + hourlyPoints;
+            break;
+        default:
+            hourlyPoints = 0;
+    }
+
+    totalPoints += hourlyPoints;
+
+    // Failsafe in case of negative points. This shouldn't happen, but better safe than sorry.
+    if (totalPoints < 0) {
+        totalPoints = 0;
+    }
+
+    return totalPoints;
+}
+
+/**
  * Meters that are acceptable to be beyond the geofencing bubble.
  * This deals with bad geolocation data that assumes people are further away from their actual physical location
  */
