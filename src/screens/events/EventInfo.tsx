@@ -355,7 +355,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 <View className='mr-2'>
                                     {darkMode ? <ClockIconWhite width={25} height={25} /> : <ClockIconBlack width={25} height={25} />}
                                 </View>
-                                <Text className={`mt-2 text-lg font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>
+                                <Text className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-black'}`}>
                                     {startTime && endTime && formatEventTime(startTime.toDate(), endTime.toDate())}
                                 </Text>
                             </View>
