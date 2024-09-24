@@ -66,42 +66,44 @@ const Events = ({ navigation }: EventsProps) => {
             const mainEventsFiltered = upcomingEventsData.filter(
                 (event: SHPEEvent) =>
                     (hasPrivileges || !event.hiddenEvent) &&
-                    event.eventType !== EventType.COMMITTEE_MEETING &&
-                    event.eventType !== EventType.INTRAMURAL_EVENT
+                    (event.eventType !== EventType.COMMITTEE_MEETING &&
+                        event.eventType !== EventType.INTRAMURAL_EVENT) || event.general
             );
 
             const intramuralEventsFiltered = upcomingEventsData.filter(
                 (event: SHPEEvent) =>
                     (hasPrivileges || !event.hiddenEvent) &&
-                    event.eventType === EventType.INTRAMURAL_EVENT
+                    event.eventType === EventType.INTRAMURAL_EVENT &&
+                    !event.general
             );
 
             const committeeEventsFiltered = upcomingEventsData.filter(
                 (event: SHPEEvent) =>
                     (hasPrivileges || !event.hiddenEvent) &&
-                    event.eventType === EventType.COMMITTEE_MEETING
+                    event.eventType === EventType.COMMITTEE_MEETING &&
+                    !event.general
             );
 
             const pastMainEvents = allPastEvents.filter(
                 (event: SHPEEvent) =>
                     (hasPrivileges || !event.hiddenEvent) &&
-                    event.eventType !== EventType.COMMITTEE_MEETING &&
-                    event.eventType !== EventType.INTRAMURAL_EVENT
+                    (event.eventType !== EventType.COMMITTEE_MEETING &&
+                        event.eventType !== EventType.INTRAMURAL_EVENT) || event.general
             );
 
             const pastIntramuralEvents = allPastEvents.filter(
                 (event: SHPEEvent) =>
                     (hasPrivileges || !event.hiddenEvent) &&
-                    event.eventType === EventType.INTRAMURAL_EVENT
+                    event.eventType === EventType.INTRAMURAL_EVENT &&
+                    !event.general
             );
 
             const pastCommitteeEvents = allPastEvents.filter(
                 (event: SHPEEvent) =>
                     (hasPrivileges || !event.hiddenEvent) &&
-                    event.eventType === EventType.COMMITTEE_MEETING
+                    event.eventType === EventType.COMMITTEE_MEETING &&
+                    !event.general
             );
-
-
 
             setMainEvents({
                 today: todayEvents.filter(event => mainEventsFiltered.includes(event)),
@@ -127,6 +129,8 @@ const Events = ({ navigation }: EventsProps) => {
             setIsLoading(false);
         }
     };
+
+
 
 
     useEffect(() => {
