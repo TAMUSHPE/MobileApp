@@ -39,6 +39,12 @@ const geographicDistance = (pos1: GeoPoint, pos2: GeoPoint): number => {
 }
 
 /**
+ * Meters that are acceptable to be beyond the geofencing bubble.
+ * This deals with bad geolocation data that assumes people are further away from their actual physical location
+ */
+const ACCEPTABLE_DISTANCE_ERROR = 20;
+
+/**
  * Atomically calculates the amount of points a given event log has accumulated.
  * This will never return a negative number. If points are negative for whatever reason, it will return 0.
  * 
@@ -94,12 +100,6 @@ const calculateEventLogPoints = (event: SHPEEvent, log: SHPEEventLog): number =>
 }
 
 /**
- * Meters that are acceptable to be beyond the geofencing bubble.
- * This deals with bad geolocation data that assumes people are further away from their actual physical location
- */
-const ACCEPTABLE_DISTANCE_ERROR = 20;
-
-/**
  * Handles a request from a user to sign into an event.
  */
 export const eventSignIn = functions.https.onCall(async (data, context) => {
@@ -135,13 +135,13 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     };
 
     // Check for any possible errors on the user's part
-    if (eventLog !== undefined && eventLog.signInTime !== undefined) {
-        functions.logger.error(`User ${uid} attempted sign-in again`);
-        throw new functions.https.HttpsError("already-exists", "Sign in time already exists.");
-    }
-    else if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
+    if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
         functions.logger.error(`User ${uid} has attempted sign-in after event named ${event.name} ended`);
         throw new functions.https.HttpsError("deadline-exceeded", "Event has already ended.");
+    }
+    else if (eventLog !== undefined && eventLog.signInTime !== undefined) {
+        functions.logger.error(`User ${uid} attempted sign-in again`);
+        throw new functions.https.HttpsError("already-exists", "Sign in time already exists.");
     }
     else if (event.startTime && (event.startTime.toMillis() - (event.startTimeBuffer ?? 0) > Date.now())) {
         functions.logger.error(`User ${uid} has attempted sign-in before event named ${event.name} started`);
@@ -165,16 +165,7 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
     }
 
     eventLog.signInTime = Timestamp.fromMillis(Date.now());
-
-    switch (event.eventType) {
-        case undefined:
-            throw new functions.https.HttpsError("internal", "Event type is undefined. This means that an issue has occurred during event creation/updating.");
-        case null:
-            throw new functions.https.HttpsError("internal", "Event type is null. This means that an issue has occurred during event creation/updating.");
-        default:
-            eventLog.points = (eventLog.points ?? 0) + (event.signInPoints ?? 0);
-            break;
-    }
+    eventLog.points = calculateEventLogPoints(event, eventLog);
 
     // Sets log in both event and user collection and ensures both happen by the end of the function. 
     await eventLogDocRef.set(eventLog, { merge: true });
@@ -221,13 +212,13 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     };
 
     // Check for any possible errors on the user's part
-    if (eventLog !== undefined && eventLog.signOutTime !== undefined) {
-        functions.logger.error(`User ${uid} attempted sign-out again`);
-        throw new functions.https.HttpsError("already-exists", "Sign out time already exists.");
-    }
-    else if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
+    if (event.endTime && (event.endTime.toMillis() + (event.endTimeBuffer ?? 0)) < Date.now()) {
         functions.logger.error(`User ${uid} has attempted sign-out after event named ${event.name} ended`);
         throw new functions.https.HttpsError("deadline-exceeded", "Event has already ended.");
+    }
+    else if (eventLog !== undefined && eventLog.signOutTime !== undefined) {
+        functions.logger.error(`User ${uid} attempted sign-out again`);
+        throw new functions.https.HttpsError("already-exists", "Sign out time already exists.");
     }
     else if (event.startTime && (event.startTime.toMillis() - (event.startTimeBuffer ?? 0) > Date.now())) {
         functions.logger.error(`User ${uid} has attempted sign-out before event named ${event.name} started`);
@@ -251,39 +242,7 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     }
 
     eventLog.signOutTime = Timestamp.fromMillis(Date.now());
-    let accumulatedPoints = 0;
-
-    switch (event.eventType) {
-        case "Study Hours":
-            if (eventLog.signInTime && eventLog.signInTime.toMillis() < eventLog.signOutTime.toMillis()) {
-                accumulatedPoints = (eventLog.signOutTime.toMillis() - eventLog.signInTime.toMillis()) / MillisecondTimes.HOUR * (event.pointsPerHour ?? 0);
-            }
-
-            // Ensures the points are capped to the amount of hours the event lasts.
-            // Only do this when endTime and startTime are truthy (They should be, but we have to take into the case where they're not)
-            if (event.endTime && event.startTime) {
-                const eventDurationHours = (event.endTime.toMillis() - event.startTime.toMillis()) / MillisecondTimes.HOUR;
-                accumulatedPoints = Math.min(eventDurationHours * (event.pointsPerHour ?? 0), accumulatedPoints);
-            }
-
-            eventLog.points = (eventLog.points ?? 0) + (event.signOutPoints ?? 0) + accumulatedPoints;
-            break;
-        case "Volunteer Event":
-            if (eventLog.signInTime && eventLog.signInTime.toMillis() < eventLog.signOutTime.toMillis()) {
-                accumulatedPoints = Math.floor((eventLog.signOutTime.toMillis() - eventLog.signInTime.toMillis()) / MillisecondTimes.HOUR) * (event.pointsPerHour ?? 0);
-            }
-            eventLog.points = (eventLog.points ?? 0) + (event.signOutPoints ?? 0) + accumulatedPoints;
-            break;
-        case undefined:
-            functions.logger.error("Event type is undefined. This means that an issue has occurred during event creation/updating.");
-            throw new functions.https.HttpsError("internal", "Event type is undefined. This means that an issue has occurred during event creation/updating.");
-        case null:
-            functions.logger.error("Event type is undefined. This means that an issue has occurred during event creation/updating.");
-            throw new functions.https.HttpsError("internal", "Event type is null. This means that an issue has occurred during event creation/updating.");
-        default:
-            eventLog.points = (eventLog.points ?? 0) + (event.signOutPoints ?? 0);
-            break;
-    }
+    eventLog.points = calculateEventLogPoints(event, eventLog);
 
     // Sets log in both event and user collection and ensures both happen by the end of the function. 
     await eventLogDocRef.set(eventLog, { merge: true });
