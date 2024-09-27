@@ -293,7 +293,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 <View className={`flex-row ${signOutPoints === undefined ? 'w-full' : 'w-[50%]'}`}>
                                     <Octicons name="sign-in" size={24} color={darkMode ? 'white' : 'black'} />
                                     <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {attendanceCounts.signedInCount} Member
+                                        {attendanceCounts.signedInCount} Members
                                     </Text>
                                 </View>
                             )}
@@ -302,7 +302,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 <View className={`flex-row ${signInPoints === undefined ? 'w-full' : 'w-[50%]'}`}>
                                     <Octicons name="sign-out" size={24} color={darkMode ? 'white' : 'black'} />
                                     <Text className={`ml-2 text-xl ${darkMode ? 'text-white' : 'text-black'}`}>
-                                        {attendanceCounts.signedOutCount} Member
+                                        {attendanceCounts.signedOutCount} Members
                                     </Text>
                                 </View>
                             )}
