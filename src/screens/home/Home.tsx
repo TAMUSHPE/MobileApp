@@ -166,7 +166,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         }
 
         setSavedInterestLoading(false);
-        setInterestOptionsModal(false);
     }
 
     const InterestButtons = ({ interestEvent, label }: {
@@ -178,16 +177,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             <TouchableOpacity
                 onPress={() => handleInterestToggle(interestEvent)}
                 className={`justify-center items-center flex-row border py-2 px-3 mr-6 mb-4 rounded-md ${isSelected ? "border-primary-blue bg-primary-blue" : (darkMode ? "bg-secondary-bg-dark border-white" : "bg-secondary-bg-light border-black")}`}
-                style={{
-                    shadowColor: "#000",
-                    shadowOffset: {
-                        width: 0,
-                        height: 2,
-                    },
-                    shadowOpacity: 0.25,
-                    shadowRadius: 3.84,
-                    elevation: 5,
-                }}
             >
                 {isSelected ? (
                     <View className='mr-2'>
@@ -378,7 +367,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                                 className='px-4'
                                 onPress={() => setInterestOptionsModal(true)}
                             >
-                                <Octicons name="gear" size={24} color={darkMode ? "white" : "black"} />
+                                <Octicons name="bell" size={24} color={darkMode ? "white" : "black"} />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -507,26 +496,14 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 setVisible={setInterestOptionsModal}
             >
                 <View
-                    className={`flex opacity-100 rounded-md py-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    className={`flex opacity-100 rounded-md py-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                     style={{ maxWidth: "95%" }}
                 >
                     {/* Header */}
                     <View className='flex-row items-center justify-between'>
                         <View className='flex-row items-center ml-3'>
-                            {darkMode ? (
-                                <Image
-                                    resizeMode='cover'
-                                    className="h-14 w-14"
-                                    source={Images.SHPE_WHITE}
-                                />
-                            ) : (
-                                <Image
-                                    resizeMode='cover'
-                                    className="h-14 w-14"
-                                    source={Images.SHPE_NAVY}
-                                />
-                            )}
-                            <Text className={`text-3xl font-bold ml-3 ${darkMode ? "text-white" : "text-black"}`}>My Events</Text>
+                            <Octicons name="bell" size={24} color={darkMode ? "white" : "black"} />
+                            <Text className={`text-3xl font-bold ml-3 ${darkMode ? "text-white" : "text-black"}`}>Notifications</Text>
                         </View>
                         <View>
                             <TouchableOpacity
@@ -539,13 +516,11 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                             </TouchableOpacity>
                         </View>
                     </View>
-                    <Text className={`mx-4 text-lg ${darkMode ? "text-white" : "text-black"}`}>You will receive notifications for events related
-                        to your interests and committees</Text>
 
                     {/* Interest */}
                     <View className='mt-8 mx-4'>
                         <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Interest</Text>
-                        <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Select the type of events you are interested in</Text>
+                        <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Select the type of events you want notification for</Text>
 
                         {/* If any additional interest are added in the future, then update manually in profile setup */}
                         <View className='flex-row flex-wrap mt-6'>
@@ -575,8 +550,8 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
                     {/* Committees */}
                     <View className='mt-8 mx-4'>
-                        <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Your Committees</Text>
-                        <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>Visit committees tab to join or leave a committee</Text>
+                        <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Committees</Text>
+                        <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>You will be notified of your committee's event. Visit committees tab to join or leave a committee</Text>
 
                         {userCommittees && userCommittees.length > 0 && (
                             <View className='mt-2'>
