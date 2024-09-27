@@ -21,10 +21,10 @@ const resetOffice = async () => {
     }
 };
 
-
-export const resetOfficeScheduler = functions.pubsub.schedule('0 21 * * *').onRun(async (context) => {
-    resetOffice()
+export const resetOfficeScheduler = functions.pubsub.schedule('0 2 * * *').onRun(async (context) => {
+    resetOffice();
 });
+
 
 export const resetOfficeOnCall = functions.https.onCall(async (data, context) => {
     resetOffice()
