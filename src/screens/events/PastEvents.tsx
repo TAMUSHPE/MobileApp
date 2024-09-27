@@ -37,6 +37,7 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
 
     const fetchInitialEvents = async () => {
         setPastEvents([]);
+        setEndOfData(false);
         setLoading(true);
         const { events, lastVisibleDoc } = await getPastEvents(8, null, setEndOfData);
         setPastEvents(events);
