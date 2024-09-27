@@ -133,7 +133,6 @@ const PointsLeaderboard = ({ navigation }: NativeStackScreenProps<ResourcesStack
             <ScrollView
                 onScroll={handleScroll}
                 ref={scrollViewRef}
-                scrollEventThrottle={400}
             >
                 <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"} ${fetchedUsers.length === 0 && "h-screen"}`}>
                     {!initLoading && (

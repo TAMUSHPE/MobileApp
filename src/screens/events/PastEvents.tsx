@@ -73,7 +73,6 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 onScroll={handleScroll}
-                scrollEventThrottle={400}
             >
                 <View className='flex-row items-center'>
                     <View className='absolute w-full justify-center items-center'>
