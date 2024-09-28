@@ -23,7 +23,7 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
     const [lastZoom, setLastZoom] = useState(0);
     
     const maxZoomFactor = 5;
-    const maxExpoZoom = 0.10;
+    const maxExpoZoom = (Platform.OS === 'ios' ? 0.1 : 1);
 
     const pulseAnim = useRef(new Animated.Value(1)).current;
     const boxTop = useRef(new Animated.Value((screenHeight / 2) - 240)).current;
@@ -116,13 +116,13 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
 
     const onPinch = useCallback(
         (event: { velocity: number; scale: number; }) => {
-          const velocity = event.velocity / 20;
-          const outFactor = lastZoom * (Platform.OS === 'ios' ? 40 : 15);
+          const velocity = event.velocity / (Platform.OS === 'ios' ? 40 : 4);
+          const outFactor = lastZoom * (Platform.OS === 'ios' ? 50 : 20);
     
           let newZoom =
             velocity > 0
               ? zoom + event.scale * velocity * (Platform.OS === 'ios' ? 0.01 : 25)
-              : zoom - (event.scale * (outFactor || 1)) * Math.abs(velocity) * (Platform.OS === 'ios' ? 0.02 : 50);
+              : zoom - (event.scale * (outFactor || 1)) * Math.abs(velocity) * (Platform.OS === 'ios' ? 0.03 : 50);
     
           if (newZoom < 0) newZoom = 0;
           else if (newZoom > maxExpoZoom) newZoom = maxExpoZoom;
