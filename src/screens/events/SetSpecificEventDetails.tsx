@@ -6,7 +6,7 @@ import { useRoute } from '@react-navigation/core';
 import { UserContext } from '../../context/UserContext';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import InteractButton from '../../components/InteractButton';
-import { WorkshopType } from '../../types/events';
+import { EventType, WorkshopType } from '../../types/events';
 import { Committee, reverseFormattedFirebaseName } from '../../types/committees';
 import { getCommittees } from '../../api/firebaseUtils';
 import CustomDropDownMenu, { CustomDropDownMethods } from '../../components/CustomDropDown';
@@ -36,8 +36,8 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const [committee, setCommittee] = useState<string>();
     const [workshopType, setWorkshopType] = useState<WorkshopType | undefined>(event.workshopType ?? undefined);
     const [signInPoints, setSignInPoints] = useState<number | undefined>(event.signInPoints ?? undefined);
-    const [signOutPoints, setSignOutPoints] = useState<number | undefined>(event.signOutPoints ?? undefined);
-    const [pointsPerHour, setPointsPerHour] = useState<number | undefined>(event.pointsPerHour ?? undefined);
+    const [signOutPoints, setSignOutPoints] = useState<number | undefined | null>(event.signOutPoints);
+    const [pointsPerHour, setPointsPerHour] = useState<number | undefined | null>(event.pointsPerHour);
     const [nationalConventionEligible, setNationalConventionEligible] = useState<boolean | undefined>(event.nationalConventionEligible ?? undefined);
     const [notificationSent, setNotificationSent] = useState<boolean | undefined>(event.notificationSent ?? undefined);
     const [startTimeBuffer, setStartTimeBuffer] = useState<number | undefined>(event.startTimeBuffer ?? 20 * MillisecondTimes.MINUTE);
@@ -88,7 +88,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                             <Text className={`text-2xl font-semibold mb-4 ${darkMode ? "text-white" : "text-black"}`}>Points Selection</Text>
 
                             <View className='space-y-4'>
-                                {event.signInPoints !== undefined && (
+                                {signInPoints != null && (
                                     <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                         style={{
                                             shadowColor: "#000",
@@ -109,11 +109,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                                     key={point}
                                                     className={`w-10 h-10 rounded-xl items-center border justify-center ${signInPoints === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
                                                     onPress={() => {
-                                                        if (signInPoints === point) {
-                                                            setSignInPoints(undefined);
-                                                        } else {
-                                                            setSignInPoints(point);
-                                                        }
+                                                        setSignInPoints(point);
                                                     }}
                                                 >
                                                     <Text className={`text-xl font-semibold ${signInPoints === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
@@ -123,7 +119,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                     </View>
                                 )}
 
-                                {event.signOutPoints !== undefined && (
+                                {signOutPoints != null && (
                                     <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                         style={{
                                             shadowColor: "#000",
@@ -144,11 +140,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                                     key={point}
                                                     className={`w-10 h-10 rounded-xl items-center border justify-center ${signOutPoints === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
                                                     onPress={() => {
-                                                        if (signOutPoints === point) {
-                                                            setSignOutPoints(undefined);
-                                                        } else {
-                                                            setSignOutPoints(point);
-                                                        }
+                                                        setSignOutPoints(point);
                                                     }}
                                                 >
                                                     <Text className={`text-xl font-semibold ${signOutPoints === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
@@ -158,7 +150,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                     </View>
                                 )}
 
-                                {event.pointsPerHour !== undefined && (
+                                {pointsPerHour != null && (
                                     <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                         style={{
                                             shadowColor: "#000",
@@ -179,11 +171,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                                     key={point}
                                                     className={`w-10 h-10 rounded-xl items-center border justify-center ${pointsPerHour === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
                                                     onPress={() => {
-                                                        if (pointsPerHour === point) {
-                                                            setPointsPerHour(undefined);
-                                                        } else {
-                                                            setPointsPerHour(point);
-                                                        }
+                                                        setPointsPerHour(point);
                                                     }}
                                                 >
                                                     <Text className={`text-xl font-semibold ${pointsPerHour === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
@@ -192,6 +180,31 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         </View>
                                     </View>
                                 )}
+
+
+                                {(event.eventType == EventType.VOLUNTEER_EVENT || event.eventType === EventType.CUSTOM_EVENT) && (
+                                    <View className='items-center justify-center'>
+                                        <TouchableOpacity
+                                            className='bg-primary-blue px-2 py-1 rounded-md'
+                                            onPress={() => {
+                                                if (pointsPerHour != null) {
+                                                    setPointsPerHour(null);
+                                                    setSignOutPoints(null);
+                                                } else {
+                                                    setPointsPerHour(0);
+                                                    setSignOutPoints(0);
+                                                }
+                                            }}
+                                        >
+                                            <Text className='text-white text-lg font-medium text-center'>
+                                                {pointsPerHour != null ? 'Remove Additional Points Options' : 'Add More Points Options'}
+                                            </Text>
+
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+
+
                             </View>
                         </View>
                         {/* Event Scope (Club-Wide, Associated Committees, Notifications)*/}
@@ -347,7 +360,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                     </View>
                 </SafeAreaView>
 
-                {openDropdown && (
+                {(openDropdown || pointsPerHour != undefined) && (
                     <View className='pb-16' />
                 )}
             </KeyboardAwareScrollView>
