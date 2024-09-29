@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, Image, useColorScheme } from 'react-native'
 import React, { useContext } from 'react'
-import { FontAwesome6 } from '@expo/vector-icons';
+import { Octicons, FontAwesome6 } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext'
 import { Images } from '../../../assets'
 import { formatDate } from '../../helpers/timeUtils'
@@ -33,6 +33,12 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
             }}
             onPress={() => { navigation.navigate("EventInfo", { event: event }) }}
         >
+            {event.hiddenEvent && (
+                <View className={`absolute m-1 p-1 rounded-full ${darkMode ? "bg-black/50" : "bg-white/50"}`}>
+                    <Octicons name="eye-closed" size={20} color={darkMode ? "white" : "black"} />
+                </View>
+            )}
+
             <Image
                 className="flex h-full w-[25%] rounded-md"
                 resizeMode='cover'
