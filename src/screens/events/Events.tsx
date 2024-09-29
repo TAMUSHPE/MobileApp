@@ -256,6 +256,11 @@ const Events = ({ navigation }: EventsProps) => {
                                                     navigation.navigate("EventInfo", { event: event });
                                                 }}
                                             >
+                                                {event.hiddenEvent && (
+                                                    <View className={`absolute m-1 p-1 rounded-full ${darkMode ? "bg-black/50" : "bg-white/50"}`}>
+                                                        <Octicons name="eye-closed" size={20} color={darkMode ? "white" : "black"} />
+                                                    </View>
+                                                )}
                                                 <Image
                                                     className="flex h-full w-full rounded-2xl"
                                                     resizeMode="cover"
