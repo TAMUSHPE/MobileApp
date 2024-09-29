@@ -1,5 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity, TextInput, ActivityIndicator, useColorScheme } from 'react-native'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState, useMemo } from 'react';
+import { View, Text, TouchableOpacity, TextInput, ActivityIndicator, useColorScheme, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -10,8 +10,7 @@ import MemberCardMultipleSelect from '../../components/MemberCardMultipleSelect'
 import { SHPEEvent } from '../../types/events';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { UserContext } from '../../context/UserContext';
-
-
+import debounce from 'lodash/debounce';
 /**
  * InstagramPoints screen for admin to add points to members who participated in the Instagram Points event.
  * This relies on the fact that an admin but create an event called "Instagram Points" along with 1 point for signing in.
@@ -27,10 +26,11 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const [members, setMembers] = useState<SelectedPublicUserInfo[]>([])
-    const [event, setEvent] = useState<SHPEEvent | null>(null)
-    const [search, setSearch] = useState<string>("")
-    const [loading, setLoading] = useState<boolean>(true)
+    const [members, setMembers] = useState<SelectedPublicUserInfo[]>([]);
+    const [filteredMembers, setFilteredMembers] = useState<PublicUserInfo[]>([]);
+    const [instagramEvent, setInstagramEvent] = useState<SHPEEvent | null>(null);
+    const [search, setSearch] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(true);
 
     const insets = useSafeAreaInsets();
 
@@ -53,20 +53,32 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
 
         const initializeData = async () => {
             const event = await fetchEventByName('Instagram Points');
-            setEvent(event);
-            await fetchMembers();
+            setInstagramEvent(event);
         };
 
-
-        fetchMembers();
         initializeData();
+        fetchMembers();
     }, []);
 
-
-    const filteredMembers = members.filter(member =>
-        member.name?.toLowerCase().includes(search.toLowerCase()) ||
-        member.displayName?.toLowerCase().includes(search.toLowerCase())
+    const debouncedSearch = useMemo(
+        () => debounce((query: string) => {
+            if (query.length >= 2) {
+                const filtered = members.filter(member =>
+                    member.name?.toLowerCase().includes(query.toLowerCase()) ||
+                    member.displayName?.toLowerCase().includes(query.toLowerCase())
+                );
+                setFilteredMembers(filtered);
+            } else {
+                setFilteredMembers([]);
+            }
+        }, 300),
+        [members]
     );
+
+
+    useEffect(() => {
+        debouncedSearch(search);
+    }, [search, debouncedSearch]);
 
     const handleCardSelect = (uid: string) => {
         setMembers(prevMembers =>
@@ -77,8 +89,8 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
     };
 
     const handleSubmit = async () => {
-        if (!event) {
-            alert('Talk to an admin to create a fake event called "Instagram Points"');
+        if (!instagramEvent) {
+            alert('Create a hidden Event called "Instagram Points"');
             return;
         }
 
@@ -94,7 +106,6 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
             const functions = getFunctions();
             const addInstagramPoints = httpsCallable(functions, 'addInstagramPoints');
 
-            // Reset selected members to unselected
             setMembers(prevMembers => prevMembers.map(member => ({
                 ...member,
                 selected: false
@@ -105,20 +116,20 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
             const promises = selectedMembers.map(member => {
                 return addInstagramPoints({
                     uid: member.uid,
-                    eventID: event.id
+                    eventID: instagramEvent?.id
                 });
             });
 
             await Promise.all(promises);
 
             const memberNames = selectedMembers.map(member => member.name).join(', ');
-            alert(`We added ${event.signInPoints} points to the following members: ${memberNames}`);
+            alert(`We added ${instagramEvent?.signInPoints} points to the following members: ${memberNames}`);
         } catch (error) {
             console.error('Error updating points:', error);
         } finally {
             setLoading(false);
         }
-    }
+    };
 
     const selectedCount = members.filter(member => member.selected).length;
 
@@ -133,19 +144,18 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
                     <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                 </TouchableOpacity>
             </View>
-            <ScrollView className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
-                {/* Search Bar */}
+
+            {loading && <ActivityIndicator size="small" className='mt-4' />}
+
+            {/* Search Bar */}
+            {!loading && (
                 <View className='px-4 mt-6'>
                     <View className='flex-row mb-4'>
-                        <TouchableOpacity
-                            activeOpacity={1}
-                            className={`rounded-xl px-4 py-2 flex-row flex-1 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                        <View
+                            className={`rounded-xl px-4 py-2 flex-row flex-1 items-center ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                             style={{
                                 shadowColor: "#000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
+                                shadowOffset: { width: 0, height: 2 },
                                 shadowOpacity: 0.25,
                                 shadowRadius: 3.84,
                                 elevation: 5,
@@ -163,38 +173,55 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
                                 placeholderTextColor={"grey"}
                                 className='flex-1 text-lg justify-center'
                             />
-                        </TouchableOpacity>
+                            {search.length > 0 && (
+                                <TouchableOpacity onPress={() => setSearch('')}>
+                                    <Octicons name="x" size={24} color={darkMode ? "white" : "black"} style={{ marginLeft: 8 }} />
+                                </TouchableOpacity>
+                            )}
+                        </View>
                     </View>
                 </View>
+            )}
 
-                <View className='px-4'>
-                    {loading && <ActivityIndicator size="small" />}
-                    {/* Members List */}
-                    {!loading && filteredMembers?.map((userData, index) => {
-                        if (!userData.name) {
-                            return null;
-                        }
-                        return (
+
+            <View className='px-4'>
+                {/* Members List */}
+                {!loading && (
+                    <FlatList
+                        data={search.length >= 2 ? filteredMembers : members.filter(member => member.selected)}
+                        keyExtractor={(item) => item.uid!}
+                        renderItem={({ item }) => (
                             <MemberCardMultipleSelect
-                                key={index}
-                                userData={userData}
+                                userData={item}
                                 handleCardPress={(uid) => handleCardSelect(uid!)}
                             />
-                        );
-                    })}
+                        )}
+                        ListEmptyComponent={
+                            <View className='w-full'>
+                                {search.length < 2 && members.filter(member => member.selected).length === 0 ? (
+                                    <Text className={`text-center text-lg ${darkMode ? "text-white" : "text-black"}`}>
+                                        Begin Search
+                                    </Text>
+                                ) : (
+                                    <Text className={`text-center text-lg ${darkMode ? "text-white" : "text-black"}`}>
+                                        {search.length >= 2 ? "No matching members found." : "No members selected."}
+                                    </Text>
+                                )}
+                            </View>
+                        }
+                    />
+                )}
+            </View>
 
-                </View>
+            <View className='pb-24' />
 
-                <View className='pb-24' />
-            </ScrollView>
-
-            <View className='absolute bottom-5 w-full'>
+            <View className='absolute bottom-5 right-5'>
                 <TouchableOpacity
-                    className='absolute bottom-5 py-4 w-[90%] self-center bg-primary-blue rounded-lg shadow-lg justify-center items-center'
+                    className='py-4 px-8 bg-primary-blue rounded-lg shadow-lg justify-center items-center'
                     onPress={handleSubmit}
                 >
                     <Text className='text-white text-xl font-bold'>
-                        Adding {(event?.signInPoints)} Point to {selectedCount} selected members
+                        Done
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -206,4 +233,4 @@ interface SelectedPublicUserInfo extends PublicUserInfo {
     selected?: boolean;
 }
 
-export default InstagramPoints
+export default InstagramPoints;
