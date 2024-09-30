@@ -201,7 +201,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
             )}
 
 
-            <View className='px-4'>
+            <View>
                 {/* Members List */}
                 {!loading && (
                     <FlatList
@@ -213,6 +213,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
                                 handleCardPress={(uid) => handleCardSelect(uid!)}
                             />
                         )}
+                        contentContainerStyle={{ paddingBottom: 120 }}
                         ListEmptyComponent={
                             <View className='w-full'>
                                 {search.length < 2 && members.filter(member => member.selected).length === 0 ? (
@@ -229,8 +230,6 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
                     />
                 )}
             </View>
-
-            <View className='pb-24' />
 
             <View className='absolute bottom-5 right-5'>
                 <TouchableOpacity
