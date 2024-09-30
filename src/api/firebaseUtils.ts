@@ -890,6 +890,28 @@ export const deleteEventLog = async (eventID: string, uid: string): Promise<stri
         });
 };
 
+export const getInstagramPointsLog = async (uid: string): Promise<SHPEEventLog | null> => {
+    try {
+        const instagramEvent = await fetchEventByName("Instagram Points");
+        if (!instagramEvent) {
+            console.error("Instagram Points event not found.");
+            return null;
+        }
+
+        const eventId = instagramEvent.id;
+
+        const userLogDocRef = doc(db, `users/${uid}/event-logs/${eventId}`);
+        const userLogDoc = await getDoc(userLogDocRef);
+
+        if (userLogDoc.exists()) {
+            return userLogDoc.data() as SHPEEventLog;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        return null;
+    }
+};
 
 
 // ============================================================================
