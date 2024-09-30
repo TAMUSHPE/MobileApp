@@ -1,4 +1,4 @@
-import { Platform} from 'react-native';
+import { Platform } from 'react-native';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
@@ -10,9 +10,9 @@ import { arrayRemove, doc, setDoc } from 'firebase/firestore';
 // when it is received while the app is in the foreground.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-      shouldShowAlert: false,
-      shouldPlaySound: false,
-      shouldSetBadge: false,
+    shouldShowAlert: false,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
   }),
 });
 
@@ -24,7 +24,7 @@ Notifications.setNotificationHandler({
 const persistToken = async () => {
   try {
     const token = await Notifications.getExpoPushTokenAsync({
-        projectId: Constants.expoConfig?.extra?.eas?.projectId
+      projectId: Constants.expoConfig?.extra?.eas?.projectId
 
     });
     appendExpoPushToken(JSON.stringify(token));
@@ -38,7 +38,7 @@ const persistToken = async () => {
  * Manages notification permissions. This function checks existing permissions,
  * requests permissions if needed, and sets up notification channels for Android.
  */
-const manageNotificationPermissions  = async () => {
+const manageNotificationPermissions = async () => {
   try {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -46,11 +46,6 @@ const manageNotificationPermissions  = async () => {
     if (existingStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
-    }
-
-    if (finalStatus !== 'granted') {
-      alert('Failed to get push token for push notification!');
-      return;
     }
 
     if (Platform.OS === 'android') {
@@ -70,17 +65,17 @@ const manageNotificationPermissions  = async () => {
 
 export const removeExpoPushToken = async () => {
   try {
-      const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
-      if (expoPushToken) {
-          const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
-          await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true });
-      }
+    const expoPushToken = await AsyncStorage.getItem('@expoPushToken');
+    if (expoPushToken) {
+      const userDoc = doc(db, `users/${auth.currentUser?.uid}/private`, "privateInfo");
+      await setDoc(userDoc, { expoPushTokens: arrayRemove(expoPushToken) }, { merge: true });
+    }
   } catch (error) {
-      console.error("Error removing token from Firestore: ", error);
+    console.error("Error removing token from Firestore: ", error);
   } finally {
-      await AsyncStorage.removeItem('@expoPushToken').catch((err) => console.error("Issue removing expo push token locally: ", err));
+    await AsyncStorage.removeItem('@expoPushToken').catch((err) => console.error("Issue removing expo push token locally: ", err));
   }
 }
 
 
-export default manageNotificationPermissions ;
+export default manageNotificationPermissions;

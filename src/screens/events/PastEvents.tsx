@@ -37,6 +37,7 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
 
     const fetchInitialEvents = async () => {
         setPastEvents([]);
+        setEndOfData(false);
         setLoading(true);
         const { events, lastVisibleDoc } = await getPastEvents(8, null, setEndOfData);
         setPastEvents(events);
@@ -73,7 +74,6 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 onScroll={handleScroll}
-                scrollEventThrottle={400}
             >
                 <View className='flex-row items-center'>
                     <View className='absolute w-full justify-center items-center'>
