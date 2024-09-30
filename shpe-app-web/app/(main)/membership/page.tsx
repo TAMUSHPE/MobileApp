@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getMembers, getMembersToVerify } from '@/api/firebaseUtils';
-import { FaSync } from "react-icons/fa";
+import { FaSync, FaRegCheckCircle, FaRegCircle } from "react-icons/fa";
 import { SHPEEventLog } from '@/types/events';
 import { User } from '@/types/user';
 import { isMemberVerified, RequestWithDoc } from '@/types/membership';
@@ -139,7 +139,7 @@ const Membership = () => {
     // Create a new workbook and add a worksheet
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Members');
-  
+
     // Define columns
     worksheet.columns = [
       { header: 'Name', key: 'name', width: 20 },
@@ -147,9 +147,9 @@ const Membership = () => {
       { header: 'Major', key: 'major', width: 20 },
       { header: 'Class Year', key: 'classYear', width: 15 },
       { header: 'Role', key: 'role', width: 15 },
-     
+
     ];
-  
+
     // Populate the worksheet with data from members
     members.forEach((member) => {
       worksheet.addRow({
@@ -158,17 +158,17 @@ const Membership = () => {
         major: member.publicInfo?.major || '',
         classYear: member.publicInfo?.classYear || '',
         role: getRole(member) || '',
-        
+
       });
     });
-  
+
     // Write the workbook to a buffer
     const buffer = await workbook.xlsx.writeBuffer();
-  
+
     // Save the buffer as an Excel file
     saveAs(new Blob([buffer]), `Members_${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
-  
+
 
   const getRole = (user: User) => {
     if (user.publicInfo?.roles?.admin) {
@@ -237,7 +237,7 @@ const Membership = () => {
         <div className="text-white text-center text-2xl flex mb-4">
           <button
             onClick={() => setTab('members')}
-            className={`w-1/3 py-2 transition duration-200 mx-2 rounded-lg ${tab === 'members'
+            className={`${tab == 'members' ? 'w-1/4' : 'w-1/3'} py-2 transition duration-200 mx-2 rounded-lg ${tab === 'members'
               ? 'bg-white text-[#500000] font-bold border-2 border-[#500000]'
               : 'bg-[#500000] hover:bg-[#700000] text-white'
               }`}
@@ -246,7 +246,7 @@ const Membership = () => {
           </button>
           <button
             onClick={() => setTab('requests')}
-            className={`w-1/3 py-2 transition duration-200 mx-2 rounded-lg ${tab === 'requests'
+            className={`${tab == 'members' ? 'w-1/4' : 'w-1/3'} py-2 transition duration-200 mx-2 rounded-lg ${tab === 'requests'
               ? 'bg-white text-[#500000] font-bold border-2 border-[#500000]'
               : 'bg-[#500000] hover:bg-[#700000] text-white'
               }`}
@@ -255,34 +255,44 @@ const Membership = () => {
           </button>
           <button
             onClick={() => setTab('users')}
-            className={`w-1/3 py-2 transition duration-200 mx-2 rounded-lg ${tab === 'users'
+            className={`${tab == 'members' ? 'w-1/4' : 'w-1/3'} py-2 transition duration-200 mx-2 rounded-lg ${tab === 'users'
               ? 'bg-white text-[#500000] font-bold border-2 border-[#500000]'
               : 'bg-[#500000] hover:bg-[#700000] text-white'
               }`}
           >
             All Users
           </button>
+          {tab == 'members' && (
+            <button
+              onClick={() => exportMembersToExcel(members)}
+              className={`w-1/4 py-2 mb-1 transition duration-200  rounded-lg ${'bg-white text-[#500000] font-bold border-2 border-[#500000]'
+
+                }`}
+            >
+              Export to Excel
+            </button>
+          )}
         </div>
         {/* Display the offical members  */}
 
         {tab == 'members' && (
-          <table className="text-center">
-            <tr className="bg-gray-700">
-              <th className=" px-4 py-2">Name</th>
-              <th className=" px-4 py-2">Major</th>
-              <th className=" px-4 py-2">Class Year</th>
-              <th className=" px-4 py-2">Role</th>
-              <th className=" px-4 py-2">Email</th>
+          <table className="text-center ">
+            <tr className=" text-black ">
+              <th className="bg-[#bbbbbb] rounded-tl-lg px-4 py-2">Name</th>
+              <th className=" bg-[#bbbbbb] px-4 py-2">Major</th>
+              <th className=" bg-[#bbbbbb] px-4 py-2 ">Class Year</th>
+              <th className=" bg-[#bbbbbb] px-4 py-2">Role</th>
+              <th className="bg-[#bbbbbb]  rounded-tr-lg px-4 py-2">Email</th>
             </tr>
             {members &&
               members.map((member) => {
                 return (
-                  <tr key={member.publicInfo?.uid} className="bg-gray-300">
-                    <td className="bg-gray-600 px-4 py-2 "> {member.publicInfo?.displayName} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.major} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.classYear} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {getRole(member)} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.private?.privateInfo?.email} </td>
+                  <tr key={member.publicInfo?.uid} className="bg-gray-300 text-[#808080] transition  shadow-2xl hover:shadow-inner-strong ">
+                    <td className="bg-[#F1F1F1] px-4 py-2 "> {member.publicInfo?.displayName} </td>
+                    <td className="bg-[#F1F1F1] px-4 py-2 "> {member.publicInfo?.major} </td>
+                    <td className="bg-[#F1F1F1] px-4 py-2 "> {member.publicInfo?.classYear} </td>
+                    <td className="bg-[#F1F1F1] px-4 py-2 "> {getRole(member)} </td>
+                    <td className="bg-[#F1F1F1] px-4 py-2 "> {member.private?.privateInfo?.email} </td>
                   </tr>
                 );
               })}
@@ -292,14 +302,11 @@ const Membership = () => {
         {/* flex flex-col items-center w-full content-center */}
         {tab == 'requests' && (
           <table className=" text-center">
-            <tr className="bg-gray-700">
-              <th className=" px-4 py-2">Name</th>
-              <th className=" px-4 py-2" colSpan={2}>
-                Links
-              </th>
-              <th className=" px-4 py-2" colSpan={2}>
-                Action
-              </th>
+            <tr className="text-black">
+              <th className=" bg-[#bbbbbb] rounded-tl-lg px-4 py-2">Name</th>
+              <th className="bg-[#bbbbbb] px-4 py-2" colSpan={2}>Links</th>
+              <th className='bg-[#bbbbbb] px-4 py-2'> Shirt-size</th>
+              <th className="bg-[#bbbbbb] rounded-tr-lg px-4 py-2" colSpan={2}>Action</th>
             </tr>
             {!loading &&
               requestsWithDocuments.length > 0 &&
@@ -320,22 +327,22 @@ const Membership = () => {
         )}
         {tab == 'users' && (
           <table className="text-center">
-            <tr className="bg-gray-700">
-              <th className=" px-4 py-2">Name</th>
-              <th className=" px-4 py-2">Major</th>
-              <th className=" px-4 py-2">Class Year</th>
-              <th className=" px-4 py-2">Role</th>
-              <th className=" px-4 py-2">Email</th>
+            <tr className="text-black ">
+              <th className=" bg-[#bbbbbb] rounded-tl-lg px-4 py-2">Name</th>
+              <th className=" bg-[#bbbbbb] px-4 py-2">Major</th>
+              <th className=" bg-[#bbbbbb] px-4 py-2">Class Year</th>
+              <th className=" bg-[#bbbbbb] px-4 py-2">Role</th>
+              <th className=" bg-[#bbbbbb]  rounded-tr-lg px-4 py-2">Email</th>
             </tr>
             {students &&
               students.map((member) => {
                 return (
-                  <tr key={member.publicInfo?.uid} className="bg-gray-300">
-                    <td className="bg-gray-500 px-4 py-2 "> {member.publicInfo?.displayName} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.major} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.classYear} </td>
-                    <td className="bg-blue-300 px-4 py-2 "> {getRole(member)} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.private?.privateInfo?.email} </td>
+                  <tr key={member.publicInfo?.uid} className="bg-gray-300 text-[#808080] transition  shadow-2xl hover:shadow-inner-strong">
+                    <td className="bg-[#F1F1F1] px-4 py-2 "> {member.publicInfo?.displayName} </td>
+                    <td className="bg-[#F1F1F1] px-4 py-2 "> {member.publicInfo?.major} </td>
+                    <td className="bg-[#F1F1F1] px-4 py-2 "> {member.publicInfo?.classYear} </td>
+                    <td className="bg-[#F1F1F1] px-4 py-2 "> {getRole(member)} </td>
+                    <td className="bg-[#F1F1F1] px-4 py-2 "> {member.private?.privateInfo?.email} </td>
                   </tr>
                 );
               })}
