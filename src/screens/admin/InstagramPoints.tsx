@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, TextInput, ActivityIndicator, useColorScheme, FlatList } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackParams } from '../../types/navigation';
 import { fetchEventByName, getUsers } from '../../api/firebaseUtils';
@@ -34,16 +35,27 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
 
     const insets = useSafeAreaInsets();
 
+    const cacheKey = 'selectedInstagramMembers';
+
     useEffect(() => {
         const fetchMembers = async () => {
             setLoading(true);
             try {
-                const fetchedMembers: PublicUserInfo[] = await getUsers();
-                const extendedMembers = fetchedMembers.map(member => ({
-                    ...member,
-                    selected: false,
-                }));
-                setMembers(extendedMembers);
+                const cachedMembers = await AsyncStorage.getItem(cacheKey);
+                let fetchedMembers: PublicUserInfo[] = await getUsers();
+                if (cachedMembers) {
+                    const parsedMembers = JSON.parse(cachedMembers);
+                    fetchedMembers = fetchedMembers.map(member => ({
+                        ...member,
+                        selected: !!parsedMembers.find((cached: SelectedPublicUserInfo) => cached.uid === member.uid && cached.selected),
+                    }));
+                } else {
+                    fetchedMembers = fetchedMembers.map(member => ({
+                        ...member,
+                        selected: false,
+                    }));
+                }
+                setMembers(fetchedMembers);
             } catch (error) {
                 console.error('Error fetching members:', error);
             } finally {
@@ -80,12 +92,15 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
         debouncedSearch(search);
     }, [search, debouncedSearch]);
 
-    const handleCardSelect = (uid: string) => {
-        setMembers(prevMembers =>
-            prevMembers.map(member =>
-                member.uid === uid ? { ...member, selected: !member.selected } : member
-            )
+    const handleCardSelect = async (uid: string) => {
+        const updatedMembers = members.map(member =>
+            member.uid === uid ? { ...member, selected: !member.selected } : member
         );
+        setMembers(updatedMembers);
+
+        // Cache selected members
+        const selectedMembers = updatedMembers.filter(member => member.selected);
+        await AsyncStorage.setItem(cacheKey, JSON.stringify(selectedMembers));
     };
 
     const handleSubmit = async () => {
@@ -129,6 +144,8 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
         } finally {
             setLoading(false);
         }
+
+        await AsyncStorage.removeItem(cacheKey);
     };
 
     const selectedCount = members.filter(member => member.selected).length;

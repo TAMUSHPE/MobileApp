@@ -22,9 +22,9 @@ const MemberCardMultipleSelect: React.FC<MemberCardMultipleSelectProp> = ({ user
             onPress={() => handleCardPress && handleCardPress(uid!)}
             activeOpacity={0.6}
         >
-            <View className="flex-row">
-                <View className='flex-row items-center py-1 justify-center'>
-                    <View className={`w-7 h-7 mr-3 rounded-lg border-2 border-primary-blue ${selected && 'bg-primary-blue'}`} />
+            <View className="flex-row items-center">
+                <View className={`h-7 w-7 mr-4 border-2 rounded-full items-center justify-center ${selected ? "border-primary-blue" : darkMode ? "border-grey-light" : "border-grey-dark"}`}>
+                    <View className={`h-5 w-5 rounded-full ${selected && "bg-primary-blue"}`} />
                 </View>
 
                 <Image
