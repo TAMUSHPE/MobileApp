@@ -1,7 +1,7 @@
 import * as functions from 'firebase-functions';
 import { db } from './firebaseConfig';
 import { GeoPoint, Timestamp } from 'firebase-admin/firestore';
-import { SHPEEvent, SHPEEventLog } from './types/events'
+import { EventType, SHPEEvent, SHPEEventLog } from './types/events'
 import { MillisecondTimes } from './helpers/timeUtils';
 import { firestore } from 'firebase-admin';
 
@@ -69,7 +69,8 @@ const calculateEventLogPoints = (event: SHPEEvent, log: SHPEEventLog): number =>
 
     let hourlyPoints = 0;
     switch (event.eventType) {
-        case "Study Hours":
+        case EventType.CUSTOM_EVENT:
+        case EventType.STUDY_HOURS:
             if (log.signInTime && log.signOutTime && log.signInTime.toMillis() < log.signOutTime.toMillis()) {
                 hourlyPoints = (log.signOutTime.toMillis() - log.signInTime.toMillis()) / MillisecondTimes.HOUR * (event.pointsPerHour ?? 0);
             }
@@ -79,7 +80,7 @@ const calculateEventLogPoints = (event: SHPEEvent, log: SHPEEventLog): number =>
                 hourlyPoints = Math.min(eventDurationHours * (event.pointsPerHour ?? 0), hourlyPoints);
             }
             break;
-        case "Volunteer Event":
+        case EventType.VOLUNTEER_EVENT:
             if (log.signInTime && log.signOutTime && log.signInTime.toMillis() < log.signOutTime.toMillis()) {
                 hourlyPoints = Math.round((log.signOutTime.toMillis() - log.signInTime.toMillis()) / MillisecondTimes.HOUR) * (event.pointsPerHour ?? 0);
             }
