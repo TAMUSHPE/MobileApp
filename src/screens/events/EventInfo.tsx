@@ -275,10 +275,14 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 navigation.navigate("QRCode", { event: event })
                                 setShowOptionMenu(false)
                             }}
-                            className='absolute right-0 bottom-0 p-3 rounded-full m-4 items-center justify-center'
-                            style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+                            className='absolute right-0 bottom-0 m-4 items-center justify-center'
                         >
-                            <FontAwesome6 name="qrcode" size={24} color="white" />
+                            <View
+                                className="p-3 rounded-full"
+                                style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+                            >
+                                <FontAwesome6 name="qrcode" size={24} color="white" />
+                            </View>
                         </TouchableOpacity>
                     )}
                 </View>

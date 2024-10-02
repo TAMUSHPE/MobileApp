@@ -296,10 +296,14 @@ const Events = ({ navigation }: EventsProps) => {
                                                         onPress={() => {
                                                             navigation.navigate("QRCode", { event: event });
                                                         }}
-                                                        className="absolute right-0 top-0 p-2 m-2 rounded-full"
-                                                        style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+                                                        className="absolute right-0 top-0 m-2"
                                                     >
-                                                        <FontAwesome6 name="qrcode" size={24} color="white" />
+                                                        <View
+                                                            className='p-2 rounded-full'
+                                                            style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+                                                        >
+                                                            <FontAwesome6 name="qrcode" size={24} color="white" />
+                                                        </View>
                                                     </TouchableOpacity>
                                                 )}
                                             </TouchableOpacity>

@@ -58,10 +58,14 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
                 <View className='h-full  items-center justify-center mx-2'>
                     <TouchableOpacity
                         onPress={() => { navigation.navigate("QRCode", { event: event }) }}
-                        className='absolute right-0 p-2 rounded-full'
-                        style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+                        className='absolute right-0'
                     >
-                        <FontAwesome6 name="qrcode" size={24} color="white" />
+                        <View
+                            className='p-2 rounded-full'
+                            style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+                        >
+                            <FontAwesome6 name="qrcode" size={24} color="white" />
+                        </View>
                     </TouchableOpacity>
                 </View>
             )}
