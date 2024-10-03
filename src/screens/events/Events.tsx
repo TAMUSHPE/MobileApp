@@ -251,6 +251,11 @@ const Events = ({ navigation }: EventsProps) => {
                                                     navigation.navigate("EventInfo", { event: event });
                                                 }}
                                             >
+                                                {event.hiddenEvent && (
+                                                    <View className={`absolute m-1 p-1 rounded-full ${darkMode ? "bg-black/50" : "bg-white/50"}`}>
+                                                        <Octicons name="eye-closed" size={20} color={darkMode ? "white" : "black"} />
+                                                    </View>
+                                                )}
                                                 <Image
                                                     className="flex h-full w-full rounded-2xl"
                                                     resizeMode="cover"
@@ -286,10 +291,14 @@ const Events = ({ navigation }: EventsProps) => {
                                                         onPress={() => {
                                                             navigation.navigate("QRCode", { event: event });
                                                         }}
-                                                        className="absolute right-0 top-0 p-2 m-2 rounded-full"
-                                                        style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+                                                        className="absolute right-0 top-0 m-2"
                                                     >
-                                                        <FontAwesome6 name="qrcode" size={24} color="white" />
+                                                        <View
+                                                            className='p-2 rounded-full'
+                                                            style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+                                                        >
+                                                            <FontAwesome6 name="qrcode" size={24} color="white" />
+                                                        </View>
                                                     </TouchableOpacity>
                                                 )}
                                             </TouchableOpacity>

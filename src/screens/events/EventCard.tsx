@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity, Image, useColorScheme } from 'react-native'
 import React, { useContext } from 'react'
-import { FontAwesome6 } from '@expo/vector-icons';
+import { Octicons, FontAwesome6 } from '@expo/vector-icons';
 import { UserContext } from '../../context/UserContext'
 import { Images } from '../../../assets'
 import { formatDate } from '../../helpers/timeUtils'
@@ -33,6 +33,12 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
             }}
             onPress={() => { navigation.navigate("EventInfo", { event: event }) }}
         >
+            {event.hiddenEvent && (
+                <View className={`absolute m-1 p-1 rounded-full ${darkMode ? "bg-black/50" : "bg-white/50"}`}>
+                    <Octicons name="eye-closed" size={20} color={darkMode ? "white" : "black"} />
+                </View>
+            )}
+
             <Image
                 className="flex h-full w-[25%] rounded-md"
                 resizeMode='cover'
@@ -52,10 +58,14 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
                 <View className='h-full  items-center justify-center mx-2'>
                     <TouchableOpacity
                         onPress={() => { navigation.navigate("QRCode", { event: event }) }}
-                        className='absolute right-0 p-2 rounded-full'
-                        style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+                        className='absolute right-0'
                     >
-                        <FontAwesome6 name="qrcode" size={24} color="white" />
+                        <View
+                            className='p-2 rounded-full'
+                            style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+                        >
+                            <FontAwesome6 name="qrcode" size={24} color="white" />
+                        </View>
                     </TouchableOpacity>
                 </View>
             )}
