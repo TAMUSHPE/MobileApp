@@ -30,7 +30,6 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
     const boxLeft = useRef(new Animated.Value((screenWidth / 2) - 120)).current;
     const boxWidth = useRef(new Animated.Value(240)).current;
     const boxHeight = useRef(new Animated.Value(240)).current;
-    const lastScale = useRef(1);
 
 
     useEffect(() => {
@@ -44,24 +43,25 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
 
     useEffect(() => {
         const pulse = () => {
-            Animated.sequence([
-                Animated.timing(pulseAnim, {
-                    toValue: 1.1,
-                    duration: 800,
-                    easing: Easing.inOut(Easing.ease),
-                    useNativeDriver: false,
-                }),
-                Animated.timing(pulseAnim, {
-                    toValue: 1,
-                    duration: 800,
-                    easing: Easing.inOut(Easing.ease),
-                    useNativeDriver: false,
-                }),
-            ]).start(() => pulse());
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(pulseAnim, {
+                        toValue: 1.1,
+                        duration: 800,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: false,
+                    }),
+                    Animated.timing(pulseAnim, {
+                        toValue: 1,
+                        duration: 800,
+                        easing: Easing.inOut(Easing.ease),
+                        useNativeDriver: false,
+                    }),
+                ])
+            ).start();
         };
-
         pulse();
-    }, [pulseAnim]);
+    }, []);
 
     const handleBarCodeScanned = ({ bounds, type, data }: BarCodeScannedResult) => {
         if (validScanned) {
