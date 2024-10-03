@@ -19,8 +19,8 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
     const [hasCameraPermissions, setHasCameraPermissions] = useState<boolean | null>(null);
     const [boxColor, setBoxColor] = useState('#FFFFFF');
     const [validScanned, setValidScanned] = useState<boolean>(false);
-    const [zoom, setZoom] = useState(0);
-    const [lastZoom, setLastZoom] = useState(0);
+    const [zoom, setZoom] = useState<number>(0);
+    const [lastZoom, setLastZoom] = useState<number>(0);
     
     const maxZoomFactor = 5;
     const maxExpoZoom = (Platform.OS === 'ios' ? 0.1 : 1);
@@ -116,30 +116,36 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
 
     const onPinch = useCallback(
         (event: { velocity: number; scale: number; }) => {
-          const velocity = event.velocity / (Platform.OS === 'ios' ? 40 : 4);
-          const outFactor = lastZoom * (Platform.OS === 'ios' ? 50 : 20);
+            let newZoom = zoom;
+            if(Platform.OS === 'ios'){
+                const velocity = event.velocity / 40;
+                const outFactor = lastZoom * 50;
+            
+                newZoom = velocity > 0
+                    ? zoom + event.scale * velocity * 0.01
+                    : zoom - (event.scale * (outFactor || 1)) * Math.abs(velocity) * 0.03;
+            }
+            else {
+                newZoom = lastZoom + (event.scale - 1); // event.scale will be 1 on initial pinch on android devices
+            }
     
-          let newZoom =
-            velocity > 0
-              ? zoom + event.scale * velocity * (Platform.OS === 'ios' ? 0.01 : 25)
-              : zoom - (event.scale * (outFactor || 1)) * Math.abs(velocity) * (Platform.OS === 'ios' ? 0.03 : 50);
-    
-          if (newZoom < 0) newZoom = 0;
-          else if (newZoom > maxExpoZoom) newZoom = maxExpoZoom;
-    
-          setZoom(newZoom);
+            if (newZoom < 0) newZoom = 0;
+            else if (newZoom > maxExpoZoom) newZoom = maxExpoZoom;
+            
+            setZoom(newZoom);
         },
         [zoom, setZoom, lastZoom, setLastZoom]
-      );
+    );
+
     
-      const onPinchEnd = useCallback(
+    const onPinchEnd = useCallback(
         () => {
           setLastZoom(zoom);
-        },
+        }, 
         [zoom, setLastZoom]
-      );
+    );
     
-      const pinchGesture = useMemo(
+    const pinchGesture = useMemo(
         () => Gesture.Pinch().onUpdate(onPinch).onEnd(onPinchEnd),
         [onPinch, onPinchEnd]
     );
