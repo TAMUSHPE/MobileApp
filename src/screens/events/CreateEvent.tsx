@@ -113,9 +113,6 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                 <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0 mb-16'>
                     {selectedEventType && (
                         <View>
-                            {selectedEventType === EventType.COMMITTEE_MEETING && (
-                                <Text className={`mx-2 mb-2 text-center ${darkMode ? "text-white" : "text-black"}`}>Committee meetings are only listed under each committee in the committee tab for their members.</Text>
-                            )}
                             <InteractButton
                                 buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
                                 textClassName='text-center text-white text-2xl font-bold'
