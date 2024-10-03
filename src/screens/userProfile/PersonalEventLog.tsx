@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, ActivityIndicator, Text, useColorScheme, ScrollView, NativeSyntheticEvent, NativeScrollEvent } from 'react-native'
+import { View, TouchableOpacity, ActivityIndicator, Text, useColorScheme, ScrollView, NativeSyntheticEvent, NativeScrollEvent, Image } from 'react-native'
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,12 +6,13 @@ import { Octicons } from '@expo/vector-icons';
 import { DocumentSnapshot, Timestamp } from 'firebase/firestore';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
-import { getUserEventLogs } from '../../api/firebaseUtils';
-import { UserEventData } from '../../types/events';
+import { getInstagramPointsLog, getUserEventLogs } from '../../api/firebaseUtils';
+import { SHPEEvent, SHPEEventLog, UserEventData } from '../../types/events';
 import { UserProfileStackParams } from '../../types/navigation';
 import { StatusBar } from 'expo-status-bar';
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { formatDateWithYear, formatTime } from '../../helpers/timeUtils';
+import { Images } from '../../../assets';
 
 const PersonalEventLog = ({ navigation }: NativeStackScreenProps<UserProfileStackParams>) => {
     const userContext = useContext(UserContext);
@@ -22,7 +23,9 @@ const PersonalEventLog = ({ navigation }: NativeStackScreenProps<UserProfileStac
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const [events, setEvents] = useState<UserEventData[]>([]);
+    const [instagramLog, setInstagramLog] = useState<SHPEEventLog | null>();
     const [expandedEventIndex, setExpandedEventIndex] = useState<number | null>(null);
+    const [instagramExpand, setInstagramExpand] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(true);
     const [endOfData, setEndOfData] = useState(false);
     const lastVisibleRef = useRef<DocumentSnapshot | null>(null);
@@ -45,9 +48,16 @@ const PersonalEventLog = ({ navigation }: NativeStackScreenProps<UserProfileStac
         setIsLoading(false);
     };
 
+    const fetchInstagramPointsLog = async () => {
+        const log = await getInstagramPointsLog(auth.currentUser?.uid!);
+        setInstagramLog(log)
+
+    }
+
     useEffect(() => {
         fetchInitialEventLogs();
-    }, []);
+        fetchInstagramPointsLog();
+    }, [auth.currentUser?.uid]);
 
     const handleExpandEventLog = (index: number) => {
         if (expandedEventIndex === index) {
@@ -85,6 +95,53 @@ const PersonalEventLog = ({ navigation }: NativeStackScreenProps<UserProfileStac
                     </TouchableOpacity>
                 </View>
 
+                {(!isLoading && instagramLog != null) && (
+                    <View
+                        className={`mx-4 mt-8 rounded-md p-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                                width: 0,
+                                height: 2,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 3.84,
+                            elevation: 5,
+                        }}
+                    >
+                        <TouchableOpacity onPress={() => setInstagramExpand(!instagramExpand)}>
+                            <View className='flex-row items-center'>
+                                <View className='flex-1'>
+                                    <View className='flex-1 flex-row items-center flex-wrap'>
+                                        <Image
+                                            resizeMode='contain'
+                                            className='w-10 h-10 mr-2'
+                                            source={Images.INSTAGRAM}
+                                        />
+                                        <Text className={`text-2xl font-semibold mr-3 ${darkMode ? "text-white" : "text-black"}`}>Instagram Points</Text>
+                                    </View>
+                                    <Text className={`mt-2 text-lg font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>
+                                        +{instagramLog?.points} points
+                                    </Text>
+                                </View>
+                                <Octicons name="chevron-up" size={24} color={darkMode ? "white" : "black"} />
+                            </View>
+                        </TouchableOpacity>
+                        {instagramExpand && (
+                            <View className='mt-4'>
+                                <Text className={`text-lg font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>Confirmation Dates</Text>
+                                {instagramLog?.instagramLogs && instagramLog.instagramLogs.length > 0 && (
+                                    instagramLog.instagramLogs.map((log, index) => (
+                                        <Text key={index} className={`text-lg ${darkMode ? "text-white" : "text-black"} mb-1`}>
+                                            {formatDateWithYear(log.toDate())} at {formatTime(log.toDate())}
+                                        </Text>
+                                    ))
+                                )}
+                            </View>
+                        )}
+                    </View>
+                )}
+
                 <View className='mx-4'>
                     {!isLoading && events.map(({ eventData, eventLog }, index) => (
                         <View
@@ -118,7 +175,7 @@ const PersonalEventLog = ({ navigation }: NativeStackScreenProps<UserProfileStac
                                                 </Text>
                                             )}
                                         </View>
-                                        <Text className={`w-[30%] text-lg font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>
+                                        <Text className={`text-lg font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>
                                             {formatDateWithYear(eventData?.startTime?.toDate()!)}
                                         </Text>
                                     </View>

@@ -98,7 +98,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
     useEffect(() => {
         const fetchEvents = async () => {
             setEventLoading(true);
-            const response = await getCommitteeEvents([firebaseDocName!], 3);
+            const response = await getCommitteeEvents([firebaseDocName!]);
             setEvents(response);
             setEventLoading(false);
         }

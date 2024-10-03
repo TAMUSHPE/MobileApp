@@ -890,6 +890,28 @@ export const deleteEventLog = async (eventID: string, uid: string): Promise<stri
         });
 };
 
+export const getInstagramPointsLog = async (uid: string): Promise<SHPEEventLog | null> => {
+    try {
+        const instagramEvent = await fetchEventByName("Instagram Points");
+        if (!instagramEvent) {
+            console.error("Instagram Points event not found.");
+            return null;
+        }
+
+        const eventId = instagramEvent.id;
+
+        const userLogDocRef = doc(db, `users/${uid}/event-logs/${eventId}`);
+        const userLogDoc = await getDoc(userLogDocRef);
+
+        if (userLogDoc.exists()) {
+            return userLogDoc.data() as SHPEEventLog;
+        } else {
+            return null;
+        }
+    } catch (error) {
+        return null;
+    }
+};
 
 
 // ============================================================================
@@ -1009,49 +1031,32 @@ export const resetCommittee = async (firebaseDocName: string) => {
     }
 };
 
-export const getCommitteeEvents = async (committees: string[], maxEvents?: number) => {
+export const getCommitteeEvents = async (committees: string[]) => {
     try {
-        let allEvents = new Map<string, any>();
+        const allEvents: any[] = [];
         const currentTime = Timestamp.now();
         const eventsRef = collection(db, 'events');
-        let eventCount = 0;
 
         for (const committee of committees) {
-            if (maxEvents && eventCount >= maxEvents) break;
-
-            let eventsQuery = query(
+            const eventsQuery = query(
                 eventsRef,
                 where("committee", "==", committee),
                 where("endTime", ">=", currentTime)
             );
 
-            if (maxEvents) {
-                eventsQuery = query(
-                    eventsRef,
-                    where("committee", "==", committee),
-                    where("endTime", ">=", currentTime),
-                    limit(maxEvents - eventCount)
-                );
-            }
-
             const querySnapshot = await getDocs(eventsQuery);
             querySnapshot.forEach((doc) => {
-                if (!allEvents.has(doc.id)) {
-                    allEvents.set(doc.id, doc.data());
-                    eventCount++;
-                }
-
-                if (maxEvents && eventCount >= maxEvents) return;
+                const eventData = { id: doc.id, ...doc.data() };
+                allEvents.push(eventData);
             });
         }
 
-        return Array.from(allEvents.values());
+        return allEvents;
     } catch (error) {
         console.error("Error fetching events for user committees:", error);
         return [];
     }
-}
-
+};
 
 export const getLeads = async (): Promise<PublicUserInfo[]> => {
     try {

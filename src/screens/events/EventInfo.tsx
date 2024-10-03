@@ -275,10 +275,14 @@ const EventInfo = ({ navigation }: EventProps) => {
                                 navigation.navigate("QRCode", { event: event })
                                 setShowOptionMenu(false)
                             }}
-                            className='absolute right-0 bottom-0 p-3 rounded-full m-4 items-center justify-center'
-                            style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+                            className='absolute right-0 bottom-0 m-4 items-center justify-center'
                         >
-                            <FontAwesome6 name="qrcode" size={24} color="white" />
+                            <View
+                                className="p-3 rounded-full"
+                                style={{ backgroundColor: 'rgba(0,0,0,0.7)' }}
+                            >
+                                <FontAwesome6 name="qrcode" size={24} color="white" />
+                            </View>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -317,7 +321,7 @@ const EventInfo = ({ navigation }: EventProps) => {
 
                     {(eventType === EventType.STUDY_HOURS) && (
                         <Text className={`mt-2 text-md mx-4 ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>
-                            Feel free to leave the area. Just be sure to scan in and out at the event location to fully earn your points!
+                            During study hours, feel free to leave the area. Just be sure to scan in and out at the event location to fully earn your points!
                         </Text>
                     )}
 
