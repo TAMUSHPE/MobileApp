@@ -360,7 +360,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                     </View>
                 </SafeAreaView>
 
-                {(openDropdown || pointsPerHour != undefined) && (
+                {(openDropdown || pointsPerHour != null) && (
                     <View className='pb-16' />
                 )}
             </KeyboardAwareScrollView>
