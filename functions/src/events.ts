@@ -68,26 +68,24 @@ const calculateEventLogPoints = (event: SHPEEvent, log: SHPEEventLog): number =>
     }
 
     let hourlyPoints = 0;
-    switch (event.eventType) {
-        case EventType.CUSTOM_EVENT:
-        case EventType.STUDY_HOURS:
-            if (log.signInTime && log.signOutTime && log.signInTime.toMillis() < log.signOutTime.toMillis()) {
-                hourlyPoints = (log.signOutTime.toMillis() - log.signInTime.toMillis()) / MillisecondTimes.HOUR * (event.pointsPerHour ?? 0);
-            }
+    if (event.pointsPerHour) {
+        switch (event.eventType) {
+            case EventType.VOLUNTEER_EVENT:
+                if (log.signInTime && log.signOutTime && log.signInTime.toMillis() < log.signOutTime.toMillis()) {
+                    hourlyPoints = Math.round((log.signOutTime.toMillis() - log.signInTime.toMillis()) / MillisecondTimes.HOUR) * (event.pointsPerHour ?? 0);
+                }
+                break;
+            default:
+                if (log.signInTime && log.signOutTime && log.signInTime.toMillis() < log.signOutTime.toMillis()) {
+                    hourlyPoints = (log.signOutTime.toMillis() - log.signInTime.toMillis()) / MillisecondTimes.HOUR * (event.pointsPerHour ?? 0);
+                }
 
-            if (event.endTime && event.startTime) {
-                const eventDurationHours = (event.endTime.toMillis() - event.startTime.toMillis()) / MillisecondTimes.HOUR;
-                hourlyPoints = Math.min(eventDurationHours * (event.pointsPerHour ?? 0), hourlyPoints);
-            }
-            break;
-        case EventType.VOLUNTEER_EVENT:
-            if (log.signInTime && log.signOutTime && log.signInTime.toMillis() < log.signOutTime.toMillis()) {
-                hourlyPoints = Math.round((log.signOutTime.toMillis() - log.signInTime.toMillis()) / MillisecondTimes.HOUR) * (event.pointsPerHour ?? 0);
-            }
-            log.points = (log.points ?? 0) + (event.signOutPoints ?? 0) + hourlyPoints;
-            break;
-        default:
-            hourlyPoints = 0;
+                if (event.endTime && event.startTime) {
+                    const eventDurationHours = (event.endTime.toMillis() - event.startTime.toMillis()) / MillisecondTimes.HOUR;
+                    hourlyPoints = Math.min(eventDurationHours * (event.pointsPerHour ?? 0), hourlyPoints);
+                }
+                break;
+        }
     }
 
     totalPoints += hourlyPoints;
