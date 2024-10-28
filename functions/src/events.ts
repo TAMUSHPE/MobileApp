@@ -246,7 +246,7 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
     // Sets log in both event and user collection and ensures both happen by the end of the function. 
     await eventLogDocRef.set(eventLog, { merge: true });
     await db.collection(`users/${uid}/event-logs`).doc(data.eventID).set(eventLog, { merge: true });
-    functions.logger.log(`User ${uid} successfully signed in and earned ${eventLog.points} points`);
+    functions.logger.log(`User ${uid} successfully signed out and earned ${eventLog.points} points`);
 
     return { success: true };
 });
