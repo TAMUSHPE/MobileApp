@@ -117,6 +117,11 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
                 haptic: Haptics.NotificationFeedbackType.Error,
                 bgColor: "bg-dark-navy"
             },
+            [EventLogStatus.GEOLOCATION_NOT_FOUND]: {
+                animation: 'red_x_animation',
+                haptic: Haptics.NotificationFeedbackType.Error,
+                bgColor: "bg-dark-navy"
+            },
             // Default case for missing EventLogStatus.EVENT_ONGOING
             [EventLogStatus.EVENT_ONGOING]: {
                 animation: 'red_x_animation',
