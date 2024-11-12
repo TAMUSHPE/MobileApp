@@ -712,6 +712,8 @@ export const signInToEvent = async (eventID: string, uid?: string): Promise<Even
                     return EventLogStatus.EVENT_OVER;
                 case 'functions/out-of-range':
                     return EventLogStatus.OUT_OF_RANGE;
+                case 'functions/invalid-argument':
+                    return EventLogStatus.GEOLOCATION_NOT_FOUND;
                 default:
                     console.error(err);
                     return EventLogStatus.ERROR;
@@ -760,6 +762,8 @@ export const signOutOfEvent = async (eventID: string, uid?: string): Promise<Eve
                     return EventLogStatus.EVENT_OVER;
                 case 'functions/out-of-range':
                     return EventLogStatus.OUT_OF_RANGE;
+                case 'functions/invalid-argument':
+                    return EventLogStatus.GEOLOCATION_NOT_FOUND;
                 default:
                     console.error(err);
                     return EventLogStatus.ERROR;
