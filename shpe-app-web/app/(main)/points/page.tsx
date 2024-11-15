@@ -358,7 +358,7 @@ const Points = () => {
       });
     });
 
-    // Create Monthly Sheets.
+    // Create Monthly Sheets
     months.forEach((month, monthIndex) => {
       const monthName = format(month, 'MMMM yyyy');
       const monthEvents = getEventsForMonth(month);
