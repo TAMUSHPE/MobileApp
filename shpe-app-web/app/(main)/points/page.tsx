@@ -168,6 +168,13 @@ const Points = () => {
   };
 
 
+  const sortedMembersByMonthlyPoints = filterType === 'monthly'
+    ? [...members].sort((a, b) => {
+      const pointsA = getPointsForMonth(a.eventLogs || [], months[currentMonthIndex]);
+      const pointsB = getPointsForMonth(b.eventLogs || [], months[currentMonthIndex]);
+      return pointsB - pointsA;
+    })
+    : members;
 
   const handleNextMonth = () => {
     if (currentMonthIndex < months.length - 1) {
@@ -319,10 +326,11 @@ const Points = () => {
 
     masterSheet.columns = columns;
 
-    // Add Member Data
-    members.forEach((member, index) => {
+    const sortedMembersByTotalPoints = [...members].sort((a, b) => (b.publicInfo?.points ?? 0) - (a.publicInfo?.points ?? 0));
+
+    sortedMembersByTotalPoints.forEach((member, index) => {
       const rowValues: any = {
-        rank: member.publicInfo?.pointsRank ?? '',
+        rank: index + 1,
         name: member.publicInfo?.displayName || '',
         email: member.publicInfo?.email || member.private?.privateInfo?.email || 'Email not available',
         totalPoints: member.publicInfo?.points ?? 0,
@@ -371,6 +379,15 @@ const Points = () => {
 
       sheet.columns = sheetColumns;
 
+
+
+      // Calculate monthly points and sort members by monthly points for this month
+      const sortedMembersByMonthlyPoints = [...members].sort((a, b) => {
+        const pointsA = getPointsForMonth(a.eventLogs || [], month);
+        const pointsB = getPointsForMonth(b.eventLogs || [], month);
+        return pointsB - pointsA; // Descending order
+      });
+
       // Style the header row with colors
       const headerRow = sheet.getRow(1);
       headerRow.eachCell((cell, colNumber) => {
@@ -392,10 +409,9 @@ const Points = () => {
         cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
         cell.font = { bold: true };
       });
-
-      members.forEach((member, index) => {
+      sortedMembersByMonthlyPoints.forEach((member, index) => {
         const rowValues: any = {
-          rank: member.publicInfo?.pointsRank || index + 1,
+          rank: index + 1,
           name: member.publicInfo?.displayName || '',
           email: member.publicInfo?.email || member.private?.privateInfo?.email || 'Email not available',
           monthlyPoints: getPointsForMonth(member.eventLogs || [], month) ?? 0,
@@ -591,7 +607,7 @@ const Points = () => {
             )}
           </thead>
           <tbody>
-            {members.map((member, memberIndex) => (
+            {sortedMembersByMonthlyPoints.map((member, memberIndex) => (
               <tr key={member.publicInfo?.uid} className="border-b text-black text-sm">
                 <td className="px-4 py-2">{filterType === 'total' ? member.publicInfo?.pointsRank : memberIndex + 1}</td>
                 <td
