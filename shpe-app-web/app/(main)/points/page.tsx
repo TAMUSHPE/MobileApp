@@ -168,6 +168,13 @@ const Points = () => {
   };
 
 
+  const sortedMembersByMonthlyPoints = filterType === 'monthly'
+    ? [...members].sort((a, b) => {
+      const pointsA = getPointsForMonth(a.eventLogs || [], months[currentMonthIndex]);
+      const pointsB = getPointsForMonth(b.eventLogs || [], months[currentMonthIndex]);
+      return pointsB - pointsA;
+    })
+    : members;
 
   const handleNextMonth = () => {
     if (currentMonthIndex < months.length - 1) {
@@ -308,7 +315,7 @@ const Points = () => {
     const columns = [
       { header: 'Rank', key: 'rank', width: 10 },
       { header: 'Name', key: 'name', width: 20 },
-      { header: 'Email', key: 'email', width: 30 },
+      { header: 'Email', key: 'email', width: 30, hidden: true },
       { header: 'Total Points', key: 'totalPoints', width: 15 },
       ...months.map((month, index) => ({
         header: format(month, 'MMM yyyy'),
@@ -319,10 +326,15 @@ const Points = () => {
 
     masterSheet.columns = columns;
 
-    // Add Member Data
-    members.forEach((member, index) => {
+    masterSheet.views = [
+      { state: 'frozen', ySplit: 1, xSplit: 4 }
+    ];
+
+    const sortedMembersByTotalPoints = [...members].sort((a, b) => (b.publicInfo?.points ?? 0) - (a.publicInfo?.points ?? 0));
+
+    sortedMembersByTotalPoints.forEach((member, index) => {
       const rowValues: any = {
-        rank: member.publicInfo?.pointsRank ?? '',
+        rank: index + 1,
         name: member.publicInfo?.displayName || '',
         email: member.publicInfo?.email || member.private?.privateInfo?.email || 'Email not available',
         totalPoints: member.publicInfo?.points ?? 0,
@@ -359,7 +371,7 @@ const Points = () => {
       const sheetColumns = [
         { header: 'Rank', key: 'rank', width: 10 },
         { header: 'Name', key: 'name', width: 20 },
-        { header: 'Email', key: 'email', width: 30 },
+        { header: 'Email', key: 'email', width: 30, hidden: true },
         { header: 'Monthly Points', key: 'monthlyPoints', width: 15 },
         ...monthEvents.map((event, eventIndex) => ({
           header: `${event.name}\n${format(event.startTime?.toDate()!, 'MM/dd/yyyy')}`,
@@ -370,6 +382,16 @@ const Points = () => {
       ];
 
       sheet.columns = sheetColumns;
+
+      sheet.views = [
+        { state: 'frozen', ySplit: 1, xSplit: 4 }
+      ];
+
+      const sortedMembersByMonthlyPoints = [...members].sort((a, b) => {
+        const pointsA = getPointsForMonth(a.eventLogs || [], month);
+        const pointsB = getPointsForMonth(b.eventLogs || [], month);
+        return pointsB - pointsA;
+      });
 
       // Style the header row with colors
       const headerRow = sheet.getRow(1);
@@ -393,9 +415,9 @@ const Points = () => {
         cell.font = { bold: true };
       });
 
-      members.forEach((member, index) => {
+      sortedMembersByMonthlyPoints.forEach((member, index) => {
         const rowValues: any = {
-          rank: member.publicInfo?.pointsRank || index + 1,
+          rank: index + 1,
           name: member.publicInfo?.displayName || '',
           email: member.publicInfo?.email || member.private?.privateInfo?.email || 'Email not available',
           monthlyPoints: getPointsForMonth(member.eventLogs || [], month) ?? 0,
@@ -539,17 +561,17 @@ const Points = () => {
         <table className="table-fixed text-left">
           <thead className="bg-gray-200">
             <tr className="text-black border-b-2 border-gray-400">
-              <th className="px-4 py-2 text-md font-bold" style={{ width: '3%' }}>Rank</th>
-              <th className="px-4 py-2 text-md font-bold" style={{ width: '10%' }}>Name</th>
-              <th className="px-4 py-2 text-md font-bold" style={{ width: '15%' }}>Email</th>
-              <th className="px-4 py-2 text-md font-bold text-right" style={{ width: '7%' }}>
+              <th className="sticky top-0 px-4 py-2 text-md font-bold bg-gray-200 z-20" style={{ width: '3%' }}>Rank</th>
+              <th className="sticky top-0 px-4 py-2 text-md font-bold bg-gray-200 z-20" style={{ width: '10%' }}>Name</th>
+              <th className="sticky top-0 px-4 py-2 text-md font-bold bg-gray-200 z-10" style={{ width: '15%' }}>Email</th>
+              <th className="sticky top-0 px-4 py-2 text-md font-bold text-right bg-gray-200 z-10" style={{ width: '7%' }}>
                 {filterType === 'total' ? 'Total Points' : 'Monthly Points'}
               </th>
               {filterType === 'total' ? (
                 months.map((month, index) => (
                   <th
                     key={index}
-                    className="px-4 py-2 text-md font-bold text-right"
+                    className="sticky top-0 px-4 py-2 text-md font-bold text-right"
                     style={{ width: '7%', backgroundColor: getColumnColor(index) }}>
                     {format(month, 'MMM yyyy')}
                   </th>
@@ -559,12 +581,13 @@ const Points = () => {
                   {getEventsForMonth(months[currentMonthIndex]).map((event, index) => (
                     <th
                       key={index}
-                      className="px-4 py-2 text-md font-bold text-right"
-                      style={{ width: '2%', minWidth: '40px', backgroundColor: getColumnColor(index) }}>
+                      className="sticky top-0 px-4 py-2 text-md font-bold text-right z-10"
+                      style={{ minHeight: '40px', whiteSpace: 'nowrap', backgroundColor: getColumnColor(index) }}
+                    >
                       {event.name}
                     </th>
                   ))}
-                  <th className="px-4 py-2 text-md font-bold text-right" style={{ width: '7%', backgroundColor: '#FFF9DB' }}>
+                  <th className="sticky top-0 px-4 py-2 text-md font-bold text-right" style={{ width: '7%', backgroundColor: '#FFF9DB' }}>
                     Instagram Points
                   </th>
                 </>
@@ -591,7 +614,7 @@ const Points = () => {
             )}
           </thead>
           <tbody>
-            {members.map((member, memberIndex) => (
+            {sortedMembersByMonthlyPoints.map((member, memberIndex) => (
               <tr key={member.publicInfo?.uid} className="border-b text-black text-sm">
                 <td className="px-4 py-2">{filterType === 'total' ? member.publicInfo?.pointsRank : memberIndex + 1}</td>
                 <td
