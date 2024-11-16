@@ -20,6 +20,7 @@ import EventCard from '../events/EventCard';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 import { useFocusEffect } from '@react-navigation/core';
 import { compareVersions } from 'compare-versions';
+import { incrementAppLaunchCount, requestReview } from '../../helpers/appReview';
 const pkg = require("../../../package.json");
 
 /**
@@ -143,6 +144,14 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         checkForAppUpdate();
     }, []);
 
+    useEffect(() => {
+        const checkForReview = async () => {
+            await incrementAppLaunchCount();
+            await requestReview();
+        };
+
+        checkForReview();
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
