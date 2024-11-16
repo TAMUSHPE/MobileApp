@@ -1,4 +1,4 @@
-import { ActivityIndicator, Image, ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, Alert, Image, Linking, Platform, ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
@@ -14,11 +14,13 @@ import { UserContext } from '../../context/UserContext';
 import { isMemberVerified } from '../../helpers/membership';
 import { auth } from '../../config/firebaseConfig';
 import DismissibleModal from '../../components/DismissibleModal';
-import { fetchOfficeCount, fetchOfficerStatus, getMyEvents, getUser, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
+import { fetchLatestVersion, fetchOfficeCount, fetchOfficerStatus, getMyEvents, getUser, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
 import { EventType, SHPEEvent } from '../../types/events';
 import EventCard from '../events/EventCard';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 import { useFocusEffect } from '@react-navigation/core';
+import { compareVersions } from 'compare-versions';
+const pkg = require("../../../package.json");
 
 /**
  * Renders the home screen of the application.
@@ -52,6 +54,31 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const [myEvents, setMyEvents] = useState<SHPEEvent[]>([]);
     const [interestOptionsModal, setInterestOptionsModal] = useState<boolean>(false);
     const [savedInterestLoading, setSavedInterestLoading] = useState<boolean>(false);
+
+
+    const showUpdateAlert = () => {
+        Alert.alert(
+            "Update Available",
+            "A new version of the app is available. Please update to continue.",
+            [
+                {
+                    text: "Update Now",
+                    onPress: () => {
+                        const appStoreLink = Platform.OS === "ios"
+                            ? "https://apps.apple.com/us/app/tamu-shpe/id6451004230"
+                            : "https://play.google.com/store/apps/details?id=com.tamu.shpe";
+                        Linking.openURL(appStoreLink);
+                    },
+                },
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                },
+            ],
+            { cancelable: true }
+        );
+    };
+
 
     const fetchEvents = async () => {
         try {
@@ -98,6 +125,24 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             getOfficerStatus();
         }
     }, [auth.currentUser]);
+
+    useEffect(() => {
+        const checkForAppUpdate = async () => {
+            const latestVersion = await fetchLatestVersion();
+            const currentVersion = pkg.version.trim();
+
+            console.log("latestVersion:", latestVersion);
+            console.log("currentVersion:", currentVersion);
+
+            if (latestVersion && compareVersions(currentVersion, latestVersion) < 0) {
+                // Only show alert if the current version is older than the latest version
+                showUpdateAlert();
+            }
+        };
+
+        checkForAppUpdate();
+    }, []);
+
 
     useFocusEffect(
         useCallback(() => {

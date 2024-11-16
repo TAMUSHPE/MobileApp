@@ -30,6 +30,7 @@
     "@react-navigation/stack": "^6.3.17",
     "babel-jest": "^29.7.0",
     "babel-plugin-inline-dotenv": "^1.7.0",
+    "compare-versions": "^6.1.1",
     "expo": "~51.0.7",
     "expo-application": "~5.9.1",
     "expo-auth-session": "~5.5.2",
