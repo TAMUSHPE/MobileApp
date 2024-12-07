@@ -1,7 +1,7 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject, getDownloadURL, uploadBytes } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, Query, DocumentData, CollectionReference, QueryDocumentSnapshot, increment, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot, serverTimestamp, QueryConstraint } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, DocumentData, CollectionReference, QueryDocumentSnapshot, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot, serverTimestamp, QueryConstraint } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateFileBlob, validateTamuEmail } from "../helpers/validation";
 import { PrivateUserInfo, PublicUserInfo, Roles, User, FilterRole } from "../types/user";
@@ -712,6 +712,8 @@ export const signInToEvent = async (eventID: string, uid?: string): Promise<Even
                     return EventLogStatus.EVENT_OVER;
                 case 'functions/out-of-range':
                     return EventLogStatus.OUT_OF_RANGE;
+                case 'functions/invalid-argument':
+                    return EventLogStatus.GEOLOCATION_NOT_FOUND;
                 default:
                     console.error(err);
                     return EventLogStatus.ERROR;
@@ -760,6 +762,8 @@ export const signOutOfEvent = async (eventID: string, uid?: string): Promise<Eve
                     return EventLogStatus.EVENT_OVER;
                 case 'functions/out-of-range':
                     return EventLogStatus.OUT_OF_RANGE;
+                case 'functions/invalid-argument':
+                    return EventLogStatus.GEOLOCATION_NOT_FOUND;
                 default:
                     console.error(err);
                     return EventLogStatus.ERROR;
@@ -1621,4 +1625,22 @@ export const getMembersToShirtVerify = async (): Promise<{ pickedUp: PublicUserI
         return { pickedUp: [], notPickedUp: [] };
     }
 };
+
+
+export const fetchLatestVersion = async () => {
+    const globalConfigRef = doc(db, "config", "global");
+    try {
+        const globalConfigSnap = await getDoc(globalConfigRef);
+        if (globalConfigSnap.exists()) {
+            return globalConfigSnap.data().latestVersion;
+        } else {
+            console.warn("No latest version found in Firestore.");
+            return null;
+        }
+    } catch (error) {
+        console.error("Failed to fetch latest version from Firebase:", error);
+        return null;
+    }
+};
+
 

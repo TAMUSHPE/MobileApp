@@ -411,6 +411,7 @@ export enum EventLogStatus {
     EVENT_NOT_STARTED,
     OUT_OF_RANGE,
     ERROR,
+    GEOLOCATION_NOT_FOUND,
 }
 
 export type UserEventData = {
@@ -429,6 +430,7 @@ export const getStatusMessage = (status: EventLogStatus, mode?: "sign-in" | "sig
         [EventLogStatus.EVENT_NOT_STARTED]: `The event has not started yet.`,
         [EventLogStatus.OUT_OF_RANGE]: `You are not close enough to the event to ${mode === `sign-in` ? `sign in` : `sign out`}.`,
         [EventLogStatus.ERROR]: `An internal error occurred. Please try again.`,
+        [EventLogStatus.GEOLOCATION_NOT_FOUND]: "Your location could not be verified. Please try enabling location services and try again.",
     };
 
     return statusMessages[status] || "An unknown error occurred.";
