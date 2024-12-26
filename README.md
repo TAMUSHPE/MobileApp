@@ -133,7 +133,7 @@ yarn dev-client-sim
 ```
 
 ## Test - TODO: Need more details
-
+TEMP LINK: https://github.com/TAMUSHPE/MobileApp/pull/378
 ```
 $ yarn test
 ```
