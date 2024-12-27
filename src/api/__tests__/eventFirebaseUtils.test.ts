@@ -1,6 +1,3 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
 import { signInAnonymously, signOut } from "firebase/auth";
 import { auth, db } from "../../config/firebaseConfig";
 import { User } from "../../types/user";
