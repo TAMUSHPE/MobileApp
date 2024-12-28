@@ -1,5 +1,5 @@
 import { signInAnonymously, signOut } from "firebase/auth";
-import { checkCommitteeRequestStatus, createEvent, deleteCommittee, destroyEvent, fetchEventByName, fetchEventLogs, fetchLink, getAttendanceNumber, getCommittee, getCommitteeEvents, getCommitteeMembers, getCommittees, getEvent, getLeads, getPastEvents, getPrivateUserData, getPublicUserData, getRepresentatives, getTeamMembers, getUpcomingEvents, getUser, getUserByEmail, getUserEventLog, getUserEventLogs, getWeekPastEvents, initializeCurrentUserData, removeCommitteeRequest, resetCommittee, setCommitteeData, setEvent, setPublicUserData, submitCommitteeRequest, updateLink } from "../firebaseUtils";
+import { checkCommitteeRequestStatus, createEvent, deleteCommittee, deleteUserResumeData, destroyEvent, fetchEventByName, fetchEventLogs, fetchLink, fetchUsersWithPublicResumes, getAttendanceNumber, getCommittee, getCommitteeEvents, getCommitteeMembers, getCommittees, getEvent, getLeads, getPastEvents, getPrivateUserData, getPublicUserData, getRepresentatives, getResumeVerificationStatus, getSortedUserData, getTeamMembers, getUpcomingEvents, getUser, getUserByEmail, getUserEventLog, getUserEventLogs, getWeekPastEvents, initializeCurrentUserData, removeCommitteeRequest, removeResumeVerificationDoc, resetCommittee, setCommitteeData, setEvent, setPublicUserData, submitCommitteeRequest, updateLink, uploadResumeVerificationDoc } from "../firebaseUtils";
 import { auth, db } from "../../config/firebaseConfig";
 import { PrivateUserInfo, PublicUserInfo, User } from "../../types/user";
 import { validateTamuEmail } from "../../helpers";
@@ -874,3 +874,226 @@ describe('Link Management Functions', () => {
 });
 
 
+
+
+describe('Points Leaderboard Functions', () => {
+    const testUsers = [
+        {
+            uid: 'user1',
+            name: 'User One',
+            points: 100,
+            pointsThisMonth: 50
+        },
+        {
+            uid: 'user2',
+            name: 'User Two',
+            points: 80,
+            pointsThisMonth: 70
+        },
+        {
+            uid: 'user3',
+            name: 'User Three',
+            points: 60,
+            pointsThisMonth: 30
+        },
+        {
+            uid: 'user4',
+            name: 'User Four',
+            points: 40,
+            pointsThisMonth: 40
+        }
+    ];
+
+    beforeEach(async () => {
+        for (const user of testUsers) {
+            await setDoc(doc(db, 'users', user.uid), user);
+        }
+    });
+
+    afterEach(async () => {
+        for (const user of testUsers) {
+            await deleteDoc(doc(db, 'users', user.uid));
+        }
+    });
+
+    test('getSortedUserData returns users sorted by all-time points', async () => {
+        const { data, lastVisible } = await getSortedUserData(2, null, 'allTime');
+
+        expect(data.length).toBe(2);
+        expect(data[0].points).toBe(100);
+        expect(data[1].points).toBe(80);
+        expect(lastVisible).toBeDefined();
+    });
+
+    test('getSortedUserData returns users sorted by monthly points', async () => {
+        const { data, lastVisible } = await getSortedUserData(2, null, 'monthly');
+
+        expect(data.length).toBe(2);
+        expect(data[0].pointsThisMonth).toBe(70);
+        expect(data[1].pointsThisMonth).toBe(50);
+        expect(lastVisible).toBeDefined();
+    });
+
+    test('getSortedUserData handles pagination for all-time points', async () => {
+        const firstPage = await getSortedUserData(2, null, 'allTime');
+        expect(firstPage.data.length).toBe(2);
+        expect(firstPage.lastVisible).toBeDefined();
+
+        const secondPage = await getSortedUserData(2, firstPage.lastVisible, 'allTime');
+        expect(secondPage.data.length).toBe(2);
+        expect(secondPage.data[0].points).toBe(60);
+        expect(secondPage.data[1].points).toBe(40);
+    });
+
+    test('getSortedUserData returns empty array when no more data', async () => {
+        const { data, lastVisible } = await getSortedUserData(5, null, 'allTime');
+
+        const emptyPage = await getSortedUserData(5, lastVisible, 'allTime');
+        expect(emptyPage.data.length).toBe(0);
+        expect(emptyPage.lastVisible).toBeNull();
+    });
+});
+
+
+describe('Resume Functions', () => {
+    const testUser = {
+        uid: 'testUser123',
+        resumePublicURL: 'https://test.com/resume.pdf',
+        resumeVerified: true,
+        major: 'Computer Science',
+        classYear: '2024',
+        displayName: 'Test User',
+        email: 'test@test.com',
+        isEmailPublic: true,
+        isStudent: false,
+        photoURL: '',
+        roles: {
+            admin: false,
+            developer: false,
+            lead: false,
+            officer: false,
+            reader: true,
+            representative: false
+        }
+    };
+
+
+    beforeEach(async () => {
+        await setDoc(doc(db, 'users', testUser.uid), testUser);
+    });
+
+    afterEach(async () => {
+        await deleteDoc(doc(db, 'users', testUser.uid));
+        await deleteDoc(doc(db, 'resumeVerification', testUser.uid));
+    });
+
+    test('getResumeVerificationStatus returns correct status', async () => {
+        let status = await getResumeVerificationStatus(testUser.uid);
+        expect(status).toBe(false);
+
+        await setDoc(doc(db, 'resumeVerification', testUser.uid), {
+            uploadDate: new Date().toISOString(),
+            resumePublicURL: 'https://test.com/resume.pdf'
+        });
+
+        status = await getResumeVerificationStatus(testUser.uid);
+        expect(status).toBe(true);
+    });
+
+    test('deleteUserResumeData removes resume fields', async () => {
+        await deleteUserResumeData(testUser.uid);
+
+        const userDoc = await getDoc(doc(db, 'users', testUser.uid));
+        const userData = userDoc.data();
+
+        expect(userData?.resumePublicURL).toBeUndefined();
+        expect(userData?.resumeVerified).toBe(false);
+    });
+
+    test('removeResumeVerificationDoc deletes verification document', async () => {
+        await setDoc(doc(db, 'resumeVerification', testUser.uid), {
+            uploadDate: new Date().toISOString(),
+            resumePublicURL: 'https://test.com/resume.pdf'
+        });
+
+        await removeResumeVerificationDoc(testUser.uid);
+
+        const verificationDoc = await getDoc(doc(db, 'resumeVerification', testUser.uid));
+        expect(verificationDoc.exists()).toBe(false);
+    });
+
+    test('uploadResumeVerificationDoc creates verification document', async () => {
+        const testUrl = 'https://test.com/newresume.pdf';
+        await uploadResumeVerificationDoc(testUser.uid, testUrl);
+
+        const verificationDoc = await getDoc(doc(db, 'resumeVerification', testUser.uid));
+        const data = verificationDoc.data();
+
+        expect(verificationDoc.exists()).toBe(true);
+        expect(data?.resumePublicURL).toBe(testUrl);
+        expect(data?.uploadDate).toBeDefined();
+    });
+
+    test('fetchUsersWithPublicResumes returns filtered users', async () => {
+        const testUsers: PublicUserInfo[] = [
+            {
+                uid: 'user1',
+                displayName: 'Test User 1',
+                email: 'test1@test.com',
+                photoURL: '',
+                resumeVerified: true,
+                major: 'Computer Science',
+                classYear: '2024',
+                isStudent: true,
+                isEmailPublic: false,
+                points: 0,
+                pointsThisMonth: 0,
+                roles: {
+                    admin: false,
+                    developer: false,
+                    lead: false,
+                    officer: false,
+                    reader: false,
+                    representative: false
+                }
+            },
+            {
+                uid: 'user2',
+                displayName: 'Test User 2',
+                email: 'test2@test.com',
+                photoURL: '',
+                resumeVerified: false,
+                major: 'Mechanical Engineering',
+                classYear: '2024',
+                isStudent: true,
+                isEmailPublic: false,
+                points: 0,
+                pointsThisMonth: 0,
+                roles: {
+                    admin: false,
+                    developer: false,
+                    lead: false,
+                    officer: false,
+                    reader: false,
+                    representative: false
+                }
+            }
+        ];
+
+        for (const user of testUsers) {
+            await setDoc(doc(db, 'users', user.uid!), user);
+        }
+
+        let users = (await fetchUsersWithPublicResumes(null)) as PublicUserInfo[];
+        expect(users.length).toBe(2);
+        expect(users.every(user => user.resumeVerified)).toBe(true);
+
+        users = (await fetchUsersWithPublicResumes({ major: 'Computer Science' })) as PublicUserInfo[];
+        expect(users.length).toBe(2);
+        expect(users[0].major).toBe('Computer Science');
+
+        for (const user of testUsers) {
+            await deleteDoc(doc(db, 'users', user.uid!));
+        }
+    });
+});
