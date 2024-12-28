@@ -798,3 +798,79 @@ describe('Committee Request Functions', () => {
     });
 });
 
+
+describe('Link Management Functions', () => {
+    const testLink: LinkData = {
+        id: 'testLinkId',
+        name: 'Test Link',
+        url: 'https://test.com',
+        imageUrl: 'https://test.com/image.jpg'
+    };
+
+    beforeEach(async () => {
+        await setDoc(doc(db, 'links', testLink.id), testLink);
+    });
+
+    afterEach(async () => {
+        await deleteDoc(doc(db, 'links', testLink.id));
+    });
+
+    test('fetchLink returns correct link data', async () => {
+        const link = await fetchLink(testLink.id);
+        expect(link).toBeDefined();
+        expect(link).toMatchObject(testLink);
+    });
+
+    test('fetchLink returns null for non-existent link', async () => {
+        const link = await fetchLink('nonexistentLink');
+        expect(link).toBeNull();
+    });
+
+    test('updateLink updates existing link without image', async () => {
+        const updatedLink: LinkData = {
+            ...testLink,
+            name: 'Updated Link Name',
+            url: 'https://updated-test.com'
+        };
+
+        await updateLink(updatedLink);
+        const link = await fetchLink(testLink.id);
+
+        expect(link).toBeDefined();
+        expect(link?.name).toBe(updatedLink.name);
+        expect(link?.url).toBe(updatedLink.url);
+        expect(link?.imageUrl).toBe(testLink.imageUrl);
+    });
+
+    test('updateLink merges data correctly', async () => {
+        const partialUpdate: LinkData = {
+            id: testLink.id,
+            name: 'Partially Updated Link',
+            url: testLink.url,
+            imageUrl: testLink.imageUrl
+        };
+
+        await updateLink(partialUpdate);
+        const link = await fetchLink(testLink.id);
+
+        expect(link).toBeDefined();
+        expect(link?.name).toBe(partialUpdate.name);
+        expect(link?.url).toBe(testLink.url);
+        expect(link?.imageUrl).toBe(testLink.imageUrl);
+    });
+
+    test('updateLink handles empty imageUrl', async () => {
+        const linkWithoutImage: LinkData = {
+            ...testLink,
+            imageUrl: ''
+        };
+
+        await updateLink(linkWithoutImage);
+        const link = await fetchLink(testLink.id);
+
+        expect(link).toBeDefined();
+        expect(link?.imageUrl).toBe('');
+    });
+});
+
+
