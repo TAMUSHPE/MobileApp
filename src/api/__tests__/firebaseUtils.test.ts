@@ -1,9 +1,9 @@
 import { signInAnonymously, signOut } from "firebase/auth";
-import { checkCommitteeRequestStatus, createEvent, deleteCommittee, deleteUserResumeData, destroyEvent, fetchEventByName, fetchEventLogs, fetchLink, fetchUsersWithPublicResumes, getAttendanceNumber, getCommittee, getCommitteeEvents, getCommitteeMembers, getCommittees, getEvent, getLeads, getPastEvents, getPrivateUserData, getPublicUserData, getRepresentatives, getResumeVerificationStatus, getSortedUserData, getTeamMembers, getUpcomingEvents, getUser, getUserByEmail, getUserEventLog, getUserEventLogs, getWeekPastEvents, initializeCurrentUserData, removeCommitteeRequest, removeResumeVerificationDoc, resetCommittee, setCommitteeData, setEvent, setPublicUserData, submitCommitteeRequest, updateLink, uploadResumeVerificationDoc } from "../firebaseUtils";
+import { checkCommitteeRequestStatus, createEvent, deleteCommittee, deleteUserResumeData, destroyEvent, fetchEventByName, fetchEventLogs, fetchLatestVersion, fetchLink, fetchOfficeCount, fetchOfficerStatus, fetchUsersWithPublicResumes, getAllFeedback, getAttendanceNumber, getCommittee, getCommitteeEvents, getCommitteeMembers, getCommittees, getEvent, getLeads, getMembersExcludeOfficers, getMembersToResumeVerify, getMembersToShirtVerify, getMembersToVerify, getMOTM, getMyEvents, getPastEvents, getPrivateUserData, getPublicUserData, getRepresentatives, getResumeVerificationStatus, getSortedUserData, getTeamMembers, getUpcomingEvents, getUser, getUserByEmail, getUserEventLog, getUserEventLogs, getUserForMemberList, getWeekPastEvents, initializeCurrentUserData, removeCommitteeRequest, removeFeedback, removeResumeVerificationDoc, resetCommittee, setCommitteeData, setEvent, setMOTM, setPublicUserData, submitCommitteeRequest, submitFeedback, updateLink, updateOfficerStatus, uploadResumeVerificationDoc } from "../firebaseUtils";
 import { auth, db } from "../../config/firebaseConfig";
-import { PrivateUserInfo, PublicUserInfo, User } from "../../types/user";
+import { FilterRole, PrivateUserInfo, PublicUserInfo, User } from "../../types/user";
 import { validateTamuEmail } from "../../helpers";
-import { doc, setDoc, deleteDoc, getDoc, Timestamp, getDocs, collection } from "firebase/firestore";
+import { doc, setDoc, deleteDoc, getDoc, Timestamp, serverTimestamp, DocumentData, QueryDocumentSnapshot, collection, getDocs } from "firebase/firestore";
 import { SHPEEvent, SHPEEventLog } from "../../types/events";
 import { Committee } from "../../types/committees";
 import { LinkData } from "../../types/links";
@@ -1095,5 +1095,529 @@ describe('Resume Functions', () => {
         for (const user of testUsers) {
             await deleteDoc(doc(db, 'users', user.uid!));
         }
+    });
+});
+
+
+describe('Office Hours Functions', () => {
+    const testOfficer = {
+        uid: 'testOfficer123',
+        signedIn: true,
+        timestamp: serverTimestamp()
+    };
+
+    beforeEach(async () => {
+        await setDoc(doc(db, 'office-hours', testOfficer.uid), testOfficer);
+    });
+
+    afterEach(async () => {
+        await deleteDoc(doc(db, 'office-hours', testOfficer.uid));
+    });
+
+    test('fetchOfficeCount returns correct number of signed-in officers', async () => {
+        const additionalOfficers = [
+            { uid: 'officer1', signedIn: true, timestamp: serverTimestamp() },
+            { uid: 'officer2', signedIn: false, timestamp: serverTimestamp() },
+            { uid: 'officer3', signedIn: true, timestamp: serverTimestamp() }
+        ];
+
+        for (const officer of additionalOfficers) {
+            await setDoc(doc(db, 'office-hours', officer.uid), officer);
+        }
+
+        const count = await fetchOfficeCount();
+        expect(count).toBe(3);
+
+        for (const officer of additionalOfficers) {
+            await deleteDoc(doc(db, 'office-hours', officer.uid));
+        }
+    });
+
+    test('fetchOfficerStatus returns correct officer status', async () => {
+        const status = await fetchOfficerStatus(testOfficer.uid);
+        expect(status).toBeDefined();
+        expect(status?.signedIn).toBe(true);
+        expect(status?.timestamp).toBeDefined();
+    });
+
+    test('fetchOfficerStatus returns null for non-existent officer', async () => {
+        const status = await fetchOfficerStatus('nonexistentOfficer');
+        expect(status).toBeNull();
+    });
+
+    test('updateOfficerStatus updates officer sign-in status', async () => {
+        await updateOfficerStatus(testOfficer.uid, false);
+
+        const status = await fetchOfficerStatus(testOfficer.uid);
+        expect(status?.signedIn).toBe(false);
+        expect(status?.timestamp).toBeDefined();
+
+        const count = await fetchOfficeCount();
+        expect(count).toBe(0);
+
+        await updateOfficerStatus(testOfficer.uid, true);
+
+        const updatedStatus = await fetchOfficerStatus(testOfficer.uid);
+        expect(updatedStatus?.signedIn).toBe(true);
+        expect(updatedStatus?.timestamp).toBeDefined();
+
+        const updatedCount = await fetchOfficeCount();
+        expect(updatedCount).toBe(1);
+    });
+});
+
+
+describe('My Events Functions', () => {
+    const currentDate = new Date();
+    const futureDate = new Date(currentDate.getTime() + 86400000);
+
+    const testEvents = [
+        {
+            id: 'event1',
+            name: 'Committee Event 1',
+            committee: 'committee1',
+            eventType: 'Workshop',
+            endTime: Timestamp.fromDate(futureDate)
+        },
+        {
+            id: 'event2',
+            name: 'Committee Event 2',
+            committee: 'committee2',
+            eventType: 'Social',
+            endTime: Timestamp.fromDate(futureDate)
+        },
+        {
+            id: 'event3',
+            name: 'Interest Event',
+            committee: 'committee3',
+            eventType: 'Workshop',
+            endTime: Timestamp.fromDate(futureDate)
+        }
+    ];
+
+    beforeEach(async () => {
+        for (const event of testEvents) {
+            await setDoc(doc(db, 'events', event.id), event);
+        }
+    });
+
+    afterEach(async () => {
+        for (const event of testEvents) {
+            await deleteDoc(doc(db, 'events', event.id));
+        }
+    });
+
+    test('getMyEvents returns events based on committees only', async () => {
+        const committees = ['committee1', 'committee2'];
+        const interests: string[] = [];
+
+        const events = await getMyEvents(committees, interests);
+        expect(events.length).toBe(2);
+        expect(events.some(event => event.id === 'event1')).toBe(true);
+        expect(events.some(event => event.id === 'event2')).toBe(true);
+    });
+
+    test('getMyEvents returns events based on interests only', async () => {
+        const committees: string[] = [];
+        const interests = ['Workshop'];
+
+        const events = await getMyEvents(committees, interests);
+        expect(events.length).toBe(2);
+        expect(events.some(event => event.id === 'event1')).toBe(true);
+        expect(events.some(event => event.id === 'event3')).toBe(true);
+    });
+
+    test('getMyEvents returns combined events without duplicates', async () => {
+        const committees = ['committee1'];
+        const interests = ['Workshop'];
+
+        const events = await getMyEvents(committees, interests);
+        expect(events.length).toBe(2);
+        expect(events.some(event => event.id === 'event1')).toBe(true);
+        expect(events.some(event => event.id === 'event3')).toBe(true);
+    });
+
+    test('getMyEvents respects maxEvents limit', async () => {
+        const committees = ['committee1', 'committee2'];
+        const interests = ['Workshop', 'Social'];
+        const maxEvents = 2;
+
+        const events = await getMyEvents(committees, interests, maxEvents);
+        expect(events.length).toBe(2);
+    });
+
+    test('getMyEvents returns empty array for non-matching criteria', async () => {
+        const committees = ['nonexistentCommittee'];
+        const interests = ['nonexistentType'];
+
+        const events = await getMyEvents(committees, interests);
+        expect(events.length).toBe(0);
+    });
+});
+
+
+describe('Member List Function', () => {
+    const testUsers: PublicUserInfo[] = [
+        {
+            uid: 'user1',
+            name: 'Aaron Brown',
+            roles: {
+                officer: true,
+                representative: false,
+                lead: false
+            }
+        },
+        {
+            uid: 'user2',
+            name: 'Bob Smith',
+            roles: {
+                officer: false,
+                representative: true,
+                lead: false
+            }
+        },
+        {
+            uid: 'user3',
+            name: 'Charlie Davis',
+            roles: {
+                officer: false,
+                representative: false,
+                lead: true
+            }
+        },
+        {
+            uid: 'user4',
+            name: 'David Wilson',
+            roles: {
+                officer: true,
+                representative: false,
+                lead: false
+            }
+        }
+    ];
+
+    beforeEach(async () => {
+        for (const user of testUsers) {
+            await setDoc(doc(db, 'users', user.uid!), user);
+        }
+    });
+
+    afterEach(async () => {
+        for (const user of testUsers) {
+            await deleteDoc(doc(db, 'users', user.uid!));
+        }
+    });
+
+    test('returns paginated users without filter', async () => {
+        const { members, lastVisibleDoc } = await getUserForMemberList(2, null, null) as {
+            members: PublicUserInfo[],
+            lastVisibleDoc: QueryDocumentSnapshot<DocumentData>
+        };
+
+        expect(members.length).toBe(2);
+        expect(members[0].name).toBe('Aaron Brown');
+        expect(members[1].name).toBe('Bob Smith');
+        expect(lastVisibleDoc).toBeDefined();
+
+        const nextPage = await getUserForMemberList(2, lastVisibleDoc, null) as {
+            members: PublicUserInfo[],
+            lastVisibleDoc: QueryDocumentSnapshot<DocumentData>
+        };
+        ;
+        expect(nextPage.members.length).toBe(2);
+        expect(nextPage.members[0].name).toBe('Charlie Davis');
+        expect(nextPage.members[1].name).toBe('David Wilson');
+    });
+
+    test('returns filtered users by role', async () => {
+        const { members } = await getUserForMemberList(10, null, FilterRole.OFFICER) as {
+            members: PublicUserInfo[],
+            lastVisibleDoc: QueryDocumentSnapshot<DocumentData>
+        };
+
+        expect(members.length).toBe(2);
+        expect(members.every(member => member.roles?.officer)).toBe(true);
+        expect(members[0].name).toBe('Aaron Brown');
+        expect(members[1].name).toBe('David Wilson');
+    });
+
+    test('handles end of data correctly', async () => {
+        let endOfDataReached = false;
+        const setEndOfData = (endOfData: boolean) => {
+            endOfDataReached = endOfData;
+        };
+
+        const { members } = await getUserForMemberList(5, null, null, setEndOfData);
+        expect(members.length).toBe(4);
+        expect(endOfDataReached).toBe(true);
+    });
+
+    test('returns empty array when no users match filter', async () => {
+        // Delete all test users first
+        for (const user of testUsers) {
+            await deleteDoc(doc(db, 'users', user.uid!));
+        }
+
+        const { members, lastVisibleDoc } = await getUserForMemberList(5, null, FilterRole.OFFICER);
+        expect(members.length).toBe(0);
+        expect(lastVisibleDoc).toBeUndefined();
+    });
+
+    test('handles pagination with filtered results', async () => {
+        const { members, lastVisibleDoc } = await getUserForMemberList(1, null, FilterRole.OFFICER) as {
+            members: PublicUserInfo[],
+            lastVisibleDoc: QueryDocumentSnapshot<DocumentData>
+        };
+
+        expect(members.length).toBe(1);
+        expect(members[0].roles?.officer).toBe(true);
+        expect(lastVisibleDoc).toBeDefined();
+
+        const nextPage = await getUserForMemberList(1, lastVisibleDoc, FilterRole.OFFICER) as {
+            members: PublicUserInfo[],
+            lastVisibleDoc: QueryDocumentSnapshot<DocumentData>
+        };
+
+        expect(nextPage.members.length).toBe(1);
+        expect(nextPage.members[0].roles?.officer).toBe(true);
+    });
+});
+
+
+describe('Member of the Month Functions', () => {
+    const testMember: PublicUserInfo = {
+        uid: 'testUser123',
+        displayName: 'Test User',
+        email: 'test@test.com',
+        photoURL: '',
+        isStudent: true,
+        isEmailPublic: false,
+        roles: {
+            admin: false,
+            developer: false,
+            lead: false,
+            officer: false,
+            reader: false,
+            representative: false
+        }
+    };
+
+    afterEach(async () => {
+        await deleteDoc(doc(db, 'member-of-the-month', 'member'));
+        await deleteDoc(doc(db, 'member-of-the-month', 'past-members'));
+    });
+
+    test('setMOTM sets current member and updates past members', async () => {
+        const result = await setMOTM(testMember);
+        expect(result).toBe(true);
+
+        const currentMOTM = await getMOTM();
+        expect(currentMOTM).toMatchObject(testMember);
+
+        const pastMembersDoc = await getDoc(doc(db, 'member-of-the-month', 'past-members'));
+        const pastMembers = pastMembersDoc.data()?.members || [];
+        expect(pastMembers).toContain(testMember.uid);
+    });
+
+    test('getMOTM returns undefined for non-existent member', async () => {
+        const member = await getMOTM();
+        expect(member).toBeUndefined();
+    });
+});
+
+describe('Feedback Functions', () => {
+    const testUser: User = {
+        publicInfo: {
+            uid: 'testUser123',
+            displayName: 'Test User',
+            email: 'test@test.com',
+            photoURL: '',
+            isStudent: true,
+            isEmailPublic: false,
+            roles: {
+                admin: false,
+                developer: false,
+                lead: false,
+                officer: false,
+                reader: false,
+                representative: false
+            }
+        }
+    };
+
+    afterEach(async () => {
+        // Clean up test feedback
+        const feedbackSnapshot = await getDocs(collection(db, 'feedback'));
+        const deletePromises = feedbackSnapshot.docs.map(doc =>
+            deleteDoc(doc.ref)
+        );
+        await Promise.all(deletePromises);
+    });
+
+    test('submitFeedback creates feedback document', async () => {
+        const result = await submitFeedback('Test feedback message', testUser);
+        expect(result.success).toBe(true);
+
+        const feedbackList = await getAllFeedback();
+        expect(feedbackList.length).toBe(1);
+        expect(feedbackList[0].message).toBe('Test feedback message');
+        expect(feedbackList[0].user).toMatchObject(testUser.publicInfo!);
+    });
+
+    test('getAllFeedback returns all feedback documents', async () => {
+        // Create multiple feedback entries
+        await submitFeedback('Feedback 1', testUser);
+        await submitFeedback('Feedback 2', testUser);
+
+        const feedbackList = await getAllFeedback();
+        expect(feedbackList.length).toBe(2);
+        expect(feedbackList.map(f => f.message)).toContain('Feedback 1');
+        expect(feedbackList.map(f => f.message)).toContain('Feedback 2');
+    });
+
+    test('removeFeedback deletes feedback document', async () => {
+        await submitFeedback('Test feedback', testUser);
+        const initialFeedbackList = await getAllFeedback();
+        expect(initialFeedbackList.length).toBe(1);
+
+        await removeFeedback(initialFeedbackList[0].id);
+
+        const updatedFeedbackList = await getAllFeedback();
+        expect(updatedFeedbackList.length).toBe(0);
+    });
+});
+
+
+
+describe('Version Functions', () => {
+    const testConfig = {
+        latestVersion: '1.2.3'
+    };
+
+    afterEach(async () => {
+        await deleteDoc(doc(db, 'config', 'global'));
+    });
+
+    test('fetchLatestVersion returns correct version when config exists', async () => {
+        await setDoc(doc(db, 'config', 'global'), testConfig);
+
+        const version = await fetchLatestVersion();
+        expect(version).toBe('1.2.3');
+    });
+
+    test('fetchLatestVersion returns null when config does not exist', async () => {
+        const version = await fetchLatestVersion();
+        expect(version).toBeNull();
+    });
+
+    test('fetchLatestVersion returns null on error', async () => {
+        await setDoc(doc(db, 'config', 'global'), { latestVersion: null });
+
+        const version = await fetchLatestVersion();
+        expect(version).toBeNull();
+    });
+});
+
+
+describe('Member Fetch Functions', () => {
+    const testUsers: PublicUserInfo[] = [
+        {
+            uid: 'user1',
+            displayName: 'Alice Smith',
+            name: 'Alice Smith',
+            email: 'alice@test.com',
+            photoURL: '',
+            isStudent: true,
+            isEmailPublic: false,
+            roles: {
+                officer: false,
+                representative: false,
+                lead: false
+            }
+        },
+        {
+            uid: 'user2',
+            displayName: 'Bob Officer',
+            name: 'Bob Officer',
+            email: 'bob@test.com',
+            photoURL: '',
+            isStudent: true,
+            isEmailPublic: false,
+            roles: {
+                officer: true,
+                representative: false,
+                lead: false
+            }
+        }
+    ];
+
+    beforeEach(async () => {
+        for (const user of testUsers) {
+            await setDoc(doc(db, 'users', user.uid!), user);
+        }
+    });
+
+    afterEach(async () => {
+        // Clean up test data
+        for (const user of testUsers) {
+            await deleteDoc(doc(db, 'users', user.uid!));
+            await deleteDoc(doc(db, 'memberSHPE', user.uid!));
+            await deleteDoc(doc(db, 'resumeVerification', user.uid!));
+            await deleteDoc(doc(db, 'shirt-sizes', user.uid!));
+        }
+    });
+
+    test('getMembersExcludeOfficers returns only non-officer members', async () => {
+        const members = await getMembersExcludeOfficers();
+        expect(members.length).toBe(1);
+        expect(members[0].uid).toBe('user1');
+        expect(members[0].roles?.officer).toBe(false);
+    });
+
+    test('getMembersToVerify returns members with valid URLs', async () => {
+        await setDoc(doc(db, 'memberSHPE', 'user1'), {
+            nationalURL: 'http://national.com',
+            chapterURL: 'http://chapter.com'
+        });
+        await setDoc(doc(db, 'memberSHPE', 'user2'), {
+            nationalURL: 'http://national.com'
+        });
+
+        const members = await getMembersToVerify();
+        expect(members.length).toBe(1);
+        expect(members[0].uid).toBe('user1');
+    });
+
+    test('getMembersToResumeVerify returns members with resume verification', async () => {
+        await setDoc(doc(db, 'resumeVerification', 'user1'), {
+            uploadDate: new Date().toISOString()
+        });
+
+        const members = await getMembersToResumeVerify();
+        expect(members.length).toBe(1);
+        expect(members[0].uid).toBe('user1');
+    });
+
+    test('getMembersToShirtVerify separates members by pickup status', async () => {
+        await setDoc(doc(db, 'shirt-sizes', 'user1'), {
+            size: 'M',
+            shirtPickedUp: true
+        });
+        await setDoc(doc(db, 'shirt-sizes', 'user2'), {
+            size: 'L',
+            shirtPickedUp: false
+        });
+
+        const { pickedUp, notPickedUp } = await getMembersToShirtVerify();
+        expect(pickedUp.length).toBe(1);
+        expect(notPickedUp.length).toBe(1);
+        expect(pickedUp[0].uid).toBe('user1');
+        expect(notPickedUp[0].uid).toBe('user2');
+    });
+
+    test('getMembersToShirtVerify handles empty data', async () => {
+        const { pickedUp, notPickedUp } = await getMembersToShirtVerify();
+        expect(pickedUp.length).toBe(0);
+        expect(notPickedUp.length).toBe(0);
     });
 });
