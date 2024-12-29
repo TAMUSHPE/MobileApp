@@ -2,7 +2,6 @@ import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../config/firebaseConfig";
 import { getPrivateUserData, getPublicUserData, setPrivateUserData, setPublicUserData } from "../firebaseUtils";
 import { User } from "../../types/user";
-import { clearCollection } from "../../helpers/unitTestUtils";
 
 const testUserDataList: User[] = require("./test_data/users.json");
 
@@ -25,10 +24,6 @@ beforeAll(async () => {
         await setDoc(doc(db, `users/${user.publicInfo!.uid!}/private`, "privateInfo"), user.private?.privateInfo);
     }
 });
-
-afterAll(async () => {
-    clearCollection("users");
-})
 
 test("Getter functions throw errors when user is unauthenticated", async () => {
     expect(auth.currentUser).toBeNull();
