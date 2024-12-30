@@ -1,10 +1,10 @@
 import { signInAnonymously, signOut } from "firebase/auth";
-import { checkCommitteeRequestStatus, createEvent, deleteCommittee, deleteUserResumeData, destroyEvent, fetchEventByName, fetchEventLogs, fetchLatestVersion, fetchLink, fetchOfficeCount, fetchOfficerStatus, fetchUsersWithPublicResumes, getAllFeedback, getAttendanceNumber, getCommittee, getCommitteeEvents, getCommitteeMembers, getCommittees, getEvent, getLeads, getMembersExcludeOfficers, getMembersToResumeVerify, getMembersToShirtVerify, getMembersToVerify, getMOTM, getMyEvents, getPastEvents, getPrivateUserData, getPublicUserData, getRepresentatives, getResumeVerificationStatus, getSortedUserData, getTeamMembers, getUpcomingEvents, getUser, getUserByEmail, getUserEventLog, getUserEventLogs, getUserForMemberList, getWeekPastEvents, initializeCurrentUserData, removeCommitteeRequest, removeFeedback, removeResumeVerificationDoc, resetCommittee, setCommitteeData, setEvent, setMOTM, setPublicUserData, submitCommitteeRequest, submitFeedback, updateLink, updateOfficerStatus, uploadResumeVerificationDoc } from "../firebaseUtils";
+import { checkCommitteeRequestStatus, createEvent, createInstagramPointsEvent, deleteCommittee, deleteUserResumeData, destroyEvent, fetchEventByName, fetchEventLogs, fetchLatestVersion, fetchLink, fetchOfficeCount, fetchOfficerStatus, fetchUsersWithPublicResumes, getAllFeedback, getAttendanceNumber, getCommittee, getCommitteeEvents, getCommitteeMembers, getCommittees, getEvent, getLeads, getMembersExcludeOfficers, getMembersToResumeVerify, getMembersToShirtVerify, getMembersToVerify, getMOTM, getMyEvents, getPastEvents, getPrivateUserData, getPublicUserData, getRepresentatives, getResumeVerificationStatus, getSortedUserData, getTeamMembers, getUpcomingEvents, getUser, getUserByEmail, getUserEventLog, getUserEventLogs, getUserForMemberList, getWeekPastEvents, initializeCurrentUserData, removeCommitteeRequest, removeFeedback, removeResumeVerificationDoc, resetCommittee, setCommitteeData, setEvent, setMOTM, setPublicUserData, submitCommitteeRequest, submitFeedback, updateLink, updateOfficerStatus, uploadResumeVerificationDoc } from "../firebaseUtils";
 import { auth, db } from "../../config/firebaseConfig";
 import { FilterRole, PrivateUserInfo, PublicUserInfo, User } from "../../types/user";
 import { validateTamuEmail } from "../../helpers";
 import { doc, setDoc, deleteDoc, getDoc, Timestamp, serverTimestamp, DocumentData, QueryDocumentSnapshot, collection, getDocs } from "firebase/firestore";
-import { SHPEEvent, SHPEEventLog } from "../../types/events";
+import { EventType, SHPEEvent, SHPEEventLog } from "../../types/events";
 import { Committee } from "../../types/committees";
 import { LinkData } from "../../types/links";
 
@@ -1619,5 +1619,52 @@ describe('Member Fetch Functions', () => {
         const { pickedUp, notPickedUp } = await getMembersToShirtVerify();
         expect(pickedUp.length).toBe(0);
         expect(notPickedUp.length).toBe(0);
+    });
+});
+
+
+describe('Instagram Points Event Functions', () => {
+    afterEach(async () => {
+        const eventsSnapshot = await getDocs(collection(db, 'events'));
+        const deletePromises = eventsSnapshot.docs
+            .filter(doc => doc.data().name === "Instagram Points")
+            .map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+    });
+
+    test('createInstagramPointsEvent creates event with correct parameters', async () => {
+        const event = await createInstagramPointsEvent();
+
+        expect(event).toBeDefined();
+        expect(event?.name).toBe('Instagram Points');
+        expect(event?.id).toBeDefined();
+
+        const today = new Date();
+        const previousDay = new Date(today);
+        previousDay.setDate(today.getDate() - 1);
+        const nextYear = new Date(today);
+        nextYear.setFullYear(nextYear.getFullYear() + 1);
+        nextYear.setMonth(7);
+        nextYear.setDate(1);
+
+        const startDate = event?.startTime!.toDate();
+        const endDate = event?.endTime!.toDate();
+
+        expect(startDate?.getDate()).toBe(previousDay.getDate());
+        expect(endDate?.getMonth()).toBe(7);
+        expect(endDate?.getDate()).toBe(1);
+        expect(endDate?.getFullYear()).toBe(nextYear.getFullYear());
+
+        expect(event?.eventType).toBe(EventType.CUSTOM_EVENT);
+        expect(event?.general).toBe(false);
+        expect(event?.hiddenEvent).toBe(true);
+        expect(event?.locationName).toBe('Instagram');
+        expect(event?.notificationSent).toBe(true);
+        expect(event?.pointsPerHour).toBe(0);
+        expect(event?.signInPoints).toBe(1);
+        expect(event?.signOutPoints).toBe(0);
+
+        const createdEvent = await getDoc(doc(db, 'events', event!.id!));
+        expect(createdEvent.exists()).toBe(true);
     });
 });
