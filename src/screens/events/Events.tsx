@@ -227,8 +227,13 @@ const Events = ({ navigation }: EventsProps) => {
                         {selectedEvents.today.length === 0 &&
                             selectedEvents.upcoming.length === 0 &&
                             selectedEvents.past.length === 0 ? (
-                            <View className="mt-10 justify-center items-center">
-                                <Text className={`text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>No Events</Text>
+                            <View className='mt-10 h-[50%] justify-between'>
+                                <View className="justify-center items-center">
+                                    <Text className={`text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>No Events</Text>
+                                </View>
+                                <TouchableOpacity onPress={() => navigation.navigate("PastEvents")}>
+                                    <Text className="text-xl text-primary-blue underline">View all past events</Text>
+                                </TouchableOpacity>
                             </View>
                         ) : (
                             <View>
