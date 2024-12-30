@@ -251,13 +251,13 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         <TouchableOpacity
                                             onPress={() => {
                                                 setPointsFormat("Default")
-                                                if (signInPoints != null) {
+                                                if (signInPoints) {
                                                     setSignInPoints(0);
                                                 }
-                                                if (signOutPoints !== null) {
+                                                if (signOutPoints) {
                                                     setSignOutPoints(0);
                                                 }
-                                                if (pointsPerHour !== null) {
+                                                if (pointsPerHour) {
                                                     setPointsPerHour(0);
                                                 }
                                             }}
