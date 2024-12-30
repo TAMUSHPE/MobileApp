@@ -1680,6 +1680,7 @@ describe('National Expiration Functions', () => {
             isStudent: true,
             isEmailPublic: false,
             nationalExpiration: Timestamp.fromDate(new Date('2024-06-01')),
+            chapterExpiration: Timestamp.fromDate(new Date('2024-07-01')),
             points: 100,
             roles: {
                 admin: true,
@@ -1715,6 +1716,7 @@ describe('National Expiration Functions', () => {
             isStudent: false,
             isEmailPublic: false,
             nationalExpiration: Timestamp.fromDate(new Date('2024-07-01')),
+            chapterExpiration: Timestamp.fromDate(new Date('2024-06-01')),
             points: 75,
             roles: {
                 admin: false,
