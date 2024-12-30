@@ -352,7 +352,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 )}
 
                 {/* Member Directory, Knock On Wall, Merch*/}
-                <View className='flex-row items-center justify-between mx-7 mt-4 flex-wrap'>
+                <View className='flex-row items-center justify-around mx-4 mt-4 flex-wrap'>
                     <TouchableOpacity
                         className={`items-center h-24 w-[25%] rounded-xl ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                         style={{
@@ -404,7 +404,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                                 alert("You must be a student to knock on the wall.");
                             }
                         }}
-                        disabled={officeCount <= 0} // Disable button when no one is in the office
                     >
                         <View className="mt-4">
                             <FontAwesome6
@@ -519,10 +518,16 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 setVisible={setKnockOnWallConfirmMenu}
             >
                 <View className={`flex opacity-100 rounded-md p-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
-                    <Octicons name="bell" size={24} color={darkMode ? "white" : "black"} />
+                    <View className="flex-row items-center">
+                        <Octicons name="bell" size={24} color={darkMode ? "white" : "black"} />
+                        <Text className={`ml-2 text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Knock on Wall</Text>
+                    </View>
 
                     <View className='flex items-center w-[80%] mt-4'>
-                        <Text className={`text-center text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>Knock on Wall. Are you sure you want notify signed-in officers to access Zach 420?</Text>
+                        <Text className={`text-center text-lg font-medium ${darkMode ? "text-white" : "text-black"}`}>
+                            Notify officers in <Text className='text-'>Zach 420</Text> to open the door. Be sure you are near the office.
+                        </Text>
+
 
                         <View className="flex-row mt-8">
                             <TouchableOpacity
