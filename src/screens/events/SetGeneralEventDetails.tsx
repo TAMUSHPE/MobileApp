@@ -337,8 +337,12 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                 onPress={() => {
                                     if (!name) {
                                         Alert.alert("Empty Name", "Event must have a name!")
-                                    }
-                                    else if (!startTime || !endTime) {
+                                    } else if (name === "Instagram Points") {
+                                        Alert.alert(
+                                            "Invalid Event Name",
+                                            "Event name cannot be 'Instagram Points'. Please choose another name."
+                                        );
+                                    } else if (!startTime || !endTime) {
                                         Alert.alert("Empty Start Time or End Time", "Event MUST have start and end times.")
                                     }
                                     else if (startTime.toMillis() > endTime.toMillis()) {

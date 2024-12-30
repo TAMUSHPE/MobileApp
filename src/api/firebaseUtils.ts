@@ -6,7 +6,7 @@ import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateFileBlob, validateTamuEmail } from "../helpers/validation";
 import { PrivateUserInfo, PublicUserInfo, Roles, User, FilterRole } from "../types/user";
 import { Committee } from "../types/committees";
-import { SHPEEvent, EventLogStatus, UserEventData, SHPEEventLog } from "../types/events";
+import { SHPEEvent, EventLogStatus, UserEventData, SHPEEventLog, EventType } from "../types/events";
 import * as Location from 'expo-location';
 import { deleteUser } from "firebase/auth";
 import { LinkData } from "../types/links";
@@ -1643,4 +1643,40 @@ export const fetchLatestVersion = async () => {
     }
 };
 
+export const createInstagramPointsEvent = async (): Promise<SHPEEvent | null> => {
+    try {
+        const today = new Date();
 
+        // Calculate start time (previous day)
+        const previousDay = new Date(today);
+        previousDay.setDate(today.getDate() - 1);
+
+        // Calculate end time (August 1 of the following year)
+        const nextYear = new Date(today);
+        nextYear.setFullYear(nextYear.getFullYear() + 1);
+        nextYear.setMonth(7);
+        nextYear.setDate(1);
+
+        // Define event fields
+        const event: SHPEEvent = {
+            name: "Instagram Points",
+            startTime: Timestamp.fromDate(previousDay),
+            endTime: Timestamp.fromDate(nextYear),
+            eventType: EventType.CUSTOM_EVENT,
+            general: false,
+            hiddenEvent: true,
+            locationName: "Instagram",
+            notificationSent: true,
+            pointsPerHour: 0,
+            signInPoints: 1,
+            signOutPoints: 0,
+        };
+
+        const docRef = await addDoc(collection(db, "events"), event);
+
+        return { ...event, id: docRef.id } as SHPEEvent;
+    } catch (error) {
+        console.error("Error creating Instagram Points event: ", error);
+        return null;
+    }
+};
