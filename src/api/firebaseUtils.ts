@@ -1680,3 +1680,43 @@ export const createInstagramPointsEvent = async (): Promise<SHPEEvent | null> =>
         return null;
     }
 };
+
+
+export const updateExpiration = async (): Promise<void> => {
+    try {
+        const userRef = collection(db, "users");
+        const querySnapshot = await getDocs(userRef);
+
+        if (querySnapshot.empty) {
+            console.log("No users found in the collection.");
+            return;
+        }
+
+        const targetDate = new Date("2025-06-01T05:00:00Z");
+
+        for (const docSnapshot of querySnapshot.docs) {
+            const userData = docSnapshot.data();
+            const userDocRef = doc(db, "users", docSnapshot.id);
+
+            if (userData.hasOwnProperty("nationalExpiration")) {
+                await updateDoc(userDocRef, {
+                    nationalExpiration: Timestamp.fromDate(targetDate),
+                });
+
+                console.log(`Updated nationalExpiration for user: ${docSnapshot.id}`);
+            }
+
+            if (userData.hasOwnProperty("chapterExpiration")) {
+                await updateDoc(userDocRef, {
+                    chapterExpiration: Timestamp.fromDate(targetDate),
+                });
+
+                console.log(`Updated chapterExpiration for user: ${docSnapshot.id}`);
+            }
+        }
+
+        console.log("Update completed successfully.");
+    } catch (error) {
+        console.error("Error updating expiration fields:", error);
+    }
+};
