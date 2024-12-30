@@ -5,7 +5,7 @@ import { Octicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackParams } from '../../types/navigation';
-import { fetchEventByName, getUsers } from '../../api/firebaseUtils';
+import { createInstagramPointsEvent, fetchEventByName, getUsers } from '../../api/firebaseUtils';
 import { PublicUserInfo } from '../../types/user';
 import MemberCardMultipleSelect from '../../components/MemberCardMultipleSelect';
 import { SHPEEvent } from '../../types/events';
@@ -64,8 +64,23 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
         };
 
         const initializeData = async () => {
-            const event = await fetchEventByName('Instagram Points');
-            setInstagramEvent(event);
+            try {
+                const event = await fetchEventByName("Instagram Points");
+
+                if (event) {
+                    setInstagramEvent(event);
+                } else {
+                    const createdEvent = await createInstagramPointsEvent();
+                    if (createdEvent) {
+                        console.log("Instagram Points event created:", createdEvent);
+                        setInstagramEvent(createdEvent);
+                    } else {
+                        console.error("Failed to create Instagram Points event");
+                    }
+                }
+            } catch (error) {
+                console.error("Error initializing Instagram Points event:", error);
+            }
         };
 
         initializeData();
@@ -147,8 +162,6 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
 
         await AsyncStorage.removeItem(cacheKey);
     };
-
-    const selectedCount = members.filter(member => member.selected).length;
 
     return (
         <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`} style={{ paddingTop: insets.top }}>

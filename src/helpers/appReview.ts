@@ -55,9 +55,6 @@ export const incrementAppLaunchCount = async () => {
         if (now - lastReviewDate > ONE_WEEK_MS) {
             const appLaunchCount = parseInt((await AsyncStorage.getItem(APP_LAUNCH_COUNT_KEY)) || "0", 10);
             await AsyncStorage.setItem(APP_LAUNCH_COUNT_KEY, (appLaunchCount + 1).toString());
-            console.log(`App launch count incremented to ${appLaunchCount + 1}`);
-        } else {
-            console.log("Within cooldown period, not incrementing launch count.");
         }
     } catch (error) {
         console.error("Error in incrementAppLaunchCount:", error);

@@ -51,58 +51,47 @@ const Events = ({ navigation }: EventsProps) => {
 
             const currentTime = new Date();
             const today = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate());
+            const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
 
-            const todayEvents = upcomingEventsData.filter(event => {
+            const filterEvents = (events: SHPEEvent[], condition: (event: SHPEEvent) => boolean) =>
+                events.filter(event => (hasPrivileges || !event.hiddenEvent) && condition(event));
+
+            // Filtered events
+            const todayEvents = filterEvents(upcomingEventsData, (event: SHPEEvent) => {
                 const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
-                return startTime >= today && startTime < new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                return startTime >= today && startTime < tomorrow;
             });
-            const upcomingEvents = upcomingEventsData.filter(event => {
+
+            const upcomingEvents = filterEvents(upcomingEventsData, (event: SHPEEvent) => {
                 const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
-                return startTime >= new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                return startTime >= tomorrow;
             });
 
-            const mainEventsFiltered = upcomingEventsData.filter(
-                (event: SHPEEvent) =>
-                    (hasPrivileges || !event.hiddenEvent) &&
-                    (event.eventType !== EventType.COMMITTEE_MEETING &&
-                        event.eventType !== EventType.INTRAMURAL_EVENT) || event.general
+            const mainEventsFiltered = filterEvents(upcomingEventsData, (event: SHPEEvent) =>
+                event.general || (event.eventType !== EventType.COMMITTEE_MEETING && event.eventType !== EventType.INTRAMURAL_EVENT)
             );
 
-            const intramuralEventsFiltered = upcomingEventsData.filter(
-                (event: SHPEEvent) =>
-                    (hasPrivileges || !event.hiddenEvent) &&
-                    event.eventType === EventType.INTRAMURAL_EVENT &&
-                    !event.general
+            const intramuralEventsFiltered = filterEvents(upcomingEventsData, (event: SHPEEvent) =>
+                event.eventType === EventType.INTRAMURAL_EVENT && !event.general
             );
 
-            const committeeEventsFiltered = upcomingEventsData.filter(
-                (event: SHPEEvent) =>
-                    (hasPrivileges || !event.hiddenEvent) &&
-                    event.eventType === EventType.COMMITTEE_MEETING &&
-                    !event.general
+            const committeeEventsFiltered = filterEvents(upcomingEventsData, (event: SHPEEvent) =>
+                event.eventType === EventType.COMMITTEE_MEETING && !event.general
             );
 
-            const pastMainEvents = allPastEvents.filter(
-                (event: SHPEEvent) =>
-                    (hasPrivileges || !event.hiddenEvent) &&
-                    (event.eventType !== EventType.COMMITTEE_MEETING &&
-                        event.eventType !== EventType.INTRAMURAL_EVENT) || event.general
+            const pastMainEvents = filterEvents(allPastEvents, (event: SHPEEvent) =>
+                event.general || (event.eventType !== EventType.COMMITTEE_MEETING && event.eventType !== EventType.INTRAMURAL_EVENT)
             );
 
-            const pastIntramuralEvents = allPastEvents.filter(
-                (event: SHPEEvent) =>
-                    (hasPrivileges || !event.hiddenEvent) &&
-                    event.eventType === EventType.INTRAMURAL_EVENT &&
-                    !event.general
+            const pastIntramuralEvents = filterEvents(allPastEvents, (event: SHPEEvent) =>
+                event.eventType === EventType.INTRAMURAL_EVENT && !event.general
             );
 
-            const pastCommitteeEvents = allPastEvents.filter(
-                (event: SHPEEvent) =>
-                    (hasPrivileges || !event.hiddenEvent) &&
-                    event.eventType === EventType.COMMITTEE_MEETING &&
-                    !event.general
+            const pastCommitteeEvents = filterEvents(allPastEvents, (event: SHPEEvent) =>
+                event.eventType === EventType.COMMITTEE_MEETING && !event.general
             );
 
+            // Set filtered events
             setMainEvents({
                 today: todayEvents.filter(event => mainEventsFiltered.includes(event)),
                 upcoming: upcomingEvents.filter(event => mainEventsFiltered.includes(event)),
@@ -127,9 +116,6 @@ const Events = ({ navigation }: EventsProps) => {
             setIsLoading(false);
         }
     };
-
-
-
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -227,8 +213,13 @@ const Events = ({ navigation }: EventsProps) => {
                         {selectedEvents.today.length === 0 &&
                             selectedEvents.upcoming.length === 0 &&
                             selectedEvents.past.length === 0 ? (
-                            <View className="mt-10 justify-center items-center">
-                                <Text className={`text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>No Events</Text>
+                            <View className='mt-10 h-[50%] justify-between'>
+                                <View className="justify-center items-center">
+                                    <Text className={`text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>No Events</Text>
+                                </View>
+                                <TouchableOpacity onPress={() => navigation.navigate("PastEvents")}>
+                                    <Text className="text-xl text-primary-blue underline">View all past events</Text>
+                                </TouchableOpacity>
                             </View>
                         ) : (
                             <View>
@@ -252,7 +243,7 @@ const Events = ({ navigation }: EventsProps) => {
                                                 }}
                                             >
                                                 {event.hiddenEvent && (
-                                                    <View className={`absolute m-1 p-1 rounded-full ${darkMode ? "bg-black/50" : "bg-white/50"}`}>
+                                                    <View className={`absolute m-1 p-1 rounded-full z-50 ${darkMode ? "bg-black/50" : "bg-white/50"}`}>
                                                         <Octicons name="eye-closed" size={20} color={darkMode ? "white" : "black"} />
                                                     </View>
                                                 )}

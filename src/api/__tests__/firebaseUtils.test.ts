@@ -1,10 +1,10 @@
 import { signInAnonymously, signOut } from "firebase/auth";
-import { checkCommitteeRequestStatus, createEvent, deleteCommittee, deleteUserResumeData, destroyEvent, fetchEventByName, fetchEventLogs, fetchLatestVersion, fetchLink, fetchOfficeCount, fetchOfficerStatus, fetchUsersWithPublicResumes, getAllFeedback, getAttendanceNumber, getCommittee, getCommitteeEvents, getCommitteeMembers, getCommittees, getEvent, getLeads, getMembersExcludeOfficers, getMembersToResumeVerify, getMembersToShirtVerify, getMembersToVerify, getMOTM, getMyEvents, getPastEvents, getPrivateUserData, getPublicUserData, getRepresentatives, getResumeVerificationStatus, getSortedUserData, getTeamMembers, getUpcomingEvents, getUser, getUserByEmail, getUserEventLog, getUserEventLogs, getUserForMemberList, getWeekPastEvents, initializeCurrentUserData, removeCommitteeRequest, removeFeedback, removeResumeVerificationDoc, resetCommittee, setCommitteeData, setEvent, setMOTM, setPublicUserData, submitCommitteeRequest, submitFeedback, updateLink, updateOfficerStatus, uploadResumeVerificationDoc } from "../firebaseUtils";
+import { checkCommitteeRequestStatus, createEvent, createInstagramPointsEvent, deleteCommittee, deleteUserResumeData, destroyEvent, fetchEventByName, fetchEventLogs, fetchLatestVersion, fetchLink, fetchOfficeCount, fetchOfficerStatus, fetchUsersWithPublicResumes, getAllFeedback, getAttendanceNumber, getCommittee, getCommitteeEvents, getCommitteeMembers, getCommittees, getEvent, getLeads, getMembersExcludeOfficers, getMembersToResumeVerify, getMembersToShirtVerify, getMembersToVerify, getMOTM, getMyEvents, getPastEvents, getPrivateUserData, getPublicUserData, getRepresentatives, getResumeVerificationStatus, getSortedUserData, getTeamMembers, getUpcomingEvents, getUser, getUserByEmail, getUserEventLog, getUserEventLogs, getUserForMemberList, getWeekPastEvents, initializeCurrentUserData, removeCommitteeRequest, removeFeedback, removeResumeVerificationDoc, resetCommittee, setCommitteeData, setEvent, setMOTM, setPublicUserData, submitCommitteeRequest, submitFeedback, updateExpiration, updateLink, updateOfficerStatus, uploadResumeVerificationDoc } from "../firebaseUtils";
 import { auth, db } from "../../config/firebaseConfig";
 import { FilterRole, PrivateUserInfo, PublicUserInfo, User } from "../../types/user";
 import { validateTamuEmail } from "../../helpers";
 import { doc, setDoc, deleteDoc, getDoc, Timestamp, serverTimestamp, DocumentData, QueryDocumentSnapshot, collection, getDocs } from "firebase/firestore";
-import { SHPEEvent, SHPEEventLog } from "../../types/events";
+import { EventType, SHPEEvent, SHPEEventLog } from "../../types/events";
 import { Committee } from "../../types/committees";
 import { LinkData } from "../../types/links";
 
@@ -1619,5 +1619,179 @@ describe('Member Fetch Functions', () => {
         const { pickedUp, notPickedUp } = await getMembersToShirtVerify();
         expect(pickedUp.length).toBe(0);
         expect(notPickedUp.length).toBe(0);
+    });
+});
+
+
+describe('Instagram Points Event Functions', () => {
+    afterEach(async () => {
+        const eventsSnapshot = await getDocs(collection(db, 'events'));
+        const deletePromises = eventsSnapshot.docs
+            .filter(doc => doc.data().name === "Instagram Points")
+            .map(doc => deleteDoc(doc.ref));
+        await Promise.all(deletePromises);
+    });
+
+    test('createInstagramPointsEvent creates event with correct parameters', async () => {
+        const event = await createInstagramPointsEvent();
+
+        expect(event).toBeDefined();
+        expect(event?.name).toBe('Instagram Points');
+        expect(event?.id).toBeDefined();
+
+        const today = new Date();
+        const previousDay = new Date(today);
+        previousDay.setDate(today.getDate() - 1);
+        const nextYear = new Date(today);
+        nextYear.setFullYear(nextYear.getFullYear() + 1);
+        nextYear.setMonth(7);
+        nextYear.setDate(1);
+
+        const startDate = event?.startTime!.toDate();
+        const endDate = event?.endTime!.toDate();
+
+        expect(startDate?.getDate()).toBe(previousDay.getDate());
+        expect(endDate?.getMonth()).toBe(7);
+        expect(endDate?.getDate()).toBe(1);
+        expect(endDate?.getFullYear()).toBe(nextYear.getFullYear());
+
+        expect(event?.eventType).toBe(EventType.CUSTOM_EVENT);
+        expect(event?.general).toBe(false);
+        expect(event?.hiddenEvent).toBe(true);
+        expect(event?.locationName).toBe('Instagram');
+        expect(event?.notificationSent).toBe(true);
+        expect(event?.pointsPerHour).toBe(0);
+        expect(event?.signInPoints).toBe(1);
+        expect(event?.signOutPoints).toBe(0);
+
+        const createdEvent = await getDoc(doc(db, 'events', event!.id!));
+        expect(createdEvent.exists()).toBe(true);
+    });
+});
+
+
+describe('National Expiration Functions', () => {
+    const testUsers: PublicUserInfo[] = [
+        {
+            uid: 'user1',
+            displayName: 'Test User 1',
+            email: 'test1@test.com',
+            photoURL: '',
+            isStudent: true,
+            isEmailPublic: false,
+            nationalExpiration: Timestamp.fromDate(new Date('2024-06-01')),
+            chapterExpiration: Timestamp.fromDate(new Date('2024-07-01')),
+            points: 100,
+            roles: {
+                admin: true,
+                developer: false,
+                lead: false,
+                officer: false,
+                reader: false,
+                representative: false
+            }
+        },
+        {
+            uid: 'user2',
+            displayName: 'Test User 2',
+            email: 'test2@test.com',
+            photoURL: 'photo2.jpg',
+            isStudent: true,
+            isEmailPublic: true,
+            points: 50,
+            roles: {
+                admin: false,
+                developer: true,
+                lead: false,
+                officer: false,
+                reader: false,
+                representative: false
+            }
+        },
+        {
+            uid: 'user3',
+            displayName: 'Test User 3',
+            email: 'test3@test.com',
+            photoURL: 'photo3.jpg',
+            isStudent: false,
+            isEmailPublic: false,
+            nationalExpiration: Timestamp.fromDate(new Date('2024-07-01')),
+            chapterExpiration: Timestamp.fromDate(new Date('2024-06-01')),
+            points: 75,
+            roles: {
+                admin: false,
+                developer: false,
+                lead: true,
+                officer: false,
+                reader: false,
+                representative: false
+            }
+        },
+        {
+            uid: 'user4',
+            displayName: 'Test User 4',
+            email: 'test4@test.com',
+            photoURL: '',
+            isStudent: true,
+            isEmailPublic: true,
+            committees: ['committee1', 'committee2'],
+            points: 25,
+            roles: {
+                admin: false,
+                developer: false,
+                lead: false,
+                officer: true,
+                reader: false,
+                representative: false
+            }
+        }
+    ];
+
+    beforeEach(async () => {
+        for (const user of testUsers) {
+            await setDoc(doc(db, 'users', user.uid!), user);
+        }
+    });
+
+    afterEach(async () => {
+        for (const user of testUsers) {
+            await deleteDoc(doc(db, 'users', user.uid!));
+        }
+    });
+
+    test('updateExpiration updates only users with nationalExpiration while preserving other data', async () => {
+        const targetDate = new Date('2025-06-01T05:00:00Z');
+        await updateExpiration();
+
+        const user1Doc = await getDoc(doc(db, 'users', 'user1'));
+        const user3Doc = await getDoc(doc(db, 'users', 'user3'));
+
+        expect(user1Doc.data()?.nationalExpiration.toDate()).toEqual(targetDate);
+        expect(user3Doc.data()?.nationalExpiration.toDate()).toEqual(targetDate);
+
+        expect(user1Doc.data()?.chapterExpiration.toDate()).toEqual(targetDate);
+        expect(user3Doc.data()?.chapterExpiration.toDate()).toEqual(targetDate);
+
+        expect(user1Doc.data()?.displayName).toBe('Test User 1');
+        expect(user1Doc.data()?.points).toBe(100);
+        expect(user1Doc.data()?.roles).toEqual(testUsers[0].roles);
+
+        expect(user3Doc.data()?.displayName).toBe('Test User 3');
+        expect(user3Doc.data()?.points).toBe(75);
+        expect(user3Doc.data()?.roles).toEqual(testUsers[2].roles);
+
+        const user2Doc = await getDoc(doc(db, 'users', 'user2'));
+        const user4Doc = await getDoc(doc(db, 'users', 'user4'));
+
+        expect(user2Doc.data()).toEqual(testUsers[1]);
+        expect(user4Doc.data()).toEqual(testUsers[3]);
+    });
+
+    test('updateNationalExpiration handles empty collection', async () => {
+        for (const user of testUsers) {
+            await deleteDoc(doc(db, 'users', user.uid!));
+        }
+
+        await updateExpiration();
     });
 });

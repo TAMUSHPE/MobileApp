@@ -34,7 +34,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
             onPress={() => { navigation.navigate("EventInfo", { event: event }) }}
         >
             {event.hiddenEvent && (
-                <View className={`absolute m-1 p-1 rounded-full ${darkMode ? "bg-black/50" : "bg-white/50"}`}>
+                <View className={`absolute m-1 p-1 rounded-full z-50 ${darkMode ? "bg-black/50" : "bg-white/50"}`}>
                     <Octicons name="eye-closed" size={20} color={darkMode ? "white" : "black"} />
                 </View>
             )}

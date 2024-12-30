@@ -133,7 +133,14 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
 
     const onNationalUploadSuccess = async (URL: string) => {
         const today = new Date();
-        const expirationDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year from now
+        let expirationYear = today.getFullYear();
+
+        if (today > new Date(expirationYear, 5, 1)) { // Note: JavaScript months are 0-indexed
+            expirationYear += 1;
+        }
+
+        const expirationDate = new Date(expirationYear, 5, 1); // June 1st of the following year
+
         await setDoc(doc(db, `memberSHPE/${auth.currentUser?.uid}`), {
             nationalUploadDate: Timestamp.fromDate(today),
             nationalExpiration: Timestamp.fromDate(expirationDate),

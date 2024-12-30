@@ -7,6 +7,7 @@ import { httpsCallable, getFunctions } from 'firebase/functions';
 import { HomeStackParams } from '../../types/navigation';
 import { UserContext } from '../../context/UserContext';
 import { StatusBar } from 'expo-status-bar';
+import { updateExpiration } from '../../api/firebaseUtils';
 
 const functions = getFunctions();
 
@@ -247,6 +248,27 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<HomeStackParams>)
                         >
                             <Text className={`text-xl underline mt-2 ${darkMode ? "text-white" : "text-black"}`}>Load Committee Membership Count</Text>
                         </TouchableOpacity>
+
+                        {/* <TouchableOpacity
+                            onPress={async () => {
+                                try {
+                                    console.log("Updating national expiration default fix...");
+                                    await updateExpiration();
+                                    Alert.alert("Done", "National expiration update completed.");
+                                } catch (error) {
+                                    console.error("Error during update:", error);
+                                    Alert.alert("Error", "An error occurred while updating national expiration.");
+                                }
+                            }}
+                        >
+                            <Text
+                                className={`text-xl underline mt-2 ${darkMode ? "text-white" : "text-black"
+                                    }`}
+                            >
+                                National Expiration Fix
+                            </Text>
+                        </TouchableOpacity> */}
+
                     </View>
                 </View>
 
