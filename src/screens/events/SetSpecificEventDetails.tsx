@@ -1,6 +1,6 @@
-import { View, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Switch, ScrollView, useColorScheme, Modal } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, KeyboardAvoidingView, Switch, ScrollView, useColorScheme, Modal, TextInput } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Octicons } from '@expo/vector-icons';
+import { FontAwesome6, Octicons } from '@expo/vector-icons';
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation';
 import { useRoute } from '@react-navigation/core';
 import { UserContext } from '../../context/UserContext';
@@ -31,6 +31,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     const [advanceOptionsModal, setAdvanceOptionsModal] = useState<boolean>(false);
     const dropDownRefCommittee = useRef<CustomDropDownMethods>(null);
     const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+    const [pointsFormat, setPointsFormat] = useState<"Default" | "Input">("Default");
 
     // Form Data Hooks
     const [committee, setCommittee] = useState<string>();
@@ -84,12 +85,13 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                     {/* Form */}
                     <View className={`flex-1`}>
                         {/* Point Selection */}
-                        <View className='px-4 mt-4'>
-                            <Text className={`text-2xl font-semibold mb-4 ${darkMode ? "text-white" : "text-black"}`}>Points Selection</Text>
 
-                            <View className='space-y-4'>
-                                {signInPoints != null && (
-                                    <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
+
+                        {(pointsFormat === "Default") && (
+                            <View className='px-4 mt-4'>
+                                <View className='flex-row items-center mb-4 justify-between'>
+                                    <Text className={`text-2xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Points Selection</Text>
+                                    <View className={`items-center justify-center rounded-full p-2 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                         style={{
                                             shadowColor: "#000",
                                             shadowOffset: {
@@ -101,112 +103,381 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                             elevation: 5,
                                         }}
                                     >
-                                        <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Sign In</Text>
-
-                                        <View className='w-[75%] flex-row space-x-3'>
-                                            {points.map((point) => (
-                                                <TouchableOpacity
-                                                    key={point}
-                                                    className={`w-10 h-10 rounded-xl items-center border justify-center ${signInPoints === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
-                                                    onPress={() => {
-                                                        setSignInPoints(point);
-                                                    }}
-                                                >
-                                                    <Text className={`text-xl font-semibold ${signInPoints === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
-                                    </View>
-                                )}
-
-                                {signOutPoints != null && (
-                                    <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
-                                        style={{
-                                            shadowColor: "#000",
-                                            shadowOffset: {
-                                                width: 0,
-                                                height: 2,
-                                            },
-                                            shadowOpacity: 0.25,
-                                            shadowRadius: 3.84,
-                                            elevation: 5,
-                                        }}
-                                    >
-                                        <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Sign Out</Text>
-
-                                        <View className='w-[75%] flex-row space-x-3'>
-                                            {points.map((point) => (
-                                                <TouchableOpacity
-                                                    key={point}
-                                                    className={`w-10 h-10 rounded-xl items-center border justify-center ${signOutPoints === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
-                                                    onPress={() => {
-                                                        setSignOutPoints(point);
-                                                    }}
-                                                >
-                                                    <Text className={`text-xl font-semibold ${signOutPoints === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
-                                    </View>
-                                )}
-
-                                {pointsPerHour != null && (
-                                    <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
-                                        style={{
-                                            shadowColor: "#000",
-                                            shadowOffset: {
-                                                width: 0,
-                                                height: 2,
-                                            },
-                                            shadowOpacity: 0.25,
-                                            shadowRadius: 3.84,
-                                            elevation: 5,
-                                        }}
-                                    >
-                                        <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Hourly</Text>
-
-                                        <View className='w-[75%] flex-row space-x-3'>
-                                            {points.map((point) => (
-                                                <TouchableOpacity
-                                                    key={point}
-                                                    className={`w-10 h-10 rounded-xl items-center border justify-center ${pointsPerHour === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
-                                                    onPress={() => {
-                                                        setPointsPerHour(point);
-                                                    }}
-                                                >
-                                                    <Text className={`text-xl font-semibold ${pointsPerHour === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
-                                    </View>
-                                )}
-
-
-                                {(event.eventType == EventType.VOLUNTEER_EVENT || event.eventType === EventType.CUSTOM_EVENT) && (
-                                    <View className='items-center justify-center'>
                                         <TouchableOpacity
-                                            className='bg-primary-blue px-2 py-1 rounded-md'
-                                            onPress={() => {
-                                                if (pointsPerHour != null) {
-                                                    setPointsPerHour(null);
-                                                    setSignOutPoints(null);
-                                                } else {
-                                                    setPointsPerHour(0);
-                                                    setSignOutPoints(0);
-                                                }
-                                            }}
+                                            onPress={() => setPointsFormat("Input")}
+                                            className='items-center justify-center'
                                         >
-                                            <Text className='text-white text-lg font-medium text-center'>
-                                                {pointsPerHour != null ? 'Remove Additional Points Options' : 'Add More Points Options'}
-                                            </Text>
-
+                                            <FontAwesome6 name="retweet" size={20} color={darkMode ? "white" : "black"} />
                                         </TouchableOpacity>
                                     </View>
-                                )}
+                                </View>
+
+                                <View className='space-y-4'>
+                                    {signInPoints != null && (
+                                        <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
+                                            style={{
+                                                shadowColor: "#000",
+                                                shadowOffset: {
+                                                    width: 0,
+                                                    height: 2,
+                                                },
+                                                shadowOpacity: 0.25,
+                                                shadowRadius: 3.84,
+                                                elevation: 5,
+                                            }}
+                                        >
+                                            <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Sign In</Text>
+
+                                            <View className='w-[75%] flex-row space-x-3'>
+                                                {points.map((point) => (
+                                                    <TouchableOpacity
+                                                        key={point}
+                                                        className={`w-10 h-10 rounded-xl items-center border justify-center ${signInPoints === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
+                                                        onPress={() => {
+                                                            setSignInPoints(point);
+                                                        }}
+                                                    >
+                                                        <Text className={`text-xl font-semibold ${signInPoints === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        </View>
+                                    )}
+
+                                    {signOutPoints != null && (
+                                        <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
+                                            style={{
+                                                shadowColor: "#000",
+                                                shadowOffset: {
+                                                    width: 0,
+                                                    height: 2,
+                                                },
+                                                shadowOpacity: 0.25,
+                                                shadowRadius: 3.84,
+                                                elevation: 5,
+                                            }}
+                                        >
+                                            <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Sign Out</Text>
+
+                                            <View className='w-[75%] flex-row space-x-3'>
+                                                {points.map((point) => (
+                                                    <TouchableOpacity
+                                                        key={point}
+                                                        className={`w-10 h-10 rounded-xl items-center border justify-center ${signOutPoints === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
+                                                        onPress={() => {
+                                                            setSignOutPoints(point);
+                                                        }}
+                                                    >
+                                                        <Text className={`text-xl font-semibold ${signOutPoints === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        </View>
+                                    )}
+
+                                    {pointsPerHour != null && (
+                                        <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
+                                            style={{
+                                                shadowColor: "#000",
+                                                shadowOffset: {
+                                                    width: 0,
+                                                    height: 2,
+                                                },
+                                                shadowOpacity: 0.25,
+                                                shadowRadius: 3.84,
+                                                elevation: 5,
+                                            }}
+                                        >
+                                            <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Hourly</Text>
+
+                                            <View className='w-[75%] flex-row space-x-3'>
+                                                {points.map((point) => (
+                                                    <TouchableOpacity
+                                                        key={point}
+                                                        className={`w-10 h-10 rounded-xl items-center border justify-center ${pointsPerHour === point ? "bg-primary-blue border-primary-blue" : `${darkMode ? 'bg-secondary-bg-dark border-grey-light' : 'bg-secondary-bg-light border-grey-dark'}`}`}
+                                                        onPress={() => {
+                                                            setPointsPerHour(point);
+                                                        }}
+                                                    >
+                                                        <Text className={`text-xl font-semibold ${pointsPerHour === point ? "text-white" : darkMode ? "text-white" : "text-black"}`}>+{point}</Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </View>
+                                        </View>
+                                    )}
 
 
+                                    {(event.eventType == EventType.VOLUNTEER_EVENT || event.eventType === EventType.CUSTOM_EVENT) && (
+                                        <View className='items-center justify-center'>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    if (pointsPerHour != null) {
+                                                        setPointsPerHour(null);
+                                                        setSignOutPoints(null);
+                                                    } else {
+                                                        setPointsPerHour(0);
+                                                        setSignOutPoints(0);
+                                                    }
+                                                }}
+                                            >
+                                                <Text className={`text-lg font-medium underline text-center text-primary-blue`}>
+                                                    {pointsPerHour != null ? 'Remove Additional Points Options' : 'Add More Points Options'}
+                                                </Text>
+
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+                                </View>
                             </View>
-                        </View>
+                        )}
+
+                        {/* Points Selection: Input Format */}
+                        {pointsFormat === "Input" && (
+                            <View className='px-4 mt-4'>
+                                <View className='flex-row items-center mb-4 justify-between'>
+                                    <Text className={`text-2xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Points Selection</Text>
+                                    <View className={`items-center justify-center rounded-full p-2 ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
+                                        style={{
+                                            shadowColor: "#000",
+                                            shadowOffset: {
+                                                width: 0,
+                                                height: 2,
+                                            },
+                                            shadowOpacity: 0.25,
+                                            shadowRadius: 3.84,
+                                            elevation: 5,
+                                        }}
+                                    >
+                                        <TouchableOpacity
+                                            onPress={() => {
+                                                setPointsFormat("Default")
+                                                if (signInPoints) {
+                                                    setSignInPoints(0);
+                                                }
+                                                if (signOutPoints) {
+                                                    setSignOutPoints(0);
+                                                }
+                                                if (pointsPerHour) {
+                                                    setPointsPerHour(0);
+                                                }
+                                            }}
+                                            className='items-center justify-center'
+                                        >
+                                            <FontAwesome6 name="retweet" size={20} color={darkMode ? "white" : "black"} />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+
+                                <View className='space-y-4'>
+                                    {signInPoints != null && (
+                                        <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
+                                            style={{
+                                                shadowColor: "#000",
+                                                shadowOffset: {
+                                                    width: 0,
+                                                    height: 2,
+                                                },
+                                                shadowOpacity: 0.25,
+                                                shadowRadius: 3.84,
+                                                elevation: 5,
+                                            }}
+                                        >
+                                            <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Sign In</Text>
+
+                                            <View className="w-[75%] flex-row items-center space-x-3">
+                                                <TouchableOpacity
+                                                    className={`w-10 h-10 rounded-xl items-center justify-center ${signInPoints > 0 ? "bg-primary-blue" : "bg-grey-dark"
+                                                        }`}
+                                                    onPress={() => {
+                                                        if (signInPoints > 0) {
+                                                            setSignInPoints((prev) => Math.max(0, prev! - 0.5));
+                                                        }
+                                                    }}
+                                                >
+                                                    <Text className="text-lg text-white">-0.5</Text>
+                                                </TouchableOpacity>
+
+                                                <View
+                                                    className={`flex-1 h-10 rounded-lg items-center justify-center border ${darkMode ? "bg-secondary-bg-dark border-grey-light" : "bg-secondary-bg-light border-grey-dark"
+                                                        }`}
+                                                >
+                                                    <TextInput
+                                                        value={signInPoints.toString()}
+                                                        keyboardType="numeric"
+                                                        onChangeText={(value) => setSignInPoints(parseFloat(value) || 0)}
+                                                        className={`text-xl font-semibold text-center ${darkMode ? "text-white" : "text-black"}`}
+                                                        style={{
+                                                            width: "100%",
+                                                            height: "100%",
+                                                        }}
+                                                    />
+                                                </View>
+
+                                                <TouchableOpacity
+                                                    className="w-10 h-10 rounded-xl items-center justify-center bg-primary-blue"
+                                                    onPress={() => setSignInPoints((prev) => prev! + 0.5)}
+                                                >
+                                                    <Text className="text-lg text-white">+0.5</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    )}
+
+                                    {signOutPoints != null && (
+                                        <View
+                                            className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"
+                                                }`}
+                                            style={{
+                                                shadowColor: "#000",
+                                                shadowOffset: {
+                                                    width: 0,
+                                                    height: 2,
+                                                },
+                                                shadowOpacity: 0.25,
+                                                shadowRadius: 3.84,
+                                                elevation: 5,
+                                            }}
+                                        >
+                                            <Text
+                                                className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"
+                                                    }`}
+                                            >
+                                                Sign Out
+                                            </Text>
+
+                                            <View className="w-[75%] flex-row items-center space-x-3">
+                                                <TouchableOpacity
+                                                    className={`w-10 h-10 rounded-xl items-center justify-center ${signOutPoints > 0 ? "bg-primary-blue" : "bg-grey-dark"
+                                                        }`}
+                                                    onPress={() => {
+                                                        if (signOutPoints > 0) {
+                                                            setSignOutPoints((prev) => Math.max(0, prev! - 0.5));
+                                                        }
+                                                    }}
+                                                    disabled={signOutPoints <= 0}
+                                                >
+                                                    <Text className="text-lg text-white">-0.5</Text>
+                                                </TouchableOpacity>
+
+                                                <View
+                                                    className={`flex-1 h-12 rounded-lg items-center justify-center border ${darkMode
+                                                        ? "bg-secondary-bg-dark border-grey-light"
+                                                        : "bg-secondary-bg-light border-grey-dark"
+                                                        }`}
+                                                >
+                                                    <TextInput
+                                                        value={signOutPoints.toString()}
+                                                        keyboardType="numeric"
+                                                        onChangeText={(value) => setSignOutPoints(parseFloat(value) || 0)}
+                                                        className={`text-xl font-semibold text-center ${darkMode ? "text-white" : "text-black"}`}
+                                                        style={{
+                                                            width: "100%",
+                                                            height: "100%",
+                                                        }}
+                                                    />
+                                                </View>
+
+                                                <TouchableOpacity
+                                                    className="w-10 h-10 rounded-xl items-center justify-center bg-primary-blue"
+                                                    onPress={() => setSignOutPoints((prev) => prev! + 0.5)}
+                                                >
+                                                    <Text className="text-lg text-white">+0.5</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    )}
+
+                                    {pointsPerHour != null && (
+                                        <View
+                                            className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"
+                                                }`}
+                                            style={{
+                                                shadowColor: "#000",
+                                                shadowOffset: {
+                                                    width: 0,
+                                                    height: 2,
+                                                },
+                                                shadowOpacity: 0.25,
+                                                shadowRadius: 3.84,
+                                                elevation: 5,
+                                            }}
+                                        >
+                                            <Text
+                                                className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"
+                                                    }`}
+                                            >
+                                                Hourly
+                                            </Text>
+
+                                            <View className="w-[75%] flex-row items-center space-x-3">
+                                                <TouchableOpacity
+                                                    className={`w-10 h-10 rounded-xl items-center justify-center ${pointsPerHour > 0 ? "bg-primary-blue" : "bg-grey-dark"
+                                                        }`}
+                                                    onPress={() => {
+                                                        if (pointsPerHour > 0) {
+                                                            setPointsPerHour((prev) => Math.max(0, prev! - 0.5));
+                                                        }
+                                                    }}
+                                                    disabled={pointsPerHour <= 0}
+                                                >
+                                                    <Text className="text-lg text-white">-0.5</Text>
+                                                </TouchableOpacity>
+
+                                                <View
+                                                    className={`flex-1 h-12 rounded-lg items-center justify-center border ${darkMode
+                                                        ? "bg-secondary-bg-dark border-grey-light"
+                                                        : "bg-secondary-bg-light border-grey-dark"
+                                                        }`}
+                                                >
+                                                    <TextInput
+                                                        value={pointsPerHour.toString()}
+                                                        keyboardType="numeric"
+                                                        onChangeText={(value) => setPointsPerHour(parseFloat(value) || 0)}
+                                                        className={`text-xl font-semibold text-center ${darkMode ? "text-white" : "text-black"}`}
+                                                        style={{
+                                                            width: "100%",
+                                                            height: "100%",
+                                                        }}
+                                                    />
+                                                </View>
+
+                                                <TouchableOpacity
+                                                    className="w-10 h-10 rounded-xl items-center justify-center bg-primary-blue"
+                                                    onPress={() => setPointsPerHour((prev) => prev! + 0.5)}
+                                                >
+                                                    <Text className="text-lg text-white">+0.5</Text>
+                                                </TouchableOpacity>
+                                            </View>
+                                        </View>
+                                    )}
+
+
+
+                                    {(event.eventType == EventType.VOLUNTEER_EVENT || event.eventType === EventType.CUSTOM_EVENT) && (
+                                        <View className='items-center justify-center'>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    if (pointsPerHour != null) {
+                                                        setPointsPerHour(null);
+                                                        setSignOutPoints(null);
+                                                    } else {
+                                                        setPointsPerHour(0);
+                                                        setSignOutPoints(0);
+                                                    }
+                                                }}
+                                            >
+                                                <Text className={`text-lg font-medium underline text-center text-primary-blue`}>
+                                                    {pointsPerHour != null ? 'Remove Additional Points Options' : 'Add More Points Options'}
+                                                </Text>
+
+                                            </TouchableOpacity>
+                                        </View>
+                                    )}
+                                </View>
+                            </View>
+                        )}
+
+
                         {/* Event Scope (Club-Wide, Associated Committees, Notifications)*/}
                         <View className='px-4 mt-10'>
                             <Text className={`text-2xl font-semibold mb-4 ${darkMode ? "text-white" : "text-black"}`}>Event Scope</Text>
