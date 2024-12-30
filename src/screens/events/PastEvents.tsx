@@ -68,6 +68,8 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
         loadMoreEvents();
     }, [loading, endOfData, setPastEvents]);
 
+    const visibleEvents = hasPrivileges ? pastEvents : pastEvents.filter(event => !event.hiddenEvent);
+
     return (
         <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />
@@ -85,13 +87,11 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
                 </View>
 
                 <View className='px-4'>
-                    {pastEvents.map((event: SHPEEvent, index) => {
-                        return (
-                            <View key={event.id} className="mt-8">
-                                <EventCard event={event} navigation={navigation} />
-                            </View>
-                        );
-                    })}
+                    {visibleEvents.map((event: SHPEEvent) => (
+                        <View key={event.id} className="mt-8">
+                            <EventCard event={event} navigation={navigation} />
+                        </View>
+                    ))}
                     {loading && (
                         <View className='py-4'>
                             <ActivityIndicator size="small" />
