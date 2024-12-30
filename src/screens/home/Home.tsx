@@ -461,38 +461,46 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                         </View>
                     </View>
 
-
                     {isLoading && (
                         <ActivityIndicator size="small" className='mt-8' />
                     )}
-                    {!isLoading && myEvents.length === 0 && (
-                        <View
-                            className={`mx-4 mt-4 p-4 rounded-md flex-row ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
-                            style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 3.84,
 
-                                elevation: 5,
-                            }}>
-                            <Text className={`text-center text-xl ${darkMode ? "text-white" : "text-black"}`}>You don't have any events. Check back later or visit the events screen to explore more options.</Text>
-                        </View>
+                    {!isLoading && (() => {
+                        const visibleEvents = myEvents.filter(event => hasPrivileges || !event.hiddenEvent);
 
-                    )}
-                    <View className='mx-4'>
-                        {!isLoading && myEvents.map((event: SHPEEvent, index) => {
+                        if (visibleEvents.length === 0) {
                             return (
-                                <View key={index} className={`${index > 0 && "mt-6"}`}>
-                                    <EventCard event={event} navigation={navigation} />
+                                <View
+                                    className={`mx-4 mt-4 p-4 rounded-md flex-row ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                                    style={{
+                                        shadowColor: "#000",
+                                        shadowOffset: {
+                                            width: 0,
+                                            height: 2,
+                                        },
+                                        shadowOpacity: 0.25,
+                                        shadowRadius: 3.84,
+                                        elevation: 5,
+                                    }}>
+                                    <Text className={`text-center text-xl ${darkMode ? "text-white" : "text-black"}`}>
+                                        You don't have any events. Check back later or visit the events screen to explore more options.
+                                    </Text>
                                 </View>
                             );
-                        })}
-                    </View>
+                        }
+
+                        return (
+                            <View className='mx-4'>
+                                {visibleEvents.map((event: SHPEEvent, index) => (
+                                    <View key={index} className={`${index > 0 && "mt-6"}`}>
+                                        <EventCard event={event} navigation={navigation} />
+                                    </View>
+                                ))}
+                            </View>
+                        );
+                    })()}
                 </View>
+
 
                 {/* MOTM */}
                 <View className='mt-10'>
