@@ -2,7 +2,7 @@ import { ActivityIndicator, Alert, Image, Linking, Platform, ScrollView, Text, T
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
-import { Octicons } from '@expo/vector-icons';
+import { Octicons, FontAwesome6, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import manageNotificationPermissions from '../../helpers/pushNotification';
 import { HomeStackParams } from "../../types/navigation"
@@ -289,12 +289,12 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                             elevation: 5,
                         }}
                     >
-                        {/* <Image
+                        <Image
                             resizeMode='contain'
-                            className="h-16 w-16 absolute left-7"
+                            className="h-14 w-14 absolute left-0"
                             source={Images.SHPE_WHITE}
-                        /> */}
-                        <Text className='text-2xl font-bold text-white mx-auto'>Become a Member</Text>
+                        />
+                        <Text className='text-xl font-bold text-white mx-auto'>Become a Member</Text>
                     </TouchableOpacity>
                 )}
 
@@ -303,7 +303,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                     <View className="flex-row flex-1 items-center mx-4 mt-4 space-x-4">
                         <View className='flex-1'>
                             <TouchableOpacity
-                                className='flex-1 items-center justify-center h-14 rounded-lg bg-dark-navy'
+                                className='flex-1 flex-row items-center justify-center py-2 rounded-lg bg-dark-navy'
                                 style={{
                                     shadowColor: "#000",
                                     shadowOffset: {
@@ -317,13 +317,17 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                                 activeOpacity={0.7}
                                 onPress={() => navigation.navigate("AdminDashboard")}
                             >
-                                <Text className={`text-xl text-white font-medium`}>Officer Dashboard</Text>
+                                <View className="absolute left-2">
+                                    <FontAwesome name="star" color={"white"} size={25} />
+                                </View>
+
+                                <Text className={`text-xl text-white font-medium`}>Admin</Text>
                             </TouchableOpacity>
                         </View>
 
                         <View className='flex-1'>
                             <TouchableOpacity
-                                className='flex-1 items-center justify-center h-14 rounded-lg bg-dark-navy'
+                                className='flex-1 flex-row items-center justify-center py-2 rounded-lg bg-dark-navy'
                                 style={{
                                     shadowColor: "#000",
                                     shadowOffset: {
@@ -337,80 +341,120 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                                 activeOpacity={0.7}
                                 onPress={() => setSignInConfirmMenu(!signInConfirmMenu)}
                             >
-                                <Text className={`text-xl text-white font-medium`}>{isSignedIn ? "Office Sign Out" : "Office Sign In"}</Text>
+                                <View className="absolute left-2">
+                                    <FontAwesome6 name="building" color={"white"} size={25} />
+                                </View>
+
+                                <Text className={`text-lg text-white font-medium`}>{isSignedIn ? "Sign Out" : "Sign In"}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
                 )}
 
-                {/* Member Directory and Knock On Wall*/}
-                <View className="flex-row flex-1 items-center mx-4 mt-4 space-x-4">
-                    <View className='flex-1'>
-                        <TouchableOpacity
-                            className='flex-1 items-center justify-center h-14 rounded-lg bg-primary-blue'
-                            style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 3.84,
-                                elevation: 5,
-                            }}
-                            activeOpacity={0.7}
-                            onPress={() => navigation.navigate("Members")}
-                        >
-                            <Text className={`text-xl text-white font-medium`}>Member Directory</Text>
-                        </TouchableOpacity>
-                    </View>
+                {/* Member Directory, Knock On Wall, Merch*/}
+                <View className='flex-row items-center justify-between mx-7 mt-4 flex-wrap'>
+                    <TouchableOpacity
+                        className={`items-center h-24 w-[25%] rounded-xl ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                                width: 0,
+                                height: 2,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 3.84,
+                            elevation: 5,
+                        }}
+                        activeOpacity={0.7}
+                        onPress={() => navigation.navigate("Members")}
+                    >
+                        <View className='mt-4'>
+                            <FontAwesome6 name="book" color={darkMode ? "white" : "black"} size={30} />
+                        </View>
+                        <View className='absolute bottom-2'>
+                            <Text className={`text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>Members</Text>
+                        </View>
 
-                    <View className='flex-1'>
-                        <TouchableOpacity
-                            onPress={() => {
-                                if (userInfo?.publicInfo?.isStudent && officeCount > 0) {
-                                    setKnockOnWallConfirmMenu(!knockOnWallConfirmMenu)
-                                } else {
-                                    alert("You must be a student to knock on the wall.")
-                                }
-                            }}
-                            className={`flex-1 flex-row justify-between items-center h-14 rounded-lg  ${officeCount > 0 ? "bg-primary-blue" : "bg-grey-dark"}`}
-                            style={{
-                                shadowColor: "#000",
-                                shadowOffset: {
-                                    width: 0,
-                                    height: 2,
-                                },
-                                shadowOpacity: 0.25,
-                                shadowRadius: 3.84,
-                                elevation: 5,
-                            }}
-                            activeOpacity={0.7}
-                            disabled={officeCount === 0}
-                        >
-                            <Text className={`text-xl text-white font-medium flex-1 text-center`}>{officeCount > 0 ? "Knock on wall" : "Unavailable"}</Text>
-                            <TouchableOpacity
-                                className={`h-full justify-center px-3 rounded-r-lg`}
-                                style={{ backgroundColor: "rgba(256,256,256,0.4)" }}
-                                onPress={() => setOfficeHourInfoMenu(!officeHourInfoMenu)}
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        className={`items-center h-24 w-[25%] rounded-xl ${officeCount > 0
+                            ? darkMode
+                                ? "bg-secondary-bg-dark"
+                                : "bg-secondary-bg-light"
+                            : "bg-grey-dark opacity-60"
+                            }`}
+                        style={{
+                            shadowColor: officeCount > 0 ? "#000" : "transparent",
+                            shadowOffset: {
+                                width: 0,
+                                height: 2,
+                            },
+                            shadowOpacity: officeCount > 0 ? 0.25 : 0,
+                            shadowRadius: officeCount > 0 ? 3.84 : 0,
+                            elevation: officeCount > 0 ? 5 : 0,
+                        }}
+                        activeOpacity={officeCount > 0 ? 0.7 : 1}
+                        onPress={() => {
+                            if (officeCount <= 0) {
+                                alert("No one is in the office");
+                            } else if (userInfo?.publicInfo?.isStudent) {
+                                setKnockOnWallConfirmMenu(!knockOnWallConfirmMenu);
+                            } else {
+                                alert("You must be a student to knock on the wall.");
+                            }
+                        }}
+                        disabled={officeCount <= 0} // Disable button when no one is in the office
+                    >
+                        <View className="mt-4">
+                            <FontAwesome6
+                                name="door-open"
+                                color={officeCount > 0 ? (darkMode ? "white" : "black") : "black"}
+                                size={30}
+                            />
+                        </View>
+                        <View className="absolute bottom-2">
+                            <Text
+                                className={`text-xl font-bold ${officeCount > 0
+                                    ? darkMode
+                                        ? "text-white"
+                                        : "text-black"
+                                    : "text-black"
+                                    }`}
                             >
-                                <View>
-                                    {officeHourInfoMenu && (
-                                        <View className={`absolute rounded-md z-20 border w-44 right-0 top-12 px-3 py-2  ${darkMode ? "bg-secondary-bg-dark border-grey-dark" : "bg-secondary-bg-light border-grey-light"}`}
-                                        >
-                                            <Text className={`text-xl font-medium ${darkMode ? "text-white" : "text-black"}`}>Notify an officer in Zach 450 for assistance.</Text>
-                                        </View>
+                                K.O.W.
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
 
-                                    )}
-                                    <Octicons name="info" size={20} color="white" />
-                                </View>
-                            </TouchableOpacity>
-                        </TouchableOpacity>
-                    </View>
+
+                    <TouchableOpacity
+                        className={`items-center h-24 w-[25%] rounded-xl ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                                width: 0,
+                                height: 2,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 3.84,
+                            elevation: 5,
+                        }}
+                        activeOpacity={0.7}
+                        onPress={() => Alert.alert("Coming Soon", "This feature is coming soon.")}
+                    >
+
+                        <View className='mt-4'>
+                            <FontAwesome6 name="bag-shopping" color={darkMode ? "white" : "black"} size={30} />
+                        </View>
+                        <View className='absolute bottom-2'>
+                            <Text className={`text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Merch</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
 
                 {/* My Events */}
-                <View className='mt-12 -z-10'>
+                <View className='mt-10 -z-10'>
                     <View className='flex-row mb-3'>
                         <View className='flex-row ml-4 flex-1'>
                             <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>My Events</Text>
@@ -478,7 +522,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                     <Octicons name="bell" size={24} color={darkMode ? "white" : "black"} />
 
                     <View className='flex items-center w-[80%] mt-4'>
-                        <Text className={`text-center text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>Are you sure you want to notify the signed-in officers?</Text>
+                        <Text className={`text-center text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>Knock on Wall. Are you sure you want notify signed-in officers to access Zach 420?</Text>
 
                         <View className="flex-row mt-8">
                             <TouchableOpacity
