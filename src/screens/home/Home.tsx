@@ -132,9 +132,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             const latestVersion = await fetchLatestVersion();
             const currentVersion = pkg.version.trim();
 
-            console.log("latestVersion:", latestVersion);
-            console.log("currentVersion:", currentVersion);
-
             if (latestVersion && compareVersions(currentVersion, latestVersion) < 0) {
                 // Only show alert if the current version is older than the latest version
                 showUpdateAlert();
