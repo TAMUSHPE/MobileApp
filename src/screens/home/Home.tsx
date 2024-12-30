@@ -397,7 +397,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                         activeOpacity={officeCount > 0 ? 0.7 : 1}
                         onPress={() => {
                             if (officeCount <= 0) {
-                                alert("No one is in the office");
+                                Alert.alert("Knock On Wall", "There are no officers in the office at the moment.");
                             } else if (userInfo?.publicInfo?.isStudent) {
                                 setKnockOnWallConfirmMenu(!knockOnWallConfirmMenu);
                             } else {
@@ -408,18 +408,13 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                         <View className="mt-4">
                             <FontAwesome6
                                 name="door-open"
-                                color={officeCount > 0 ? (darkMode ? "white" : "black") : "black"}
+                                color={darkMode ? "white" : "black"}
                                 size={30}
                             />
                         </View>
                         <View className="absolute bottom-2">
                             <Text
-                                className={`text-xl font-bold ${officeCount > 0
-                                    ? darkMode
-                                        ? "text-white"
-                                        : "text-black"
-                                    : "text-black"
-                                    }`}
+                                className={`text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}
                             >
                                 K.O.W.
                             </Text>
@@ -525,7 +520,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
                     <View className='flex items-center w-[80%] mt-4'>
                         <Text className={`text-center text-lg font-medium ${darkMode ? "text-white" : "text-black"}`}>
-                            Notify officers in <Text className='text-'>Zach 420</Text> to open the door. Be sure you are near the office.
+                            Notify officers in <Text className='text-primary-blue'>Zach 420</Text> to open the door. Be sure you are near the office.
                         </Text>
 
 
