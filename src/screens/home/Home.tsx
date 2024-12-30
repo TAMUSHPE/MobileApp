@@ -276,7 +276,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 {/* MemberSHPE Apply */}
                 {!isVerified && (
                     <TouchableOpacity
-                        className='flex-row bg-primary-orange items-center justify-center mx-4 mt-4 rounded-2xl py-3 px-4 relative'
+                        className='flex-row bg-primary-orange items-center justify-center mx-4 mt-4 rounded-2xl py-2 px-4 relative'
                         onPress={() => navigation.navigate("MemberSHPE")}
                         style={{
                             shadowColor: "#000",
@@ -291,7 +291,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                     >
                         <Image
                             resizeMode='contain'
-                            className="h-14 w-14 absolute left-0"
+                            className="h-12 w-12 absolute left-0"
                             source={Images.SHPE_WHITE}
                         />
                         <Text className='text-xl font-bold text-white mx-auto'>Become a Member</Text>
