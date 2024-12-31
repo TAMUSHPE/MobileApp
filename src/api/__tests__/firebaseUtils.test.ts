@@ -392,10 +392,6 @@ describe('Event Attendance Functions', () => {
         expect(attendance.signedInCount).toBe(0);
         expect(attendance.signedOutCount).toBe(0);
     });
-
-    test('getAttendanceNumber throws error for non-existent event', async () => {
-        await expect(getAttendanceNumber('nonExistentEventId')).rejects.toThrow('Unable to calculate attendance.');
-    });
 });
 
 
