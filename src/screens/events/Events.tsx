@@ -56,18 +56,19 @@ const Events = ({ navigation }: EventsProps) => {
             const filterEvents = (events: SHPEEvent[], condition: (event: SHPEEvent) => boolean) =>
                 events.filter(event => (hasPrivileges || !event.hiddenEvent) && condition(event));
 
-            const isDateInRange = (date: Date, start: Date, end: Date) => {
-                return date >= start && date <= end;
-            };
-
             const todayEvents = filterEvents(upcomingEventsData, (event: SHPEEvent) => {
-                const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
-                const endTime = event.endTime ? event.endTime.toDate() : startTime;
-                return isDateInRange(today, startTime, endTime);
+                const startTime = event.startTime?.toDate() || new Date(0);
+                const endTime = event.endTime?.toDate() || new Date(0);
+
+                const startDate = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate());
+                const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+                return startDate <= todayDate && todayDate <= endTime;
             });
 
+
             const upcomingEvents = filterEvents(upcomingEventsData, (event: SHPEEvent) => {
-                const startTime = event.startTime ? event.startTime.toDate() : new Date(0);
+                const startTime = event.startTime?.toDate() || new Date(0);
                 return startTime >= tomorrow;
             });
 
