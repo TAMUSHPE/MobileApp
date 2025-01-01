@@ -137,7 +137,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                         }
 
                         {isUploading &&
-                            <View className='flex flex-col items-center pt-2'>
+                            <View className='flex flex-col items-center pt-2 w-[80%] justify-center self-center'>
                                 <ProgressBar progress={uploadProgress} />
                                 <Text className={darkMode ? "text-white" : "text-black"}>
                                     {`${((bytesTransferred ?? 0) / 1000000).toFixed(2)} / ${((totalBytes ?? 0) / 1000000).toFixed(2)} MB`}
