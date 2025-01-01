@@ -57,27 +57,25 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
         fetchUserData();
     }, [])
 
-    const SocialMediaButton = ({ url, imageSource, bgColor = "", darkMode }: {
+    const SocialMediaButton = ({ url, imageSource, bgColor = "" }: {
         url: string,
         imageSource: ImageSourcePropType,
         bgColor?: string,
-        darkMode: boolean,
     }) => {
         const [isImageLoading, setIsImageLoading] = useState(true);
         const shimmerOpacity = useRef(new Animated.Value(0)).current;
 
-        // Start shimmer animation
         useEffect(() => {
             Animated.loop(
                 Animated.sequence([
                     Animated.timing(shimmerOpacity, {
                         toValue: 1,
-                        duration: 1500, // Slow down the animation
+                        duration: 1500,
                         useNativeDriver: true,
                     }),
                     Animated.timing(shimmerOpacity, {
                         toValue: 0,
-                        duration: 1500, // Slow down the animation
+                        duration: 1500,
                         useNativeDriver: true,
                     }),
                 ])
