@@ -49,6 +49,9 @@ const Events = ({ navigation }: EventsProps) => {
             const upcomingEventsData = await getUpcomingEvents();
             const allPastEvents = await getWeekPastEvents();
 
+            const filteredUpcomingEvents = upcomingEventsData.filter(event => event.name !== "Instagram Points");
+            const filteredPastEvents = allPastEvents.filter(event => event.name !== "Instagram Points");
+
             const currentTime = new Date();
             const today = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate());
             const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
@@ -56,7 +59,7 @@ const Events = ({ navigation }: EventsProps) => {
             const filterEvents = (events: SHPEEvent[], condition: (event: SHPEEvent) => boolean) =>
                 events.filter(event => (hasPrivileges || !event.hiddenEvent) && condition(event));
 
-            const todayEvents = filterEvents(upcomingEventsData, (event: SHPEEvent) => {
+            const todayEvents = filterEvents(filteredUpcomingEvents, (event: SHPEEvent) => {
                 const startTime = event.startTime?.toDate() || new Date(0);
                 const endTime = event.endTime?.toDate() || new Date(0);
 
@@ -66,33 +69,32 @@ const Events = ({ navigation }: EventsProps) => {
                 return startDate <= todayDate && todayDate <= endTime;
             });
 
-
-            const upcomingEvents = filterEvents(upcomingEventsData, (event: SHPEEvent) => {
+            const upcomingEvents = filterEvents(filteredUpcomingEvents, (event: SHPEEvent) => {
                 const startTime = event.startTime?.toDate() || new Date(0);
                 return startTime >= tomorrow;
             });
 
-            const mainEventsFiltered = filterEvents(upcomingEventsData, (event: SHPEEvent) =>
+            const mainEventsFiltered = filterEvents(filteredUpcomingEvents, (event: SHPEEvent) =>
                 event.general || (event.eventType !== EventType.COMMITTEE_MEETING && event.eventType !== EventType.INTRAMURAL_EVENT)
             );
 
-            const intramuralEventsFiltered = filterEvents(upcomingEventsData, (event: SHPEEvent) =>
+            const intramuralEventsFiltered = filterEvents(filteredUpcomingEvents, (event: SHPEEvent) =>
                 event.eventType === EventType.INTRAMURAL_EVENT && !event.general
             );
 
-            const committeeEventsFiltered = filterEvents(upcomingEventsData, (event: SHPEEvent) =>
+            const committeeEventsFiltered = filterEvents(filteredUpcomingEvents, (event: SHPEEvent) =>
                 event.eventType === EventType.COMMITTEE_MEETING && !event.general
             );
 
-            const pastMainEvents = filterEvents(allPastEvents, (event: SHPEEvent) =>
+            const pastMainEvents = filterEvents(filteredPastEvents, (event: SHPEEvent) =>
                 event.general || (event.eventType !== EventType.COMMITTEE_MEETING && event.eventType !== EventType.INTRAMURAL_EVENT)
             );
 
-            const pastIntramuralEvents = filterEvents(allPastEvents, (event: SHPEEvent) =>
+            const pastIntramuralEvents = filterEvents(filteredPastEvents, (event: SHPEEvent) =>
                 event.eventType === EventType.INTRAMURAL_EVENT && !event.general
             );
 
-            const pastCommitteeEvents = filterEvents(allPastEvents, (event: SHPEEvent) =>
+            const pastCommitteeEvents = filterEvents(filteredPastEvents, (event: SHPEEvent) =>
                 event.eventType === EventType.COMMITTEE_MEETING && !event.general
             );
 
@@ -117,7 +119,7 @@ const Events = ({ navigation }: EventsProps) => {
 
             setIsLoading(false);
         } catch (error) {
-            console.error('An error occurred while fetching events:', error);
+            console.error("An error occurred while fetching events:", error);
             setIsLoading(false);
         }
     };
