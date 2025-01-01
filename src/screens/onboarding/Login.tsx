@@ -14,7 +14,10 @@ const LoginScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>) =>
             className="flex-1"
         >
             <SafeAreaView className="flex-1">
-                <ScrollView contentContainerStyle={{ minHeight: "100%" }}>
+                <ScrollView
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    className="flex-1"
+                >
                     {/* Header */}
                     <View className="items-center mt-12">
                         <Text className="text-white text-center text-4xl font-bold">Welcome to SHPE</Text>

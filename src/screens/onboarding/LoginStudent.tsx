@@ -99,7 +99,10 @@ const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) =
         >
 
             <SafeAreaView className="flex-1">
-                <ScrollView contentContainerStyle={{ minHeight: "100%" }}>
+                <ScrollView
+                    contentContainerStyle={{ flexGrow: 1 }}
+                    className="flex-1"
+                >
                     {/* Header */}
                     <View className='px-4 mt-5'>
                         <TouchableOpacity
