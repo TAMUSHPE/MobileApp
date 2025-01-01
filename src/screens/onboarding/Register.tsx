@@ -136,8 +136,12 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
             colors={['#191740', '#413CA6']}
             className="flex-1"
         >
-            <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
-                <SafeAreaView className="flex-1 h-screen">
+            <KeyboardAwareScrollView
+                className="flex-1"
+                contentContainerStyle={{ flexGrow: 1 }}
+                showsVerticalScrollIndicator={false}
+            >
+                <SafeAreaView className="flex-1">
                     {/* Header */}
                     <View className='px-4 mt-5'>
                         <TouchableOpacity
