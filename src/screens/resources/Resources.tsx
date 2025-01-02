@@ -1,4 +1,4 @@
-import { View, Image, ScrollView, Text, TouchableOpacity, ImageSourcePropType, ActivityIndicator, useColorScheme, Animated } from 'react-native';
+import { View, Image, ScrollView, Text, TouchableOpacity, ImageSourcePropType, ActivityIndicator, useColorScheme, Animated, Alert } from 'react-native';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -14,6 +14,7 @@ import LeaderBoardIcon from '../../../assets/ranking-star-solid.svg';
 import ResumeIcon from '../../../assets/resume-icon.svg';
 import ExamIcon from '../../../assets/exam-icon.svg';
 import { isMemberVerified } from '../../helpers/membership';
+import { Images } from '../../../assets';
 
 const linkIDs = ["1", "2", "3", "4", "5"]; // First 5 links are reserved for social media links
 
@@ -195,8 +196,10 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                     </View>
                 )}
 
-                {/* Resources */}
-                <View className='flex-col mt-14 items-center mx-4'>
+
+                {/* General Resources */}
+                <Text className={`text-3xl font-semibold mx-4 mb-2 mt-8 ${darkMode ? "text-white" : "text-black"}`}>General</Text>
+                <View className='flex-col items-center mx-4'>
                     <ResourceButton
                         title="Points Leaderboard"
                         subTitle="Track your points and see where you stand."
@@ -215,6 +218,32 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                         navigateTo="TestBank"
                         IconComponent={ExamIcon}
                     />
+                </View>
+
+                {/* Internal Affairs Resources */}
+                <Text className={`text-3xl font-semibold mx-4 mb-2 ${darkMode ? "text-white" : "text-black"}`}>Internal Affairs</Text>
+                <View className='flex-col items-center mx-4'>
+                    <TouchableOpacity
+                        className="flex-row h-36 w-full rounded-3xl mb-8 shadow-lg"
+                        activeOpacity={0.7}
+                        onPress={() => {
+                            Alert.alert("SHPE GAINS", "This feature is not yet available.");
+                        }}
+                    >
+                        <Image
+                            source={Images.SHPE_GAIN_COMING_SOON}
+                            className="w-full h-full rounded-3xl"
+                            resizeMode="cover"
+                        />
+
+                        <View className="absolute inset-0 h-full w-full rounded-3xl flex items-center justify-center"
+                            style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
+                        >
+                            <Text className="opacity-80 text-white text-center font-bold text-5xl uppercase" style={{ fontFamily: 'BebasNeue' }}>Coming Soon</Text>
+                        </View>
+                    </TouchableOpacity>
+
+
                 </View>
                 <View className='pb-12' />
             </ScrollView>
