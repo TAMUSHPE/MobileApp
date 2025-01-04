@@ -3,7 +3,7 @@ import { checkCommitteeRequestStatus, createEvent, createInstagramPointsEvent, d
 import { auth, db } from "../../config/firebaseConfig";
 import { FilterRole, PrivateUserInfo, PublicUserInfo, User } from "../../types/user";
 import { validateTamuEmail } from "../../helpers";
-import { doc, setDoc, deleteDoc, getDoc, Timestamp, serverTimestamp, DocumentData, QueryDocumentSnapshot, collection, getDocs } from "firebase/firestore";
+import { doc, setDoc, deleteDoc, getDoc, Timestamp, serverTimestamp, DocumentData, QueryDocumentSnapshot, collection, getDocs, writeBatch } from "firebase/firestore";
 import { EventType, SHPEEvent, SHPEEventLog } from "../../types/events";
 import { Committee } from "../../types/committees";
 import { LinkData } from "../../types/links";
@@ -347,51 +347,50 @@ describe('Event Functions', () => {
 
 
 describe('Event Attendance Functions', () => {
-    test('getAttendanceNumber returns correct attendance counts', async () => {
-        const testEvent = { ...testEvents[0], id: 'testEventId' };
-        await setDoc(doc(db, 'events', testEvent.id), testEvent);
+    const testEventId = 'testEventId';
+    const emptyEventId = 'emptyEventId';
 
+    beforeEach(async () => {
+        await setDoc(doc(db, 'events', testEventId), { id: testEventId, name: 'Test Event' });
+        await setDoc(doc(db, 'events', emptyEventId), { id: emptyEventId, name: 'Empty Event' });
+    });
+
+    afterEach(async () => {
+        const batch = writeBatch(db);
+        const logsRef = collection(db, `events/${testEventId}/logs`);
+        const logsSnapshot = await getDocs(logsRef);
+        logsSnapshot.forEach((doc) => {
+            batch.delete(doc.ref);
+        });
+        batch.delete(doc(db, 'events', testEventId));
+        batch.delete(doc(db, 'events', emptyEventId));
+        await batch.commit();
+    });
+
+    test('getAttendanceNumber returns correct attendance counts', async () => {
         const logs = [
-            {
-                uid: 'user1',
-                signInTime: Timestamp.now(),
-                signOutTime: Timestamp.now()
-            },
-            {
-                uid: 'user2',
-                signInTime: Timestamp.now(),
-                signOutTime: null
-            },
-            {
-                uid: 'user3',
-                signInTime: null,
-                signOutTime: null
-            }
+            { uid: 'user1', signInTime: Timestamp.now(), signOutTime: Timestamp.now() },
+            { uid: 'user2', signInTime: Timestamp.now(), signOutTime: null },
+            { uid: 'user3', signInTime: null, signOutTime: null },
+            { uid: 'user4', signInTime: Timestamp.now(), signOutTime: null },
         ];
 
-        for (let i = 0; i < logs.length; i++) {
-            await setDoc(doc(db, `events/${testEvent.id}/logs`, `log${i}`), logs[i]);
-        }
+        const batch = writeBatch(db);
+        logs.forEach((log, index) => {
+            const docRef = doc(db, `events/${testEventId}/logs`, `log${index}`);
+            batch.set(docRef, log);
+        });
+        await batch.commit();
 
-        const attendance = await getAttendanceNumber(testEvent.id);
-        expect(attendance.signedInCount).toBe(2);
+        const attendance = await getAttendanceNumber(testEventId);
+        expect(attendance.signedInCount).toBe(3);
         expect(attendance.signedOutCount).toBe(1);
-
-        for (let i = 0; i < logs.length; i++) {
-            await deleteDoc(doc(db, `events/${testEvent.id}/logs`, `log${i}`));
-        }
-        await deleteDoc(doc(db, 'events', testEvent.id));
     });
 
     test('getAttendanceNumber handles empty logs', async () => {
-        const testEvent = { ...testEvents[0], id: 'emptyEventId' };
-        await setDoc(doc(db, 'events', testEvent.id), testEvent);
-
-        const attendance = await getAttendanceNumber(testEvent.id);
+        const attendance = await getAttendanceNumber(emptyEventId);
         expect(attendance.signedInCount).toBe(0);
         expect(attendance.signedOutCount).toBe(0);
-
-        await deleteDoc(doc(db, 'events', testEvent.id));
     });
 });
 

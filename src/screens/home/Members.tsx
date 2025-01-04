@@ -83,7 +83,7 @@ const Members = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
                 showsVerticalScrollIndicator={false}
             >
                 {/* Header */}
-                <View className='flex-row items-center justify-between mb-3'>
+                <View className='flex-row items-center justify-between mb-2'>
                     <View className='absolute w-full justify-center items-center'>
                         <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Members</Text>
                     </View>
@@ -94,11 +94,11 @@ const Members = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
 
                 {/* Filters */}
                 <ScrollView
-                    className='py-3 mb-6'
+                    className='py-3 mb-4'
                     showsHorizontalScrollIndicator={false}
                     horizontal={true}
                 >
-                    <View className='flex-row px-4 space-x-3'>
+                    <View className='flex-row px-4 space-x-3 my-1'>
                         {Object.values(FilterRole).map((type) => (
                             <TouchableOpacity
                                 key={type}

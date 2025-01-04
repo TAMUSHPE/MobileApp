@@ -95,7 +95,7 @@ const PersonalEventLog = ({ navigation }: NativeStackScreenProps<UserProfileStac
                     </TouchableOpacity>
                 </View>
 
-                {(!isLoading && instagramLog != null) && (
+                {(instagramLog != null) && (
                     <View
                         className={`mx-4 mt-8 rounded-md p-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                         style={{
@@ -143,7 +143,7 @@ const PersonalEventLog = ({ navigation }: NativeStackScreenProps<UserProfileStac
                 )}
 
                 <View className='mx-4'>
-                    {!isLoading && events.map(({ eventData, eventLog }, index) => (
+                    {events.map(({ eventData, eventLog }, index) => (
                         <View
                             className={`mt-8 rounded-md p-4 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                             style={{

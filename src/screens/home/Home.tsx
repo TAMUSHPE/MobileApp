@@ -1,5 +1,5 @@
 import { ActivityIndicator, Alert, Image, Linking, Platform, ScrollView, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { Octicons, FontAwesome6, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
@@ -21,6 +21,7 @@ import { reverseFormattedFirebaseName } from '../../types/committees';
 import { useFocusEffect } from '@react-navigation/core';
 import { compareVersions } from 'compare-versions';
 import { incrementAppLaunchCount, requestReview } from '../../helpers/appReview';
+import { Animated } from 'react-native';
 const pkg = require("../../../package.json");
 
 /**
@@ -48,7 +49,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const [isSignedIn, setIsSignedIn] = useState<boolean | undefined>(undefined);
     const [officeCount, setOfficeCount] = useState<number>(0);
     const [knockOnWallConfirmMenu, setKnockOnWallConfirmMenu] = useState<boolean>(false);
-    const [officeHourInfoMenu, setOfficeHourInfoMenu] = useState<boolean>(false);
     const [signInConfirmMenu, setSignInConfirmMenu] = useState<boolean>(false);
     const [userInterests, setUserInterests] = useState<string[]>(userInfo?.publicInfo?.interests || []);
     const [isLoading, setIsLoading] = useState<boolean>(true)
@@ -249,6 +249,134 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         );
     }
 
+
+    const MyEventsSection = () => {
+        const shimmerOpacity = useRef(new Animated.Value(0)).current;
+
+        useEffect(() => {
+            Animated.loop(
+                Animated.sequence([
+                    Animated.timing(shimmerOpacity, {
+                        toValue: 1,
+                        duration: 1000,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(shimmerOpacity, {
+                        toValue: 0,
+                        duration: 1000,
+                        useNativeDriver: true,
+                    }),
+                ])
+            ).start();
+        }, [shimmerOpacity]);
+
+        return (
+            <View className="mt-10 -z-10">
+                <View className="flex-row mb-3">
+                    <View className="flex-row ml-4 flex-1">
+                        <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>My Events</Text>
+                        <TouchableOpacity
+                            className="px-4"
+                            onPress={() => setInterestOptionsModal(true)}
+                        >
+                            <Octicons name="bell" size={24} color={darkMode ? "white" : "black"} />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+
+                {isLoading ? (
+                    <View
+                        className={`mx-4 p-4 rounded-md flex-row ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: { width: 0, height: 2 },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 3.84,
+                            elevation: 5,
+                            overflow: 'hidden',
+                        }}
+                    >
+                        <Animated.View
+                            style={{
+                                width: 80,
+                                height: 100,
+                                backgroundColor: darkMode ? '#444' : '#ccc',
+                                borderRadius: 4,
+                                marginRight: 16,
+                                opacity: shimmerOpacity.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0.8, 0.3],
+                                }),
+                            }}
+                        />
+
+                        <View style={{ flex: 1 }}>
+                            <Animated.View
+                                style={{
+                                    height: 20,
+                                    width: '70%',
+                                    backgroundColor: darkMode ? '#444' : '#ccc',
+                                    borderRadius: 4,
+                                    marginBottom: 12,
+                                    opacity: shimmerOpacity.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: [0.8, 0.3],
+                                    }),
+                                }}
+                            />
+                            <Animated.View
+                                style={{
+                                    height: 40,
+                                    width: '90%',
+                                    backgroundColor: darkMode ? '#444' : '#ccc',
+                                    borderRadius: 4,
+                                    opacity: shimmerOpacity.interpolate({
+                                        inputRange: [0, 1],
+                                        outputRange: [0.8, 0.3],
+                                    }),
+                                }}
+                            />
+                        </View>
+                    </View>
+                ) : (() => {
+                    const visibleEvents = myEvents.filter((event: SHPEEvent) => hasPrivileges || !event.hiddenEvent);
+
+                    if (visibleEvents.length === 0) {
+                        return (
+                            <View
+                                className={`mx-4 mt-4 p-4 rounded-md flex-row ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                                style={{
+                                    shadowColor: "#000",
+                                    shadowOffset: {
+                                        width: 0,
+                                        height: 2,
+                                    },
+                                    shadowOpacity: 0.25,
+                                    shadowRadius: 3.84,
+                                    elevation: 5,
+                                }}>
+                                <Text className={`text-center text-xl ${darkMode ? "text-white" : "text-black"}`}>
+                                    You don't have any events. Check back later or visit the events screen to explore more options.
+                                </Text>
+                            </View>
+                        );
+                    }
+
+                    return (
+                        <View className="mx-4">
+                            {visibleEvents.map((event: SHPEEvent, index: number) => (
+                                <View key={index} className={`${index > 0 && "mt-6"}`}>
+                                    <EventCard event={event} navigation={navigation} />
+                                </View>
+                            ))}
+                        </View>
+                    );
+                })()}
+            </View>
+        );
+    };
+
+
     return (
         <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />
@@ -448,59 +576,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 </View>
 
                 {/* My Events */}
-                <View className='mt-10 -z-10'>
-                    <View className='flex-row mb-3'>
-                        <View className='flex-row ml-4 flex-1'>
-                            <Text className={`text-2xl font-bold ${darkMode ? "text-white" : "text-black"}`}>My Events</Text>
-                            <TouchableOpacity
-                                className='px-4'
-                                onPress={() => setInterestOptionsModal(true)}
-                            >
-                                <Octicons name="bell" size={24} color={darkMode ? "white" : "black"} />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-
-                    {isLoading && (
-                        <ActivityIndicator size="small" className='mt-8' />
-                    )}
-
-                    {!isLoading && (() => {
-                        const visibleEvents = myEvents.filter(event => hasPrivileges || !event.hiddenEvent);
-
-                        if (visibleEvents.length === 0) {
-                            return (
-                                <View
-                                    className={`mx-4 mt-4 p-4 rounded-md flex-row ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
-                                    style={{
-                                        shadowColor: "#000",
-                                        shadowOffset: {
-                                            width: 0,
-                                            height: 2,
-                                        },
-                                        shadowOpacity: 0.25,
-                                        shadowRadius: 3.84,
-                                        elevation: 5,
-                                    }}>
-                                    <Text className={`text-center text-xl ${darkMode ? "text-white" : "text-black"}`}>
-                                        You don't have any events. Check back later or visit the events screen to explore more options.
-                                    </Text>
-                                </View>
-                            );
-                        }
-
-                        return (
-                            <View className='mx-4'>
-                                {visibleEvents.map((event: SHPEEvent, index) => (
-                                    <View key={index} className={`${index > 0 && "mt-6"}`}>
-                                        <EventCard event={event} navigation={navigation} />
-                                    </View>
-                                ))}
-                            </View>
-                        );
-                    })()}
-                </View>
-
+                <MyEventsSection />
 
                 {/* MOTM */}
                 <View className='mt-10'>
@@ -509,12 +585,6 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
                 <View className='pb-16' />
             </ScrollView>
-
-            {officeHourInfoMenu && (
-                <TouchableOpacity className='flex-1 h-screen w-screen absolute'
-                    onPress={() => setOfficeHourInfoMenu(false)}
-                />
-            )}
 
             <DismissibleModal
                 visible={knockOnWallConfirmMenu}

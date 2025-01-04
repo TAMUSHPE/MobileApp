@@ -1,13 +1,13 @@
-import { View, Text, Image, TouchableOpacity, useColorScheme } from 'react-native'
-import React, { useCallback, useContext, useEffect, useState } from 'react'
-import { MemberCardProp } from '../types/navigation'
-import { Images } from '../../assets'
-import { PublicUserInfo } from '../types/user'
-import { getMOTM, getPublicUserData } from '../api/firebaseUtils'
-import { useFocusEffect } from '@react-navigation/core'
-import { UserContext } from '../context/UserContext'
-import { truncateStringWithEllipsis } from '../helpers/stringUtils'
-import { auth } from '../config/firebaseConfig'
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { View, Text, Image, TouchableOpacity, Animated, useColorScheme } from 'react-native';
+import { MemberCardProp } from '../types/navigation';
+import { Images } from '../../assets';
+import { PublicUserInfo } from '../types/user';
+import { getMOTM, getPublicUserData } from '../api/firebaseUtils';
+import { useFocusEffect } from '@react-navigation/core';
+import { UserContext } from '../context/UserContext';
+import { truncateStringWithEllipsis } from '../helpers/stringUtils';
+import { auth } from '../config/firebaseConfig';
 
 const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
     const userContext = useContext(UserContext);
@@ -20,10 +20,28 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
 
     const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
 
-
     const [MOTM, setMOTM] = useState<PublicUserInfo>();
     const [currentUser, setCurrentUser] = useState(auth.currentUser);
 
+    const shimmerOpacity = useState(new Animated.Value(0))[0];
+
+    // Shimmer animation
+    useEffect(() => {
+        Animated.loop(
+            Animated.sequence([
+                Animated.timing(shimmerOpacity, {
+                    toValue: 1,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(shimmerOpacity, {
+                    toValue: 0,
+                    duration: 1000,
+                    useNativeDriver: true,
+                }),
+            ])
+        ).start();
+    }, [shimmerOpacity]);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(user => {
@@ -31,7 +49,6 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
         });
         return unsubscribe;
     }, []);
-
 
     const fetchMOTM = async () => {
         try {
@@ -50,16 +67,15 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
 
     useEffect(() => {
         if (!currentUser) {
-            return
+            return;
         }
-
         fetchMOTM();
-    }, [currentUser])
+    }, [currentUser]);
 
     useFocusEffect(
         useCallback(() => {
             if (!currentUser) {
-                return
+                return;
             }
 
             if (hasPrivileges) {
@@ -69,7 +85,76 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
     );
 
     if (!MOTM) {
-        return null;
+        return (
+            <View className="mx-4">
+                <Text className={`text-2xl font-bold mb-3 ${darkMode ? "text-white" : "text-black"}`}>Member of the Month</Text>
+                <View className={`flex-row rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    style={{
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 3.84,
+                        elevation: 5,
+                        height: 160,
+                    }}
+                >
+                    <Animated.View
+                        style={{
+                            width: 160,
+                            height: '100%',
+                            backgroundColor: darkMode ? '#444' : '#ccc',
+                            borderTopLeftRadius: 8,
+                            borderBottomLeftRadius: 8,
+                            opacity: shimmerOpacity.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0.8, 0.3],
+                            }),
+                        }}
+                    />
+                    <View className="mx-3 my-4 flex-1">
+                        <Animated.View
+                            style={{
+                                width: '80%',
+                                height: 28,
+                                backgroundColor: darkMode ? '#444' : '#ccc',
+                                borderRadius: 4,
+                                marginBottom: 12,
+                                opacity: shimmerOpacity.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0.8, 0.3],
+                                }),
+                            }}
+                        />
+
+                        <Animated.View
+                            style={{
+                                width: '90%',
+                                height: 20,
+                                backgroundColor: darkMode ? '#444' : '#ccc',
+                                borderRadius: 4,
+                                opacity: shimmerOpacity.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0.8, 0.3],
+                                }),
+                            }}
+                        />
+                        <Animated.View
+                            style={{
+                                width: '85%',
+                                height: 20,
+                                backgroundColor: darkMode ? '#444' : '#ccc',
+                                borderRadius: 4,
+                                marginTop: 8,
+                                opacity: shimmerOpacity.interpolate({
+                                    inputRange: [0, 1],
+                                    outputRange: [0.8, 0.3],
+                                }),
+                            }}
+                        />
+                    </View>
+                </View>
+            </View>
+        );
     }
 
     return (
@@ -78,15 +163,12 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
             <TouchableOpacity
                 onPress={() => {
                     navigation?.navigate("PublicProfile", { uid: MOTM?.uid });
-                }}>
-
+                }}
+            >
                 <View className={`flex-row rounded-lg ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                     style={{
                         shadowColor: "#000",
-                        shadowOffset: {
-                            width: 0,
-                            height: 2,
-                        },
+                        shadowOffset: { width: 0, height: 2 },
                         shadowOpacity: 0.25,
                         shadowRadius: 3.84,
                         elevation: 5,
@@ -97,14 +179,14 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
                         defaultSource={Images.DEFAULT_USER_PICTURE}
                         source={MOTM?.photoURL ? { uri: MOTM?.photoURL as string } : Images.DEFAULT_USER_PICTURE}
                     />
-                    <View className='mx-3 my-2 flex-1'>
+                    <View className="mx-3 my-2 flex-1">
                         <Text className={`font-semibold text-2xl ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(MOTM?.name, 15)}</Text>
                         <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(MOTM?.bio, 80)}</Text>
                     </View>
                 </View>
             </TouchableOpacity>
         </View>
-    )
-}
+    );
+};
 
-export default MOTMCard
+export default MOTMCard;

@@ -1,7 +1,7 @@
 import { auth, db, functions, storage } from "../config/firebaseConfig";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ref, uploadBytesResumable, UploadTask, UploadMetadata, listAll, deleteObject, getDownloadURL, uploadBytes } from "firebase/storage";
-import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, DocumentData, CollectionReference, QueryDocumentSnapshot, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot, serverTimestamp, QueryConstraint } from "firebase/firestore";
+import { doc, setDoc, getDoc, arrayUnion, collection, where, query, getDocs, orderBy, addDoc, updateDoc, deleteDoc, Timestamp, limit, startAfter, DocumentData, CollectionReference, QueryDocumentSnapshot, runTransaction, deleteField, GeoPoint, writeBatch, DocumentSnapshot, serverTimestamp, QueryConstraint, getCountFromServer } from "firebase/firestore";
 import { HttpsCallableResult, httpsCallable } from "firebase/functions";
 import { validateFileBlob, validateTamuEmail } from "../helpers/validation";
 import { PrivateUserInfo, PublicUserInfo, Roles, User, FilterRole } from "../types/user";
@@ -774,25 +774,18 @@ export const signOutOfEvent = async (eventID: string, uid?: string): Promise<Eve
 export const getAttendanceNumber = async (eventId: string) => {
     try {
         const logsRef = collection(db, `events/${eventId}/logs`);
-        const q = query(logsRef);
-        const querySnapshot = await getDocs(q);
 
-        let signedInCount = 0;
-        let signedOutCount = 0;
+        const signedInQuery = query(logsRef, where("signInTime", "!=", null));
+        const signedOutQuery = query(logsRef, where("signOutTime", "!=", null));
 
-        querySnapshot.forEach(doc => {
-            const data = doc.data();
-            if (data.signInTime) {
-                signedInCount++;
-            }
-            if (data.signOutTime) {
-                signedOutCount++;
-            }
-        });
+        const [signedInSnapshot, signedOutSnapshot] = await Promise.all([
+            getCountFromServer(signedInQuery),
+            getCountFromServer(signedOutQuery)
+        ]);
 
         return {
-            signedInCount,
-            signedOutCount
+            signedInCount: signedInSnapshot.data().count,
+            signedOutCount: signedOutSnapshot.data().count
         };
     } catch (error) {
         console.error("Error calculating attendance number:", error);
