@@ -114,7 +114,7 @@ export const updateUserPoints = functions.https.onCall(async (data, context) => 
     }
 
     const token = context.auth.token;
-    if (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.lead !== true && token.representative !== true) {
+    if (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.representative !== true) {
         throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
     }
 
@@ -138,7 +138,7 @@ export const updateAllUserPoints = functions.https.onCall(async (_, context) => 
     }
 
     const token = context.auth.token;
-    if (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.lead !== true && token.representative !== true) {
+    if (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.representative !== true) {
         throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
     }
 
