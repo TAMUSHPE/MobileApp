@@ -20,6 +20,7 @@ import { DocumentSnapshot, Timestamp } from 'firebase/firestore';
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 import { formatDateWithYear } from '../../helpers/timeUtils';
+import { hasPrivileges } from '../../helpers/rolesUtils';
 
 export type PublicProfileScreenProps = {
     route: RouteProp<UserProfileStackParams, 'PublicProfile'>;
@@ -51,7 +52,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
     const [endOfData, setEndOfData] = useState(false);
     const lastVisibleRef = useRef<DocumentSnapshot | null>(null);
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+    const isAdmin = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative']);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -188,7 +189,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                             </View>
 
                             {/* Edit Role Button */}
-                            {hasPrivileges &&
+                            {isAdmin &&
                                 <TouchableOpacity
                                     onPress={() => setShowRoleModal(true)}
                                     className="rounded-xl px-3 py-2 mt-4"

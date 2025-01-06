@@ -9,6 +9,7 @@ import { handleLinkPress } from '../../helpers/links';
 import { ResourcesStackParams } from '../../types/navigation'
 import { PublicUserInfo } from '../../types/user';
 import DismissibleModal from '../../components/DismissibleModal';
+import { hasPrivileges } from '../../helpers/rolesUtils';
 
 const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ resumeData, navigation, onResumeRemoved }) => {
     const { uid, photoURL, name, resumePublicURL, major, classYear, roles, nationalExpiration, chapterExpiration } = resumeData
@@ -21,7 +22,8 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+    const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
+
 
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
@@ -78,7 +80,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
                 </TouchableOpacity>
             </View>
 
-            {hasPrivileges && (
+            {isAdminLead && (
                 <View className='absolute -top-3 -right-3'>
                     <TouchableOpacity
                         onPress={() => setConfirmVisible(true)}

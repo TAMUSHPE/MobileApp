@@ -10,6 +10,7 @@ import EventCard from './EventCard';
 import { UserContext } from '../../context/UserContext';
 import { StatusBar } from 'expo-status-bar';
 import { useFocusEffect } from '@react-navigation/core';
+import { hasPrivileges } from '../../helpers/rolesUtils';
 
 const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) => {
     const userContext = useContext(UserContext);
@@ -19,7 +20,7 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+    const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
 
     const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -51,10 +52,10 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
 
     useFocusEffect(
         useCallback(() => {
-            if (hasPrivileges) {
+            if (isAdminLead) {
                 fetchInitialEvents();
             }
-        }, [hasPrivileges])
+        }, [isAdminLead])
     );
 
 
@@ -68,7 +69,7 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
         loadMoreEvents();
     }, [loading, endOfData, setPastEvents]);
 
-    const visibleEvents = hasPrivileges ? pastEvents : pastEvents.filter(event => !event.hiddenEvent);
+    const visibleEvents = isAdminLead ? pastEvents : pastEvents.filter(event => !event.hiddenEvent);
 
     return (
         <SafeAreaView edges={["top"]} className={`h-full ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>

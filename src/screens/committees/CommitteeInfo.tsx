@@ -18,6 +18,7 @@ import { PublicUserInfo } from '../../types/user';
 import { CommitteesStackParams } from '../../types/navigation';
 import MembersList from '../../components/MembersList';
 import EventCard from '../events/EventCard';
+import { hasPrivileges } from '../../helpers/rolesUtils';
 
 const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigation }) => {
     const initialCommittee = route.params.committee;
@@ -34,7 +35,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+    const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
 
     const [events, setEvents] = useState<SHPEEvent[]>([]);
     const [members, setMembers] = useState<PublicUserInfo[]>([]);
@@ -128,7 +129,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
     useFocusEffect(
         useCallback(() => {
-            if (hasPrivileges) {
+            if (isAdminLead) {
                 fetchTeamMemberData();
             }
         }, [fetchTeamMemberData])
@@ -208,7 +209,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                     <TouchableOpacity onPress={() => navigation.goBack()} className='py-2 px-4'>
                         <Octicons name="chevron-left" size={30} color={darkMode ? "white" : "black"} />
                     </TouchableOpacity>
-                    {hasPrivileges && (
+                    {isAdminLead && (
                         <TouchableOpacity
                             onPress={() => { navigation.navigate("CommitteeEditor", { committee: initialCommittee }) }}
                             className='items-center justify-center px-4 py-1'
