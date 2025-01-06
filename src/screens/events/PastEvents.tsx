@@ -21,6 +21,7 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
+    const isCoach = hasPrivileges(userInfo!, ['coach']);
 
     const [pastEvents, setPastEvents] = useState<SHPEEvent[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
@@ -52,10 +53,10 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
 
     useFocusEffect(
         useCallback(() => {
-            if (isAdminLead) {
+            if ((isAdminLead || isCoach)) {
                 fetchInitialEvents();
             }
-        }, [isAdminLead])
+        }, [isAdminLead, isCoach])
     );
 
 

@@ -383,6 +383,11 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                             isActive={modifiedRoles?.lead || false}
                             onToggle={() => setModifiedRoles({ ...modifiedRoles, lead: !modifiedRoles?.lead })}
                         />
+                        <RoleItem
+                            roleName="Coach"
+                            isActive={modifiedRoles?.coach || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, coach: !modifiedRoles?.coach })}
+                        />
                     </View>
 
                     {/* Action Buttons */}
@@ -390,13 +395,13 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                         <TouchableOpacity
                             onPress={async () => {
                                 // checks if has role but no custom title
-                                if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
+                                if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead || modifiedRoles?.coach) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
                                     Alert.alert("Missing Title", "You must enter a title ");
                                     return;
                                 }
 
                                 // Checks if has custom title but no role
-                                if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead && modifiedRoles?.customTitle) {
+                                if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead && !modifiedRoles?.coach && modifiedRoles?.customTitle) {
                                     Alert.alert("Missing Role", "If a custom title is entered, you must select a role.");
                                     return;
                                 }
@@ -436,9 +441,5 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
         </View>
     )
 }
-
-const formatTimestamp = (timestamp: Timestamp | null | undefined) => {
-    return timestamp ? new Date(timestamp.toDate()).toLocaleString() : 'N/A';
-};
 
 export default PublicProfileScreen;

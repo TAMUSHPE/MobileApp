@@ -17,6 +17,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
+    const isCoach = hasPrivileges(userInfo!, ['coach']);
 
     return (
         <TouchableOpacity
@@ -55,7 +56,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
                 <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>{formatDate(event.startTime?.toDate()!)}</Text>
             </View>
 
-            {isAdminLead && (
+            {(isAdminLead || isCoach) && (
                 <View className='h-full  items-center justify-center mx-2'>
                     <TouchableOpacity
                         onPress={() => { navigation.navigate("QRCode", { event: event }) }}

@@ -40,6 +40,7 @@ const Events = ({ navigation }: EventsProps) => {
     const [filter, setFilter] = useState<"main" | "intramural" | "committee">("main");
 
     const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
+    const isCoach = hasPrivileges(userInfo!, ['coach']);
 
     const selectedEvents = filter === "main" ? mainEvents : filter === "intramural" ? intramuralEvents : committeeEvents;
 
@@ -140,10 +141,10 @@ const Events = ({ navigation }: EventsProps) => {
 
     useFocusEffect(
         useCallback(() => {
-            if (isAdminLead) {
+            if ((isAdminLead || isCoach)) {
                 fetchEvents();
             }
-        }, [isAdminLead])
+        }, [isAdminLead, isCoach])
     );
 
 
@@ -285,7 +286,7 @@ const Events = ({ navigation }: EventsProps) => {
                                                         </Text>
                                                     </View>
                                                 </LinearGradient>
-                                                {isAdminLead && (
+                                                {(isAdminLead || isCoach) && (
                                                     <TouchableOpacity
                                                         onPress={() => {
                                                             navigation.navigate("QRCode", { event: event });
@@ -344,7 +345,7 @@ const Events = ({ navigation }: EventsProps) => {
             </ScrollView>
 
             {/* Create Event */}
-            {isAdminLead && (
+            {(isAdminLead || isCoach) && (
                 <TouchableOpacity
                     className='absolute bottom-0 right-0 bg-primary-blue rounded-full h-14 w-14 shadow-lg justify-center items-center m-4'
                     style={{

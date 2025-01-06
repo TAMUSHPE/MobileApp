@@ -45,6 +45,7 @@ const EventInfo = ({ navigation }: EventProps) => {
 
     const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
     const isAdmin = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative']);
+    const isCoach = hasPrivileges(userInfo!, ['coach']);
 
     const [creatorData, setCreatorData] = useState<PublicUserInfo | null>(null);
     const [loadingUserEventLog, setLoadingUserEventLog] = useState<boolean>(true);
@@ -205,7 +206,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                             >
                                 <Octicons name="chevron-left" size={30} color="white" />
                             </TouchableOpacity>
-                            {isAdminLead && (
+                            {(isAdminLead || isCoach) && (
                                 <View className=''>
                                     <TouchableOpacity
                                         onPress={() => { setShowOptionMenu(!showOptionMenu) }}
@@ -276,7 +277,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                         </View>
                     </SafeAreaView>
 
-                    {isAdminLead && (
+                    {(isAdminLead || isCoach) && (
                         <TouchableOpacity
                             onPress={() => {
                                 navigation.navigate("QRCode", { event: event })
@@ -295,7 +296,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                 </View>
 
                 <View className='-z-10'>
-                    {isAdminLead && !loading && (
+                    {(isAdminLead || isCoach) && !loading && (
                         <View
                             className={`flex-row w-full mx-4 mt-2 mb-1 ${signInPoints !== undefined && signOutPoints !== undefined ? 'justify-between' : 'justify-center'
                                 }`}
