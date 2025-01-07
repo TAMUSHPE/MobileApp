@@ -8,6 +8,7 @@ import { useFocusEffect } from '@react-navigation/core';
 import { UserContext } from '../context/UserContext';
 import { truncateStringWithEllipsis } from '../helpers/stringUtils';
 import { auth } from '../config/firebaseConfig';
+import { hasPrivileges } from '../helpers/rolesUtils';
 
 const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
     const userContext = useContext(UserContext);
@@ -18,7 +19,7 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+    const isAdmin = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative']);
 
     const [MOTM, setMOTM] = useState<PublicUserInfo>();
     const [currentUser, setCurrentUser] = useState(auth.currentUser);
@@ -78,7 +79,7 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
                 return;
             }
 
-            if (hasPrivileges) {
+            if (isAdmin) {
                 fetchMOTM();
             }
         }, [currentUser])

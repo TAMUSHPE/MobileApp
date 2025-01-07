@@ -14,6 +14,7 @@ export interface Roles {
     representative?: boolean;
     lead?: boolean;
     secretary?: boolean;
+    coach?: boolean;
     customTitle?: string;
 };
 

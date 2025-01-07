@@ -14,6 +14,7 @@ import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { EventsStackParams } from '../../types/navigation';
 import { EventType, ExtendedEventType, SHPEEvent } from '../../types/events';
 import EventCard from './EventCard';
+import { hasPrivileges } from '../../helpers/rolesUtils';
 
 interface EventGroups {
     today: SHPEEvent[];
@@ -38,7 +39,8 @@ const Events = ({ navigation }: EventsProps) => {
     const [committeeEvents, setCommitteeEvents] = useState<EventGroups>({ today: [], upcoming: [], past: [] });
     const [filter, setFilter] = useState<"main" | "intramural" | "committee">("main");
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+    const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
+    const isCoach = hasPrivileges(userInfo!, ['coach']);
 
     const selectedEvents = filter === "main" ? mainEvents : filter === "intramural" ? intramuralEvents : committeeEvents;
 
@@ -57,7 +59,7 @@ const Events = ({ navigation }: EventsProps) => {
             const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
 
             const filterEvents = (events: SHPEEvent[], condition: (event: SHPEEvent) => boolean) =>
-                events.filter(event => (hasPrivileges || !event.hiddenEvent) && condition(event));
+                events.filter(event => (isAdminLead || !event.hiddenEvent) && condition(event));
 
             const todayEvents = filterEvents(filteredUpcomingEvents, (event: SHPEEvent) => {
                 const startTime = event.startTime?.toDate() || new Date(0);
@@ -139,10 +141,10 @@ const Events = ({ navigation }: EventsProps) => {
 
     useFocusEffect(
         useCallback(() => {
-            if (hasPrivileges) {
+            if ((isAdminLead || isCoach)) {
                 fetchEvents();
             }
-        }, [hasPrivileges])
+        }, [isAdminLead, isCoach])
     );
 
 
@@ -284,7 +286,7 @@ const Events = ({ navigation }: EventsProps) => {
                                                         </Text>
                                                     </View>
                                                 </LinearGradient>
-                                                {hasPrivileges && (
+                                                {(isAdminLead || isCoach) && (
                                                     <TouchableOpacity
                                                         onPress={() => {
                                                             navigation.navigate("QRCode", { event: event });
@@ -343,7 +345,7 @@ const Events = ({ navigation }: EventsProps) => {
             </ScrollView>
 
             {/* Create Event */}
-            {hasPrivileges && (
+            {(isAdminLead || isCoach) && (
                 <TouchableOpacity
                     className='absolute bottom-0 right-0 bg-primary-blue rounded-full h-14 w-14 shadow-lg justify-center items-center m-4'
                     style={{

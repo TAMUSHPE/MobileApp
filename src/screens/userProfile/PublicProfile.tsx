@@ -20,6 +20,7 @@ import { DocumentSnapshot, Timestamp } from 'firebase/firestore';
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { reverseFormattedFirebaseName } from '../../types/committees';
 import { formatDateWithYear } from '../../helpers/timeUtils';
+import { hasPrivileges } from '../../helpers/rolesUtils';
 
 export type PublicProfileScreenProps = {
     route: RouteProp<UserProfileStackParams, 'PublicProfile'>;
@@ -51,7 +52,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
     const [endOfData, setEndOfData] = useState(false);
     const lastVisibleRef = useRef<DocumentSnapshot | null>(null);
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+    const isAdmin = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative']);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -188,7 +189,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                             </View>
 
                             {/* Edit Role Button */}
-                            {hasPrivileges &&
+                            {isAdmin &&
                                 <TouchableOpacity
                                     onPress={() => setShowRoleModal(true)}
                                     className="rounded-xl px-3 py-2 mt-4"
@@ -382,6 +383,11 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                             isActive={modifiedRoles?.lead || false}
                             onToggle={() => setModifiedRoles({ ...modifiedRoles, lead: !modifiedRoles?.lead })}
                         />
+                        <RoleItem
+                            roleName="Coach"
+                            isActive={modifiedRoles?.coach || false}
+                            onToggle={() => setModifiedRoles({ ...modifiedRoles, coach: !modifiedRoles?.coach })}
+                        />
                     </View>
 
                     {/* Action Buttons */}
@@ -389,13 +395,13 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                         <TouchableOpacity
                             onPress={async () => {
                                 // checks if has role but no custom title
-                                if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
+                                if ((modifiedRoles?.admin || modifiedRoles?.developer || modifiedRoles?.officer || modifiedRoles?.secretary || modifiedRoles?.representative || modifiedRoles?.lead || modifiedRoles?.coach) && !modifiedRoles?.customTitle && !modifiedRoles?.customTitle?.length) {
                                     Alert.alert("Missing Title", "You must enter a title ");
                                     return;
                                 }
 
                                 // Checks if has custom title but no role
-                                if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead && modifiedRoles?.customTitle) {
+                                if (!modifiedRoles?.admin && !modifiedRoles?.developer && !modifiedRoles?.officer && !modifiedRoles?.secretary && !modifiedRoles?.representative && !modifiedRoles?.lead && !modifiedRoles?.coach && modifiedRoles?.customTitle) {
                                     Alert.alert("Missing Role", "If a custom title is entered, you must select a role.");
                                     return;
                                 }
@@ -435,9 +441,5 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
         </View>
     )
 }
-
-const formatTimestamp = (timestamp: Timestamp | null | undefined) => {
-    return timestamp ? new Date(timestamp.toDate()).toLocaleString() : 'N/A';
-};
 
 export default PublicProfileScreen;

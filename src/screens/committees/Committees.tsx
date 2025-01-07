@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { CommitteesStackParams } from '../../types/navigation';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
+import { hasPrivileges } from '../../helpers/rolesUtils';
 
 const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams>) => {
     const userContext = useContext(UserContext);
@@ -22,7 +23,7 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+    const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
 
     const [committees, setCommittees] = useState<Committee[]>([]);
     const [filteredCommittees, setFilteredCommittees] = useState<Committee[]>([]);
@@ -79,10 +80,10 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
 
     useFocusEffect(
         useCallback(() => {
-            if (hasPrivileges) {
+            if (isAdminLead) {
                 fetchCommittees();
             }
-        }, [hasPrivileges])
+        }, [isAdminLead])
     );
 
     return (
@@ -151,7 +152,7 @@ const Committees = ({ navigation }: NativeStackScreenProps<CommitteesStackParams
             </ScrollView>
 
             {/* Create Committee */}
-            {hasPrivileges && (
+            {isAdminLead && (
                 <TouchableOpacity
                     className='absolute bottom-0 right-0 bg-primary-blue rounded-full h-14 w-14 shadow-lg justify-center items-center m-4'
                     style={{

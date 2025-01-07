@@ -6,6 +6,7 @@ import { Images } from '../../../assets'
 import { formatDate } from '../../helpers/timeUtils'
 import { truncateStringWithEllipsis } from '../../helpers/stringUtils';
 import { SHPEEvent } from '../../types/events'
+import { hasPrivileges } from '../../helpers/rolesUtils';
 
 const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any }) => {
     const userContext = useContext(UserContext);
@@ -15,7 +16,8 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+    const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
+    const isCoach = hasPrivileges(userInfo!, ['coach']);
 
     return (
         <TouchableOpacity
@@ -54,7 +56,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
                 <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>{formatDate(event.startTime?.toDate()!)}</Text>
             </View>
 
-            {hasPrivileges && (
+            {(isAdminLead || isCoach) && (
                 <View className='h-full  items-center justify-center mx-2'>
                     <TouchableOpacity
                         onPress={() => { navigation.navigate("QRCode", { event: event }) }}
