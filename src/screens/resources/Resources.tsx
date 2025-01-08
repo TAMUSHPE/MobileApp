@@ -15,6 +15,7 @@ import ResumeIcon from '../../../assets/resume-icon.svg';
 import ExamIcon from '../../../assets/exam-icon.svg';
 import { isMemberVerified } from '../../helpers/membership';
 import { Images } from '../../../assets';
+import { hasPrivileges } from '../../helpers/rolesUtils';
 
 const linkIDs = ["1", "2", "3", "4", "5"]; // First 5 links are reserved for social media links
 
@@ -27,8 +28,7 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
-
+    const isAdmin = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
 
     const [isLoading, setIsLoading] = useState(true);
     const [links, setLinks] = useState<LinkData[]>([]);
@@ -128,7 +128,7 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
         IconComponent: React.ElementType;
     }) => (
         <TouchableOpacity
-            className={`flex-row bg-primary-blue rounded-3xl mb-8 ${(userInfo?.publicInfo?.isStudent || navigateTo == "PointsLeaderboard") ? "bg-primary-blue" : (darkMode ? "bg-primary-grey-dark" : "bg-grey-light")}`}
+            className={`flex-row bg-primary-blue rounded-3xl mb-8`}
             style={{
                 shadowColor: "#000",
                 shadowOffset: {
@@ -145,7 +145,7 @@ const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<Resou
                     alert("You must be a student of Texas A&M to access this resource")
                     return;
                 }
-                if (navigateTo == "PointsLeaderboard" || hasPrivileges || isMemberVerified(userInfo?.publicInfo?.nationalExpiration, userInfo?.publicInfo?.chapterExpiration)) {
+                if (navigateTo == "PointsLeaderboard" || isAdmin || isMemberVerified(userInfo?.publicInfo?.nationalExpiration, userInfo?.publicInfo?.chapterExpiration)) {
                     navigation.navigate(navigateTo);
                 } else {
                     alert("You must be a member of TAMU SHPE to access this resource. Visit the home screen to learn more to become a member!");

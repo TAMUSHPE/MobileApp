@@ -111,7 +111,7 @@ export const eventSignIn = functions.https.onCall(async (data, context) => {
 
     // Only allow privileged users to sign-in for other users
     const token = context.auth.token;
-    if (uid !== context.auth.uid && (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.lead !== true && token.representative !== true)) {
+    if (uid !== context.auth.uid && (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.representative !== true)) {
         functions.logger.warn(`${context.auth.token} attempted to sign in as ${uid} with invalid permissions.`);
         throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
     }
@@ -188,7 +188,7 @@ export const eventSignOut = functions.https.onCall(async (data, context) => {
 
     // Only allow privileged users to sign-out for other users
     const token = context.auth.token;
-    if (uid !== context.auth.uid && (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.lead !== true && token.representative !== true)) {
+    if (uid !== context.auth.uid && (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.representative !== true)) {
         functions.logger.warn(`${context.auth.token} attempted to sign in as ${uid} with invalid permissions.`);
         throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
     }
@@ -261,7 +261,7 @@ export const addInstagramPoints = functions.https.onCall(async (data, context) =
     }
 
     const token = context.auth.token;
-    if (token.admin !== true && token.officer !== true && token.developer !== true && token.lead !== true && token.representative !== true) {
+    if (token.admin !== true && token.officer !== true && token.developer !== true && token.representative !== true) {
         throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
     }
 
@@ -313,7 +313,7 @@ export const eventLogDelete = functions.https.onCall(async (data, context) => {
 
     // Only allow privileged users to sign-out for other users
     const token = context.auth.token;
-    if (uid !== context.auth.uid && (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.lead !== true && token.representative !== true)) {
+    if (uid !== context.auth.uid && (token.admin !== true && token.officer !== true && token.developer !== true && token.secretary !== true && token.representative !== true)) {
         functions.logger.warn(`${context.auth.token} attempted to sign in as ${uid} with invalid permissions.`);
         throw new functions.https.HttpsError("permission-denied", `Invalid credentials`);
     }

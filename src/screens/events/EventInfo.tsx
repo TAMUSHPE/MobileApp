@@ -22,6 +22,7 @@ import ClockIconBlack from '../../../assets/clock-solid_black.svg'
 import ClockIconWhite from '../../../assets/clock-solid_white.svg'
 import LocationDotIconBlack from '../../../assets/location-dot-solid_black.svg'
 import LocationDotIconWhite from '../../../assets/location-dot-solid_white.svg'
+import { hasPrivileges } from '../../helpers/rolesUtils';
 
 
 
@@ -42,7 +43,9 @@ const EventInfo = ({ navigation }: EventProps) => {
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+    const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
+    const isAdmin = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative']);
+    const isCoach = hasPrivileges(userInfo!, ['coach']);
 
     const [creatorData, setCreatorData] = useState<PublicUserInfo | null>(null);
     const [loadingUserEventLog, setLoadingUserEventLog] = useState<boolean>(true);
@@ -203,7 +206,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                             >
                                 <Octicons name="chevron-left" size={30} color="white" />
                             </TouchableOpacity>
-                            {hasPrivileges && (
+                            {(isAdminLead || isCoach) && (
                                 <View className=''>
                                     <TouchableOpacity
                                         onPress={() => { setShowOptionMenu(!showOptionMenu) }}
@@ -228,39 +231,44 @@ const EventInfo = ({ navigation }: EventProps) => {
                                                 >
                                                     <Text className='text-white text-xl py-3 font-medium'>Edit Event</Text>
                                                 </TouchableOpacity>
-                                                <View className='w-[70%] bg-white' style={{ height: 1 }} />
-                                                <TouchableOpacity
-                                                    className='px-4'
-                                                    onPress={() => {
-                                                        setShowOptionMenu(false);
-                                                        setSignInModalVisible(true)
-                                                        fetchAllData();
-                                                    }}
-                                                >
-                                                    <Text className='text-white text-xl py-3 font-medium'>Manual Sign In</Text>
-                                                </TouchableOpacity>
-                                                <View className='w-[70%] bg-white mx-4' style={{ height: 1 }} />
-                                                <TouchableOpacity
-                                                    className='px-4 py-3'
-                                                    onPress={() => {
-                                                        setShowOptionMenu(false);
-                                                        setSignOutModalVisible(true)
-                                                        fetchAllData();
-                                                    }}
-                                                >
-                                                    <Text className='text-white text-xl font-medium'>Manual Sign Out</Text>
-                                                </TouchableOpacity>
-                                                <View className='w-[70%] bg-white' style={{ height: 1 }} />
-                                                <TouchableOpacity
-                                                    className="px-4 py-3"
-                                                    onPress={() => {
-                                                        setShowOptionMenu(false);
-                                                        setUsersLoggedModalVisible(true);
-                                                        fetchAllData();
-                                                    }}
-                                                >
-                                                    <Text className="text-white text-xl font-medium">Manual Delete Log</Text>
-                                                </TouchableOpacity>
+
+                                                {isAdmin && (
+                                                    <>
+                                                        <View className='w-[70%] bg-white' style={{ height: 1 }} />
+                                                        <TouchableOpacity
+                                                            className='px-4'
+                                                            onPress={() => {
+                                                                setShowOptionMenu(false);
+                                                                setSignInModalVisible(true)
+                                                                fetchAllData();
+                                                            }}
+                                                        >
+                                                            <Text className='text-white text-xl py-3 font-medium'>Manual Sign In</Text>
+                                                        </TouchableOpacity>
+                                                        <View className='w-[70%] bg-white mx-4' style={{ height: 1 }} />
+                                                        <TouchableOpacity
+                                                            className='px-4 py-3'
+                                                            onPress={() => {
+                                                                setShowOptionMenu(false);
+                                                                setSignOutModalVisible(true)
+                                                                fetchAllData();
+                                                            }}
+                                                        >
+                                                            <Text className='text-white text-xl font-medium'>Manual Sign Out</Text>
+                                                        </TouchableOpacity>
+                                                        <View className='w-[70%] bg-white' style={{ height: 1 }} />
+                                                        <TouchableOpacity
+                                                            className="px-4 py-3"
+                                                            onPress={() => {
+                                                                setShowOptionMenu(false);
+                                                                setUsersLoggedModalVisible(true);
+                                                                fetchAllData();
+                                                            }}
+                                                        >
+                                                            <Text className="text-white text-xl font-medium">Manual Delete Log</Text>
+                                                        </TouchableOpacity>
+                                                    </>
+                                                )}
                                             </View>
                                         </View>
                                     )}
@@ -269,7 +277,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                         </View>
                     </SafeAreaView>
 
-                    {hasPrivileges && (
+                    {(isAdminLead || isCoach) && (
                         <TouchableOpacity
                             onPress={() => {
                                 navigation.navigate("QRCode", { event: event })
@@ -288,7 +296,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                 </View>
 
                 <View className='-z-10'>
-                    {hasPrivileges && !loading && (
+                    {(isAdminLead || isCoach) && !loading && (
                         <View
                             className={`flex-row w-full mx-4 mt-2 mb-1 ${signInPoints !== undefined && signOutPoints !== undefined ? 'justify-between' : 'justify-center'
                                 }`}

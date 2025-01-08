@@ -22,6 +22,7 @@ import { useFocusEffect } from '@react-navigation/core';
 import { compareVersions } from 'compare-versions';
 import { incrementAppLaunchCount, requestReview } from '../../helpers/appReview';
 import { Animated } from 'react-native';
+import { hasPrivileges } from '../../helpers/rolesUtils';
 const pkg = require("../../../package.json");
 
 /**
@@ -43,7 +44,9 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const hasPrivileges = (userInfo?.publicInfo?.roles?.admin?.valueOf() || userInfo?.publicInfo?.roles?.officer?.valueOf() || userInfo?.publicInfo?.roles?.developer?.valueOf() || userInfo?.publicInfo?.roles?.lead?.valueOf() || userInfo?.publicInfo?.roles?.representative?.valueOf());
+    const isAdmin = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative']);
+
+    const isAdminLead = hasPrivileges(userInfo!, ['admin', 'officer', 'developer', 'representative', 'lead']);
 
     const [isVerified, setIsVerified] = useState<boolean>(true); // By default hide "become a member" banner
     const [isSignedIn, setIsSignedIn] = useState<boolean | undefined>(undefined);
@@ -122,7 +125,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
         fetchEvents();
         getOfficeCount();
-        if (hasPrivileges) {
+        if (isAdmin) {
             getOfficerStatus();
         }
     }, [auth.currentUser]);
@@ -152,10 +155,10 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
     useFocusEffect(
         useCallback(() => {
-            if (hasPrivileges) {
+            if (isAdminLead) {
                 fetchEvents();
             }
-        }, [hasPrivileges])
+        }, [isAdminLead])
     );
 
     const isInterestChanged = () => {
@@ -339,7 +342,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                         </View>
                     </View>
                 ) : (() => {
-                    const visibleEvents = myEvents.filter((event: SHPEEvent) => hasPrivileges || !event.hiddenEvent);
+                    const visibleEvents = myEvents.filter((event: SHPEEvent) => isAdminLead || !event.hiddenEvent);
 
                     if (visibleEvents.length === 0) {
                         return (
@@ -427,7 +430,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                 )}
 
                 {/* Office Dashboard Office Sign In*/}
-                {hasPrivileges && (
+                {isAdmin && (
                     <View className="flex-row flex-1 items-center mx-4 mt-4 space-x-4">
                         <View className='flex-1'>
                             <TouchableOpacity
