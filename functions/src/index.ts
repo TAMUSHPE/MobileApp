@@ -10,3 +10,4 @@ export { checkUsernameUniqueness } from "./checkUsername";
 export { eventSignIn, eventSignOut, eventLogDelete, addInstagramPoints } from "./events";
 export { calculateMOTM } from "./points";
 export { scheduledFirestoreExport, httpFirestoreExport, resetPointsWithPassword } from "./backup"
+export { createSHPEGainsEvent, createSHPEGainsPost } from "./SHPEGains"
