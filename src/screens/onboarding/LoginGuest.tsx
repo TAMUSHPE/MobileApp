@@ -1,4 +1,4 @@
-import { View, Text, KeyboardAvoidingView, Image, ActivityIndicator, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, KeyboardAvoidingView, Image, ActivityIndicator, TouchableOpacity, ScrollView, TextInput } from "react-native";
 import React, { useEffect, useState, useContext, useCallback } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -95,7 +95,7 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
             colors={['#191740', '#413CA6']}
             className="flex-1"
         >
-            <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
+            <View className="flex-1">
                 <SafeAreaView className="flex-1 h-screen">
                     <ScrollView
                         contentContainerStyle={{ flexGrow: 1 }}
@@ -194,7 +194,7 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
                         </View>
                     </ScrollView>
                 </SafeAreaView>
-            </KeyboardAwareScrollView>
+            </View>
         </LinearGradient>
     );
 };
