@@ -41,6 +41,12 @@
           "microphonePermission": "Allow TAMUSHPE to access your microphone",
           "recordAudioAndroid": false
         }
+      ],
+      [
+       "expo-location",
+        {
+          "locationWhenInUsePermission": "TAMU SHPE needs access to your location to show your position on the map."
+        }
       ]
     ],
     "assetBundlePatterns": [
