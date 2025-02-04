@@ -51,15 +51,6 @@ const PastEvents = ({ navigation }: NativeStackScreenProps<EventsStackParams>) =
         fetchInitialEvents();
     }, []);
 
-    useFocusEffect(
-        useCallback(() => {
-            if ((isAdminLead || isCoach)) {
-                fetchInitialEvents();
-            }
-        }, [isAdminLead, isCoach])
-    );
-
-
     const handleScroll = useCallback(({ nativeEvent }: NativeSyntheticEvent<NativeScrollEvent>) => {
         const isCloseToBottom = ({ layoutMeasurement, contentOffset, contentSize }: NativeScrollEvent) => {
             const paddingToBottom = 20;
