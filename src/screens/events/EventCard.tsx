@@ -21,7 +21,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
 
     return (
         <TouchableOpacity
-            className={`h-[90px] rounded-md flex-row ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+            className={`min-h-[90px] rounded-md flex-row ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
             style={{
                 shadowColor: "#000",
                 shadowOffset: {
@@ -42,7 +42,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
             )}
 
             <Image
-                className="flex h-full w-[25%] rounded-md"
+                className="w-[25%] rounded-md h-full"
                 resizeMode='cover'
                 defaultSource={darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
                 source={event?.coverImageURI ? { uri: event.coverImageURI } : darkMode ? Images.SHPE_WHITE : Images.SHPE_NAVY}
@@ -57,7 +57,7 @@ const EventCard = ({ event, navigation }: { event: SHPEEvent, navigation: any })
             </View>
 
             {(isAdminLead || isCoach) && (
-                <View className='h-full  items-center justify-center mx-2'>
+                <View className='items-center justify-center mx-2'>
                     <TouchableOpacity
                         onPress={() => { navigation.navigate("QRCode", { event: event }) }}
                         className='absolute right-0'
