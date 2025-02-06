@@ -24,6 +24,7 @@ import { incrementAppLaunchCount, requestReview } from '../../helpers/appReview'
 import { Animated } from 'react-native';
 import { hasPrivileges } from '../../helpers/rolesUtils';
 const pkg = require("../../../package.json");
+import { handleLinkPress } from '../../helpers/links';
 
 /**
  * Renders the home screen of the application.
@@ -566,7 +567,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                             elevation: 5,
                         }}
                         activeOpacity={0.7}
-                        onPress={() => Alert.alert("Coming Soon", "This feature is coming soon.")}
+                        onPress={() => handleLinkPress("https://tamu.estore.flywire.com/products?storeCatalog=5935")}
                     >
 
                         <View className='mt-4'>
