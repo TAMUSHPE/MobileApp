@@ -1,6 +1,5 @@
 import * as functions from 'firebase-functions';
 import { db } from "./firebaseConfig";
-import { randomUUID } from "crypto";
 import { HttpsError } from 'firebase-functions/v1/auth';
 import { SHPEGainsEvent, SHPEGainsPost } from './types/shpeGains';
 
@@ -32,12 +31,14 @@ export const createSHPEGainsPost = functions.https.onCall(async (data, context) 
     }
 
     const currentDate = new Date();
-    const postDocumentName = `${context.auth.uid}-${randomUUID()}`;
+    const postDocumentName = `${context.auth.uid}-${formatDateToDocumentName(currentDate)}`;
     const publicPostDocRef = db.doc(`shpe-gains/${formatDateToDocumentName(currentDate)}/posts/${postDocumentName}`);
     const personalArchiveDocRef = db.doc(`users/${context.auth.uid}/shpe-gains-posts/${postDocumentName}`);
 
     const postData: SHPEGainsPost = {
         unixTimestamp: currentDate.getTime(),
+        caption: data.caption,
+        attachmentURI: data.attachmentURI
     }
 
     await db.runTransaction(async (transaction) => {

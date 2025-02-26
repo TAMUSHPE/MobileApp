@@ -11,4 +11,6 @@ export type SHPEGainsEvent = {
 */
 export type SHPEGainsPost = {
     unixTimestamp: number,
+    attachmentURI: string,
+    caption: string,
 }
