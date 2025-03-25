@@ -32,7 +32,6 @@ const Membership = () => {
       setStudents(response);
 
       const filteredMembers = response.filter((member) => {
-        console.log(member.publicInfo?.chapterExpiration);
         return isMemberVerified(
           member.publicInfo?.chapterExpiration,
           member.publicInfo?.nationalExpiration
@@ -40,14 +39,8 @@ const Membership = () => {
       });
       setMembers(filteredMembers);
 
-      localStorage.setItem('cachedMembers', JSON.stringify(response));
-      localStorage.setItem('cachedOfficialMembers', JSON.stringify(filteredMembers));
-      localStorage.setItem('cachedMembersTimestamp', Date.now().toString());
-
       const incomingReqs = await getMembersToVerify();
       setRequestsWithDocuments(incomingReqs);
-      localStorage.setItem('cachedRequests', JSON.stringify(incomingReqs));
-      localStorage.setItem('cachedRequestsTimestamp', Date.now().toString());
 
     } catch (error) {
       console.error('Error fetching members:', error);
@@ -56,40 +49,8 @@ const Membership = () => {
     }
   };
 
-  const checkCacheAndFetchMembers = () => {
-    const cachedMembers = localStorage.getItem('cachedMembers');
-    const cachedOfficialMembers = localStorage.getItem('cachedOfficialMembers');
-    const cachedMembersTimestamp = localStorage.getItem('cachedMembersTimestamp');
-    const cachedRequests = localStorage.getItem('cachedRequests');
-    const cachedRequestsTimestamp = localStorage.getItem('cachedRequestsTimestamp');
-
-    const isCacheValid = (timestamp: string): boolean => {
-      return Date.now() - parseInt(timestamp, 10) < 24 * 60 * 60 * 1000;
-    };
-
-    if (
-      cachedMembers &&
-      cachedOfficialMembers &&
-      cachedMembersTimestamp &&
-      isCacheValid(cachedMembersTimestamp) &&
-      cachedRequests &&
-      cachedRequestsTimestamp &&
-      isCacheValid(cachedRequestsTimestamp)
-    ) {
-      const studentsData = JSON.parse(cachedMembers);
-      setStudents(studentsData);
-
-      setMembers(JSON.parse(cachedOfficialMembers));
-
-      setRequestsWithDocuments(JSON.parse(cachedRequests));
-      setLoading(false);
-    } else {
-      fetchMembers();
-    }
-  };
-
   useEffect(() => {
-    checkCacheAndFetchMembers();
+    fetchMembers();
   }, []);
 
   const handleApprove = async (member: RequestWithDoc) => {
@@ -236,78 +197,92 @@ const Membership = () => {
 
         {tab == 'members' && (
           <table className="text-center">
-            <tr className="bg-gray-700">
-              <th className=" px-4 py-2">Name</th>
-              <th className=" px-4 py-2">Major</th>
-              <th className=" px-4 py-2">Class Year</th>
-              <th className=" px-4 py-2">Role</th>
-              <th className=" px-4 py-2">Email</th>
-            </tr>
-            {members &&
-              members.map((member) => {
-                return (
-                  <tr key={member.publicInfo?.uid} className="bg-gray-300">
-                    <td className="bg-gray-600 px-4 py-2 "> {member.publicInfo?.displayName} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.major} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.classYear} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {getRole(member)} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.private?.privateInfo?.email} </td>
-                  </tr>
-                );
-              })}
+            <thead>
+              <tr className="bg-gray-700">
+                <th className="px-4 py-2">Name</th>
+                <th className="px-4 py-2">Major</th>
+                <th className="px-4 py-2">Class Year</th>
+                <th className="px-4 py-2">Role</th>
+                <th className="px-4 py-2">Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {members &&
+                members.map((member) => {
+                  return (
+                    <tr key={member.publicInfo?.uid} className="bg-gray-300">
+                      <td className="bg-gray-600 px-4 py-2 "> {member.publicInfo?.displayName} </td>
+                      <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.major} </td>
+                      <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.classYear} </td>
+                      <td className="bg-gray-300 px-4 py-2 "> {getRole(member)} </td>
+                      <td className="bg-gray-300 px-4 py-2 "> {member.private?.privateInfo?.email} </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
           </table>
         )}
 
         {/* flex flex-col items-center w-full content-center */}
         {tab == 'requests' && (
-          <table className=" text-center">
-            <tr className="bg-gray-700">
-              <th className=" px-4 py-2">Name</th>
-              <th className=" px-4 py-2" colSpan={2}>
-                Links
-              </th>
-              <th className=" px-4 py-2" colSpan={2}>
-                Action
-              </th>
-            </tr>
-            {!loading &&
-              requestsWithDocuments.length > 0 &&
-              requestsWithDocuments.map((member) => {
-                return (
-                  <MemberCard
-                    key={member.uid}
-                    request={member}
-                    onApprove={handleApprove}
-                    onDeny={handleDeny}
-                  ></MemberCard>
-                );
-              })}
+          <>
+            <table className=" text-center">
+              <thead>
+                <tr className="bg-gray-700">
+                  <th className=" px-4 py-2">Name</th>
+                  <th className=" px-4 py-2" colSpan={2}>
+                    Links
+                  </th>
+                  <th className=" px-4 py-2" colSpan={2}>
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {!loading &&
+                  requestsWithDocuments.length > 0 &&
+                  requestsWithDocuments.map((member) => {
+                    return (
+                      <MemberCard
+                        key={member.uid}
+                        request={member}
+                        onApprove={handleApprove}
+                        onDeny={handleDeny}
+                      ></MemberCard>
+                    );
+                  })}
+              </tbody>
+            </table>
             {!loading && requestsWithDocuments.length === 0 && (
               <div className="text-center text-2xl text-gray-500">No pending requests</div>
             )}
-          </table>
+          </>
         )}
         {tab == 'users' && (
           <table className="text-center">
-            <tr className="bg-gray-700">
-              <th className=" px-4 py-2">Name</th>
-              <th className=" px-4 py-2">Major</th>
-              <th className=" px-4 py-2">Class Year</th>
-              <th className=" px-4 py-2">Role</th>
-              <th className=" px-4 py-2">Email</th>
-            </tr>
-            {students &&
-              students.map((member) => {
-                return (
-                  <tr key={member.publicInfo?.uid} className="bg-gray-300">
-                    <td className="bg-gray-500 px-4 py-2 "> {member.publicInfo?.displayName} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.major} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.classYear} </td>
-                    <td className="bg-blue-300 px-4 py-2 "> {getRole(member)} </td>
-                    <td className="bg-gray-300 px-4 py-2 "> {member.private?.privateInfo?.email} </td>
-                  </tr>
-                );
-              })}
+            <thead>
+              <tr className="bg-gray-700">
+                <th className=" px-4 py-2">Name</th>
+                <th className=" px-4 py-2">Major</th>
+                <th className=" px-4 py-2">Class Year</th>
+                <th className=" px-4 py-2">Role</th>
+                <th className=" px-4 py-2">Email</th>
+              </tr>
+            </thead>
+            <tbody>
+              {students &&
+                students.map((member) => {
+                  return (
+                    <tr key={member.publicInfo?.uid} className="bg-gray-300">
+                      <td className="bg-gray-500 px-4 py-2 "> {member.publicInfo?.displayName} </td>
+                      <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.major} </td>
+                      <td className="bg-gray-300 px-4 py-2 "> {member.publicInfo?.classYear} </td>
+                      <td className="bg-blue-300 px-4 py-2 "> {getRole(member)} </td>
+                      <td className="bg-gray-300 px-4 py-2 "> {member.private?.privateInfo?.email} </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
           </table>
         )}
 
