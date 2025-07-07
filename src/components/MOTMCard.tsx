@@ -173,6 +173,7 @@ const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
                         shadowOpacity: 0.25,
                         shadowRadius: 3.84,
                         elevation: 5,
+                        height: 160,
                     }}
                 >
                     <Image
