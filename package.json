@@ -80,7 +80,6 @@
     "react-native-svg": "15.11.2",
     "react-native-vector-icons": "^10.2.0",
     "react-native-view-shot": "~4.0.3",
-    "react-test-renderer": "18.2.0",
     "ts-jest": "^29.1.1"
   },
   "devDependencies": {
@@ -105,6 +104,7 @@
     "eas-cli": "^5.2.0",
     "metro-react-native-babel-transformer": "^0.77.0",
     "react-native-svg-transformer": "^1.2.0",
+    "react-test-renderer": "19.0.0",
     "sharp-cli": "^4.1.1",
     "tailwindcss": "3.3.2",
     "ts-node": "^10.9.2",
