@@ -2,7 +2,7 @@
   "expo": {
     "name": "TAMU SHPE",
     "slug": "TAMU-SHPE",
-    "version": "1.0.24",
+    "version": "1.0.25",
     "owner": "tamu-shpe",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -62,7 +62,7 @@
       "permissions": [
         "android.permission.RECORD_AUDIO"
       ],
-      "versionCode": 115,
+      "versionCode": 120,
       "userInterfaceStyle": "automatic",
       "config": {
         "googleMaps": {
