@@ -60,7 +60,10 @@
     "android": {
       "package": "com.tamu.shpe",
       "permissions": [
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
       ],
       "versionCode": 120,
       "userInterfaceStyle": "automatic",
@@ -73,7 +76,10 @@
     "ios": {
       "bundleIdentifier": "com.tamu.shpe",
       "userInterfaceStyle": "automatic",
-      "buildNumber": "1"
+      "buildNumber": "2",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "extra": {
       "eas": {
