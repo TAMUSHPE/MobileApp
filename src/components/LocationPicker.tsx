@@ -1,4 +1,5 @@
-import { View, Text, Switch, useColorScheme, Platform } from 'react-native';
+
+import { View, Text, Switch, useColorScheme, Platform, Pressable, FlatList, TextInput } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
 import { GooglePlacesAutocomplete, GooglePlaceDetail } from 'react-native-google-places-autocomplete';
 import MapView, { Marker, Circle, LatLng, Region, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -8,6 +9,7 @@ import Slider from '@react-native-community/slider';
 import { TouchableOpacity } from 'react-native';
 import { Octicons } from '@expo/vector-icons';
 import { UserContext } from '../context/UserContext';
+
 
 const zacharyCoords = { latitude: 30.621160236499136, longitude: -96.3403560168198 }
 const initialMapDelta = { latitudeDelta: 0.0922, longitudeDelta: 0.0421 } // Size of map view
@@ -33,6 +35,9 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
     const [defaultRadius, setDefaultRadius] = useState<number>(100);
     const [radius, setRadius] = useState<number | undefined>(initialRadius);
     const [geofencingEnabled, setGeofencingEnabled] = useState<boolean>(initialRadius ? true : false);
+    const [searchText, setSearchText] = useState('');
+    const [predictions, setPredictions] = useState<any[]>([]);
+
 
     useEffect(() => {
         Location.requestForegroundPermissionsAsync()
@@ -88,67 +93,101 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
                 <View className='w-full flex-row items-center justify-center'>
                     {/* Search Box for Google Places */}
                     <View className='flex-1 relative z-20'>
-                        <GooglePlacesAutocomplete
+                        <TextInput
                             placeholder="Search"
-                            query={{
-                                key: GooglePlacesApiKey,
-                                language: 'en',
-                            }}
-                            onPress={(data, details = null) => {
-                                if (details === null) {
-                                    alert("There was a problem searching for that location. Please try again.");
+                            placeholderTextColor={darkMode ? '#888' : '#888'}
+                            value={searchText}
+                            onChangeText={async (text) => {
+                                setSearchText(text);
+                                if (text.length < 2) {
+                                    setPredictions([]);
                                     return;
                                 }
-
-                                setLocationDetails(details);
-                                setDraggableMarkerCoord({
-                                    latitude: details.geometry.location.lat,
-                                    longitude: details.geometry.location.lng,
-                                });
-                                setMapRegion({
-                                    latitude: details.geometry.location.lat,
-                                    longitude: details.geometry.location.lng,
-                                    ...initialMapDelta,
-                                });
-                                setLocationDetails(details);
+                                try {
+                                    const response = await fetch(
+                                        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
+                                            text
+                                        )}&key=${GooglePlacesApiKey}`
+                                    );
+                                    const json = await response.json();
+                                    console.log('[CustomSearch] Predictions:', json);
+                                    if (json.status === 'OK') {
+                                        setPredictions(json.predictions);
+                                    } else {
+                                        console.warn('[CustomSearch] Google API status:', json.status);
+                                        setPredictions([]);
+                                    }
+                                } catch (err) {
+                                    console.error('[CustomSearch] Error fetching predictions:', err);
+                                }
                             }}
-                            fetchDetails={true}
-                            predefinedPlaces={presetLocationList}
-                            onFail={(error) => console.error(error)}
-                            styles={{
-                                textInputContainer: {
-                                    backgroundColor: darkMode ? 'black' : 'white',
-                                    borderRadius: 10,
-                                    paddingHorizontal: 10,
-                                },
-                                textInput: {
-                                    backgroundColor: darkMode ? 'black' : 'white',
-                                    color: darkMode ? 'white' : 'black',
-                                    borderRadius: 10,
-                                    height: 40,
-                                },
-                                listView: {
-                                    position: 'absolute',
-                                    top: 50,
-                                    left: 0,
-                                    right: 0,
-                                    backgroundColor: darkMode ? 'black' : 'white',
-                                    zIndex: 9999,
-                                    borderRadius: 10,
-                                },
-                                row: {
-                                    backgroundColor: darkMode ? 'black' : 'white',
-                                    borderBottomWidth: 0.5,
-                                    borderBottomColor: darkMode ? 'gray' : 'lightgray',
-                                },
-                                description: {
-                                    color: darkMode ? 'white' : 'black',
-                                },
-                                predefinedPlacesDescription: {
-                                    color: darkMode ? 'white' : 'black',
-                                },
+                            className={`text-lg p-2 pr-10 rounded ${darkMode ? 'text-white bg-secondary-bg-dark' : 'text-black bg-secondary-bg-light'
+                                }`}
+                            style={{
+                                minHeight: 44,
+                                paddingVertical: 10,
                             }}
                         />
+
+                        {searchText.length > 0 && (
+                            <Pressable
+                                onPress={() => {
+                                    setSearchText('');
+                                    setPredictions([]);
+                                }}
+                                className="absolute right-3 top-1/3"
+                            >
+                                <Octicons
+                                    name="x-circle-fill"
+                                    size={16}
+                                    color={'red'}
+                                />
+                            </Pressable>
+                        )}
+
+                        {predictions.length > 0 && (
+                            <FlatList
+                                data={predictions}
+                                keyExtractor={(item) => item.place_id}
+                                className={`absolute top-14 left-0 right-0 ${darkMode ? 'bg-black' : 'bg-white'
+                                    } rounded-lg z-50`}
+                                renderItem={({ item }) => (
+                                    <Pressable
+                                        className="p-2 border-b border-gray-300"
+                                        onPress={async () => {
+                                            console.log('[CustomSearch] Selected:', item);
+                                            try {
+                                                const detailsResponse = await fetch(
+                                                    `https://maps.googleapis.com/maps/api/place/details/json?place_id=${item.place_id}&key=${GooglePlacesApiKey}`
+                                                );
+                                                const detailsJson = await detailsResponse.json();
+                                                console.log('[CustomSearch] Details:', detailsJson);
+                                                if (detailsJson.status === 'OK') {
+                                                    const details = detailsJson.result;
+                                                    setLocationDetails(details);
+                                                    const coord = {
+                                                        latitude: details.geometry.location.lat,
+                                                        longitude: details.geometry.location.lng,
+                                                    };
+                                                    setDraggableMarkerCoord(coord);
+                                                    setMapRegion({ ...coord, ...initialMapDelta });
+                                                    setPredictions([]);
+                                                    setSearchText(item.description);
+                                                } else {
+                                                    console.warn('[CustomSearch] Details status:', detailsJson.status);
+                                                }
+                                            } catch (err) {
+                                                console.error('[CustomSearch] Error fetching details:', err);
+                                            }
+                                        }}
+                                    >
+                                        <Text className={darkMode ? 'text-white' : 'text-black'}>
+                                            {item.description}
+                                        </Text>
+                                    </Pressable>
+                                )}
+                            />
+                        )}
                     </View>
 
                     <TouchableOpacity

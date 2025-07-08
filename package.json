@@ -69,7 +69,6 @@
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-get-random-values": "^1.11.0",
-    "react-native-google-places-autocomplete": "^2.5.6",
     "react-native-maps": "1.20.1",
     "react-native-modal-dropdown": "^1.0.2",
     "react-native-paper": "^5.12.3",
