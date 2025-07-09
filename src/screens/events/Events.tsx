@@ -141,9 +141,11 @@ const Events = ({ navigation }: EventsProps) => {
 
     useFocusEffect(
         useCallback(() => {
-            if ((isAdminLead || isCoach)) {
+            const timer = setTimeout(() => {
                 fetchEvents();
-            }
+            }, 500);
+
+            return () => clearTimeout(timer);
         }, [isAdminLead, isCoach])
     );
 
