@@ -141,11 +141,7 @@ const Events = ({ navigation }: EventsProps) => {
 
     useFocusEffect(
         useCallback(() => {
-            const timer = setTimeout(() => {
-                fetchEvents();
-            }, 500);
-
-            return () => clearTimeout(timer);
+            fetchEvents();
         }, [isAdminLead, isCoach])
     );
 
