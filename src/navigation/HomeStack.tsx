@@ -21,6 +21,7 @@ import Members from "../screens/home/Members";
 import { AboutSettingsScreen, AccountSettingsScreen, DisplaySettingsScreen, FAQSettingsScreen, FeedBackSettingsScreen, ProfileSettingsScreen, SettingsScreen } from "../screens/userProfile/Settings";
 import { UserContext } from "../context/UserContext";
 import { useColorScheme } from "react-native";
+import MemberSearch from "../screens/admin/MemberSearch";
 
 const HomeStack = () => {
     const Stack = createNativeStackNavigator<HomeStackParams>();
@@ -59,6 +60,7 @@ const HomeStack = () => {
                 <Stack.Screen name="CommitteeConfirm" component={CommitteeConfirm} />
                 <Stack.Screen name="FeedbackEditor" component={FeedbackEditor} />
                 <Stack.Screen name="InstagramPoints" component={InstagramPoints} />
+                <Stack.Screen name="MemberSearch" component={MemberSearch} />
             </Stack.Group>
 
 
