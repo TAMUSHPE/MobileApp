@@ -165,6 +165,23 @@ const AdminDashboard = ({ navigation }: NativeStackScreenProps<HomeStackParams>)
                                 shadowRadius: 3.84,
                                 elevation: 5,
                             }}
+                            onPress={() => navigation.navigate('MemberSearch')}
+                        >
+                            <Text className='text-xl font-semibold text-white text-center'>Member Search</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            className={`bg-secondary-blue-1 items-center justify-center h-20 rounded-lg w-[48%]`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
                             onPress={() => navigation.navigate('ResumeDownloader')}
                         >
                             <Text className='text-xl font-semibold text-white text-center'>Resume Downloader</Text>

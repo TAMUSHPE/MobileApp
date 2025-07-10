@@ -56,6 +56,7 @@ export type HomeStackParams = {
     ResumeConfirm: undefined;
     ShirtConfirm: undefined;
     InstagramPoints: undefined;
+    MemberSearch: undefined;
 
     // Settings Screens
     SettingsScreen: undefined;
