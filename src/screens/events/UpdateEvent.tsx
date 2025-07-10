@@ -165,18 +165,14 @@ const UpdateEvent = ({ navigation }: EventProps) => {
 
     const handleDestroyEvent = async () => {
         console.log("Destroying event with ID:", event.id);
-        const isDeleted = await destroyEvent(event.id!);
-        if (isDeleted) {
-            if (isInHomeStack) {
-                navigation.navigate("Home")
-            } else {
-                navigation.navigate("EventsScreen", {})
-            }
+        destroyEvent(event.id!);
+        Alert.alert("Event Deleted", "This may take a moment. Check back soon.");
+        if (isInHomeStack) {
+            navigation.navigate("Home");
         } else {
-            console.log("Failed to delete the event.");
+            navigation.navigate("EventsScreen", {});
         }
-    }
-
+    };
 
     return (
         <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
@@ -606,8 +602,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                             <TouchableOpacity
                                 onPress={async () => {
                                     setShowDeletionConfirmation(false);
-                                    setLoading(true);
-                                    handleDestroyEvent().then(() => setLoading(false));
+                                    handleDestroyEvent()
                                 }}
                                 className="w-[45%] bg-red-1 rounded-xl items-center justify-center h-12 mr-2"
                             >

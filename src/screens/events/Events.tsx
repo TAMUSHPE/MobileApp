@@ -141,9 +141,7 @@ const Events = ({ navigation }: EventsProps) => {
 
     useFocusEffect(
         useCallback(() => {
-            if ((isAdminLead || isCoach)) {
-                fetchEvents();
-            }
+            fetchEvents();
         }, [isAdminLead, isCoach])
     );
 
