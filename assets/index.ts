@@ -31,4 +31,5 @@ export const Images = {
     SIGN_OUT_LOGO: require("./sign-out-icon.png"),
     QR_CODE_LOGO: require("./qr-code.png"),
     SHPE_GAIN_COMING_SOON: require("./SHPEGainComingSoon.jpg"),
+    SHPETINAS_PNG: require("./shpetinas_icon.png")
 };

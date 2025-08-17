@@ -1,4 +1,4 @@
-import SHPEtinas from '../../assets/shpetinas_icon.svg';
+import ShpetinasPng from '../components/ShpetinasPng';
 import TechnicalAffairs from '../../assets/technical_affairs_icon.svg';
 import DefaultIcon from '../../assets/generic_course_icon.svg';
 import Scholastic from '../../assets/scholastic_committee_icon.svg';
@@ -86,10 +86,10 @@ export const committeeLogos = {
         height: 70
     },
     shpetinas: {
-        LogoComponent: SHPEtinas,
-        LightLogoComponent: SHPEtinas,
-        width: 100,
-        height: 100
+        LogoComponent: ShpetinasPng,
+        LightLogoComponent: ShpetinasPng,
+        width: 125,
+        height: 125
     },
     technicalAffairs: {
         LogoComponent: TechnicalAffairs,
