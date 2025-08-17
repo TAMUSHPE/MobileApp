@@ -56,7 +56,7 @@ const CommitteeCard: React.FC<CommitteeCardProps> = ({ committee, navigation }) 
 
             {/* Name and Membership */}
             <View className='items-center justify-center'>
-                <Text className={`text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>{truncateStringWithEllipsis(name, 12)}</Text>
+                <Text className={`text-xl font-bold ${name!.toLowerCase() === "shpetinas" ? "text-pink-500" : darkMode ? 'text-white' : 'text-black'}`}>{truncateStringWithEllipsis(name, 12)}</Text>
                 <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>{memberCount} members</Text>
             </View>
         </TouchableOpacity>

@@ -2,7 +2,7 @@
   "expo": {
     "name": "TAMU SHPE",
     "slug": "TAMU-SHPE",
-    "version": "1.1.0",
+    "version": "1.1.1",
     "owner": "tamu-shpe",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -65,7 +65,7 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ],
-      "versionCode": 120,
+      "versionCode": 160,
       "userInterfaceStyle": "automatic",
       "config": {
         "googleMaps": {
@@ -76,7 +76,7 @@
     "ios": {
       "bundleIdentifier": "com.tamu.shpe",
       "userInterfaceStyle": "automatic",
-      "buildNumber": "5",
+      "buildNumber": "1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },

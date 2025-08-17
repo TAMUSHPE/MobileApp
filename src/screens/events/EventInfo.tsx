@@ -423,7 +423,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                         <TouchableOpacity
                             onPress={() => { navigation.navigate("QRCodeScanningScreen") }}
                             disabled={!(eventButtonState == EventButtonState.SIGN_IN || eventButtonState == EventButtonState.SIGN_OUT)}
-                            className={`h-14 items-center justify-center rounded-xl mx-4 ${(eventButtonState == EventButtonState.SIGN_IN || eventButtonState == EventButtonState.SIGN_OUT) ? "bg-primary-blue" : `${darkMode ? "bg-secondary-bg-dark border border-grey-light" : "bg-secondary-bg-light border border-grey-dark"}`}`}
+                            className={`p-2 items-center justify-center rounded-xl mx-4 ${(eventButtonState == EventButtonState.SIGN_IN || eventButtonState == EventButtonState.SIGN_OUT) ? "bg-primary-blue" : `${darkMode ? "bg-secondary-bg-dark border border-grey-light" : "bg-secondary-bg-light border border-grey-dark"}`}`}
                             style={{
                                 shadowColor: "#000",
                                 shadowOffset: {
@@ -449,7 +449,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                             )}
                             {eventButtonState === EventButtonState.RECEIVED_POINTS && (
                                 <View>
-                                    <Text className={`text-center ${darkMode ? 'text-grey-light' : 'text-grey-dark'} text-xl`}>You received {userEventLog?.points} points for this event </Text>
+                                    <Text className={`text-center ${darkMode ? 'text-grey-light' : 'text-grey-dark'} text-xl`}>You received {userEventLog?.points?.toFixed(2)} points for this event</Text>
                                     <Text className={`text-center ${darkMode ? 'text-grey-light' : 'text-grey-dark'}`}>Points will be updated later after verification. No action needed.</Text>
                                 </View>
                             )}
