@@ -65,7 +65,7 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ],
-      "versionCode": 130,
+      "versionCode": 160,
       "userInterfaceStyle": "automatic",
       "config": {
         "googleMaps": {
