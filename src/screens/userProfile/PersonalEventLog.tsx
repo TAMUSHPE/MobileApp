@@ -167,7 +167,7 @@ const PersonalEventLog = ({ navigation }: NativeStackScreenProps<UserProfileStac
                                             </Text>
                                             {eventLog?.verified ? (
                                                 <Text className={`text-lg font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>
-                                                    +{eventLog?.points} points
+                                                    +{eventLog?.points?.toFixed(2)} points
                                                 </Text>
                                             ) : (
                                                 <Text className={`text-lg font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>
