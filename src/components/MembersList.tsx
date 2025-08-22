@@ -44,18 +44,59 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
 
     return (
         <View className='flex-1'>
-            <FlatList
-            data={members}
-            renderItem={({item}) => {
+            {canSearch && (
+                <View className='px-4'>
+                    <View className='flex-row mb-4'>
+                        <View
+                            className={`rounded-xl px-4 py-2 flex-row flex-1 items-center ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: { width: 0, height: 2 },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+                                elevation: 5,
+                            }}
+                        >
+                            <View className='mr-3'>
+                                <Octicons name="search" size={24} color={darkMode ? 'white' : 'black'} />
+                            </View>
+                            <TextInput
+                                style={{ color: darkMode ? 'white' : 'black' }}
+                                onChangeText={setSearch}
+                                value={search}
+                                placeholder="Search"
+                                placeholderTextColor="grey"
+                                className='flex-1 text-lg'
+                            />
+                            {search.length > 0 && (
+                                <TouchableOpacity onPress={() => setSearch('')}>
+                                    <Octicons name="x" size={24} color={darkMode ? 'white' : 'black'} style={{ marginLeft: 8 }} />
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    </View>
+                </View>
+            )}
 
-                return(
-                    <MemberCard
-                    userData={item}
-                    />
-                )
-            }}
+            <FlatList
+                data={members}
+                keyExtractor={item => item.uid!}
+                renderItem={({ item }) => {
+
+                    return (
+                        <MemberCard
+                            userData={item}
+                            handleCardPress={() => {
+                                if (handleCardPress) {
+                                    handleCardPress(item.uid!)
+                                }
+                            }}
+                        />
+                    )
+                }}
+                ListFooterComponent={<View className='pb-24' />}
+                contentContainerStyle={{ paddingHorizontal: 16 }}
             />
-            
         </View>
     )
 }
