@@ -83,6 +83,10 @@ const MembersList: React.FC<MemberListProps> = ({ handleCardPress, users, naviga
                 keyExtractor={item => item.uid!}
                 renderItem={({ item }) => {
 
+                    if(!item.name) {
+                        return null;
+                    }
+
                     return (
                         <MemberCard
                             userData={item}
