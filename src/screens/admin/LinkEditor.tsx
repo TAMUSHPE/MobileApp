@@ -30,7 +30,7 @@ const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const numberOfLinks = 8;
+    const numberOfLinks = 9;
     const linkIDs = generateLinkIDs(numberOfLinks);
     const [links, setLinks] = useState<LinkData[]>(
         linkIDs.map(id => ({
