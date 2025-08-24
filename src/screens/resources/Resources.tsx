@@ -17,7 +17,7 @@ import { isMemberVerified } from '../../helpers/membership';
 import { Images } from '../../../assets';
 import { hasPrivileges } from '../../helpers/rolesUtils';
 
-const linkIDs = ["1", "2", "3", "4", "5"]; // First 5 links are reserved for social media links
+const linkIDs = ["1", "2", "3", "4", "5","9"]; // First 5 links are reserved for social media links , 9 is Workshop drive
 
 const Resources = ({ navigation }: { navigation: NativeStackNavigationProp<ResourcesStackParams> }) => {
     const userContext = useContext(UserContext);
