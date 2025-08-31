@@ -567,7 +567,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                             elevation: 5,
                         }}
                         activeOpacity={0.7}
-                        onPress={() => handleLinkPress("https://tamu.estore.flywire.com/products?storeCatalog=5935")}
+                        onPress={() => handleLinkPress("https://sofctamu.estore.flywire.com/products?storeCatalog=23327")}
                     >
 
                         <View className='mt-4'>
