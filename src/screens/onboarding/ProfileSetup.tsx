@@ -330,7 +330,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
             className="flex-1"
         >
             <SafeAreaView className='flex-1'>
-                <ScrollView>
+                <View>
 
                     {/* Header */}
                     <View className='px-4 mt-5 flex-row items-center'>
@@ -411,7 +411,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                             />
                         </View>
                     </View>
-                </ScrollView>
+                </View>
             </SafeAreaView>
         </LinearGradient>
     );

@@ -134,7 +134,7 @@ const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) =
                             textClassName="text-black font-semibold text-2xl"
                             iconSource={{ uri: "https://developers.google.com/static/identity/images/g-logo.png" }}
                         />
-                        <Text className="text-primary-orange text-lg text-center font-bold mt-2">Sign in using tamu.edu account</Text>
+                        <Text className="text-primary-orange text-lg text-center font-bold mt-2">* Must use a tamu.edu account</Text>
                         {error && <Text className="text-center mt-2 text-red-1 text-lg">{error}</Text>}
                         {loading && (
                             <ActivityIndicator className="mt-4" size="small" />
