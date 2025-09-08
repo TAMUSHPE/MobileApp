@@ -16,6 +16,7 @@ import { AuthStackParams } from "../../types/navigation";
 import { Images } from "../../../assets";
 import InteractButton from "../../components/InteractButton";
 import { LinearGradient } from "expo-linear-gradient";
+import  Constants  from "expo-constants";
 
 const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => {
     const [loading, setLoading] = useState<boolean>(false);
@@ -24,9 +25,17 @@ const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) =
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo, signOutUser } = userContext!;
 
+    const ANDROID_CLIENT_ID_DEV = "600060629240-kljtncj4mith016hk7ihk622tdlijjvs.apps.googleusercontent.com";
+    const ANDROID_CLIENT_ID_PROD = "600060629240-qi73r9ht5n5v5gu9dq5e4kbd2v2om4d1.apps.googleusercontent.com";
+
+    const androidClientId = (Constants.appOwnership as string) === "guest" /* EAS dev client/standalone debug */
+    ? ANDROID_CLIENT_ID_DEV
+    : ANDROID_CLIENT_ID_PROD;
+
+
     const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
         iosClientId: "600060629240-m7bu9ba9namtlmo9sii2s8qs2j9k5bt4.apps.googleusercontent.com",
-        androidClientId: "600060629240-bdfsdcfmbrjh5skdc9qufchrmcnm26fb.apps.googleusercontent.com",
+        androidClientId,
     });
 
 
