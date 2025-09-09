@@ -25,21 +25,10 @@ const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) =
     const userContext = useContext(UserContext);
     const { userInfo, setUserInfo, signOutUser } = userContext!;
 
-    const ANDROID_CLIENT_ID_DEV = "600060629240-kljtncj4mith016hk7ihk622tdlijjvs.apps.googleusercontent.com";
-    const ANDROID_CLIENT_ID_PROD = "600060629240-qi73r9ht5n5v5gu9dq5e4kbd2v2om4d1.apps.googleusercontent.com";
-
     const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
         iosClientId: "600060629240-m7bu9ba9namtlmo9sii2s8qs2j9k5bt4.apps.googleusercontent.com",
         androidClientId: "600060629240-kljtncj4mith016hk7ihk622tdlijjvs.apps.googleusercontent.com",
     });
-
-    useEffect(() => {
-        console.log("[env] appOwnership:", Constants.appOwnership);
-        console.log("[auth] androidClientId:", ANDROID_CLIENT_ID_DEV);
-        console.log("[auth] request?.redirectUri:", request?.redirectUri);
-        console.log("[auth] request?.url:", request?.url);
-    }, [request]);
-
 
     // Occurs when a user back swipe to this screen from the ProfileSetup screen
     useFocusEffect(
