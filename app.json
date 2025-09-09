@@ -59,6 +59,20 @@
     "scheme": "tamu-shpe",
     "android": {
       "package": "com.tamu.shpe",
+       "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": [{ "scheme": "tamu-shpe" }]
+        },
+        {
+          "action": "VIEW",
+          "category": ["BROWSABLE", "DEFAULT"],
+          "data": [
+            { "scheme": "com.tamu.shpe", "path": "/oauthredirect" }
+          ]
+        }
+      ],
       "permissions": [
         "android.permission.RECORD_AUDIO",
         "android.permission.CAMERA",
