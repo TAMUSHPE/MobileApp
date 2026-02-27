@@ -276,8 +276,8 @@ const EventInfo = ({ navigation }: EventProps) => {
                             )}
                         </View>
                     </SafeAreaView>
-
-                    {(isAdminLead || isCoach) && (
+                    
+                    {(isAdmin || isCoach) && (
                         <TouchableOpacity
                             onPress={() => {
                                 navigation.navigate("QRCode", { event: event })
