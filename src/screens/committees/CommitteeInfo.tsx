@@ -47,6 +47,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
     const [loadingMembers, setLoadingMembers] = useState<boolean>(false);
     const [loadingLabel, setLoadingLabel] = useState<boolean>(true);
     const [loadingTeamMembers, setLoadingTeamMembers] = useState<boolean>(true);
+    const [showFullDescription, setShowFullDescription] = useState(false);
 
     const [localTeamMembers, setLocalTeamMembers] = useState<TeamMembersState>({
         leads: [],
@@ -338,7 +339,34 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                                     elevation: 5,
                                 }}>
                                 <Text className={`text-lg ${darkMode ? "text-white" : "text-black"}`}>
-                                    {truncateStringWithEllipsis(description.trim(), 170)}
+                                    {showFullDescription
+                                        ? description.trim()
+                                        : description.trim().slice(0, 170)}
+
+                                    {!showFullDescription && description.trim().length > 170 && 
+                                        <>
+                                        <Text>... </Text>
+                                        <Text
+                                            className="text-primary-blue font-medium"
+                                            onPress={() => setShowFullDescription(true)}
+                                            >
+                                                Show more
+                                            </Text>
+                                        </>
+                                    }
+
+                                    {showFullDescription && 
+                                        <>
+                                        <Text> </Text>
+                                        <Text 
+                                            className="text-primary-blue font-medium"
+                                            onPress={() => setShowFullDescription(false)}
+                                            >
+                                                Show Less
+                                            </Text>
+                                        </>
+                                    }
+
                                 </Text>
                             </View>
                         </View>
