@@ -79,10 +79,10 @@ const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, 
             className={`w-full h-24 justify-center px-3 ${disabled ? 'opacity-50' : ''}`}
             disabled={disabled}
         >
-            <View className='flex-row justify-between'>
-                <View className='flex-row my-2 items-center'>
+            <View className='flex-row items-center justify-between'>
+                <View className='flex-1 flex-row my-2 items-center pr-3'>
                     {iconName && <MaterialCommunityIcons name={iconName} size={46} color={darkMode ? "white" : "black"} />}
-                    <View className="ml-3 flex-col">
+                    <View className={`${iconName ? "ml-3" : ""} flex-1`}>
                         <Text className={`text-2xl ${darkMode ? "text-white" : "text-black"} ${disabled ? "text-gray-400" : ""}`}>{mainText ?? "Default Text"}</Text>
                         {subText && <Text className={`text-lg ${darkMode ? "text-[#BBB]" : "text-[#444]"} ${disabled ? "text-gray-400" : ""}`}>{subText}</Text>}
                     </View>
