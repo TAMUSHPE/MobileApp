@@ -287,21 +287,16 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
                     className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
                 >
                     <View className='h-screen'>
-                        <View className='flex-row justify-between mx-6'>
-                            <View className='flex-row items-center'>
-                                <Octicons name="stack" size={35} color={darkMode ? "white" : "black"} />
-                                <Text className={`text-3xl font-semibold ml-4 text-black ${darkMode ? "text-white" : "text-black"}`}>{reverseFormattedFirebaseName(selectedCommittee || "")}</Text>
-                            </View>
-                            <View>
-                                <TouchableOpacity onPress={() => {
-                                    setSelectedCommittee(undefined);
-                                    setCommitteeListVisible(false);
-                                }}>
-                                    <Octicons name="x" size={24} color={darkMode ? "white" : "black"} />
-                                </TouchableOpacity>
-                            </View>
+                        <View className='flex-row justify-between items-start mx-6'>
+                            <Octicons name="stack" size={35} color={darkMode ? "white" : "black"} />
+                            <Text className={`text-3xl font-semibold ml-4 flex-1 break-all text-black ${darkMode ? "text-white" : "text-black"}`}>{reverseFormattedFirebaseName(selectedCommittee || "")}</Text>
+                            <TouchableOpacity onPress={() => {
+                                setSelectedCommittee(undefined);
+                                setCommitteeListVisible(false);
+                            }}>
+                                <Octicons name="x" size={35} color={darkMode ? "white" : "black"} />
+                            </TouchableOpacity>
                         </View>
-
                         <View className='mt-9 flex-1'>
                             {members && members.length === 0 && (
                                 <Text className={`text-lg font-bold text-center ${darkMode ? "text-white" : "text-black"}`}>No members to verify</Text>
