@@ -41,7 +41,11 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                 if (!uri) throw new Error('Capture failed');
 
                 const currentDate = new Date().toISOString().replaceAll('-', '').replaceAll(':', '').replaceAll('.', '');
-                const sanitizedEventName = event.name?.replace(/[\\/:*?"<>|#]/g, '_');
+                const invalidFilenameChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', '#'];
+                const sanitizedEventName = invalidFilenameChars.reduce(
+                    (name, ch) => name?.replaceAll(ch, '_'),
+                    event.name
+                );
 
                 const fileUri = `${FileSystem.documentDirectory}${currentDate}_${sanitizedEventName}_${type}.png`;
 

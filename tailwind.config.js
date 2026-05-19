@@ -5,7 +5,7 @@ module.exports = {
   corePlugins: {
     preflight: false,
   },
-  blocklist: ["[-:.]"],
+  blocklist: ["[-:.]", "[\\/:*?\"<>|#]"],
   theme: {
     extend: {
       colors: {
