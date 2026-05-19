@@ -10,7 +10,8 @@ import { arrayRemove, doc, setDoc } from 'firebase/firestore';
 // when it is received while the app is in the foreground.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: false,
+    shouldShowBanner:false,
+    shouldShowList:false,
     shouldPlaySound: false,
     shouldSetBadge: false,
   }),
