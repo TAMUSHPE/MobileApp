@@ -5,10 +5,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { UserProvider } from './src/context/UserContext';
 import RootNavigator from './src/navigation';
 import * as Notifications from 'expo-notifications';
+import type { EventSubscription } from 'expo-modules-core';
 
 export default function App() {
-    const notificationListener = useRef<Subscription | null>();
-    const responseListener = useRef<Subscription | null>();
+    const notificationListener = useRef<EventSubscription | null>(null);
+    const responseListener = useRef<EventSubscription | null>(null);
     useEffect(() => {
         notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
             Alert.alert(notification.request.content.body as string);
@@ -19,12 +20,8 @@ export default function App() {
         });
 
         return () => {
-            if (notificationListener.current) {
-                notificationListener.current.remove();
-            }
-            if (responseListener.current) {
-                responseListener.current.remove();
-            }
+            notificationListener.current?.remove();
+            responseListener.current?.remove();
         };
     }, []);
     return (
@@ -35,5 +32,3 @@ export default function App() {
         </SafeAreaProvider>
     );
 };
-
-type Subscription = { remove: () => void };

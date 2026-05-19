@@ -4,13 +4,13 @@ module.exports = function (api) {
     presets: ["babel-preset-expo"],
     plugins: [
       "nativewind/babel",
-      "react-native-reanimated/plugin",
       [
         "inline-dotenv",
         {
           unsafe: true,
         },
       ],
+      "react-native-worklets/plugin",
     ],
   };
 };
