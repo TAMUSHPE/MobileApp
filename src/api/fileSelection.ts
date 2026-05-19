@@ -12,7 +12,7 @@ import { getDownloadURL } from 'firebase/storage';
  * @returns - Object containing data of the selected image, including the local URI
  */
 export const selectImage = async (options: ImagePicker.ImagePickerOptions | undefined = {
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    mediaTypes: ['images'],
 }): Promise<ImagePicker.ImagePickerResult | undefined> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {

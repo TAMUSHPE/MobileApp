@@ -92,7 +92,7 @@ const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
 
     const selectIconImage = async (index: number) => {
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
             quality: 1,

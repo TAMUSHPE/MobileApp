@@ -182,7 +182,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
     */
     const selectProfilePicture = async () => {
         const result = await selectImage({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             aspect: [1, 1],
             quality: 1,

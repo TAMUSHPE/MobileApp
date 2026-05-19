@@ -50,7 +50,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
 
     const selectCoverImage = async () => {
         const result = await selectImage({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             quality: 1,
         })
