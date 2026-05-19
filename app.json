@@ -48,7 +48,8 @@
           "locationWhenInUsePermission": "TAMU SHPE needs access to your location to show your position on the map."
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "@react-native-community/datetimepicker"
     ],
     "assetBundlePatterns": [
       "**/*"
@@ -59,17 +60,30 @@
     "scheme": "tamu-shpe",
     "android": {
       "package": "com.tamu.shpe",
-       "intentFilters": [
+      "intentFilters": [
         {
           "action": "VIEW",
-          "category": ["BROWSABLE", "DEFAULT"],
-          "data": [{ "scheme": "tamu-shpe" }]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
+          "data": [
+            {
+              "scheme": "tamu-shpe"
+            }
+          ]
         },
         {
           "action": "VIEW",
-          "category": ["BROWSABLE", "DEFAULT"],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ],
           "data": [
-            { "scheme": "com.tamu.shpe", "path": "/oauthredirect" }
+            {
+              "scheme": "com.tamu.shpe",
+              "path": "/oauthredirect"
+            }
           ]
         }
       ],

@@ -9,6 +9,7 @@ import { Octicons } from '@expo/vector-icons';
 import { GeoPoint } from 'firebase/firestore';
 import LocationPicker from '../../components/LocationPicker';
 import InteractButton from '../../components/InteractButton';
+import { getCoordinatesFromPlace } from '../../helpers/geolocationUtils';
 
 
 const SetLocationEventDetails = ({ navigation }: EventProps) => {
@@ -59,8 +60,9 @@ const SetLocationEventDetails = ({ navigation }: EventProps) => {
 
             <LocationPicker
                 onLocationChange={(location, radius) => {
-                    if (location?.geometry.location.lat && location?.geometry.location.lng) {
-                        setGeolocation(new GeoPoint(location?.geometry.location.lat, location?.geometry.location.lng));
+                    const coordinates = getCoordinatesFromPlace(location);
+                    if (coordinates) {
+                        setGeolocation(new GeoPoint(coordinates.lat, coordinates.lng));
                     }
                     setGeofencingRadius(radius);
                 }}

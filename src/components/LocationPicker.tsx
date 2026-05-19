@@ -1,10 +1,14 @@
 
 import { View, Text, Switch, useColorScheme, Platform, Pressable, FlatList, TextInput } from 'react-native';
 import React, { useContext, useEffect, useState } from 'react';
-import { GooglePlacesAutocomplete, GooglePlaceDetail } from 'react-native-google-places-autocomplete';
 import MapView, { Marker, Circle, LatLng, Region, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location'
-import { GooglePlacesApiKey, presetLocationList, reverseGeocode } from '../helpers/geolocationUtils';
+import {
+    GooglePlacesApiKey,
+    latLngFromCoordinates,
+    PlaceLocation,
+    reverseGeocode,
+} from '../helpers/geolocationUtils';
 import Slider from '@react-native-community/slider';
 import { TouchableOpacity } from 'react-native';
 import { Octicons } from '@expo/vector-icons';
@@ -15,7 +19,7 @@ const zacharyCoords = { latitude: 30.621160236499136, longitude: -96.34035601681
 const initialMapDelta = { latitudeDelta: 0.0922, longitudeDelta: 0.0421 } // Size of map view
 
 const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, initialRadius, containerClassName = "" }: {
-    onLocationChange: (locationDetails: GooglePlaceDetail | undefined | null, radius: number | undefined) => void
+    onLocationChange: (locationDetails: PlaceLocation | undefined | null, radius: number | undefined) => void
     initialCoordinate?: LatLng,
     initialRadius?: number,
     containerClassName?: string
@@ -29,7 +33,7 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
     const [userLocation, setUserLocation] = useState<Location.LocationObject>();
-    const [locationDetails, setLocationDetails] = useState<GooglePlaceDetail | null>();
+    const [locationDetails, setLocationDetails] = useState<PlaceLocation | null>();
     const [draggableMarkerCoord, setDraggableMarkerCoord] = useState<LatLng>(initialCoordinate);
     const [mapRegion, setMapRegion] = useState<Region>({ ...initialCoordinate, ...initialMapDelta });
     const [defaultRadius, setDefaultRadius] = useState<number>(100);
@@ -163,12 +167,9 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
                                                 const detailsJson = await detailsResponse.json();
                                                 console.log('[CustomSearch] Details:', detailsJson);
                                                 if (detailsJson.status === 'OK') {
-                                                    const details = detailsJson.result;
+                                                    const details = detailsJson.result as PlaceLocation;
                                                     setLocationDetails(details);
-                                                    const coord = {
-                                                        latitude: details.geometry.location.lat,
-                                                        longitude: details.geometry.location.lng,
-                                                    };
+                                                    const coord = latLngFromCoordinates(details.geometry.location);
                                                     setDraggableMarkerCoord(coord);
                                                     setMapRegion({ ...coord, ...initialMapDelta });
                                                     setPredictions([]);

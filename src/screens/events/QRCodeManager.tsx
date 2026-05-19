@@ -5,7 +5,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TouchableOpacity, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Octicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import ViewShot from 'react-native-view-shot';
 import DismissibleModal from '../../components/DismissibleModal';

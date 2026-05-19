@@ -15,6 +15,7 @@ import { MillisecondTimes, formatDate, formatTime } from '../../helpers/timeUtil
 import { StatusBar } from 'expo-status-bar';
 import { Committee } from '../../types/committees';
 import LocationPicker from '../../components/LocationPicker';
+import { getCoordinatesFromPlace } from '../../helpers/geolocationUtils';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
 import InteractButton from '../../components/InteractButton';
 import { getBlobFromURI, selectImage } from '../../api/fileSelection';
@@ -577,8 +578,9 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     </View>
                     <LocationPicker
                         onLocationChange={(location, radius) => {
-                            if (location?.geometry.location.lat && location?.geometry.location.lng) {
-                                setGeolocation(new GeoPoint(location?.geometry.location.lat, location?.geometry.location.lng));
+                            const coordinates = getCoordinatesFromPlace(location);
+                            if (coordinates) {
+                                setGeolocation(new GeoPoint(coordinates.lat, coordinates.lng));
                             }
                             setGeofencingRadius(radius);
                         }}
