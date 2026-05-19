@@ -1,6 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./App.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}"],
+  presets: [require("nativewind/preset")],
+  corePlugins: {
+    preflight: false,
+  },
+  blocklist: ["[-:.]"],
   theme: {
     extend: {
       colors: {

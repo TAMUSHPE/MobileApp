@@ -891,7 +891,7 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStack
     };
 
     return (
-        <View className={`flex-1 selection:pt-10 px-6 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <View className={`flex-1 pt-10 px-6 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <Text className={`text-xl font-bold mb-2 ${darkMode ? "text-white" : "text-black"}`} >Tell us what can be improved</Text>
             <View className='items-center'>
                 <TextInput

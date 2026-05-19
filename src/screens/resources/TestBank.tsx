@@ -197,7 +197,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                 ) : (<View />)}
                 <TouchableOpacity
                     onPress={() => { setShowFilterModal(true) }}
-                    className='mx-c4 p-2'
+                    className='mx-4 p-2'
                 >
                     <Octicons name="filter" size={30} color={darkMode ? "white" : "black"} />
                 </TouchableOpacity>

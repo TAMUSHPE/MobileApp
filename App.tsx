@@ -1,3 +1,5 @@
+import "./global.css";
+import "./src/nativewind-setup";
 import 'react-native-gesture-handler';
 import React, { useEffect, useRef } from "react";
 import { Alert } from 'react-native';
