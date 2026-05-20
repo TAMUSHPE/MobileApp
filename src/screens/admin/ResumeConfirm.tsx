@@ -173,7 +173,7 @@ const ResumeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams>) 
                         </View>
                     </View>
 
-                    <MemberCard userData={selectedMember} />
+                    {selectedMember && <MemberCard userData={selectedMember} />}
 
 
                     <TouchableOpacity

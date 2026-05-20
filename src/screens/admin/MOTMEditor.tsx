@@ -201,7 +201,7 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                             </View>
                         </View>
 
-                        <MemberCard userData={selectedMember!} />
+                        {selectedMember && <MemberCard userData={selectedMember} />}
 
 
                         <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>You will be setting {selectedMember?.name} as the member of the month.</Text>

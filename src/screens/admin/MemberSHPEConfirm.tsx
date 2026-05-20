@@ -191,7 +191,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParam
                         </View>
                     </View>
 
-                    <MemberCard userData={selectedMember} handleCardPress={() => { }} />
+                    {selectedMember && <MemberCard userData={selectedMember} handleCardPress={() => { }} />}
 
                     <View>
                         <TouchableOpacity

@@ -332,7 +332,7 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
                         </View>
                     </View>
 
-                    <MemberCard userData={selectedMember} handleCardPress={() => { }} />
+                    {selectedMember && <MemberCard userData={selectedMember} handleCardPress={() => { }} />}
 
                     <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>
                         {selectedMember?.name} {selectedMember?.committees && selectedMember.committees.length > 0 ? "is also in:" : "is not in any committees"}

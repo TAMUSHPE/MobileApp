@@ -1,6 +1,6 @@
 import React, { useCallback, useContext, useEffect, useState } from 'react';
 import { View, Text, Image, TouchableOpacity, Animated, useColorScheme } from 'react-native';
-import { MemberCardProp } from '../types/navigation';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Images } from '../../assets';
 import { PublicUserInfo } from '../types/user';
 import { getMOTM, getPublicUserData } from '../api/firebaseUtils';
@@ -10,7 +10,11 @@ import { truncateStringWithEllipsis } from '../helpers/stringUtils';
 import { auth } from '../config/firebaseConfig';
 import { hasPrivileges } from '../helpers/rolesUtils';
 
-const MOTMCard: React.FC<MemberCardProp> = ({ navigation }) => {
+type MOTMCardProp = {
+    navigation?: NativeStackNavigationProp<any>;
+};
+
+const MOTMCard: React.FC<MOTMCardProp> = ({ navigation }) => {
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
 

@@ -131,7 +131,7 @@ export type UserProfileStackParams = {
 // Component Props
 export type MemberCardProp = {
     handleCardPress?: (uid: string | void) => void;
-    userData?: PublicUserInfo;
+    userData: PublicUserInfo;
     displayPoints?: Boolean;
     navigation?: NativeStackNavigationProp<any>
 }
