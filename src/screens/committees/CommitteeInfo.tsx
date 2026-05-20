@@ -247,7 +247,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                                 <View>
                                     {loadingLabel ?
                                         (
-                                            <ActivityIndicator className="mb-2" size="small" />
+                                            <View className="mb-2"><ActivityIndicator size="small" /></View>
                                         ) : (
 
                                             <TouchableOpacity
@@ -366,7 +366,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                             }}
                         >
                             {loadingEvent ? (
-                                <ActivityIndicator className="mt-2" size="small" />
+                                <View className="mt-2"><ActivityIndicator size="small" /></View>
                             ) : (
                                 <View>
                                     {(events && events.length > 0) ? (
@@ -412,7 +412,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                         >
 
                             {loadingTeamMembers ? (
-                                <ActivityIndicator className="mb-2" size="small" />
+                                <View className="mb-2"><ActivityIndicator size="small" /></View>
                             ) : (
 
                                 <View>
@@ -543,7 +543,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                     </View>
 
                     {loadingMembers && (
-                        <ActivityIndicator className="mb-2" size="small" />
+                        <View className="mb-2"><ActivityIndicator size="small" /></View>
                     )}
 
                     <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>

@@ -153,7 +153,7 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
 
             {loading ? (
                 <View className='w-full h-full items-center justify-center'>
-                    <ActivityIndicator className='mt-4' color="white" size={"large"} />
+                    <View className='mt-4'><ActivityIndicator color="white" size={"large"} /></View>
                     {checkingLocation && (
                         <Text className='text-lg font-semibold text-white mt-4'>This will take a few seconds as we check your location...</Text>
                     )}

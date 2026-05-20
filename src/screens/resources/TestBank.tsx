@@ -217,7 +217,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
 
                 <View className='mt-12'>
                     {loading && (
-                        <ActivityIndicator className="pb-12" size={"small"} />
+                        <View className="pb-12"><ActivityIndicator size={"small"} /></View>
                     )}
                     {(!loading && testCards.length != 0 && endOfData) && (
                         <View className='pb-12 items-center justify-center'>

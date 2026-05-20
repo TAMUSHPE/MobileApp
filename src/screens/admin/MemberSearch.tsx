@@ -77,7 +77,7 @@ const MemberSearch = ({ navigation }: NativeStackScreenProps<HomeStackParams>) =
 
             {/* Content */}
             <View className="flex-1">
-                {loading && <ActivityIndicator size="small" className="mt-4" />}
+                {loading && <View className="mt-4"><ActivityIndicator size="small" /></View>}
 
                 {!loading && (
                     <>

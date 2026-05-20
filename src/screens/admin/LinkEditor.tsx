@@ -113,7 +113,7 @@ const LinkEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
 
     if (loading) {
         return (
-            <ActivityIndicator className='absolute top-0 bottom-0 left-0 right-0' size={100} />
+            <View className='absolute top-0 bottom-0 left-0 right-0 items-center justify-center'><ActivityIndicator size={100} /></View>
         );
     }
 

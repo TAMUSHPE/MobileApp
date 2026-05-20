@@ -577,7 +577,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                     onPress={() => setShowResumeModal(true)}
                 />
                 <View className='h-20' />
-                {loading && <ActivityIndicator className='absolute top-0 bottom-0 left-0 right-0' size={100} />}
+                {loading && <View className='absolute top-0 bottom-0 left-0 right-0 items-center justify-center'><ActivityIndicator size={100} /></View>}
             </ScrollView>
             {showSaveButton &&
                 <SettingsSaveButton
@@ -715,7 +715,7 @@ const DisplaySettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                         });
                 }}
             />
-            {loading && <ActivityIndicator className='absolute top-0 bottom-0 left-0 right-0' size={100} />}
+            {loading && <View className='absolute top-0 bottom-0 left-0 right-0 items-center justify-center'><ActivityIndicator size={100} /></View>}
         </ScrollView>
     );
 };

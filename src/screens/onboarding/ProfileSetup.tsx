@@ -293,7 +293,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
                             underlayColor={`${localImageURI === "" ? "" : "#EF9260"}`}
                         />
                         {loading && (
-                            <ActivityIndicator className="mt-2" size="small" />
+                            <View className="mt-2"><ActivityIndicator size="small" /></View>
                         )}
                         <InteractButton
                             onPress={() => navigation.navigate("SetupAcademicInformation")}
@@ -556,7 +556,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                             </TouchableOpacity>
 
                             {loading && (
-                                <ActivityIndicator className="mb-4" size={"small"} />
+                                <View className="mb-4"><ActivityIndicator size={"small"} /></View>
                             )}
 
                         </View>
@@ -734,7 +734,7 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
                         />
 
                         {loading && (
-                            <ActivityIndicator className="mb-4" size="small" />
+                            <View className="mb-4"><ActivityIndicator size="small" /></View>
                         )}
                     </View>
                 </ScrollView>

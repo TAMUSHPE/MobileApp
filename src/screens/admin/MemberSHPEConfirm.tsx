@@ -172,7 +172,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParam
             )}
 
             {loading && (
-                <ActivityIndicator size="small" className='mt-8' />
+                <View className='mt-8'><ActivityIndicator size="small" /></View>
             )}
 
             <DismissibleModal

@@ -252,7 +252,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     </SafeAreaView>
                 </View>
 
-                {loading && (<ActivityIndicator className="mt-16" size="small" />)}
+                {loading && (<View className="mt-16"><ActivityIndicator size="small" /></View>)}
                 {!loading && (
                     <View>
 

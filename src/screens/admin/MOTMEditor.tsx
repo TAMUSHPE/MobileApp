@@ -142,7 +142,7 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                     <Text className={`text-2xl font-bold mb-3 mt-10 ${darkMode ? "text-white" : "text-black"}`}>Suggestions</Text>
                 </View>
 
-                {loading && <ActivityIndicator size="small" className='mt-5' />}
+                {loading && <View className='mt-5'><ActivityIndicator size="small" /></View>}
 
                 <SwipeableMemberList
                     userData={localSuggestedMOTM!}

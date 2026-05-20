@@ -333,7 +333,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                         </Text>
                     )}
 
-                    {loading && (<ActivityIndicator size="small" className='mt-3' />)}
+                    {loading && (<View className='mt-3'><ActivityIndicator size="small" /></View>)}
 
 
                     <View className='mx-4 mt-3'>
@@ -492,7 +492,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
 
                     {(!allUserFetched || loadingLog || loading) && (
-                        <ActivityIndicator className="mb-2" size="small" />
+                        <View className="mb-2"><ActivityIndicator size="small" /></View>
                     )}
 
                     <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
@@ -567,7 +567,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
 
                     {(!allUserFetched || loadingLog) && (
-                        <ActivityIndicator className="mb-2" size="small" />
+                        <View className="mb-2"><ActivityIndicator size="small" /></View>
                     )}
 
                     <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
@@ -643,7 +643,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
 
                     {loadingLog && (
-                        <ActivityIndicator className="mb-2" size="small" />
+                        <View className="mb-2"><ActivityIndicator size="small" /></View>
                     )}
 
                     <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
