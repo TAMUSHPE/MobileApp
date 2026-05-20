@@ -714,7 +714,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                 visible={logoSelectModal}
                 setVisible={setLogoSelectModal}
             >
-                <View className='flex opacity-100 bg-white rounded-md px-5 py-5 space-y-6 w-[90%] h-1/2'>
+                <View className='flex opacity-100 bg-white rounded-md px-5 py-5 gap-6 w-[90%] h-1/2'>
                     <View className='flex-row items-center justify-between'>
                         <View className='items-center'>
                             <Text className='text-2xl font-semibold ml-2'>Select a Logo</Text>

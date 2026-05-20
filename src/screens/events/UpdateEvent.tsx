@@ -595,7 +595,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 visible={showDeletionConfirmation}
                 setVisible={setShowDeletionConfirmation}
             >
-                <View className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+                <View className={`flex opacity-100 rounded-md p-6 gap-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                     <Octicons name="trash" size={24} color={darkMode ? "white" : "black"} />
                     <View className='flex items-center w-[90%]'>
                         <Text className="text-center text-md font-bold text-red-1">This is *not* reversable!</Text>

@@ -259,7 +259,7 @@ const ResumeSubmit = ({ onResumesUpdate }: { onResumesUpdate: () => Promise<void
                 visible={confirmVisible}
                 setVisible={setConfirmVisible}
             >
-                <View className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+                <View className={`flex opacity-100 rounded-md p-6 gap-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                     <Octicons name="alert" size={24} color={darkMode ? "white" : "black"} />
                     <View className='flex items-center w-[80%]'>
                         <Text className={`text-center text-lg font-bold ${darkMode ? "text-white" : "text-black"}`}>Be sure to remove information you don't want public (i.e. phone #, address, email, etc.)</Text>

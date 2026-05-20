@@ -354,7 +354,7 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
                     )}
 
 
-                    <View className='mt-12 flex-row space-x-6'>
+                    <View className='mt-12 flex-row gap-6'>
                         <TouchableOpacity
                             onPress={() => {
                                 handleApprove(selectedMemberUID!)
@@ -384,7 +384,7 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
                 setVisible={setInfoVisible}
             >
                 <View
-                    className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    className={`flex opacity-100 rounded-md p-6 gap-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                     style={{ minWidth: 325 }}
                 >
                     <View className='flex-row items-center justify-between'>

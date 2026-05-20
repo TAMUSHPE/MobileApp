@@ -274,7 +274,7 @@ const ShirtConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams>) =
                 setVisible={setInfoVisible}
             >
                 <View
-                    className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    className={`flex opacity-100 rounded-md p-6 gap-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                     style={{ minWidth: 325 }}
                 >
                     <View className='flex-row items-center justify-between'>

@@ -76,14 +76,14 @@ const TestCard: React.FC<TestBankProps> = ({ testData }) => {
                     )}
                 </View>
                 <View className='flex-col w-[70%] ml-2'>
-                    <View className='flex-row space-x-4'>
+                    <View className='flex-row gap-4'>
                         <Text className={`text-2xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>{subject} {course}</Text>
                         <Text className={`text-2xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>{formatTestType} {typeNumber}</Text>
                     </View>
-                    <View className='flex-row space-x-2'>
+                    <View className='flex-row gap-2'>
                         <Text className={`text-xl font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>{formatSemester} {year}</Text>
                         {professor && (
-                            <View className='flex-row space-x-2'>
+                            <View className='flex-row gap-2'>
                                 <Text className={`text-xl font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>•</Text>
                                 <Text className={`text-xl font-semibold ${darkMode ? "text-grey-light" : "text-grey-dark"}`}>{truncateStringWithEllipsis(formatProfessor, 8)}</Text>
                             </View>
