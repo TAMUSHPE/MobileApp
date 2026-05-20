@@ -1,9 +1,9 @@
 import React, { useState, useRef, useContext } from 'react';
-import { View, Text, Alert, ActivityIndicator, Button, useColorScheme, Image } from 'react-native';
+import { View, Text, Alert, ActivityIndicator, Button, useColorScheme, Image, TouchableOpacity } from 'react-native';
 import { RouteProp } from '@react-navigation/core';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TouchableOpacity, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Octicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';

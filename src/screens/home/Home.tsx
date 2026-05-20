@@ -432,7 +432,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
                 {/* Office Dashboard Office Sign In*/}
                 {isAdmin && (
-                    <View className="flex-row flex-1 items-center mx-4 mt-4 space-x-4">
+                    <View className="flex-row flex-1 items-center mx-4 mt-4 gap-4">
                         <View className='flex-1'>
                             <TouchableOpacity
                                 className='flex-1 flex-row items-center justify-center py-2 rounded-lg bg-dark-navy'

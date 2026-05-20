@@ -348,8 +348,8 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
 
                 }}
                 content={(
-                    <KeyboardAvoidingView>
-                        <View className='px-6 py-2'>
+                    <KeyboardAvoidingView style={{ paddingHorizontal: 24 }}>
+                        <View style={{ paddingVertical: 8 }}>
                             <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Display Name</Text>
                             <TextInput
                                 className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
@@ -362,7 +362,7 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                                 placeholder='Display Name...'
                             />
                         </View>
-                        <View className='px-6 py-2'>
+                        <View style={{ paddingVertical: 8 }}>
                             <Text className={`text-lg mb-2 ${darkMode ? "text-gray-300" : "text-gray-700"}`}>Name</Text>
                             <TextInput
                                 className={`text-xl border-b-2 ${darkMode ? "text-white border-gray-300" : "text-black border-gray-700"}`}
@@ -895,7 +895,7 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStack
             <Text className={`text-xl font-bold mb-2 ${darkMode ? "text-white" : "text-black"}`} >Tell us what can be improved</Text>
             <View className='items-center'>
                 <TextInput
-                    className={`py-4 px-2 rounded-lg w-[100%] h-32 ${darkMode ? "bg-secondary-bg-dark text-white" : "bg-secondary-bg-light border-gray-300 text-black"}`}
+                    className={`py-4 px-2 rounded-lg w-full h-32 ${darkMode ? "bg-secondary-bg-dark text-white" : "bg-secondary-bg-light border-gray-300 text-black"}`}
                     multiline
                     numberOfLines={4}
                     onChangeText={setFeedback}
@@ -906,7 +906,7 @@ const FeedBackSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStack
             </View>
             <Pressable
                 onPress={handleFeedbackSubmit}
-                className={`mt-4 rounded-md w-[50%] py-2 items-center justify-center ${feedback.length === 0 ? 'bg-neutral-400' : 'bg-primary-blue'}`}
+                className={`mt-4 rounded-md w-1/2 py-2 items-center justify-center ${feedback.length === 0 ? 'bg-neutral-400' : 'bg-primary-blue'}`}
                 disabled={feedback.length === 0}
             >
                 <Text className={` text-lg font-semibold ${feedback.length === 0 ? 'text-neutral-200' : 'text-white'}`}>Submit FeedBack</Text>
