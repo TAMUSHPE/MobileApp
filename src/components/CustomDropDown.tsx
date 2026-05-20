@@ -202,12 +202,12 @@ const CustomDropDownMenu = forwardRef(({ data, onSelect, isOpen, searchKey, onTo
                     </TouchableWithoutFeedback>
                 )}
                 {title && (
-                    <Animated.Text className={`w-[100%] ml-3 items-center self-center border-gray-400 font-semibold text-lg ${darkMode ? "text-white" : "text-black"} ` + titleClassName} style={{ transform: [{ translateY: yVal }] }}>
+                    <Animated.Text className={`w-full ml-3 items-center self-center border-gray-400 font-semibold text-lg ${darkMode ? "text-white" : "text-black"} ` + titleClassName} style={{ transform: [{ translateY: yVal }] }}>
                         {title}
                     </Animated.Text>
                 )}
                 <TouchableOpacity
-                    className={`flex-row justify-between items-center self-center rounded-md w-[100%] h-12 px-3 border ${darkMode ? "bg-neutral-800 border-neutral-600" : "bg-white border-gray-400"}`}
+                    className={`flex-row justify-between items-center self-center rounded-md w-full h-12 px-3 border ${darkMode ? "bg-neutral-800 border-neutral-600" : "bg-white border-gray-400"}`}
                     activeOpacity={1}
                     onPress={() => {
                         onToggle()
@@ -290,7 +290,7 @@ const DropDown = ({ darkMode, disableSearch, search, searchRef, dropDownClassNam
     getItemDisplayText: (item: Item) => string,
 }) => {
     return (
-        <View className={`self-center rounded-md px-1 ${Platform.OS == "ios" ? "absolute h-72 w-[100%] top-14" : "max-h-[60%] w-[90%]"} ${darkMode ? "bg-secondary-bg-dark" : "bg-white border border-gray-400"} ` + dropDownClassName}>
+        <View className={`self-center rounded-md px-1 ${Platform.OS == "ios" ? "absolute h-72 w-full top-14" : "max-h-[60%] w-[90%]"} ${darkMode ? "bg-secondary-bg-dark" : "bg-white border border-gray-400"} ` + dropDownClassName}>
             {!disableSearch && (
                 <TextInput
                     placeholder="Search.."

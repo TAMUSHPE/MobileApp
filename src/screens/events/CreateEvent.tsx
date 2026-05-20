@@ -36,7 +36,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
         return (
             <View className='w-[47%] mt-8'>
                 <TouchableOpacity
-                    className={`w-[100%] flex-row px-2 py-4 items-center rounded-lg border ${darkMode ? 'border-grey-light bg-secondary-bg-dark' : 'border-grey-dark bg-secondary-bg-light'}`}
+                    className={`w-full flex-row px-2 py-4 items-center rounded-lg border ${darkMode ? 'border-grey-light bg-secondary-bg-dark' : 'border-grey-dark bg-secondary-bg-light'}`}
                     style={{
                         shadowColor: "#000",
                         shadowOffset: {

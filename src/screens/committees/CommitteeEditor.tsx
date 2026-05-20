@@ -621,7 +621,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
 
 
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         <MembersList
                             handleCardPress={(uid) => {
                                 setHeadModalVisible(false)
@@ -659,7 +659,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                     </View>
 
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         <MembersList
                             handleCardPress={(uid) => {
                                 addLead(uid)
@@ -698,7 +698,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                     </View>
 
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         <MembersList
                             handleCardPress={(uid) => {
                                 addRepresentative(uid)

@@ -16,7 +16,7 @@ const DismissibleModal = ({ visible, setVisible, children }: {
             <TouchableWithoutFeedback
                 onPress={() => setVisible(false)}
             >
-                <View className='items-center justify-center h-[100%] w-[100%] bg-[#0000009b]'>
+                <View className='items-center justify-center h-full w-full bg-[#0000009b]'>
                     <TouchableWithoutFeedback>
                         {children}
                     </TouchableWithoutFeedback>

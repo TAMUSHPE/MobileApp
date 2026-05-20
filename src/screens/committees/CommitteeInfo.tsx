@@ -546,7 +546,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                         <ActivityIndicator className="mb-2" size="small" />
                     )}
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         <MembersList
                             key={forceUpdate}
                             navigation={navigation}

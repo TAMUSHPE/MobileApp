@@ -133,7 +133,7 @@ const ResumeBank = ({ navigation }: NativeStackScreenProps<ResourcesStackParams>
                         </TouchableOpacity>
                     </View>
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         <View>
                             <Text className={`text-2xl font-bold mb-4 mx-4 ${darkMode ? "text-white" : "text-black"}`}>Majors</Text>
                             <View className='flex-row flex-wrap ml-4'>
