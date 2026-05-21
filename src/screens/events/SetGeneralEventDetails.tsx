@@ -77,7 +77,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     }
 
     if (!event) return (
-        <SafeAreaView className='flex flex-col items-center justify-center h-full w-screen'>
+        <SafeAreaView className='flex-1 items-center justify-center'>
             <Text className='mb-10'>An issue ocurred while trying to load this page</Text>
             <InteractButton
                 label='Back to Previous Page'
@@ -87,9 +87,9 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
     )
 
     return (
-        <View>
-            <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
-                <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <View className="flex-1">
+            <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="grow">
+                <SafeAreaView className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
                     <StatusBar style={darkMode ? "light" : "dark"} />
                     {/* Header */}
                     <View className='flex-row items-center'>

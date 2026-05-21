@@ -67,12 +67,13 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     };
 
     return (
-        <View className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <KeyboardAwareScrollView
                 showsVerticalScrollIndicator={false}
                 className={`flex-1`}
+                contentContainerClassName="grow"
             >
-                <SafeAreaView className={`flex flex-col h-screen`}>
+                <SafeAreaView className={`flex-1`}>
                     <View className='flex-row items-center'>
                         <View className='absolute w-full justify-center items-center'>
                             <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Specific Details</Text>
@@ -642,7 +643,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                 animationType='slide'
                 onRequestClose={() => setAdvanceOptionsModal(false)}
             >
-                <View className={`flex h-screen w-screen ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                <View className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                     {/* Header */}
                     <View style={{ marginTop: insets.top }} className='flex-row items-center'>
                         <View className='absolute w-full justify-center items-center'>

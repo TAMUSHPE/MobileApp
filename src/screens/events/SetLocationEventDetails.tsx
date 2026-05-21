@@ -29,7 +29,7 @@ const SetLocationEventDetails = ({ navigation }: EventProps) => {
     const [geofencingRadius, setGeofencingRadius] = useState<number | undefined>(event.geofencingRadius ?? undefined);
 
     return (
-        <SafeAreaView className={`flex flex-col h-screen ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <SafeAreaView className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />
             {/* Header */}
             <View className='flex-row items-center'>

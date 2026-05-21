@@ -83,14 +83,14 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                 </View>
 
                 <View className="flex-row items-center">
-                    <View className="w-screen p-4">
+                    <View className="w-full p-4">
                         <Text className="text-2xl font-bold text-center" style={{ color: darkMode ? 'white' : 'black' }}>
                             {event.name}
                         </Text>
                     </View>
                 </View>
 
-                <View className="w-screen">
+                <View className="w-full">
                     <View className="justify-center items-center">
                         {!event.signInPoints && !event.signOutPoints && event.signInPoints !== 0 && event.signOutPoints !== 0 && (
                             <View>

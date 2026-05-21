@@ -284,9 +284,9 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
-                    <View className='h-screen'>
+                    <View className='flex-1'>
                         <View className='flex-row justify-between items-start mx-6'>
                             <Octicons name="stack" size={35} color={darkMode ? "white" : "black"} />
                             <Text className={`text-3xl font-semibold ml-4 flex-1 break-all text-black ${darkMode ? "text-white" : "text-black"}`}>{reverseFormattedFirebaseName(selectedCommittee || "")}</Text>

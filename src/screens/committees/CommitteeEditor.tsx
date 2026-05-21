@@ -244,7 +244,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     };
 
     return (
-        <SafeAreaView edges={['top']} className={`flex flex-col h-screen ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <SafeAreaView edges={['top']} className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}
@@ -550,7 +550,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
             </KeyboardAwareScrollView>
 
             {/* Create/Update Button */}
-            <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0 mb-14'>
+            <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0'>
                 <TouchableOpacity
                     className={`py-1 rounded-xl mx-4 h-14 items-center justify-center bg-primary-blue `}
                     style={{
@@ -604,11 +604,11 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
 
                     <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
+                        <View className='w-full absolute'>
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>Select a Head</Text>
                         </View>
                         <TouchableOpacity
@@ -643,11 +643,11 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
 
                     <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
+                        <View className='w-full absolute'>
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>Select a Lead</Text>
                         </View>
                         <TouchableOpacity
@@ -681,11 +681,11 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
 
                     <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
+                        <View className='w-full absolute'>
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>Select a Rep</Text>
                         </View>
                         <TouchableOpacity

@@ -201,7 +201,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
     const isLeaveOrCancel = buttonLabel === 'Leave' || buttonLabel === 'Cancel Request';
 
     return (
-        <SafeAreaView edges={['top']} className={`flex flex-col h-screen ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <SafeAreaView edges={['top']} className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}
@@ -492,7 +492,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
             {/* Action Button */}
             {!isInCommittee && (
 
-                <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0 mb-14'>
+                <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0'>
                     <TouchableOpacity
                         className={`py-1 rounded-xl mx-4 h-14 items-center justify-center ${isLeaveOrCancel ? (darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light') : 'bg-primary-blue'} border ${isLeaveOrCancel ? 'border-grey-dark' : 'border-transparent'}`}
                         style={{
@@ -527,10 +527,10 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
                     <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
+                        <View className='w-full absolute'>
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>Select a Member</Text>
                         </View>
 

@@ -242,10 +242,10 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
                     <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
+                        <View className='w-full absolute'>
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>Select Filter</Text>
                         </View>
 

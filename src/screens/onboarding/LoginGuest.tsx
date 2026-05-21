@@ -96,7 +96,7 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
             className="flex-1"
         >
             <View className="flex-1">
-                <SafeAreaView className="flex-1 h-screen">
+                <SafeAreaView className="flex-1">
                     <ScrollView
                         contentContainerStyle={{ flexGrow: 1 }}
                         className="flex-1"

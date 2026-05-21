@@ -67,7 +67,7 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
         )
     }
     return (
-        <SafeAreaView edges={['top']} className={`flex flex-col h-screen ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <SafeAreaView edges={['top']} className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />
             {/* Header */}
             <View className='flex-row items-center'>

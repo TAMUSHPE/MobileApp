@@ -214,7 +214,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
             )}
 
 
-            <View>
+            <View className="flex-1">
                 {/* Members List */}
                 {!loading && (
                     <FlatList

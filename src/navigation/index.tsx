@@ -106,7 +106,7 @@ const RootNavigator = () => {
 
 const RenderUserLoading = () => {
     return (
-        <View className="flex items-center justify-center bg-dark-navy h-screen w-screen">
+        <View className="flex-1 items-center justify-center bg-dark-navy">
             <View className='mb-48'>
                 <Image
                     source={Images.SHPE_LOGO}

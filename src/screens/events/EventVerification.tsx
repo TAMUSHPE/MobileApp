@@ -134,8 +134,8 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
         const message = getStatusMessage(logStatus, mode);
 
         return (
-            <View className={`w-screen h-[70%] items-center justify-center ${bgColor}`}>
-                <View className='w-screen h-40'>
+            <View className={`w-full h-[70%] items-center justify-center ${bgColor}`}>
+                <View className='w-full h-40'>
                     <VerificationAnimation
                         animation={animation}
                         loop={false}
@@ -148,7 +148,7 @@ const EventVerification: React.FC<EventVerificationScreenRouteProp> = ({ route, 
     };
 
     return (
-        <SafeAreaView className={`w-screen h-screen bg-dark-navy`}>
+        <SafeAreaView className={`flex-1 bg-dark-navy`}>
             <StatusBar style="light" />
 
             {loading ? (
