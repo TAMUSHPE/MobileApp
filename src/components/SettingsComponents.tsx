@@ -88,6 +88,7 @@ const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, 
                     </View>
                 </View>
                 <Switch
+                    style={{ alignSelf: 'center' }}
                     onValueChange={() => handleToggle()}
                     value={isToggled}
                     disabled={disabled}

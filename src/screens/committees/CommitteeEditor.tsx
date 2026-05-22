@@ -368,6 +368,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                     >
                         <Text className={`flex-1 text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Open Committee</Text>
                         <Switch
+                            style={{ alignSelf: 'center' }}
                             trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                             thumbColor={"white"}
                             ios_backgroundColor="#999796"

@@ -498,6 +498,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 >
                                     <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Club-Wide</Text>
                                     <Switch
+                                        style={{ alignSelf: 'center' }}
                                         trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                         thumbColor={"white"}
                                         ios_backgroundColor="#999796"
@@ -551,6 +552,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         <View className='flex-row items-center justify-between w-full flex-1'>
                                             <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Notifications</Text>
                                             <Switch
+                                                style={{ alignSelf: 'center' }}
                                                 trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                                 thumbColor={"white"}
                                                 ios_backgroundColor="#999796"
@@ -670,6 +672,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         >
                             <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Eligible for National Convention</Text>
                             <Switch
+                                style={{ alignSelf: 'center' }}
                                 trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                 thumbColor={"white"}
                                 ios_backgroundColor="#999796"
@@ -692,6 +695,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         >
                             <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Hidden Event</Text>
                             <Switch
+                                style={{ alignSelf: 'center' }}
                                 trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                 thumbColor={"white"}
                                 ios_backgroundColor="#999796"

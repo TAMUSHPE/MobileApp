@@ -202,7 +202,11 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
 
     return (
         <SafeAreaView edges={['top']} className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
-            <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                className="flex-1"
+                contentContainerStyle={{ flexGrow: 1 }}
+            >
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}
                 <View className='flex-row items-center justify-between'>
@@ -220,6 +224,7 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                 </View>
 
 
+                <View className={!isInCommittee ? 'flex-1' : undefined}>
                 <View className='mx-4'>
                     <View className='flex-row mt-5 w-full'>
                         {/* Logo */}
@@ -486,36 +491,33 @@ const CommitteeInfo: React.FC<CommitteeInfoScreenRouteProps> = ({ route, navigat
                     </View>
                 </View>
 
-                <View className='pb-52' />
+                {!isInCommittee && (
+                    <View className='flex-1 justify-center mx-4 pt-6 pb-12'>
+                        <TouchableOpacity
+                            className={`py-1 rounded-xl h-14 items-center justify-center ${isLeaveOrCancel ? (darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light') : 'bg-primary-blue'} border ${isLeaveOrCancel ? 'border-grey-dark' : 'border-transparent'}`}
+                            style={{
+                                shadowColor: "#000",
+                                shadowOffset: {
+                                    width: 0,
+                                    height: 2,
+                                },
+                                shadowOpacity: 0.25,
+                                shadowRadius: 3.84,
+
+                                elevation: 5,
+                            }}
+                            onPress={handleJoinLeave}
+                        >
+                            {loadingLabel ? (
+                                <View><ActivityIndicator size="small" /></View>
+                            ) : (
+                                <Text className={`text-center ${isLeaveOrCancel ? `${darkMode ? "text-white" : "text-black"}` : 'text-white'} text-2xl font-bold`}>{buttonLabel}</Text>
+                            )}
+                        </TouchableOpacity>
+                    </View>
+                )}
+                </View>
             </ScrollView>
-
-            {/* Action Button */}
-            {!isInCommittee && (
-
-                <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0'>
-                    <TouchableOpacity
-                        className={`py-1 rounded-xl mx-4 h-14 items-center justify-center ${isLeaveOrCancel ? (darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light') : 'bg-primary-blue'} border ${isLeaveOrCancel ? 'border-grey-dark' : 'border-transparent'}`}
-                        style={{
-                            shadowColor: "#000",
-                            shadowOffset: {
-                                width: 0,
-                                height: 2,
-                            },
-                            shadowOpacity: 0.25,
-                            shadowRadius: 3.84,
-
-                            elevation: 5,
-                        }}
-                        onPress={handleJoinLeave}
-                    >
-                        {loadingLabel ? (
-                            <ActivityIndicator size="small" />
-                        ) : (
-                            <Text className={`text-center ${isLeaveOrCancel ? `${darkMode ? "text-white" : "text-black"}` : 'text-white'} text-2xl font-bold`}>{buttonLabel}</Text>
-                        )}
-                    </TouchableOpacity>
-                </SafeAreaView>
-            )}
 
             <Modal
                 animationType="slide"

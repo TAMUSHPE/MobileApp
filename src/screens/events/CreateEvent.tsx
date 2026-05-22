@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert, useColorScheme } from 'react-native'
+import { View, Text, TouchableOpacity, Alert, useColorScheme, ScrollView } from 'react-native'
 import React, { useContext, useState } from 'react'
 import { CommitteeMeeting, CustomEvent, EventType, GeneralMeeting, IntramuralEvent, SHPEEvent, SocialEvent, StudyHours, VolunteerEvent, Workshop } from '../../types/events'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -79,42 +79,44 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                 </TouchableOpacity>
             </View>
 
-            {/* Form */}
-            <View className={`flex-1`} >
-                <View className='px-4 mt-4'>
-                    <Text className={`text-2xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Choose the event type</Text>
-                </View>
-
-                <View className='px-4'>
-                    <View className='flex-row justify-between'>
-                        <EventTypeButton eventType={EventType.GENERAL_MEETING} label='General Meeting' Image={GeneralMeetingIcon} />
-
-                        <EventTypeButton eventType={EventType.COMMITTEE_MEETING} label='Committee Meeting' Image={CommitteeMeetingIcon} />
-
+            <ScrollView
+                className='flex-1'
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ flexGrow: 1 }}
+            >
+                <View className={selectedEventType ? 'flex-1' : undefined}>
+                    <View className='px-4 mt-4'>
+                        <Text className={`text-2xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Choose the event type</Text>
                     </View>
 
-                    <View className='flex-row justify-between'>
-                        <EventTypeButton eventType={EventType.STUDY_HOURS} label='Study Hours' Image={StudyHoursIcon} />
-                        <EventTypeButton eventType={EventType.WORKSHOP} label='Workshop' Image={WorkshopIcon} />
+                    <View className='px-4'>
+                        <View className='flex-row justify-between'>
+                            <EventTypeButton eventType={EventType.GENERAL_MEETING} label='General Meeting' Image={GeneralMeetingIcon} />
+
+                            <EventTypeButton eventType={EventType.COMMITTEE_MEETING} label='Committee Meeting' Image={CommitteeMeetingIcon} />
+
+                        </View>
+
+                        <View className='flex-row justify-between'>
+                            <EventTypeButton eventType={EventType.STUDY_HOURS} label='Study Hours' Image={StudyHoursIcon} />
+                            <EventTypeButton eventType={EventType.WORKSHOP} label='Workshop' Image={WorkshopIcon} />
+                        </View>
+
+                        <View className='flex-row justify-between'>
+                            <EventTypeButton eventType={EventType.VOLUNTEER_EVENT} label='Volunteer' Image={VolunteerIcon} />
+                            <EventTypeButton eventType={EventType.SOCIAL_EVENT} label='Social' Image={SocialIcon} />
+                        </View>
+
+                        <View className='flex-row justify-between'>
+                            <EventTypeButton eventType={EventType.INTRAMURAL_EVENT} label='Intramural' Image={IntramuralIcon} />
+                            <EventTypeButton eventType={EventType.CUSTOM_EVENT} label='Custom' Image={CustomIcon} />
+                        </View>
                     </View>
 
-                    <View className='flex-row justify-between'>
-                        <EventTypeButton eventType={EventType.VOLUNTEER_EVENT} label='Volunteer' Image={VolunteerIcon} />
-                        <EventTypeButton eventType={EventType.SOCIAL_EVENT} label='Social' Image={SocialIcon} />
-                    </View>
-
-                    <View className='flex-row justify-between'>
-                        <EventTypeButton eventType={EventType.INTRAMURAL_EVENT} label='Intramural' Image={IntramuralIcon} />
-                        <EventTypeButton eventType={EventType.CUSTOM_EVENT} label='Custom' Image={CustomIcon} />
-                    </View>
-
-                </View>
-
-                <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0 mb-16'>
                     {selectedEventType && (
-                        <View>
+                        <View className='flex-1 justify-end px-4 pt-6 pb-12'>
                             <InteractButton
-                                buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
+                                buttonClassName='bg-primary-blue py-1 rounded-xl'
                                 textClassName='text-center text-white text-2xl font-bold'
                                 underlayColor="#468DC6"
                                 label='Next'
@@ -158,8 +160,8 @@ const CreateEvent = ({ navigation }: NativeStackScreenProps<EventsStackParams>) 
                             />
                         </View>
                     )}
-                </SafeAreaView>
-            </View>
+                </View>
+            </ScrollView>
         </SafeAreaView>
     )
 }
