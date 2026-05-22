@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, Modal, Switch, FlatList, useColorScheme } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, Modal, Switch, FlatList, useColorScheme, useWindowDimensions } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
@@ -21,6 +21,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const { userInfo } = userContext!;
 
     const insets = useSafeAreaInsets();
+    const { height: windowHeight } = useWindowDimensions();
 
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
@@ -244,7 +245,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     };
 
     return (
-        <SafeAreaView edges={['top']} className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <SafeAreaView edges={['top']} style={{ height: windowHeight }} className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}

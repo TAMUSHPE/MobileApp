@@ -291,20 +291,20 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowStartDatePicker(true)}
-                                                className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
                                             >
-                                                <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
+                                                <View className={`flex-row items-center p-2 mr-4 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
+                                                </View>
                                             </TouchableHighlight>
 
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowStartTimePicker(true)}
-                                                className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                             >
-                                                <>
-                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
-                                                    <Octicons name='chevron-down' size={24} />
-                                                </>
+                                                <View className={`flex-row items-center justify-between p-2 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No time picked"}</Text>
+                                                    <Octicons name='chevron-down' size={24} color={darkMode ? "white" : "black"} />
+                                                </View>
                                             </TouchableHighlight>
                                         </View>
                                     }
@@ -368,20 +368,20 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowEndDatePicker(true)}
-                                                className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                             >
-                                                <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
+                                                <View className={`flex-row items-center p-2 mr-4 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
+                                                </View>
                                             </TouchableHighlight>
 
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowEndTimePicker(true)}
-                                                className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                             >
-                                                <>
-                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
-                                                    <Octicons name='chevron-down' size={24} />
-                                                </>
+                                                <View className={`flex-row items-center justify-between p-2 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No time picked"}</Text>
+                                                    <Octicons name='chevron-down' size={24} color={darkMode ? "white" : "black"} />
+                                                </View>
                                             </TouchableHighlight>
                                         </View>
                                     }

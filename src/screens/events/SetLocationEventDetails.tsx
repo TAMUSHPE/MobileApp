@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, useColorScheme } from 'react-native'
+import { View, Text, TouchableOpacity, TextInput, useColorScheme, useWindowDimensions } from 'react-native'
 import React, { useContext, useState } from 'react'
 import { EventProps, UpdateEventScreenRouteProp } from '../../types/navigation'
 import { useRoute } from '@react-navigation/core';
@@ -18,6 +18,7 @@ const SetLocationEventDetails = ({ navigation }: EventProps) => {
 
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
+    const { height: windowHeight } = useWindowDimensions();
 
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
@@ -29,7 +30,7 @@ const SetLocationEventDetails = ({ navigation }: EventProps) => {
     const [geofencingRadius, setGeofencingRadius] = useState<number | undefined>(event.geofencingRadius ?? undefined);
 
     return (
-        <SafeAreaView className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <SafeAreaView style={{ height: windowHeight }} className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <StatusBar style={darkMode ? "light" : "dark"} />
             {/* Header */}
             <View className='flex-row items-center'>

@@ -88,7 +88,11 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
 
     return (
         <View className="flex-1">
-            <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1" contentContainerClassName="grow">
+            <KeyboardAwareScrollView
+                showsVerticalScrollIndicator={false}
+                className="flex-1"
+                contentContainerClassName="grow"
+            >
                 <SafeAreaView className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
                     <StatusBar style={darkMode ? "light" : "dark"} />
                     {/* Header */}
@@ -175,20 +179,20 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowStartDatePicker(true)}
-                                                className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
                                             >
-                                                <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
+                                                <View className={`flex-row items-center p-2 mr-4 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
+                                                </View>
                                             </TouchableHighlight>
 
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowStartTimePicker(true)}
-                                                className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                             >
-                                                <>
-                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
-                                                    <Octicons name='chevron-down' size={24} />
-                                                </>
+                                                <View className={`flex-row items-center justify-between p-2 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No time picked"}</Text>
+                                                    <Octicons name='chevron-down' size={24} color={darkMode ? "white" : "black"} />
+                                                </View>
                                             </TouchableHighlight>
                                         </View>
                                     }
@@ -250,20 +254,20 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowEndDatePicker(true)}
-                                                className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                             >
-                                                <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
+                                                <View className={`flex-row items-center p-2 mr-4 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
+                                                </View>
                                             </TouchableHighlight>
 
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowEndTimePicker(true)}
-                                                className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                             >
-                                                <>
-                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
-                                                    <Octicons name='chevron-down' size={24} />
-                                                </>
+                                                <View className={`flex-row items-center justify-between p-2 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No time picked"}</Text>
+                                                    <Octicons name='chevron-down' size={24} color={darkMode ? "white" : "black"} />
+                                                </View>
                                             </TouchableHighlight>
                                         </View>
                                     }
@@ -328,7 +332,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                             />
                         </View>
 
-                        <View className='w-full absolute bottom-0 mb-12'>
+                        <View className='w-full mt-6 mb-12'>
                             <InteractButton
                                 buttonClassName='bg-primary-blue py-1 rounded-xl mx-4'
                                 textClassName='text-center text-white text-2xl font-bold'
@@ -349,7 +353,7 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                         Alert.alert("Event ends before start time", "Event cannot end before it starts.")
                                     }
                                     else if (event.copyFromObject) {
-                                        let modifiedDescription = description.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim(); // Remove all newlines and extra spaces
+                                        let modifiedDescription = description.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
 
                                         event.copyFromObject({
                                             name,
@@ -367,10 +371,11 @@ const SetGeneralEventDetails = ({ navigation }: EventProps) => {
                                     }
                                 }}
                             />
-                            <View className='w-full items-center justify-center'>
-                                <Text> General details can be changed later</Text>
+                            <View className='w-full items-center justify-center mt-1'>
+                                <Text className={darkMode ? 'text-white' : 'text-black'}>General details can be changed later</Text>
                             </View>
                         </View>
+
                     </View>
                 </SafeAreaView>
             </KeyboardAwareScrollView>
