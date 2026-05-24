@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, Modal, Switch, FlatList, useColorScheme, useWindowDimensions } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, Modal, Switch, FlatList, useColorScheme } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
@@ -14,6 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
+import InteractButton from '../../components/InteractButton';
 
 const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const committeeData = route?.params?.committee;
@@ -21,7 +22,6 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const { userInfo } = userContext!;
 
     const insets = useSafeAreaInsets();
-    const { height: windowHeight } = useWindowDimensions();
 
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
@@ -228,6 +228,30 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
         }
     };
 
+    const handleSubmitCommittee = async () => {
+        if (!localCommitteeData.head) {
+            alert("Please select a head");
+            return;
+        }
+
+        if (!localCommitteeData.name || localCommitteeData.name.trim() === '') {
+            alert("Please select a name");
+            return;
+        }
+
+        const updatedCommitteeData = {
+            ...localCommitteeData,
+            applicationLink: localCommitteeData.applicationLink || ''
+        };
+
+        await setCommitteeData(updatedCommitteeData);
+        if (committeeData) {
+            navigation.navigate('CommitteeInfo', { committee: updatedCommitteeData });
+        } else {
+            navigation.goBack();
+        }
+    };
+
     const renderItem = ({ item }: { item: any }) => {
         const [name, logoData] = item;
         return (
@@ -245,8 +269,13 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     };
 
     return (
-        <SafeAreaView edges={['top']} style={{ height: windowHeight }} className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
-            <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
+        <SafeAreaView edges={['top']} className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+            <KeyboardAwareScrollView
+                showsVerticalScrollIndicator={false}
+                className="flex-1"
+                contentContainerClassName="grow"
+            >
+                <View className="flex-1">
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}
                 <View className='flex-row items-center justify-between'>
@@ -548,53 +577,17 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                     </View>
                 )}
 
-                <View className='pb-48' />
+                <View className='flex-1 justify-end px-4 pt-6 pb-12'>
+                    <InteractButton
+                        buttonClassName='bg-primary-blue py-1 rounded-xl'
+                        textClassName='text-center text-white text-2xl font-bold'
+                        underlayColor="#468DC6"
+                        label={committeeData ? "Update" : "Create"}
+                        onPress={handleSubmitCommittee}
+                    />
+                </View>
+                </View>
             </KeyboardAwareScrollView>
-
-            {/* Create/Update Button */}
-            <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0'>
-                <TouchableOpacity
-                    className={`py-1 rounded-xl mx-4 h-14 items-center justify-center bg-primary-blue `}
-                    style={{
-                        shadowColor: "#000",
-                        shadowOffset: {
-                            width: 0,
-                            height: 2,
-                        },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 3.84,
-
-                        elevation: 5,
-                    }}
-                    onPress={async () => {
-                        if (!localCommitteeData.head) {
-                            alert("Please select a head");
-                            return;
-                        }
-                        console.log(localCommitteeData.name, "test")
-
-                        if (!localCommitteeData.name || localCommitteeData.name.trim() === '') {
-                            alert("Please select a name");
-                            return;
-                        }
-
-                        const updatedCommitteeData = {
-                            ...localCommitteeData,
-                            applicationLink: localCommitteeData.applicationLink || ''
-                        };
-
-                        await setCommitteeData(updatedCommitteeData);
-                        if (committeeData) {
-                            navigation.navigate('CommitteeInfo', { committee: updatedCommitteeData });
-                        } else {
-                            navigation.goBack();
-                        }
-                    }}
-                >
-                    <Text className={`text-center text-2xl font-bold text-white`}>{committeeData ? "Update" : "Create"}</Text>
-
-                </TouchableOpacity>
-            </SafeAreaView>
 
             <Modal
                 animationType="slide"
