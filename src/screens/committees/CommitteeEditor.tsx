@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, Modal, Switch, FlatList, useColorScheme } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, Modal, Switch, FlatList, useColorScheme, useWindowDimensions } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Octicons, FontAwesome } from '@expo/vector-icons';
@@ -21,6 +21,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const { userInfo } = userContext!;
 
     const insets = useSafeAreaInsets();
+    const { height: windowHeight } = useWindowDimensions();
 
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
@@ -244,7 +245,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     };
 
     return (
-        <SafeAreaView edges={['top']} className={`flex flex-col h-screen ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <SafeAreaView edges={['top']} style={{ height: windowHeight }} className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <KeyboardAwareScrollView showsVerticalScrollIndicator={false} className="flex-1">
                 <StatusBar style={darkMode ? "light" : "dark"} />
                 {/* Header */}
@@ -367,6 +368,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                     >
                         <Text className={`flex-1 text-xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Open Committee</Text>
                         <Switch
+                            style={{ alignSelf: 'center' }}
                             trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                             thumbColor={"white"}
                             ios_backgroundColor="#999796"
@@ -550,7 +552,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
             </KeyboardAwareScrollView>
 
             {/* Create/Update Button */}
-            <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0 mb-14'>
+            <SafeAreaView edges={['bottom']} className='w-full absolute bottom-0'>
                 <TouchableOpacity
                     className={`py-1 rounded-xl mx-4 h-14 items-center justify-center bg-primary-blue `}
                     style={{
@@ -604,11 +606,11 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
 
                     <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
+                        <View className='w-full absolute'>
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>Select a Head</Text>
                         </View>
                         <TouchableOpacity
@@ -621,7 +623,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
 
 
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         <MembersList
                             handleCardPress={(uid) => {
                                 setHeadModalVisible(false)
@@ -643,11 +645,11 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
 
                     <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
+                        <View className='w-full absolute'>
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>Select a Lead</Text>
                         </View>
                         <TouchableOpacity
@@ -659,7 +661,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                     </View>
 
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         <MembersList
                             handleCardPress={(uid) => {
                                 addLead(uid)
@@ -681,11 +683,11 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
 
                     <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
+                        <View className='w-full absolute'>
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>Select a Rep</Text>
                         </View>
                         <TouchableOpacity
@@ -698,7 +700,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                     </View>
 
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         <MembersList
                             handleCardPress={(uid) => {
                                 addRepresentative(uid)
@@ -714,7 +716,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                 visible={logoSelectModal}
                 setVisible={setLogoSelectModal}
             >
-                <View className='flex opacity-100 bg-white rounded-md px-5 py-5 space-y-6 w-[90%] h-1/2'>
+                <View className='flex opacity-100 bg-white rounded-md px-5 py-5 gap-6 w-[90%] h-1/2'>
                     <View className='flex-row items-center justify-between'>
                         <View className='items-center'>
                             <Text className='text-2xl font-semibold ml-2'>Select a Logo</Text>

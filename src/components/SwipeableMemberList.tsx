@@ -78,7 +78,7 @@ const SwipeableMemberCard = ({ userData, onSwipe }: { userData: PublicUserInfo, 
                     <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>You will be setting {userData?.name} as the member of the month.</Text>
 
 
-                    <View className='mt-20 flex-row space-x-6'>
+                    <View className='mt-20 flex-row gap-6'>
                         <TouchableOpacity
                             onPress={() => {
                                 setMOTM(userData)

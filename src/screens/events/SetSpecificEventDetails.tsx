@@ -67,12 +67,13 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
     };
 
     return (
-        <View className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
+        <View className={`flex-1 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
             <KeyboardAwareScrollView
                 showsVerticalScrollIndicator={false}
                 className={`flex-1`}
+                contentContainerClassName="grow"
             >
-                <SafeAreaView className={`flex flex-col h-screen`}>
+                <SafeAreaView className={`flex-1`}>
                     <View className='flex-row items-center'>
                         <View className='absolute w-full justify-center items-center'>
                             <Text className={`text-3xl font-bold ${darkMode ? "text-white" : "text-black"}`}>Specific Details</Text>
@@ -112,7 +113,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                     </View>
                                 </View>
 
-                                <View className='space-y-4'>
+                                <View className='gap-4'>
                                     {signInPoints != null && (
                                         <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                             style={{
@@ -128,7 +129,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         >
                                             <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Sign In</Text>
 
-                                            <View className='w-[75%] flex-row space-x-3'>
+                                            <View className='w-[75%] flex-row gap-3'>
                                                 {points.map((point) => (
                                                     <TouchableOpacity
                                                         key={point}
@@ -159,7 +160,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         >
                                             <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Sign Out</Text>
 
-                                            <View className='w-[75%] flex-row space-x-3'>
+                                            <View className='w-[75%] flex-row gap-3'>
                                                 {points.map((point) => (
                                                     <TouchableOpacity
                                                         key={point}
@@ -190,7 +191,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         >
                                             <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Hourly</Text>
 
-                                            <View className='w-[75%] flex-row space-x-3'>
+                                            <View className='w-[75%] flex-row gap-3'>
                                                 {points.map((point) => (
                                                     <TouchableOpacity
                                                         key={point}
@@ -268,7 +269,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                     </View>
                                 </View>
 
-                                <View className='space-y-4'>
+                                <View className='gap-4'>
                                     {signInPoints != null && (
                                         <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                             style={{
@@ -284,7 +285,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         >
                                             <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Sign In</Text>
 
-                                            <View className="w-[75%] flex-row items-center space-x-3">
+                                            <View className="w-[75%] flex-row items-center gap-3">
                                                 <TouchableOpacity
                                                     className={`w-10 h-10 rounded-xl items-center justify-center ${signInPoints > 0 ? "bg-primary-blue" : "bg-grey-dark"
                                                         }`}
@@ -345,7 +346,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                                 Sign Out
                                             </Text>
 
-                                            <View className="w-[75%] flex-row items-center space-x-3">
+                                            <View className="w-[75%] flex-row items-center gap-3">
                                                 <TouchableOpacity
                                                     className={`w-10 h-10 rounded-xl items-center justify-center ${signOutPoints > 0 ? "bg-primary-blue" : "bg-grey-dark"
                                                         }`}
@@ -409,7 +410,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                                 Hourly
                                             </Text>
 
-                                            <View className="w-[75%] flex-row items-center space-x-3">
+                                            <View className="w-[75%] flex-row items-center gap-3">
                                                 <TouchableOpacity
                                                     className={`w-10 h-10 rounded-xl items-center justify-center ${pointsPerHour > 0 ? "bg-primary-blue" : "bg-grey-dark"
                                                         }`}
@@ -482,7 +483,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         <View className='px-4 mt-10'>
                             <Text className={`text-2xl font-semibold mb-4 ${darkMode ? "text-white" : "text-black"}`}>Event Scope</Text>
 
-                            <View className='space-y-4'>
+                            <View className='gap-4'>
                                 <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                                     style={{
                                         shadowColor: "#000",
@@ -497,6 +498,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                 >
                                     <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Club-Wide</Text>
                                     <Switch
+                                        style={{ alignSelf: 'center' }}
                                         trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                         thumbColor={"white"}
                                         ios_backgroundColor="#999796"
@@ -550,6 +552,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                                         <View className='flex-row items-center justify-between w-full flex-1'>
                                             <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Notifications</Text>
                                             <Switch
+                                                style={{ alignSelf: 'center' }}
                                                 trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                                 thumbColor={"white"}
                                                 ios_backgroundColor="#999796"
@@ -642,7 +645,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                 animationType='slide'
                 onRequestClose={() => setAdvanceOptionsModal(false)}
             >
-                <View className={`flex h-screen w-screen ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                <View className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                     {/* Header */}
                     <View style={{ marginTop: insets.top }} className='flex-row items-center'>
                         <View className='absolute w-full justify-center items-center'>
@@ -654,7 +657,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                     </View>
 
                     {/* Advance Options */}
-                    <View className='px-4 mt-10 space-y-8'>
+                    <View className='px-4 mt-10 gap-8'>
                         <View className={`flex-row items-center justify-between w-full px-4 h-16 rounded-lg ${darkMode ? 'bg-secondary-bg-dark' : 'bg-secondary-bg-light'}`}
                             style={{
                                 shadowColor: "#000",
@@ -669,6 +672,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         >
                             <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Eligible for National Convention</Text>
                             <Switch
+                                style={{ alignSelf: 'center' }}
                                 trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                 thumbColor={"white"}
                                 ios_backgroundColor="#999796"
@@ -691,6 +695,7 @@ const SetSpecificEventDetails = ({ navigation }: EventProps) => {
                         >
                             <Text className={`flex-1 text-xl font-semibold ${darkMode ? "text-white" : "text-black"}`}>Hidden Event</Text>
                             <Switch
+                                style={{ alignSelf: 'center' }}
                                 trackColor={{ false: "#B4B4B4", true: "#1870B8" }}
                                 thumbColor={"white"}
                                 ios_backgroundColor="#999796"

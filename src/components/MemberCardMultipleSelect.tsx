@@ -5,7 +5,6 @@ import { PublicUserInfo } from '../types/user'
 import { UserContext } from '../context/UserContext'
 
 const MemberCardMultipleSelect: React.FC<MemberCardMultipleSelectProp> = ({ userData, handleCardPress }) => {
-    if (!userData) { return }
     const { name, roles, uid, displayName, photoURL, chapterExpiration, nationalExpiration, selected } = userData
 
     const userContext = useContext(UserContext);
@@ -50,7 +49,7 @@ interface SelectedPublicUserInfo extends PublicUserInfo {
 
 export type MemberCardMultipleSelectProp = {
     handleCardPress?: (uid: string | void) => void;
-    userData?: SelectedPublicUserInfo;
+    userData: SelectedPublicUserInfo;
 }
 
 export default MemberCardMultipleSelect

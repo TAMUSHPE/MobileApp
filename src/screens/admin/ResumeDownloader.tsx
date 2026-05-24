@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Octicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { db } from '../../config/firebaseConfig';
 import { getFunctions, httpsCallable } from 'firebase/functions';
@@ -114,7 +114,7 @@ const ResumeDownloader = ({ navigation }: NativeStackScreenProps<HomeStackParams
                 </TouchableOpacity>
             </View>
 
-            <View className='space-y-4 mx-6 mt-10'>
+            <View className='gap-4 mx-6 mt-10'>
                 <Text className={`text-lg font-semibold ${darkMode ? "text-white" : "text-black"}`}>Instructions</Text>
                 <Text className={`${darkMode ? "text-white" : "text-black"}`}>This is a resume bundle downloader that downloads all resume that a user has uploaded </Text>
 
@@ -139,7 +139,7 @@ const ResumeDownloader = ({ navigation }: NativeStackScreenProps<HomeStackParams
                 <View className='mx-7 mt-12'>
                     <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>Date Created</Text>
                     <Text className={`text-md font-semibold ${darkMode ? "text-white" : "text-black"}`}>{formatDate(createdAt!)}</Text>
-                    <View className='flex-row w-full items-center justify-around mt-4 space-x-4'>
+                    <View className='flex-row w-full items-center justify-around mt-4 gap-4'>
                         <TouchableOpacity
                             className='bg-primary-blue items-center justify-center flex-1 py-2 rounded-md'
                             onPress={() => handleLinkPress(downloadUrl!)}

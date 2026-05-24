@@ -98,7 +98,7 @@ const Members = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => {
                     showsHorizontalScrollIndicator={false}
                     horizontal={true}
                 >
-                    <View className='flex-row px-4 space-x-3 my-1'>
+                    <View className='flex-row px-4 gap-3 my-1'>
                         {Object.values(FilterRole).map((type) => (
                             <TouchableOpacity
                                 key={type}

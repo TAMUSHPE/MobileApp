@@ -137,7 +137,7 @@ const LoginStudent = ({ navigation }: NativeStackScreenProps<AuthStackParams>) =
                         <Text className="text-primary-orange text-lg text-center font-bold mt-2">* Must use a tamu.edu account</Text>
                         {error && <Text className="text-center mt-2 text-red-1 text-lg">{error}</Text>}
                         {loading && (
-                            <ActivityIndicator className="mt-4" size="small" />
+                            <View className="mt-4"><ActivityIndicator size="small" /></View>
                         )}
                     </View>
 

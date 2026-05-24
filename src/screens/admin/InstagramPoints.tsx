@@ -175,7 +175,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
                 </TouchableOpacity>
             </View>
 
-            {loading && <ActivityIndicator size="small" className='mt-4' />}
+            {loading && <View className='mt-4'><ActivityIndicator size="small" /></View>}
 
             {/* Search Bar */}
             {!loading && (
@@ -214,7 +214,7 @@ const InstagramPoints = ({ navigation }: NativeStackScreenProps<HomeStackParams>
             )}
 
 
-            <View>
+            <View className="flex-1">
                 {/* Members List */}
                 {!loading && (
                     <FlatList

@@ -1,6 +1,6 @@
 import { View, Text, TouchableHighlight, Switch, Modal, StyleProp, TextStyle } from 'react-native';
 import React, { useState } from 'react';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 
 /**
@@ -88,6 +88,7 @@ const SettingsToggleButton = ({ iconName, mainText, subText, darkMode, onPress, 
                     </View>
                 </View>
                 <Switch
+                    style={{ alignSelf: 'center' }}
                     onValueChange={() => handleToggle()}
                     value={isToggled}
                     disabled={disabled}
@@ -147,9 +148,16 @@ const SettingsModal = ({ visible, onCancel, onDone, title, content, darkMode }: 
             animationType='slide'
             onRequestClose={() => onCancel()}
         >
-            <SafeAreaView
-                className={`${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light border border-gray-400"}  rounded-t-xl h-full box-shadow-md`}
-                style={{ paddingTop: insets.top }}
+            <View
+                style={{
+                    flex: 1,
+                    paddingTop: insets.top,
+                    backgroundColor: darkMode ? "#000000" : "#FFFFFF",
+                    borderTopLeftRadius: 12,
+                    borderTopRightRadius: 12,
+                    borderWidth: darkMode ? 0 : 1,
+                    borderColor: "#9CA3AF",
+                }}
             >
                 {/* Header */}
                 <View className='flex-row items-center justify-between mx-1 my-4'>
@@ -173,7 +181,7 @@ const SettingsModal = ({ visible, onCancel, onDone, title, content, darkMode }: 
                 <View>
                     {content ?? (<Text className={`${darkMode ? "text-white" : "text-black"} text-center text-4xl`}>A user will edit their settings here</Text>)}
                 </View>
-            </SafeAreaView>
+            </View>
         </Modal>
     );
 };

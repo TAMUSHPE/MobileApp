@@ -24,7 +24,7 @@ const ProgressBar = ({ progress }: { progress: number }) => {
     });
 
     return (
-        <View className='w-[100%] h-3 bg-[#cccccc] rounded-md'>
+        <View className='w-full h-3 bg-[#cccccc] rounded-md'>
             <Animated.View className="h-full bg-primary-blue rounded-md" style={{ width }} />
         </View>
     );

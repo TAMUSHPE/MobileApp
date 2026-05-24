@@ -254,7 +254,7 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
 
                         {error && <Text className="text-center mt-2 text-red-1 text-lg">{error}</Text>}
                         {loading && (
-                            <ActivityIndicator className="mt-4" size="small" />
+                            <View className="mt-4"><ActivityIndicator size="small" /></View>
                         )}
                     </View>
 

@@ -172,7 +172,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParam
             )}
 
             {loading && (
-                <ActivityIndicator size="small" className='mt-8' />
+                <View className='mt-8'><ActivityIndicator size="small" /></View>
             )}
 
             <DismissibleModal
@@ -191,7 +191,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParam
                         </View>
                     </View>
 
-                    <MemberCard userData={selectedMember} handleCardPress={() => { }} />
+                    {selectedMember && <MemberCard userData={selectedMember} handleCardPress={() => { }} />}
 
                     <View>
                         <TouchableOpacity
@@ -231,7 +231,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParam
                         </View>
                     </View>
 
-                    <View className='mt-12 flex-row space-x-6'>
+                    <View className='mt-12 flex-row gap-6'>
                         <TouchableOpacity
                             onPress={() => {
                                 handleApprove(selectedMemberUID!)
@@ -261,7 +261,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParam
                 setVisible={setExpirationModalVisible}
             >
                 <View
-                    className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    className={`flex opacity-100 rounded-md p-6 gap-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                     style={{ minWidth: 325, minHeight: 250 }}
                 >
                     <View className='flex-row items-center justify-end'>
@@ -305,7 +305,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParam
                         }
                     </View>
 
-                    <View className='flex-row space-x-6'>
+                    <View className='flex-row gap-6'>
                         <TouchableOpacity
                             onPress={() => {
                                 setExpirationModalVisible(false);
@@ -336,7 +336,7 @@ const MemberSHPEConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParam
                 setVisible={setInfoVisible}
             >
                 <View
-                    className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    className={`flex opacity-100 rounded-md p-6 gap-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                     style={{ minWidth: 325 }}
                 >
                     <View className='flex-row items-center justify-between'>

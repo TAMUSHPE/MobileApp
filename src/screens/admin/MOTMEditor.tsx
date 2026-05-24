@@ -142,7 +142,7 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                     <Text className={`text-2xl font-bold mb-3 mt-10 ${darkMode ? "text-white" : "text-black"}`}>Suggestions</Text>
                 </View>
 
-                {loading && <ActivityIndicator size="small" className='mt-5' />}
+                {loading && <View className='mt-5'><ActivityIndicator size="small" /></View>}
 
                 <SwipeableMemberList
                     userData={localSuggestedMOTM!}
@@ -159,11 +159,11 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                 >
                     <View
                         style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                        className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                        className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                     >
-                        <View className='h-screen'>
+                        <View className='flex-1'>
                             <View className='flex-row items-center h-10 mb-4 justify-end'>
-                                <View className='w-screen absolute'>
+                                <View className='w-full absolute'>
                                     <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? "text-white" : "text-black"}`}>Select User</Text>
                                 </View>
                                 <TouchableOpacity
@@ -201,13 +201,13 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                             </View>
                         </View>
 
-                        <MemberCard userData={selectedMember!} />
+                        {selectedMember && <MemberCard userData={selectedMember} />}
 
 
                         <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>You will be setting {selectedMember?.name} as the member of the month.</Text>
 
 
-                        <View className='mt-20 flex-row space-x-6'>
+                        <View className='mt-20 flex-row gap-6'>
                             <TouchableOpacity
                                 onPress={() => {
                                     setMOTM(selectedMember!)
@@ -232,7 +232,7 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                     visible={infoVisible}
                     setVisible={setInfoVisible}
                 >
-                    <View className='flex opacity-100 bg-white rounded-md p-6 space-y-6' style={{ minWidth: 325 }}>
+                    <View className='flex opacity-100 bg-white rounded-md p-6 gap-6' style={{ minWidth: 325 }}>
                         <View className='flex-row items-center justify-between'>
                             <View className='flex-row items-center'>
                                 <Octicons name="info" size={24} color="black" />

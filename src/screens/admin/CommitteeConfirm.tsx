@@ -284,9 +284,9 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
-                    <View className='h-screen'>
+                    <View className='flex-1'>
                         <View className='flex-row justify-between items-start mx-6'>
                             <Octicons name="stack" size={35} color={darkMode ? "white" : "black"} />
                             <Text className={`text-3xl font-semibold ml-4 flex-1 break-all text-black ${darkMode ? "text-white" : "text-black"}`}>{reverseFormattedFirebaseName(selectedCommittee || "")}</Text>
@@ -332,7 +332,7 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
                         </View>
                     </View>
 
-                    <MemberCard userData={selectedMember} handleCardPress={() => { }} />
+                    {selectedMember && <MemberCard userData={selectedMember} handleCardPress={() => { }} />}
 
                     <Text className={`text-md ${darkMode ? "text-white" : "text-black"}`}>
                         {selectedMember?.name} {selectedMember?.committees && selectedMember.committees.length > 0 ? "is also in:" : "is not in any committees"}
@@ -354,7 +354,7 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
                     )}
 
 
-                    <View className='mt-12 flex-row space-x-6'>
+                    <View className='mt-12 flex-row gap-6'>
                         <TouchableOpacity
                             onPress={() => {
                                 handleApprove(selectedMemberUID!)
@@ -384,7 +384,7 @@ const CommitteeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams
                 setVisible={setInfoVisible}
             >
                 <View
-                    className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    className={`flex opacity-100 rounded-md p-6 gap-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                     style={{ minWidth: 325 }}
                 >
                     <View className='flex-row items-center justify-between'>

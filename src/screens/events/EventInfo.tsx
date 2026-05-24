@@ -217,7 +217,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                                     </TouchableOpacity>
                                     {showOptionMenu && (
                                         <View>
-                                            <TouchableOpacity onPress={() => { setShowOptionMenu(false) }} className='absolute -right-4 w-screen h-screen z-10' />
+                                            <TouchableOpacity onPress={() => { setShowOptionMenu(false) }} className='absolute top-0 bottom-0 left-0 right-0 z-10' />
 
                                             <View className='absolute right-10 top-5 rounded-md items-center z-20'
                                                 style={{ backgroundColor: 'rgba(0,0,0,0.8)' }}
@@ -333,7 +333,7 @@ const EventInfo = ({ navigation }: EventProps) => {
                         </Text>
                     )}
 
-                    {loading && (<ActivityIndicator size="small" className='mt-3' />)}
+                    {loading && (<View className='mt-3'><ActivityIndicator size="small" /></View>)}
 
 
                     <View className='mx-4 mt-3'>
@@ -476,10 +476,10 @@ const EventInfo = ({ navigation }: EventProps) => {
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
                     <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
+                        <View className='w-full absolute'>
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>Manual Sign In</Text>
                         </View>
 
@@ -492,10 +492,10 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
 
                     {(!allUserFetched || loadingLog || loading) && (
-                        <ActivityIndicator className="mb-2" size="small" />
+                        <View className="mb-2"><ActivityIndicator size="small" /></View>
                     )}
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         {!loadingLog && (
                             <MembersList
                                 key={forceUpdate}
@@ -551,10 +551,10 @@ const EventInfo = ({ navigation }: EventProps) => {
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
                     <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
+                        <View className='w-full absolute'>
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>Manual Sign Out</Text>
                         </View>
 
@@ -567,10 +567,10 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
 
                     {(!allUserFetched || loadingLog) && (
-                        <ActivityIndicator className="mb-2" size="small" />
+                        <View className="mb-2"><ActivityIndicator size="small" /></View>
                     )}
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         {!loadingLog && (
                             <MembersList
                                 key={forceUpdate + 1}
@@ -625,10 +625,10 @@ const EventInfo = ({ navigation }: EventProps) => {
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
                     <View className="flex-row items-center h-10 mb-4">
-                        <View className="w-screen absolute">
+                        <View className="w-full absolute">
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>
                                 Select a Member
                             </Text>
@@ -643,10 +643,10 @@ const EventInfo = ({ navigation }: EventProps) => {
                     </View>
 
                     {loadingLog && (
-                        <ActivityIndicator className="mb-2" size="small" />
+                        <View className="mb-2"><ActivityIndicator size="small" /></View>
                     )}
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
 
                         {!loadingLog && (
                             <MembersList

@@ -106,14 +106,14 @@ const RootNavigator = () => {
 
 const RenderUserLoading = () => {
     return (
-        <View className="flex items-center justify-center bg-dark-navy h-screen w-screen">
+        <View className="flex-1 items-center justify-center bg-dark-navy">
             <View className='mb-48'>
                 <Image
                     source={Images.SHPE_LOGO}
                     className="h-36 w-36"
                 />
             </View>
-            <ActivityIndicator className='mt-4' size={"small"} />
+            <View className='mt-4'><ActivityIndicator size={"small"} /></View>
         </View>
     );
 };

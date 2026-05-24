@@ -175,9 +175,9 @@ const QRCodeScanningScreen = ({ navigation }: NativeStackScreenProps<MainStackPa
     }
 
     return (
-        <SafeAreaView className='flex flex-col h-full w-screen bg-primary-blue'>
+        <SafeAreaView className='flex-1 bg-primary-blue'>
             <View className={`flex-row items-center mb-4 bg-primary-blue`}>
-                <View className='w-screen absolute'>
+                <View className='w-full absolute'>
                     <Text className={`text-2xl font-bold justify-center text-center text-white`}>Scanner</Text>
                 </View>
                 <TouchableOpacity className='px-6' onPress={() => navigation.goBack()}>

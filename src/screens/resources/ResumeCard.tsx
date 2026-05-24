@@ -122,7 +122,7 @@ const ResumeCard: React.FC<ResumeProps & { onResumeRemoved: () => void }> = ({ r
 
                     {loading && (
 
-                        <ActivityIndicator size="small" className='mt-5' />
+                        <View className='mt-5'><ActivityIndicator size="small" /></View>
                     )}
                 </View>
             </DismissibleModal>

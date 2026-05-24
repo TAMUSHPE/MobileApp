@@ -231,24 +231,11 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
         return (
             <TouchableOpacity
                 onPress={() => handleInterestToggle(interestEvent)}
-                className={`justify-center items-center flex-row border py-2 px-3 mr-6 mb-4 rounded-md ${isSelected ? "border-primary-blue bg-primary-blue" : (darkMode ? "bg-secondary-bg-dark border-white" : "bg-secondary-bg-light border-black")}`}
+                className={`justify-center items-center border py-2 px-3 mr-6 mb-4 rounded-md ${isSelected ? "border-primary-blue bg-primary-blue" : (darkMode ? "bg-secondary-bg-dark border-white" : "bg-secondary-bg-light border-black")}`}
             >
-                {isSelected ? (
-                    <View className='mr-2'>
-                        <Octicons name="check" size={20} color="white" />
-                    </View>
-                ) : (
-                    <View className='mr-2'>
-                        <Octicons name="check" size={20} color={"transparent"} />
-                    </View>
-                )}
-
-
-                <Text className={`text-lg ${isSelected ? "text-white" : "text-transparent"} `}>{label}</Text>
-
-                {!isSelected && (
-                    <Text className={`text-lg ${darkMode ? "absolute text-white" : "absolute text-black"}`}>{label}</Text>
-                )}
+                <Text className={`text-lg ${isSelected ? "text-white" : (darkMode ? "text-white" : "text-black")}`}>
+                    {label}
+                </Text>
             </TouchableOpacity>
         );
     }
@@ -432,7 +419,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
 
                 {/* Office Dashboard Office Sign In*/}
                 {isAdmin && (
-                    <View className="flex-row flex-1 items-center mx-4 mt-4 space-x-4">
+                    <View className="flex-row flex-1 items-center mx-4 mt-4 gap-4">
                         <View className='flex-1'>
                             <TouchableOpacity
                                 className='flex-1 flex-row items-center justify-center py-2 rounded-lg bg-dark-navy'

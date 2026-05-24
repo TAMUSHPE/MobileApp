@@ -92,7 +92,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
     const selectPhoto = async () => {
         try {
             const result = await ImagePicker.launchImageLibraryAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                mediaTypes: ['images'],
                 allowsEditing: true,
                 aspect: [4, 3],
                 quality: 1,
@@ -121,7 +121,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
             }
 
             const result = await ImagePicker.launchCameraAsync({
-                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                mediaTypes: ['images'],
                 allowsEditing: true,
                 aspect: [4, 3],
                 quality: 1,
@@ -424,7 +424,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                                     }
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    className={`w-[1/3] px-3 py-2 rounded-lg items-center bg-secondary-blue`}
+                                    className={`w-1/3 px-3 py-2 rounded-lg items-center`}
                                     onPress={() => uploadPhoto('chapter', true)}
                                 >
                                     <Text className={`font-semibold text-lg ${darkMode ? "text-white" : "text-black"}`}>Take Photo</Text>
@@ -497,7 +497,7 @@ const MemberSHPE = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
                                     }
                                 </TouchableOpacity>
                                 <TouchableOpacity
-                                    className={`w-[1/3] px-3 py-2 rounded-lg items-center bg-secondary-blue`}
+                                    className={`w-1/3 px-3 py-2 rounded-lg items-center`}
                                     onPress={() => uploadPhoto('national', true)}
                                 >
                                     <Text className={`font-semibold text-lg ${darkMode ? "text-white" : "text-black"}`}>Take Photo</Text>

@@ -154,7 +154,7 @@ const ResumeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams>) 
             )}
 
             {loading && (
-                <ActivityIndicator size="small" className='mt-8' />
+                <View className='mt-8'><ActivityIndicator size="small" /></View>
             )}
 
             <DismissibleModal
@@ -173,7 +173,7 @@ const ResumeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams>) 
                         </View>
                     </View>
 
-                    <MemberCard userData={selectedMember} />
+                    {selectedMember && <MemberCard userData={selectedMember} />}
 
 
                     <TouchableOpacity
@@ -186,7 +186,7 @@ const ResumeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams>) 
                         <Text className="text-white text-lg font-bold">SHPE National</Text>
                     </TouchableOpacity>
 
-                    <View className='mt-20 flex-row space-x-6'>
+                    <View className='mt-20 flex-row gap-6'>
                         <TouchableOpacity
                             onPress={() => {
                                 handleApprove(selectedMemberUID!)
@@ -214,7 +214,7 @@ const ResumeConfirm = ({ navigation }: NativeStackScreenProps<HomeStackParams>) 
                 setVisible={setInfoVisible}
             >
                 <View
-                    className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
+                    className={`flex opacity-100 rounded-md p-6 gap-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}
                     style={{ minWidth: 325 }}
                 >
                     <View className='flex-row items-center justify-between'>

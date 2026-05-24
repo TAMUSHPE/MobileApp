@@ -197,7 +197,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                 ) : (<View />)}
                 <TouchableOpacity
                     onPress={() => { setShowFilterModal(true) }}
-                    className='mx-c4 p-2'
+                    className='mx-4 p-2'
                 >
                     <Octicons name="filter" size={30} color={darkMode ? "white" : "black"} />
                 </TouchableOpacity>
@@ -217,7 +217,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
 
                 <View className='mt-12'>
                     {loading && (
-                        <ActivityIndicator className="pb-12" size={"small"} />
+                        <View className="pb-12"><ActivityIndicator size={"small"} /></View>
                     )}
                     {(!loading && testCards.length != 0 && endOfData) && (
                         <View className='pb-12 items-center justify-center'>
@@ -242,10 +242,10 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
             >
                 <View
                     style={{ paddingTop: insets.top, paddingBottom: insets.bottom }}
-                    className={darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}
+                    className={`flex-1 ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}
                 >
                     <View className='flex-row items-center h-10 mb-4'>
-                        <View className='w-screen absolute'>
+                        <View className='w-full absolute'>
                             <Text className={`text-2xl font-bold justify-center text-center ${darkMode ? 'text-white' : 'text-black'}`}>Select Filter</Text>
                         </View>
 
@@ -257,7 +257,7 @@ const TestBank = ({ navigation }: { navigation: NativeStackNavigationProp<Resour
                         </TouchableOpacity>
                     </View>
 
-                    <View className={`h-[100%] w-[100%] ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
+                    <View className={`h-full w-full ${darkMode ? 'bg-primary-bg-dark' : 'bg-primary-bg-light'}`}>
                         <View>
                             <Text className={`text-2xl font-bold mb-4 mx-4 ${darkMode ? "text-white" : "text-black"}`}>Subjects</Text>
                             <View className='flex-row flex-wrap ml-4'>

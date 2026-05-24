@@ -6,7 +6,6 @@ import { UserContext } from '../context/UserContext'
 import { isMemberVerified } from '../helpers/membership';
 
 const MemberCard: React.FC<MemberCardProp> = ({ userData, handleCardPress, navigation, displayPoints }) => {
-    if (!userData) { return }
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
 

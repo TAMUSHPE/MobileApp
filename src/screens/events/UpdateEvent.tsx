@@ -15,6 +15,7 @@ import { MillisecondTimes, formatDate, formatTime } from '../../helpers/timeUtil
 import { StatusBar } from 'expo-status-bar';
 import { Committee } from '../../types/committees';
 import LocationPicker from '../../components/LocationPicker';
+import { getCoordinatesFromPlace } from '../../helpers/geolocationUtils';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
 import InteractButton from '../../components/InteractButton';
 import { getBlobFromURI, selectImage } from '../../api/fileSelection';
@@ -64,7 +65,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
 
     const selectCoverImage = async () => {
         const result = await selectImage({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             quality: 1,
         })
@@ -251,7 +252,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     </SafeAreaView>
                 </View>
 
-                {loading && (<ActivityIndicator className="mt-16" size="small" />)}
+                {loading && (<View className="mt-16"><ActivityIndicator size="small" /></View>)}
                 {!loading && (
                     <View>
 
@@ -290,20 +291,20 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowStartDatePicker(true)}
-                                                className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-secondary-bg-dark" : "text-black bg-secondary-bg-light"}`}
                                             >
-                                                <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
+                                                <View className={`flex-row items-center p-2 mr-4 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatDate(startTime.toDate()) : "No date picked"}</Text>
+                                                </View>
                                             </TouchableHighlight>
 
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowStartTimePicker(true)}
-                                                className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                             >
-                                                <>
-                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No date picked"}</Text>
-                                                    <Octicons name='chevron-down' size={24} />
-                                                </>
+                                                <View className={`flex-row items-center justify-between p-2 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{startTime ? formatTime(startTime.toDate()) : "No time picked"}</Text>
+                                                    <Octicons name='chevron-down' size={24} color={darkMode ? "white" : "black"} />
+                                                </View>
                                             </TouchableHighlight>
                                         </View>
                                     }
@@ -367,20 +368,20 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowEndDatePicker(true)}
-                                                className={`flex flex-row justify-between p-2 mr-4 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                             >
-                                                <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
+                                                <View className={`flex-row items-center p-2 mr-4 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatDate(endTime.toDate()) : "No date picked"}</Text>
+                                                </View>
                                             </TouchableHighlight>
 
                                             <TouchableHighlight
                                                 underlayColor={darkMode ? "" : "#EEE"}
                                                 onPress={() => setShowEndTimePicker(true)}
-                                                className={`flex flex-row justify-between p-2 rounded ${darkMode ? "text-white bg-zinc-700" : "text-black bg-zinc-200"}`}
                                             >
-                                                <>
-                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No date picked"}</Text>
-                                                    <Octicons name='chevron-down' size={24} />
-                                                </>
+                                                <View className={`flex-row items-center justify-between p-2 rounded ${darkMode ? "bg-zinc-700" : "bg-zinc-200"}`}>
+                                                    <Text className={`text-base ${darkMode ? "text-white" : "text-black"}`}>{endTime ? formatTime(endTime.toDate()) : "No time picked"}</Text>
+                                                    <Octicons name='chevron-down' size={24} color={darkMode ? "white" : "black"} />
+                                                </View>
                                             </TouchableHighlight>
                                         </View>
                                     }
@@ -577,8 +578,9 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                     </View>
                     <LocationPicker
                         onLocationChange={(location, radius) => {
-                            if (location?.geometry.location.lat && location?.geometry.location.lng) {
-                                setGeolocation(new GeoPoint(location?.geometry.location.lat, location?.geometry.location.lng));
+                            const coordinates = getCoordinatesFromPlace(location);
+                            if (coordinates) {
+                                setGeolocation(new GeoPoint(coordinates.lat, coordinates.lng));
                             }
                             setGeofencingRadius(radius);
                         }}
@@ -593,7 +595,7 @@ const UpdateEvent = ({ navigation }: EventProps) => {
                 visible={showDeletionConfirmation}
                 setVisible={setShowDeletionConfirmation}
             >
-                <View className={`flex opacity-100 rounded-md p-6 space-y-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
+                <View className={`flex opacity-100 rounded-md p-6 gap-6 ${darkMode ? "bg-secondary-bg-dark" : "bg-secondary-bg-light"}`}>
                     <Octicons name="trash" size={24} color={darkMode ? "white" : "black"} />
                     <View className='flex items-center w-[90%]'>
                         <Text className="text-center text-md font-bold text-red-1">This is *not* reversable!</Text>

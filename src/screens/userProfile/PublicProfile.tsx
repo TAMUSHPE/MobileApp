@@ -435,7 +435,7 @@ const PublicProfileScreen: React.FC<PublicProfileScreenProps> = ({ route, naviga
                             <Text className={`flex-1 text-xl font-bold px-4 py-1 ${darkMode ? "text-white" : "text-black"}`}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
-                    {updatingRoles && <ActivityIndicator size="small" className='mb-4' />}
+                    {updatingRoles && <View className='mb-4'><ActivityIndicator size="small" /></View>}
                 </View>
             </DismissibleModal>
         </View>

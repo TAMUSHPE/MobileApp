@@ -96,7 +96,7 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
             className="flex-1"
         >
             <View className="flex-1">
-                <SafeAreaView className="flex-1 h-screen">
+                <SafeAreaView className="flex-1">
                     <ScrollView
                         contentContainerStyle={{ flexGrow: 1 }}
                         className="flex-1"
@@ -176,7 +176,7 @@ const LoginGuest = ({ navigation }: NativeStackScreenProps<AuthStackParams>) => 
                             />
                             {error && <Text className="text-center mt-2 text-red-1 text-lg">{error}</Text>}
                             {loading && (
-                                <ActivityIndicator className="mt-4" size="small" />
+                                <View className="mt-4"><ActivityIndicator size="small" /></View>
                             )}
                         </View>
 

@@ -1,11 +1,11 @@
 import React, { useState, useRef, useContext } from 'react';
-import { View, Text, Alert, ActivityIndicator, Button, useColorScheme, Image } from 'react-native';
+import { View, Text, Alert, ActivityIndicator, Button, useColorScheme, Image, TouchableOpacity } from 'react-native';
 import { RouteProp } from '@react-navigation/core';
 import QRCode from 'react-native-qrcode-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TouchableOpacity, GestureHandlerRootView } from 'react-native-gesture-handler';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { Octicons } from '@expo/vector-icons';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import ViewShot from 'react-native-view-shot';
 import DismissibleModal from '../../components/DismissibleModal';
@@ -40,8 +40,12 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                 const uri = await viewShotRef.current.capture?.();
                 if (!uri) throw new Error('Capture failed');
 
-                const currentDate = new Date().toISOString().replace(/[-:.]/g, '');
-                const sanitizedEventName = event.name?.replace(/[\/\\:*?"<>|#]/g, '_');
+                const currentDate = new Date().toISOString().replaceAll('-', '').replaceAll(':', '').replaceAll('.', '');
+                const invalidFilenameChars = ['\\', '/', ':', '*', '?', '"', '<', '>', '|', '#'];
+                const sanitizedEventName = invalidFilenameChars.reduce(
+                    (name, ch) => name?.replaceAll(ch, '_'),
+                    event.name
+                );
 
                 const fileUri = `${FileSystem.documentDirectory}${currentDate}_${sanitizedEventName}_${type}.png`;
 
@@ -79,14 +83,14 @@ const QRCodeManager: React.FC<QRCodeScreenRouteProp> = ({ route, navigation }) =
                 </View>
 
                 <View className="flex-row items-center">
-                    <View className="w-screen p-4">
+                    <View className="w-full p-4">
                         <Text className="text-2xl font-bold text-center" style={{ color: darkMode ? 'white' : 'black' }}>
                             {event.name}
                         </Text>
                     </View>
                 </View>
 
-                <View className="w-screen">
+                <View className="w-full">
                     <View className="justify-center items-center">
                         {!event.signInPoints && !event.signOutPoints && event.signInPoints !== 0 && event.signOutPoints !== 0 && (
                             <View>
