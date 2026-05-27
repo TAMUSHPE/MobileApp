@@ -12,6 +12,7 @@ module.exports = function (api) {
           unsafe: true,
         },
       ],
+      "react-native-worklets/plugin",
     ],
   };
 };

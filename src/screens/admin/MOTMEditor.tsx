@@ -146,7 +146,7 @@ const MOTMEditor = ({ navigation }: NativeStackScreenProps<HomeStackParams>) => 
 
                 <SwipeableMemberList
                     userData={localSuggestedMOTM!}
-                    onSwipe={(userData: any) => { setForceUpdate(prev => prev + 1); }}
+                    onSwipe={() => { setForceUpdate(prev => prev + 1); }}
                 />
 
                 <Modal

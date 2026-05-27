@@ -1,13 +1,15 @@
-import { StyleSheet, View, Text, SafeAreaView, FlatList, TouchableOpacity, useColorScheme, ScrollView } from "react-native";
+import { View, Text, SafeAreaView, TouchableOpacity, useColorScheme, ScrollView } from "react-native";
 import React, { useRef, useCallback, useState, useContext } from "react";
-import Swipeable from 'react-native-gesture-handler/Swipeable';
+import ReanimatedSwipeable, {
+    SwipeDirection,
+    type SwipeableMethods,
+} from "react-native-gesture-handler/ReanimatedSwipeable";
 import MemberCard from "./MemberCard";
-import { PublicUserInfo } from "../types/user";
 import DismissibleModal from "./DismissibleModal";
 import { Octicons } from '@expo/vector-icons';
 import { setMOTM } from "../api/firebaseUtils";
-import { StatusBar } from "expo-status-bar";
 import { UserContext } from "../context/UserContext";
+import { PublicUserInfo } from "../types/user";
 
 
 
@@ -20,7 +22,7 @@ const rightSwipeActions = () => {
 };
 
 
-const SwipeableMemberCard = ({ userData, onSwipe }: { userData: PublicUserInfo, onSwipe: any }) => {
+const SwipeableMemberCard = ({ userData, onSwipe }: { userData: PublicUserInfo; onSwipe: (userData: PublicUserInfo) => void }) => {
     const userContext = useContext(UserContext);
     const { userInfo } = userContext!;
 
@@ -29,7 +31,7 @@ const SwipeableMemberCard = ({ userData, onSwipe }: { userData: PublicUserInfo, 
     const colorScheme = useColorScheme();
     const darkMode = useSystemDefault ? colorScheme === 'dark' : fixDarkMode;
 
-    const swipeableRef = useRef<Swipeable | null>(null);
+    const swipeableRef = useRef<SwipeableMethods>(null);
     const [confirmVisible, setConfirmVisible] = useState<boolean>(false);
     const [invisibleConfirmModal, setInvisibleConfirmModal] = useState(false);
 
@@ -38,11 +40,11 @@ const SwipeableMemberCard = ({ userData, onSwipe }: { userData: PublicUserInfo, 
     }, []);
 
     return (
-        <Swipeable
+        <ReanimatedSwipeable
             ref={swipeableRef}
             renderRightActions={rightSwipeActions}
             onSwipeableOpen={(direction) => {
-                if (direction === 'right') {
+                if (direction === SwipeDirection.RIGHT) {
                     setConfirmVisible(true);
                     setInvisibleConfirmModal(true);
                     closeSwipeable();
@@ -98,11 +100,11 @@ const SwipeableMemberCard = ({ userData, onSwipe }: { userData: PublicUserInfo, 
                     </View>
                 </View>
             </DismissibleModal>
-        </Swipeable>
+        </ReanimatedSwipeable>
     );
 };
 
-const SwipeableMemberList = ({ userData, onSwipe }: { userData: PublicUserInfo[], onSwipe: any }) => {
+const SwipeableMemberList = ({ userData, onSwipe }: { userData: PublicUserInfo[]; onSwipe: (userData: PublicUserInfo) => void }) => {
     if (!userData) {
         return;
     }
@@ -119,4 +121,3 @@ const SwipeableMemberList = ({ userData, onSwipe }: { userData: PublicUserInfo[]
     );
 };
 export default SwipeableMemberList;
-
