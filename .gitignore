@@ -30,3 +30,4 @@ npm-debug.*
 google-services.json
 GoogleService-Info.plist
 .cursor/
+.claude/
