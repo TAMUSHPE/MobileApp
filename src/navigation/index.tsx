@@ -85,11 +85,10 @@ const RootNavigator = () => {
         config: {
             screens: {
                 EventVerificationScreen: {
-                    path: 'event/:id?:mode?',
-                    parse: {
-                        id: (id: string) => id,
-                        mode: (mode: string) => mode
-                    },
+                    // Deep links are of the form `tamu-shpe://event?id=<id>&mode=<sign-in|sign-out>`
+                    // (see QRCodeManager). `id` and `mode` arrive as query params, which React
+                    // Navigation maps onto route params automatically.
+                    path: 'event',
                 },
             },
         },
