@@ -1,8 +1,29 @@
 import { LatLng } from 'react-native-maps';
-import { GooglePlaceDetail, Place } from 'react-native-google-places-autocomplete';
 
 // If this is undefined, it will not affect functionality, but will cause unexpected behavior in location selection.
 export const GooglePlacesApiKey = process.env.GOOGLE_PLACES_API_KEY;
+
+export type GooglePlaceLocation = {
+    lat: number;
+    lng: number;
+};
+
+/** Subset of Google Places API place details used by location pickers. */
+export type GooglePlaceDetail = {
+    geometry: {
+        location: GooglePlaceLocation;
+    };
+    formatted_address?: string;
+    name?: string;
+    place_id?: string;
+};
+
+export type Place = {
+    description: string;
+    geometry: {
+        location: GooglePlaceLocation;
+    };
+};
 
 export type Coordinates = {
     /** Angle phi representing *degrees* from equator  */
