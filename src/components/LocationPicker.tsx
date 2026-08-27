@@ -1,10 +1,9 @@
 
-import { View, Text, Switch, useColorScheme, Platform, Pressable, FlatList, TextInput } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
-import { GooglePlacesAutocomplete, GooglePlaceDetail } from 'react-native-google-places-autocomplete';
+import { View, Text, useColorScheme, Platform, Pressable, FlatList, TextInput } from 'react-native';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import MapView, { Marker, Circle, LatLng, Region, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location'
-import { GooglePlacesApiKey, presetLocationList, reverseGeocode } from '../helpers/geolocationUtils';
+import { GooglePlaceDetail, GooglePlacesApiKey, reverseGeocode } from '../helpers/geolocationUtils';
 import Slider from '@react-native-community/slider';
 import { TouchableOpacity } from 'react-native';
 import { Octicons } from '@expo/vector-icons';
@@ -13,6 +12,13 @@ import { UserContext } from '../context/UserContext';
 
 const zacharyCoords = { latitude: 30.621160236499136, longitude: -96.3403560168198 }
 const initialMapDelta = { latitudeDelta: 0.0922, longitudeDelta: 0.0421 } // Size of map view
+const autocompleteDebounceMs = 400;
+const placeDetailsFields = 'place_id,formatted_address,geometry,name';
+
+const createPlacesSessionToken = (): string => {
+    const randomSuffix = Math.random().toString(36).slice(2);
+    return `${Date.now()}-${randomSuffix}`;
+};
 
 const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, initialRadius, containerClassName = "" }: {
     onLocationChange: (locationDetails: GooglePlaceDetail | undefined | null, radius: number | undefined) => void
@@ -37,6 +43,9 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
     const [geofencingEnabled, setGeofencingEnabled] = useState<boolean>(initialRadius ? true : false);
     const [searchText, setSearchText] = useState('');
     const [predictions, setPredictions] = useState<any[]>([]);
+    const [placesSessionToken, setPlacesSessionToken] = useState<string>();
+    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const latestAutocompleteRequestRef = useRef<number>(0);
 
 
     useEffect(() => {
@@ -57,6 +66,19 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
     useEffect(() => {
         onLocationChange(locationDetails, radius);
     }, [locationDetails, radius]);
+
+    useEffect(() => {
+        return () => {
+            if (debounceTimerRef.current !== null) {
+                clearTimeout(debounceTimerRef.current);
+            }
+        };
+    }, []);
+
+    const resetSearchSession = () => {
+        setPlacesSessionToken(undefined);
+        latestAutocompleteRequestRef.current = 0;
+    };
 
     return (
         <View className='flex-1'>
@@ -97,29 +119,59 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
                             placeholder="Search"
                             placeholderTextColor={darkMode ? '#888' : '#888'}
                             value={searchText}
-                            onChangeText={async (text) => {
+                            onChangeText={(text) => {
                                 setSearchText(text);
+                                if (debounceTimerRef.current !== null) {
+                                    clearTimeout(debounceTimerRef.current);
+                                }
+
                                 if (text.length < 2) {
+                                    setPredictions([]);
+                                    if (text.length === 0) {
+                                        resetSearchSession();
+                                    }
+                                    return;
+                                }
+
+                                if (!GooglePlacesApiKey) {
+                                    console.warn('[CustomSearch] Missing Google Places API key');
                                     setPredictions([]);
                                     return;
                                 }
-                                try {
-                                    const response = await fetch(
-                                        `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
-                                            text
-                                        )}&key=${GooglePlacesApiKey}`
-                                    );
-                                    const json = await response.json();
-                                    console.log('[CustomSearch] Predictions:', json);
-                                    if (json.status === 'OK') {
-                                        setPredictions(json.predictions);
-                                    } else {
-                                        console.warn('[CustomSearch] Google API status:', json.status);
-                                        setPredictions([]);
-                                    }
-                                } catch (err) {
-                                    console.error('[CustomSearch] Error fetching predictions:', err);
+
+                                const currentSessionToken = placesSessionToken ?? createPlacesSessionToken();
+                                if (!placesSessionToken) {
+                                    setPlacesSessionToken(currentSessionToken);
                                 }
+                                const requestId = latestAutocompleteRequestRef.current + 1;
+                                latestAutocompleteRequestRef.current = requestId;
+
+                                debounceTimerRef.current = setTimeout(async () => {
+                                    const params = new URLSearchParams({
+                                        input: text,
+                                        key: GooglePlacesApiKey,
+                                        sessiontoken: currentSessionToken,
+                                    });
+
+                                    try {
+                                        const response = await fetch(
+                                            `https://maps.googleapis.com/maps/api/place/autocomplete/json?${params.toString()}`
+                                        );
+                                        const json = await response.json();
+                                        if (requestId !== latestAutocompleteRequestRef.current) {
+                                            return;
+                                        }
+                                        console.log('[CustomSearch] Predictions:', json);
+                                        if (json.status === 'OK') {
+                                            setPredictions(json.predictions);
+                                        } else {
+                                            console.warn('[CustomSearch] Google API status:', json.status);
+                                            setPredictions([]);
+                                        }
+                                    } catch (err) {
+                                        console.error('[CustomSearch] Error fetching predictions:', err);
+                                    }
+                                }, autocompleteDebounceMs);
                             }}
                             className={`text-lg p-2 pr-10 rounded ${darkMode ? 'text-white bg-secondary-bg-dark' : 'text-black bg-secondary-bg-light'
                                 }`}
@@ -134,6 +186,7 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
                                 onPress={() => {
                                     setSearchText('');
                                     setPredictions([]);
+                                    resetSearchSession();
                                 }}
                                 className="absolute right-3 top-1/3"
                             >
@@ -157,8 +210,20 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
                                         onPress={async () => {
                                             console.log('[CustomSearch] Selected:', item);
                                             try {
+                                                if (!GooglePlacesApiKey) {
+                                                    console.warn('[CustomSearch] Missing Google Places API key');
+                                                    return;
+                                                }
+                                                const params = new URLSearchParams({
+                                                    place_id: item.place_id,
+                                                    key: GooglePlacesApiKey,
+                                                    fields: placeDetailsFields,
+                                                });
+                                                if (placesSessionToken) {
+                                                    params.append('sessiontoken', placesSessionToken);
+                                                }
                                                 const detailsResponse = await fetch(
-                                                    `https://maps.googleapis.com/maps/api/place/details/json?place_id=${item.place_id}&key=${GooglePlacesApiKey}`
+                                                    `https://maps.googleapis.com/maps/api/place/details/json?${params.toString()}`
                                                 );
                                                 const detailsJson = await detailsResponse.json();
                                                 console.log('[CustomSearch] Details:', detailsJson);
@@ -173,6 +238,7 @@ const LocationPicker = ({ onLocationChange, initialCoordinate = zacharyCoords, i
                                                     setMapRegion({ ...coord, ...initialMapDelta });
                                                     setPredictions([]);
                                                     setSearchText(item.description);
+                                                    resetSearchSession();
                                                 } else {
                                                     console.warn('[CustomSearch] Details status:', detailsJson.status);
                                                 }
