@@ -21,6 +21,7 @@ export type ProfileSetupStackParams = {
     SetupNameAndBio: undefined;
     SetupProfilePicture: undefined;
     SetupAcademicInformation: undefined;
+    SetupGender: undefined;
     SetupInterests: undefined;
     SetupResume: undefined;
     MainStack: undefined;

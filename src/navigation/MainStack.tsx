@@ -14,6 +14,7 @@ import { Image, Text, View, useColorScheme } from "react-native";
 import { auth } from "../config/firebaseConfig";
 import { Images } from "../../assets";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import GenderPromptModal from "../components/GenderPromptModal";
 
 
 const MainStack = () => {
@@ -94,6 +95,9 @@ const HomeBottomTabs = () => {
                 <BottomTabs.Screen name="CommitteesTab" component={CommitteesStack} />
                 <BottomTabs.Screen name="ProfileTab" component={UserProfileStack} />
             </BottomTabs.Navigator >
+
+            {/* One-time gender prompt for users who onboarded before the gender step existed. */}
+            <GenderPromptModal />
         </View>
     );
 };
