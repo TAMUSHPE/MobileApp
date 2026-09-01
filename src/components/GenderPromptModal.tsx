@@ -71,7 +71,8 @@ const GenderPromptModal = () => {
         return (
             <Pressable
                 onPress={() => setSelectedGender(option)}
-                className='flex-row items-center py-3'
+                disabled={loading}
+                className={`flex-row items-center py-3 ${loading ? 'opacity-50' : ''}`}
             >
                 <View className={`h-7 w-7 border-2 mr-2 items-center justify-center rounded-full ${isActive ? "border-primary-blue" : darkMode ? "border-grey-light" : "border-grey-dark"}`}>
                     <View className={`h-5 w-5 rounded-full ${isActive && "bg-primary-blue"}`} />

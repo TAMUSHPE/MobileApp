@@ -430,7 +430,8 @@ const SetupGender = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
         return (
             <TouchableOpacity
                 onPress={() => setGender(option)}
-                className='flex-row rounded-xl w-full mb-4'
+                disabled={loading}
+                className={`flex-row rounded-xl w-full mb-4 ${loading ? 'opacity-50' : ''}`}
             >
                 <View className={`flex-1 rounded-md flex-row items-center px-4 py-4 border-2 ${isSelected ? "border-primary-orange" : "border-white"}`}>
                     <View className='items-center justify-center h-8 w-8'>
