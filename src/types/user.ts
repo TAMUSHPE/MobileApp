@@ -1,6 +1,5 @@
 import { Timestamp, FieldValue } from 'firebase/firestore';
 
-/** Anything added to this document needs to be added to shpe-app-web/app/types/user.ts **/
 
 
 /**
@@ -70,6 +69,8 @@ export interface PrivateUserInfo {
     expirationDate?: Timestamp;
     resumeURL?: string;
     email?: string;
+    /** One of GENDER_OPTIONS. Undefined means the user has not answered yet. */
+    gender?: string;
 };
 
 
@@ -123,6 +124,12 @@ const generateClassYears = (): { year: string }[] => {
 };
 
 export const classYears = generateClassYears();
+
+/**
+ * Selectable gender values. "Prefer not to say" is the opt-out, so every user who is
+ * prompted writes a value and is never prompted again.
+ */
+export const GENDER_OPTIONS = ["Male", "Female", "Other", "Prefer not to say"] as const;
 
 export const MAJORS: Array<{ major: string, iso: string }> = [
     { major: 'Aerospace Engineering', iso: 'AERO' },

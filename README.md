@@ -132,6 +132,73 @@ Create an Internal build by running the following script and provide the link to
 yarn dev-client-sim
 ```
 
+## Local Firestore in Docker
+
+A minimal Firebase Emulator Suite (Firestore + Auth) runs in a container, so you can
+develop against a throwaway database instead of the production project. Docker is the
+only prerequisite — no Java, no `firebase-tools`, and no credentials of any kind.
+
+```
+$ docker compose up          # or: yarn emulators
+```
+
+| Service      | URL                     |
+| ------------ | ----------------------- |
+| Emulator UI  | <http://localhost:4000> |
+| Firestore    | `localhost:8080`        |
+| Auth         | `localhost:9099`        |
+
+Two accounts are seeded automatically, both with the password `password123`:
+
+| Email               | Purpose                                                      |
+| ------------------- | ------------------------------------------------------------ |
+| `member@tamu.edu`   | Has **no** `gender` field, so the gender prompt appears       |
+| `officer@tamu.edu`  | Already answered the gender question, and has officer roles   |
+
+### Pointing the app at it
+
+The app connects to the emulators only when `FIREBASE_EMULATOR_ADDRESS` is set (see
+`src/config/firebaseConfig.ts`). Add this to your `.env`:
+
+```
+FIREBASE_EMULATOR_ADDRESS=127.0.0.1
+FIREBASE_AUTH_PORT=9099
+FIREBASE_FIRESTORE_PORT=8080
+```
+
+Then restart Metro with a cleared cache — these values are inlined at build time by
+`babel-plugin-inline-dotenv`, so an already-running bundler will keep using the old ones:
+
+```
+$ npx expo start --dev-client --clear
+```
+
+**On a physical device, `127.0.0.1` is the phone, not your computer.** Use your machine's
+LAN address instead (`ipconfig` on Windows, `ifconfig` on macOS), for example
+`FIREBASE_EMULATOR_ADDRESS=192.168.1.42`. An Android emulator uses `10.0.2.2`.
+
+Remove these three lines from `.env` to go back to the real backend.
+
+### Data and rules
+
+State persists between runs: it is exported to `firebase-emulator/data/` on shutdown
+and re-imported on the next start. That directory is gitignored. To wipe it:
+
+```
+$ yarn emulators:reset
+```
+
+Because the export happens on `SIGINT`, stop the emulators with `docker compose down`
+or `Ctrl-C` rather than killing the container, or the session's data is lost.
+
+Rules come from `firebase-emulator/firestore.rules`, which is deliberately wide open
+(`allow read, write: if true`) and does **not** mirror production. Edits to it hot-reload
+in the running emulator, so this is not the place to test whether real rules permit a
+write. The container only ever runs `emulators:start`, so it cannot deploy anything.
+
+> The `functions` emulator is intentionally excluded to keep startup fast; add it to
+> `--only` in `firebase-emulator/start.sh` if you need to work on Cloud Functions.
+
 ## Test - TODO: Need more details
 TEMP LINK: https://github.com/TAMUSHPE/MobileApp/pull/378
 ```

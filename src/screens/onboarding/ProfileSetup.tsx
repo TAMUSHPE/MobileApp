@@ -13,7 +13,7 @@ import { getBlobFromURI, selectFile, selectImage } from '../../api/fileSelection
 import { updateProfile } from 'firebase/auth';
 import { CommonMimeTypes, validateName } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
-import { MAJORS, classYears } from '../../types/user';
+import { MAJORS, classYears, GENDER_OPTIONS } from '../../types/user';
 import { ProfileSetupStackParams } from '../../types/navigation';
 import { Images } from '../../../assets';
 import UploadFileIcon from '../../../assets/file-arrow-up-solid.svg';
@@ -30,6 +30,23 @@ import { EventType } from '../../types/events';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
+
+const TOTAL_SETUP_STEPS = 6;
+
+/**
+ * The row of dashes at the top of every profile-setup screen, filled in up to the current step.
+ * Kept in one place so adding or reordering a step does not mean editing every screen.
+ */
+const ProgressDashes = ({ step }: { step: number }) => (
+    <View className='flex-1 mx-5 flex-row'>
+        {Array.from({ length: TOTAL_SETUP_STEPS }, (_, i) => (
+            <View
+                key={i}
+                className={`flex-1 h-1 mx-1 rounded-md ${i < step ? "bg-primary-orange" : "bg-grey-light"}`}
+            />
+        ))}
+    </View>
+);
 
 /** In this screen, the user will set their name and bio. The screen only let the user continue if their name is not empty. */
 const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
@@ -63,13 +80,7 @@ const SetupNameAndBio = ({ navigation }: NativeStackScreenProps<ProfileSetupStac
                                     <Octicons name="chevron-left" size={30} color="white" />
                                 </TouchableOpacity>
 
-                                <View className='flex-1 mx-5 flex-row'>
-                                    <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                                    <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
-                                    <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
-                                    <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
-                                    <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
-                                </View>
+                                <ProgressDashes step={1} />
                             </View>
 
                             <View className='mx-8 mt-8'>
@@ -230,13 +241,7 @@ const SetupProfilePicture = ({ navigation }: NativeStackScreenProps<ProfileSetup
                             <Octicons name="chevron-left" size={30} color="white" />
                         </TouchableOpacity>
 
-                        <View className='flex-1 mx-5 flex-row'>
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
-                        </View>
+                        <ProgressDashes step={2} />
                     </View>
 
                     <View className='mx-8 mt-8'>
@@ -341,13 +346,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                             <Octicons name="chevron-left" size={30} color="white" />
                         </TouchableOpacity>
 
-                        <View className='flex-1 mx-5 flex-row'>
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
-                        </View>
+                        <ProgressDashes step={3} />
                     </View>
 
                     <View className='mx-8 mt-8'>
@@ -399,7 +398,7 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                                                 classYear: classYear
                                             });
                                         }
-                                        navigation.navigate("SetupResume")
+                                        navigation.navigate("SetupGender")
                                     }
                                 }}
                                 label='Continue'
@@ -412,6 +411,105 @@ const SetupAcademicInformation = ({ navigation }: NativeStackScreenProps<Profile
                         </View>
                     </View>
                 </View>
+            </SafeAreaView>
+        </LinearGradient>
+    );
+};
+
+/**
+ * This screen is where the user selects their gender. It sits with the other "about you" steps
+ * and cannot be skipped, since "Prefer not to say" already serves as the opt-out.
+ */
+const SetupGender = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
+    const [gender, setGender] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const GenderButton = ({ option }: { option: string }) => {
+        const isSelected = gender === option;
+        return (
+            <TouchableOpacity
+                onPress={() => setGender(option)}
+                disabled={loading}
+                className={`flex-row rounded-xl w-full mb-4 ${loading ? 'opacity-50' : ''}`}
+            >
+                <View className={`flex-1 rounded-md flex-row items-center px-4 py-4 border-2 ${isSelected ? "border-primary-orange" : "border-white"}`}>
+                    <View className='items-center justify-center h-8 w-8'>
+                        {isSelected && <Octicons name="check" size={26} color="#FD652F" />}
+                    </View>
+                    <Text className={`ml-2 font-bold text-lg ${isSelected ? "text-primary-orange" : "text-white"}`}>{option}</Text>
+                </View>
+            </TouchableOpacity>
+        );
+    };
+
+    return (
+        <LinearGradient
+            colors={['#191740', '#413CA6']}
+            className="flex-1"
+        >
+            <SafeAreaView className='flex-1'>
+                <ScrollView>
+
+                    {/* Header */}
+                    <View className='px-4 mt-5 flex-row items-center'>
+                        <TouchableOpacity
+                            onPress={() => navigation.goBack()}
+                            activeOpacity={1}
+                        >
+                            <Octicons name="chevron-left" size={30} color="white" />
+                        </TouchableOpacity>
+
+                        <ProgressDashes step={4} />
+                    </View>
+
+                    <View className='mx-8 mt-8'>
+                        <Text className='text-white text-3xl font-bold'>Gender</Text>
+                        <Text className='text-white text-xl mt-2'>This helps us better understand our chapter. It is kept private and is not shown on your profile.</Text>
+                    </View>
+
+                    <View className="mx-8 mt-10">
+                        {GENDER_OPTIONS.map((option) => (
+                            <GenderButton key={option} option={option} />
+                        ))}
+
+                        {error && (
+                            <Text className='text-red-400 text-base mt-2'>{error}</Text>
+                        )}
+
+                        <InteractButton
+                            onPress={async () => {
+                                if (gender === "" || loading) {
+                                    return;
+                                }
+
+                                setLoading(true);
+                                setError(null);
+
+                                try {
+                                    if (auth.currentUser) {
+                                        await setPrivateUserData({ gender: gender });
+                                    }
+                                    navigation.navigate("SetupResume");
+                                } catch (err) {
+                                    console.error("Error saving gender:", err);
+                                    setError("Could not save. Check your connection and try again.");
+                                } finally {
+                                    setLoading(false);
+                                }
+                            }}
+                            label='Continue'
+                            opacity={gender === "" ? 1 : 0.8}
+                            buttonClassName={`justify-center items-center mt-8 rounded-xl h-14 ${gender === "" ? "bg-grey-dark" : "bg-primary-orange"}`}
+                            textClassName={`text-white font-semibold text-2xl text-white`}
+                            underlayColor={`${gender === "" ? "" : "#EF9260"}`}
+                        />
+
+                        {loading && (
+                            <ActivityIndicator className="mt-2" size="small" />
+                        )}
+                    </View>
+                </ScrollView>
             </SafeAreaView>
         </LinearGradient>
     );
@@ -484,13 +582,7 @@ const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                             <Octicons name="chevron-left" size={30} color="white" />
                         </TouchableOpacity>
 
-                        <View className='flex-1 mx-5 flex-row'>
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-grey-light h-1 mx-1 rounded-md' />
-                        </View>
+                        <ProgressDashes step={5} />
                     </View>
 
                     <View className='mx-8 mt-8'>
@@ -660,13 +752,7 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
                             <Octicons name="chevron-left" size={30} color="white" />
                         </TouchableOpacity>
 
-                        <View className='flex-1 mx-5 flex-row'>
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                            <View className='flex-1 bg-primary-orange h-1 mx-1 rounded-md' />
-                        </View>
+                        <ProgressDashes step={6} />
                     </View>
 
                     <View className='mx-8 mt-8'>
@@ -743,4 +829,4 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
     );
 };
 
-export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupResume, SetupInterests };
+export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupGender, SetupResume, SetupInterests };

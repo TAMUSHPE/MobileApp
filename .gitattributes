@@ -1,0 +1,3 @@
+# The emulator entrypoint is executed by /bin/sh inside a Linux container. If Git
+# checks it out with CRLF on Windows, the shell fails on the carriage returns.
+firebase-emulator/*.sh text eol=lf

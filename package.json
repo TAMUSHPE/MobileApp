@@ -13,7 +13,9 @@
     "go": "npx expo start --go",
     "go-tunnel": "npx expo start --tunnel --go",
     "go-localhost": "npx expo start --localhost --go",
-    "dev-client-sim": "eas build --profile development-sim"
+    "dev-client-sim": "eas build --profile development-sim",
+    "emulators": "docker compose up",
+    "emulators:reset": "docker compose down -v && rm -rf firebase-emulator/data"
   },
   "dependencies": {
     "@expo/config-plugins": "~10.1.1",
