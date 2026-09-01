@@ -29,3 +29,6 @@ npm-debug.*
 .env*
 google-services.json
 GoogleService-Info.plist
+
+# Firebase emulator state written by `docker compose` (--export-on-exit)
+firebase-emulator/data/

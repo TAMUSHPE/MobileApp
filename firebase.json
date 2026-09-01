@@ -38,7 +38,16 @@
     },
     "ui": {
       "host": "0.0.0.0",
+      "port": 4000,
       "enabled": true
+    },
+    "hub": {
+      "host": "0.0.0.0",
+      "port": 4400
+    },
+    "logging": {
+      "host": "0.0.0.0",
+      "port": 4500
     },
     "singleProjectMode": true
   },

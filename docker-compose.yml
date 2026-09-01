@@ -1,0 +1,71 @@
+# `docker compose up` = Firebase Emulator Suite (Firestore + Auth) + seed data.
+# No real credentials anywhere in this file — emulator-only by design.
+#
+# The Expo app itself is NOT containerised: run `npm start` on the host as usual and
+# point it at these ports with the FIREBASE_* variables in .env (see README section
+# "Local Firestore in Docker"). Nothing here can touch the production project; the
+# container only ever runs `emulators:start`, never `firebase deploy`.
+services:
+  emulators:
+    build:
+      context: .
+      dockerfile: firebase-emulator/Dockerfile
+    # Startup logic lives in a script, not inline here: a YAML folded scalar does not
+    # fold lines indented deeper than the first, so a multi-line inline command would
+    # silently split apart and drop every flag. Invoked via `sh` rather than executed
+    # directly, because the exec bit does not reliably survive a Windows bind mount.
+    command: sh ./firebase-emulator/start.sh
+    working_dir: /workspace
+    # Only the emulator's own config is mounted — not the repo. Bind-mounting the whole
+    # project would drag node_modules across the Windows filesystem boundary for no gain,
+    # since nothing in here imports the app's code.
+    # firebase-emulator/ is writable so --export-on-exit can persist state into the repo,
+    # and so edits to firestore.rules on the host hot-reload in the running emulator.
+    volumes:
+      - ./firebase.json:/workspace/firebase.json:ro
+      - ./.firebaserc:/workspace/.firebaserc:ro
+      - ./firebase-emulator:/workspace/firebase-emulator
+    ports:
+      - "4000:4000" # Emulator UI  -> http://localhost:4000
+      - "4400:4400" # Emulator hub (the UI in your browser calls this directly)
+      - "4500:4500" # Logging
+      - "8080:8080" # Firestore
+      - "9099:9099" # Auth
+    # Firestore's root path answers 200. The Auth emulator's root may not, so this uses
+    # `curl -s` without -f there: any response at all proves the port is listening.
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl -sf http://localhost:8080/ >/dev/null
+          && curl -s --connect-timeout 1 http://localhost:9099/ >/dev/null
+      interval: 2s
+      timeout: 5s
+      retries: 45
+      start_period: 5s
+    # firebase-tools flushes the export on SIGINT. Compose sends SIGTERM by default,
+    # which would kill it before it writes, silently losing everything you did.
+    stop_signal: SIGINT
+    stop_grace_period: 30s
+
+  # One-shot: populates fixtures, then exits. Safe to re-run — the script uses fixed
+  # document IDs and tolerates Auth users that already exist, so re-seeding just
+  # re-applies the same deterministic data on top of whatever was re-imported.
+  seed:
+    build:
+      context: .
+      dockerfile: firebase-emulator/Dockerfile
+    command: node firebase-emulator/seed.js
+    working_dir: /workspace
+    volumes:
+      - ./firebase-emulator:/workspace/firebase-emulator
+    environment:
+      # firebase-admin routes to the emulators (and skips credential lookup entirely)
+      # purely because these are set. There is no key file and none is needed.
+      FIRESTORE_EMULATOR_HOST: emulators:8080
+      FIREBASE_AUTH_EMULATOR_HOST: emulators:9099
+      GOOGLE_CLOUD_PROJECT: tamushpemobileapp
+    depends_on:
+      emulators:
+        condition: service_healthy
+    restart: "no"

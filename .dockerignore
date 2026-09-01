@@ -1,0 +1,4 @@
+# firebase-emulator/Dockerfile COPYs nothing — the config it needs is bind-mounted at
+# runtime by docker-compose.yml. Excluding everything keeps the build context empty so
+# `docker compose build` does not stream node_modules to the daemon.
+*
