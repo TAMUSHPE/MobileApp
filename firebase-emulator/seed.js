@@ -25,10 +25,19 @@ const auth = admin.auth();
 /**
  * Fixtures mirror the shapes in src/types/user.ts. `gender` lives on privateInfo.
  *
- * Two users exist on purpose: one already answered the gender question and one has
- * never been asked. The second is what GenderPromptModal keys off — it shows only
- * when privateInfo.gender is `undefined` — so signing in as that account is the way
- * to exercise the prompt locally.
+ * Three users exist on purpose:
+ *
+ *   - `member@tamu.edu` finished setup but has never been asked the gender question.
+ *     GenderPromptModal keys off exactly that — it shows only when privateInfo.gender
+ *     is `undefined` — so this is the account for exercising the prompt.
+ *   - `officer@tamu.edu` has answered it, and carries officer roles.
+ *   - `newmember@tamu.edu` has `completedAccountSetup: false`, which is the flag
+ *     src/navigation/index.tsx branches on to route into ProfileSetupStack. Signing
+ *     in as this account drops straight into onboarding, so the flow can be walked
+ *     without registering a throwaway user or hand-editing the flag each time.
+ *
+ * Note that finishing onboarding sets completedAccountSetup to true, spending the
+ * fixture. `yarn emulators:reset` restores it.
  */
 const USERS = [
     {
@@ -75,6 +84,25 @@ const USERS = [
             gender: "Prefer not to say",
         },
     },
+    {
+        uid: "seed-member-onboarding",
+        email: "newmember@tamu.edu",
+        displayName: "Seed New Member",
+        // Deliberately sparse: this mirrors what initializeCurrentUserData() writes at
+        // registration, before any setup screen has run. Name, bio, major, class year
+        // and interests are all absent because onboarding is what fills them in.
+        publicInfo: {
+            roles: { reader: true },
+            points: 0,
+            pointsThisMonth: 0,
+            isEmailPublic: false,
+        },
+        privateInfo: {
+            completedAccountSetup: false,
+            settings: { darkMode: false, useSystemDefault: true },
+            // No `gender` key: onboarding collects it partway through the flow.
+        },
+    },
 ];
 
 const seedUser = async (user) => {
@@ -99,7 +127,8 @@ const seedUser = async (user) => {
     );
     await db.doc(`users/${user.uid}/private/privateInfo`).set(user.privateInfo, { merge: true });
 
-    console.log(`  ${user.email} (${user.uid}) — gender: ${user.privateInfo.gender ?? "not set"}`);
+    const setupState = user.privateInfo.completedAccountSetup ? "complete" : "not started";
+    console.log(`  ${user.email} (${user.uid}) — setup: ${setupState}, gender: ${user.privateInfo.gender ?? "not set"}`);
 };
 
 const main = async () => {

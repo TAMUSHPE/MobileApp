@@ -67,7 +67,6 @@ export interface PrivateUserInfo {
     settings?: AppSettings;
     expoPushTokens?: string[];
     expirationDate?: Timestamp;
-    resumeURL?: string;
     email?: string;
     /** One of GENDER_OPTIONS. Undefined means the user has not answered yet. */
     gender?: string;

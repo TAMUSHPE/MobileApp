@@ -5,19 +5,15 @@ import * as ImagePicker from "expo-image-picker";
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Octicons } from '@expo/vector-icons';
-import { Circle, Svg } from 'react-native-svg';
 import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
 import { getUser, setPrivateUserData, setPublicUserData, uploadFile } from '../../api/firebaseUtils';
-import { getBlobFromURI, selectFile, selectImage } from '../../api/fileSelection';
+import { getBlobFromURI, selectImage } from '../../api/fileSelection';
 import { updateProfile } from 'firebase/auth';
 import { CommonMimeTypes, validateName } from '../../helpers/validation';
-import { handleLinkPress } from '../../helpers/links';
 import { MAJORS, classYears, GENDER_OPTIONS } from '../../types/user';
 import { ProfileSetupStackParams } from '../../types/navigation';
 import { Images } from '../../../assets';
-import UploadFileIcon from '../../../assets/file-arrow-up-solid.svg';
-import DownloadIcon from '../../../assets/arrow-down-solid_white.svg';
 import IntramuralIcon from '../../../assets/intramural_white.svg';
 import SocialIcon from '../../../assets/social_white.svg';
 import StudyHoursIcon from '../../../assets/study_hour_white.svg';
@@ -31,7 +27,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const safeAreaViewStyle = "flex-1 justify-between bg-dark-navy py-10 px-8";
 
-const TOTAL_SETUP_STEPS = 6;
+const TOTAL_SETUP_STEPS = 5;
 
 /**
  * The row of dashes at the top of every profile-setup screen, filled in up to the current step.
@@ -490,7 +486,7 @@ const SetupGender = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
                                     if (auth.currentUser) {
                                         await setPrivateUserData({ gender: gender });
                                     }
-                                    navigation.navigate("SetupResume");
+                                    navigation.navigate("SetupInterests");
                                 } catch (err) {
                                     console.error("Error saving gender:", err);
                                     setError("Could not save. Check your connection and try again.");
@@ -514,170 +510,6 @@ const SetupGender = ({ navigation }: NativeStackScreenProps<ProfileSetupStackPar
         </LinearGradient>
     );
 };
-
-const SetupResume = ({ navigation }: NativeStackScreenProps<ProfileSetupStackParams>) => {
-    const [resumeURL, setResumeURL] = useState<string | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [resumeName, setResumeName] = useState<string | null>(null);
-
-    const progress = useRef(new Animated.Value(0)).current;
-    const setProgress = (newProgress: number) => {
-        if (newProgress <= 0) {
-            progress.setValue(0);
-        } else if (newProgress >= 100) {
-            progress.setValue(100);
-        } else {
-            Animated.timing(progress, {
-                toValue: newProgress,
-                duration: 500,
-                useNativeDriver: true,
-            }).start();
-        }
-    };
-
-    const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-    const circumference = 2 * Math.PI * 45; // 45 is the radius of the circle
-    const strokeDashoffset = progress.interpolate({
-        inputRange: [0, 100],
-        outputRange: [circumference, 0]
-    });
-
-    const selectResume = async () => {
-        const result = await selectFile();
-        if (result) {
-            const resumeBlob = await getBlobFromURI(result.assets![0].uri);
-            setResumeName(result.assets![0].name);
-            return resumeBlob;
-        }
-
-        return null;
-    }
-
-    const onResumeUploadSuccess = async (URL: string) => {
-        console.log("File available at", URL);
-        if (auth.currentUser) {
-            setResumeURL(URL);
-            await setPrivateUserData({
-                resumeURL: URL
-            });
-        }
-        setLoading(false);
-    }
-
-
-    return (
-        <LinearGradient
-            colors={['#191740', '#413CA6']}
-            className="flex-1"
-        >
-            <SafeAreaView className='flex-1'>
-                <ScrollView>
-
-                    {/* Header */}
-                    <View className='px-4 mt-5 flex-row items-center'>
-                        <TouchableOpacity
-                            onPress={() => navigation.goBack()}
-                            activeOpacity={1}
-                        >
-                            <Octicons name="chevron-left" size={30} color="white" />
-                        </TouchableOpacity>
-
-                        <ProgressDashes step={5} />
-                    </View>
-
-                    <View className='mx-8 mt-8'>
-                        <Text className='text-white text-3xl font-bold'>Professional Information</Text>
-                        <Text className='text-white text-xl mt-2'>Your resume will be sent to companies for various opportunities. This can be changed later.</Text>
-                    </View>
-
-
-                    <View className="mx-8 mt-4">
-                        <View className='items-center'>
-                            {resumeURL && (
-                                <TouchableOpacity
-                                    onPress={async () => { handleLinkPress(resumeURL!) }}
-                                >
-                                    <View className='relative flex-row items-center border-b border-white'>
-                                        <Text className="text-white font-semibold text-lg">{resumeName}</Text>
-                                        <View className='absolute left-full ml-1'>
-                                            <DownloadIcon width={15} height={15} />
-                                        </View>
-                                    </View>
-                                </TouchableOpacity>
-                            )}
-                            <TouchableOpacity className="relative items-center justify-center rounded-full h-44 w-44 mb-10 mt-4"
-                                onPress={async () => {
-                                    const selectedResume = await selectResume();
-                                    if (selectedResume) {
-                                        uploadFile(
-                                            selectedResume,
-                                            CommonMimeTypes.RESUME_FILES,
-                                            `user-docs/${auth.currentUser?.uid}/user-resume`,
-                                            onResumeUploadSuccess,
-                                            setProgress
-                                        );
-                                    }
-                                }}>
-                                <Svg height="100%" width="100%" viewBox="0 0 100 100" className="absolute">
-                                    <Circle
-                                        cx="50"
-                                        cy="50"
-                                        r="45"
-                                        stroke="#ffffff"
-                                        strokeWidth="4"
-                                        fill="transparent"
-                                    />
-                                </Svg>
-                                <Svg height="100%" width="100%" viewBox="0 0 100 100" className="absolute">
-                                    <AnimatedCircle
-                                        cx="50"
-                                        cy="50"
-                                        r="45"
-                                        stroke="#AEF359"
-                                        strokeWidth="4"
-                                        fill="transparent"
-                                        strokeDasharray={circumference}
-                                        strokeDashoffset={strokeDashoffset}
-                                        transform="rotate(-90, 50, 50)"
-                                    />
-                                </Svg>
-                                <UploadFileIcon width={110} height={110} />
-                                <View className='h-full w-full absolute top-10 left-14'>
-                                    <Text className='text-black font-extrabold text-xl'>pdf</Text>
-                                </View>
-                            </TouchableOpacity>
-
-                            {loading && (
-                                <ActivityIndicator className="mb-4" size={"small"} />
-                            )}
-
-                        </View>
-                        <InteractButton
-                            onPress={() => {
-                                if (resumeURL) {
-                                    navigation.navigate("SetupInterests")
-                                }
-                            }}
-                            label='Continue'
-                            opacity={!resumeURL ? 1 : 0.8}
-                            buttonClassName={`justify-center items-center rounded-xl h-14 ${!resumeURL ? "bg-grey-dark" : "bg-primary-orange"}`}
-                            textClassName={`text-white font-semibold text-2xl text-white`}
-                            underlayColor={`${!resumeURL ? "" : "#EF9260"}`}
-                        />
-
-                        <InteractButton
-                            onPress={() => navigation.navigate("SetupInterests")}
-                            label='Skip For Now'
-                            buttonClassName='justify-center items-center mt-4'
-                            textClassName='text-primary-orange text-xl font-semibold'
-                            underlayColor='transparent'
-                        />
-                    </View>
-                </ScrollView>
-            </SafeAreaView>
-        </LinearGradient>
-    )
-}
 
 /**
  * This screen is where the user will choose which committees they're in, if any. The user can select committees, 
@@ -752,7 +584,7 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
                             <Octicons name="chevron-left" size={30} color="white" />
                         </TouchableOpacity>
 
-                        <ProgressDashes step={6} />
+                        <ProgressDashes step={5} />
                     </View>
 
                     <View className='mx-8 mt-8'>
@@ -829,4 +661,4 @@ const SetupInterests = ({ navigation }: NativeStackScreenProps<ProfileSetupStack
     );
 };
 
-export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupGender, SetupResume, SetupInterests };
+export { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupGender, SetupInterests };

@@ -1,5 +1,5 @@
-import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, Animated, useColorScheme } from 'react-native';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import { View, Text, Image, ScrollView, TextInput, TouchableHighlight, TouchableOpacity, ActivityIndicator, KeyboardAvoidingView, Platform, Alert, Pressable, useColorScheme } from 'react-native';
+import React, { useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { MaterialCommunityIcons } from '@expo/vector-icons'
@@ -10,21 +10,16 @@ import { UserContext } from '../../context/UserContext';
 import { auth } from '../../config/firebaseConfig';
 import { sendPasswordResetEmail, updateProfile } from 'firebase/auth';
 import { setPublicUserData, setPrivateUserData, getUser, getCommittees, submitFeedback, isUsernameUnique, deleteAccount, uploadFile } from '../../api/firebaseUtils';
-import { getBlobFromURI, selectFile, selectImage } from '../../api/fileSelection';
+import { getBlobFromURI, selectImage } from '../../api/fileSelection';
 import { CommonMimeTypes, validateDisplayName, validateFileBlob, validateName, validateTamuEmail } from '../../helpers/validation';
 import { handleLinkPress } from '../../helpers/links';
 import { HomeStackParams } from '../../types/navigation';
 import { Committee } from '../../types/committees';
 import { MAJORS, classYears } from '../../types/user';
 import { Images } from '../../../assets';
-import DownloadIconBlack from '../../../assets/arrow-down-solid.svg';
-import DownloadIconWhite from '../../../assets/arrow-down-solid_white.svg'
-import UploadFileIconBlack from '../../../assets/file-arrow-up-solid-black.svg';
-import UploadFileIconWhite from '../../../assets/file-arrow-up-solid.svg'
 
 import { SettingsSectionTitle, SettingsButton, SettingsToggleButton, SettingsListItem, SettingsSaveButton, SettingsModal } from "../../components/SettingsComponents"
 import CustomDropDown from '../../components/CustomDropDown';
-import { Circle, Svg } from 'react-native-svg';
 import DismissibleModal from '../../components/DismissibleModal';
 import * as Clipboard from 'expo-clipboard';
 
@@ -125,7 +120,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
 
     //Hooks used to save state of modified fields before user hits "save"
     const [photoURL, setPhotoURL] = useState<string | undefined>(userInfo?.publicInfo?.photoURL);
-    const [resumeURL, setResumeURL] = useState<string | undefined>(userInfo?.private?.privateInfo?.resumeURL);
     const [displayName, setDisplayName] = useState<string | undefined>(userInfo?.publicInfo?.displayName);
     const [name, setName] = useState<string | undefined>(userInfo?.publicInfo?.name);
     const [bio, setBio] = useState<string | undefined>(userInfo?.publicInfo?.bio);
@@ -141,7 +135,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
     const [showNamesModal, setShowNamesModal] = useState<boolean>(false);
     const [showBioModal, setShowBioModal] = useState<boolean>(false);
     const [showAcademicInfoModal, setShowAcademicInfoModal] = useState<boolean>(false);
-    const [showResumeModal, setShowResumeModal] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchCommitteeData = async () => {
@@ -188,15 +181,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
         });
     }
 
-    const selectResume = async () => {
-        const result = await selectFile();
-        if (result) {
-            const resumeBlob = await getBlobFromURI(result.assets![0].uri);
-            return resumeBlob;
-        }
-        return null
-    }
-
     const onProfilePictureUploadSuccess = async (URL: string) => {
         console.log("File available at", URL);
         if (auth.currentUser) {
@@ -218,17 +202,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
             setOpenDropdown(dropdownKey);
         }
     };
-
-    const onResumeUploadSuccess = async (URL: string) => {
-        console.log("File available at", URL);
-        if (auth.currentUser) {
-            setResumeURL(URL);
-            await setPrivateUserData({
-                resumeURL: URL
-            });
-        }
-
-    }
 
     const saveChanges = async () => {
         setLoading(true)
@@ -282,39 +255,12 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                 setLoading(false);
                 setShowSaveButton(false);
             });
-
-        setPrivateUserData({
-            ...(resumeURL !== undefined) && { resumeURL: resumeURL },
-        })
     }
 
     const findMajorByIso = (iso: string) => {
         const majorObj = MAJORS.find(major => major.iso === iso);
         return majorObj ? majorObj.major : null;
     };
-
-    const progress = useRef(new Animated.Value(0)).current;
-    const setProgress = (newProgress: number) => {
-        if (newProgress <= 0) {
-            progress.setValue(0);
-        } else if (newProgress >= 100) {
-            progress.setValue(100);
-        } else {
-            Animated.timing(progress, {
-                toValue: newProgress,
-                duration: 500,
-                useNativeDriver: true,
-            }).start();
-        }
-    };
-
-    const AnimatedCircle = Animated.createAnimatedComponent(Circle);
-    const circumference = 2 * Math.PI * 45; // 45 is the radius of the circle
-    const strokeDashoffset = progress.interpolate({
-        inputRange: [0, 100],
-        outputRange: [circumference, 0]
-    });
-
 
     return (
         <View className='items-center'>
@@ -463,68 +409,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                 }
             />
 
-            {/* Resume Modal */}
-            <SettingsModal
-                visible={showResumeModal}
-                onCancel={() => setShowResumeModal(false)}
-                onDone={() => setShowResumeModal(false)}
-                darkMode={darkMode}
-                content={(
-                    <View>
-                        <View className='items-center'>
-                            <TouchableOpacity className="relative items-center justify-center rounded-full h-44 w-44 mb-5 mt-4"
-                                onPress={async () => {
-                                    const selectedResume = await selectResume();
-                                    if (selectedResume) {
-                                        uploadFile(
-                                            selectedResume,
-                                            CommonMimeTypes.RESUME_FILES,
-                                            `user-docs/${auth.currentUser?.uid}/user-resume`,
-                                            onResumeUploadSuccess,
-                                            setProgress
-                                        );
-                                    }
-                                }}>
-                                <Svg height="100%" width="100%" viewBox="0 0 100 100" className="absolute">
-                                    <Circle
-                                        cx="50"
-                                        cy="50"
-                                        r="45"
-                                        stroke={darkMode ? "#a3a3a3" : "#000000"}
-                                        strokeWidth="3"
-                                        fill="transparent"
-                                    />
-                                </Svg>
-                                <Svg height="100%" width="100%" viewBox="0 0 100 100" className="absolute">
-                                    <AnimatedCircle
-                                        cx="50"
-                                        cy="50"
-                                        r="45"
-                                        stroke="#AEF359"
-                                        strokeWidth="4"
-                                        fill="transparent"
-                                        strokeDasharray={circumference}
-                                        strokeDashoffset={strokeDashoffset}
-                                        transform="rotate(-90, 50, 50)"
-                                    />
-                                </Svg>
-                                {darkMode ? <UploadFileIconWhite width={110} height={110} /> : <UploadFileIconBlack width={110} height={110} />}
-                            </TouchableOpacity>
-
-                            {resumeURL && (
-                                <TouchableOpacity onPress={async () => { handleLinkPress(resumeURL!) }}>
-                                    <View className={`relative flex-row items-center border-b ${darkMode ? "border-white" : "border-black"}`}>
-                                        <Text className={`font-semibold text-lg ${darkMode ? "text-white" : "text-black"}`}>View Resume</Text>
-                                        <View className='absolute left-full ml-1'>
-                                            {darkMode ? <DownloadIconWhite width={15} height={15} /> : <DownloadIconBlack width={15} height={15} />}
-                                        </View>
-                                    </View>
-                                </TouchableOpacity>
-                            )}
-                        </View>
-                    </View>
-                )}
-            />
             <ScrollView className={`flex-col w-full pb-10 ${darkMode ? "bg-primary-bg-dark" : "bg-primary-bg-light"}`}>
                 <View className='py-10 w-full items-center'>
                     <TouchableOpacity activeOpacity={0.7} onPress={async () => await selectProfilePicture()}>
@@ -568,13 +452,6 @@ const ProfileSettingsScreen = ({ navigation }: NativeStackScreenProps<HomeStackP
                     subText={classYear ?? defaultVals.classYear}
                     darkMode={darkMode}
                     onPress={() => setShowAcademicInfoModal(true)}
-                />
-                <SettingsSectionTitle text='SHPE Info' darkMode={darkMode} />
-                <SettingsButton
-                    mainText='Resume'
-                    subText='Keep your resume updated!'
-                    darkMode={darkMode}
-                    onPress={() => setShowResumeModal(true)}
                 />
                 <View className='h-20' />
                 {loading && <ActivityIndicator className='absolute top-0 bottom-0 left-0 right-0' size={100} />}

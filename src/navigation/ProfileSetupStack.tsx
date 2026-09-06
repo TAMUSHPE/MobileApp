@@ -1,7 +1,7 @@
 import React from "react";
 import { createStackNavigator } from '@react-navigation/stack';
 import { ProfileSetupStackParams } from "../types/navigation";
-import { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupGender, SetupResume, SetupInterests } from "../screens/onboarding/ProfileSetup";
+import { SetupNameAndBio, SetupProfilePicture, SetupAcademicInformation, SetupGender, SetupInterests } from "../screens/onboarding/ProfileSetup";
 import LoginScreen from "../screens/onboarding/Login";
 
 
@@ -15,7 +15,6 @@ const ProfileSetupStack = () => {
             <Stack.Screen name="SetupAcademicInformation" component={SetupAcademicInformation} />
             <Stack.Screen name="SetupGender" component={SetupGender} />
             <Stack.Screen name="SetupInterests" component={SetupInterests} />
-            <Stack.Screen name="SetupResume" component={SetupResume} />
             <Stack.Screen name="LoginScreen" component={LoginScreen} />
         </Stack.Navigator>
     );
