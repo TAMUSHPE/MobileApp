@@ -148,12 +148,17 @@ $ docker compose up          # or: yarn emulators
 | Firestore    | `localhost:8080`        |
 | Auth         | `localhost:9099`        |
 
-Two accounts are seeded automatically, both with the password `password123`:
+Three accounts are seeded automatically, all with the password `password123`:
 
-| Email               | Purpose                                                      |
-| ------------------- | ------------------------------------------------------------ |
-| `member@tamu.edu`   | Has **no** `gender` field, so the gender prompt appears       |
-| `officer@tamu.edu`  | Already answered the gender question, and has officer roles   |
+| Email                 | Purpose                                                       |
+| --------------------- | ------------------------------------------------------------- |
+| `member@tamu.edu`     | Has **no** `gender` field, so the gender prompt appears        |
+| `officer@tamu.edu`    | Already answered the gender question, and has officer roles    |
+| `newmember@tamu.edu`  | Has `completedAccountSetup: false`, so it lands in onboarding  |
+
+Signing in as `newmember@tamu.edu` is the way to walk the profile setup flow without
+registering a throwaway account against production. Completing the flow sets the flag
+to `true` and spends the fixture — `yarn emulators:reset` brings it back.
 
 ### Pointing the app at it
 
