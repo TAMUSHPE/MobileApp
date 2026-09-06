@@ -7,6 +7,7 @@ import { doc, setDoc, deleteDoc, getDoc, Timestamp, serverTimestamp, DocumentDat
 import { EventType, SHPEEvent, SHPEEventLog } from "../../types/events";
 import { Committee } from "../../types/committees";
 import { LinkData } from "../../types/links";
+import { removeCommitteeMemberUid } from "../../helpers/committeeMembers";
 
 const testUserDataList: User[] = require("./test_data/users.json");
 const testEvents = require('./test_data/events.json');
@@ -111,6 +112,20 @@ describe("User Info", () => {
         await deleteDoc(doc(db, "users", auth.currentUser?.uid!));
         await deleteDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"));
 
+    });
+
+    test('getPublicUserData uses the Firestore document ID as the canonical uid', async () => {
+        const userDocRef = doc(db, 'users', 'canonical-user-id');
+
+        try {
+            await setDoc(userDocRef, { name: 'User without a stored UID' });
+            expect((await getPublicUserData('canonical-user-id'))?.uid).toBe('canonical-user-id');
+
+            await setDoc(userDocRef, { uid: 'stale-user-id' }, { merge: true });
+            expect((await getPublicUserData('canonical-user-id'))?.uid).toBe('canonical-user-id');
+        } finally {
+            await deleteDoc(userDocRef);
+        }
     });
 
     test("Can be seen by other users", async () => {
@@ -532,6 +547,22 @@ describe('Committee Functions', () => {
 
         const committee = await getCommittee(testCommittee.firebaseDocName!);
         expect(committee).toMatchObject(testCommittee);
+    });
+
+    test('setCommitteeData persists only the selected leadership removals', async () => {
+        await setCommitteeData(testCommittee);
+
+        const updatedCommittee = {
+            ...testCommittee,
+            leads: removeCommitteeMemberUid(testCommittee.leads, 'lead1'),
+            representatives: removeCommitteeMemberUid(testCommittee.representatives, 'rep2'),
+        };
+
+        await setCommitteeData(updatedCommittee);
+        const reloadedCommittee = await getCommittee(testCommittee.firebaseDocName!);
+
+        expect(reloadedCommittee?.leads).toEqual(['lead2']);
+        expect(reloadedCommittee?.representatives).toEqual(['rep1']);
     });
 
     test('setCommitteeData throws error for non-existent head', async () => {

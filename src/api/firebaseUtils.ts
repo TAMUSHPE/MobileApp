@@ -36,8 +36,10 @@ export const getPublicUserData = async (uid: string = ""): Promise<PublicUserInf
 
     return getDoc(doc(db, "users", uid))
         .then(async (res) => {
-            const responseData = res.data()
-            return responseData;
+            const responseData = res.data();
+            return responseData
+                ? { ...responseData, uid: res.id } as PublicUserInfo
+                : undefined;
         })
         .catch(err => {
             console.error(err);
