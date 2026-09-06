@@ -23,7 +23,6 @@ export type ProfileSetupStackParams = {
     SetupAcademicInformation: undefined;
     SetupGender: undefined;
     SetupInterests: undefined;
-    SetupResume: undefined;
     MainStack: undefined;
 }
 
