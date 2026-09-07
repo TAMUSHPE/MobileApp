@@ -80,12 +80,7 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ],
       "versionCode": 161,
-      "userInterfaceStyle": "automatic",
-      "config": {
-        "googleMaps": {
-          "apiKey": "AIzaSyB1aZFHZCIN0RdvpzfWQflkHpiyGd2Qfo8"
-        }
-      }
+      "userInterfaceStyle": "automatic"
     },
     "ios": {
       "bundleIdentifier": "com.tamu.shpe",

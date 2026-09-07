@@ -6,67 +6,41 @@
   "build": {
     "development": {
       "distribution": "internal",
+      "environment": "development",
       "android": {
-        "gradleCommand": ":app:assembleDebug",
-        "env": {
-          "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON",
-          "FLICKER_API_KEY": "FLICKER_API_KEY",
-          "FLICKER_USER_ID": "FLICKER_USER_ID",
-          "GOOGLE_PLACES_API_KEY": "GOOGLE_PLACES_API_KEY",
-          "GOOGLE_API_KEY": "GOOGLE_API_KEY"
-        }
+        "gradleCommand": ":app:assembleDebug"
       },
       "ios": {
-        "buildConfiguration": "Debug",
-        "env": {
-          "GOOGLE_SERVICE_INFO_PLIST": "GOOGLE_SERVICE_INFO_PLIST",
-          "FLICKER_API_KEY": "FLICKER_API_KEY",
-          "FLICKER_USER_ID": "FLICKER_USER_ID",
-          "GOOGLE_PLACES_API_KEY": "GOOGLE_PLACES_API_KEY",
-          "GOOGLE_API_KEY": "GOOGLE_API_KEY"
-        }
+        "buildConfiguration": "Debug"
       },
       "channel": "development"
     },
     "preview": {
       "distribution": "internal",
+      "environment": "preview",
       "channel": "staging"
+    },
+    "member-apk": {
+      "distribution": "internal",
+      "channel": "production",
+      "environment": "production",
+      "android": {
+        "buildType": "apk"
+      }
     },
     "production": {
       "autoIncrement": true,
       "channel": "production",
-      "env": {
-        "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON",
-        "GOOGLE_SERVICE_INFO_PLIST": "GOOGLE_SERVICE_INFO_PLIST",
-        "FLICKER_API_KEY": "FLICKER_API_KEY",
-        "FLICKER_USER_ID": "FLICKER_USER_ID",
-        "GOOGLE_PLACES_API_KEY": "GOOGLE_PLACES_API_KEY",
-        "GOOGLE_API_KEY": "GOOGLE_API_KEY"
-      }
+      "environment": "production"
     },
     "development-sim": {
       "distribution": "internal",
       "developmentClient": true,
+      "environment": "development",
       "ios": {
         "simulator": false,
         "image": "latest",
-        "resourceClass": "m-medium",
-        "env": {
-          "GOOGLE_SERVICE_INFO_PLIST": "GOOGLE_SERVICE_INFO_PLIST",
-          "FLICKER_API_KEY": "FLICKER_API_KEY",
-          "FLICKER_USER_ID": "FLICKER_USER_ID",
-          "GOOGLE_PLACES_API_KEY": "GOOGLE_PLACES_API_KEY",
-          "GOOGLE_API_KEY": "GOOGLE_API_KEY"
-        }
-      },
-      "android": {
-        "env": {
-          "GOOGLE_SERVICES_JSON": "GOOGLE_SERVICES_JSON",
-          "FLICKER_API_KEY": "FLICKER_API_KEY",
-          "FLICKER_USER_ID": "FLICKER_USER_ID",
-          "GOOGLE_PLACES_API_KEY": "GOOGLE_PLACES_API_KEY",
-          "GOOGLE_API_KEY": "GOOGLE_API_KEY"
-        }
+        "resourceClass": "m-medium"
       }
     }
   },
