@@ -14,7 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
-import { CommitteeTeamMember, isCommitteeTeamMember, removeCommitteeMemberUid, removeCommitteeTeamMember } from '../../helpers/committeeMembers';
+import { CommitteeTeamMember, createFallbackTeamMember, isCommitteeTeamMember, removeCommitteeMemberUid, removeCommitteeTeamMember } from '../../helpers/committeeMembers';
 
 const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const committeeData = route?.params?.committee;
@@ -66,23 +66,27 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
 
                 if (head) {
                     const headData = await getPublicUserData(head);
-                    if (isCommitteeTeamMember(headData)) {
-                        newTeamMembers.head = headData;
-                    }
+                    newTeamMembers.head = isCommitteeTeamMember(headData)
+                        ? headData
+                        : createFallbackTeamMember(head);
                 }
 
                 if (representatives && representatives.length > 0) {
-                    const representativeData = await Promise.all(
-                        representatives.map(async (uid) => await getPublicUserData(uid))
+                    newTeamMembers.representatives = await Promise.all(
+                        representatives.map(async (uid) => {
+                            const data = await getPublicUserData(uid);
+                            return isCommitteeTeamMember(data) ? data : createFallbackTeamMember(uid);
+                        })
                     );
-                    newTeamMembers.representatives = representativeData.filter(isCommitteeTeamMember);
                 }
 
                 if (leads && leads.length > 0) {
-                    const leadData = await Promise.all(
-                        leads.map(async (uid) => await getPublicUserData(uid))
+                    newTeamMembers.leads = await Promise.all(
+                        leads.map(async (uid) => {
+                            const data = await getPublicUserData(uid);
+                            return isCommitteeTeamMember(data) ? data : createFallbackTeamMember(uid);
+                        })
                     );
-                    newTeamMembers.leads = leadData.filter(isCommitteeTeamMember);
                 }
                 setLocalTeamMembers(newTeamMembers);
             }
