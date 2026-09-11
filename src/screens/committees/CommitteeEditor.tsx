@@ -14,6 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { UserContext } from '../../context/UserContext';
 import { KeyboardAwareScrollView } from '@pietile-native-kit/keyboard-aware-scrollview';
+import { CommitteeTeamMember, createFallbackTeamMember, isCommitteeTeamMember, removeCommitteeMemberUid, removeCommitteeTeamMember } from '../../helpers/committeeMembers';
 
 const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const committeeData = route?.params?.committee;
@@ -64,18 +65,27 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                 const newTeamMembers: TeamMembersState = { leads: [], representatives: [], head: null };
 
                 if (head) {
-                    newTeamMembers.head = await getPublicUserData(head);
+                    const headData = await getPublicUserData(head);
+                    newTeamMembers.head = isCommitteeTeamMember(headData)
+                        ? headData
+                        : createFallbackTeamMember(head);
                 }
 
                 if (representatives && representatives.length > 0) {
                     newTeamMembers.representatives = await Promise.all(
-                        representatives.map(async (uid) => await getPublicUserData(uid))
+                        representatives.map(async (uid) => {
+                            const data = await getPublicUserData(uid);
+                            return isCommitteeTeamMember(data) ? data : createFallbackTeamMember(uid);
+                        })
                     );
                 }
 
                 if (leads && leads.length > 0) {
                     newTeamMembers.leads = await Promise.all(
-                        leads.map(async (uid) => await getPublicUserData(uid))
+                        leads.map(async (uid) => {
+                            const data = await getPublicUserData(uid);
+                            return isCommitteeTeamMember(data) ? data : createFallbackTeamMember(uid);
+                        })
                     );
                 }
                 setLocalTeamMembers(newTeamMembers);
@@ -114,7 +124,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
 
     const setHeadUserData = (uid: string,) => {
         const headInfo = teamMembers.find(member => member.uid === uid);
-        if (headInfo) {
+        if (isCommitteeTeamMember(headInfo)) {
             setLocalTeamMembers({
                 ...localTeamMembers,
                 head: headInfo
@@ -130,7 +140,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
 
     const setLeadUserData = (uid: string) => {
         const leadInfo = leads.find(lead => lead.uid === uid);
-        if (leadInfo) {
+        if (isCommitteeTeamMember(leadInfo)) {
             setLocalTeamMembers(prevTeamMembers => ({
                 ...prevTeamMembers,
                 leads: [...(prevTeamMembers?.leads || []), leadInfo]
@@ -147,7 +157,7 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
 
     const setRepresentativeUserData = (uid: string) => {
         const repInfo = representatives.find(rep => rep.uid === uid);
-        if (repInfo) {
+        if (isCommitteeTeamMember(repInfo)) {
             setLocalTeamMembers(prevTeamMembers => ({
                 ...prevTeamMembers,
                 representatives: [...(prevTeamMembers?.representatives || []), repInfo]
@@ -194,24 +204,24 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
     const removeLead = (uid: string) => {
         setLocalCommitteeData(prevCommitteeData => ({
             ...prevCommitteeData,
-            leads: prevCommitteeData?.leads?.filter(existingUID => existingUID !== uid) || []
+            leads: removeCommitteeMemberUid(prevCommitteeData?.leads, uid)
         }));
 
         setLocalTeamMembers(prevTeamMembers => ({
             ...prevTeamMembers,
-            leads: prevTeamMembers?.leads?.filter(lead => lead?.uid !== uid) || []
+            leads: removeCommitteeTeamMember(prevTeamMembers?.leads, uid)
         }));
     };
 
     const removeRepresentative = (uid: string) => {
         setLocalCommitteeData(prevCommitteeData => ({
             ...prevCommitteeData,
-            representatives: prevCommitteeData?.representatives?.filter(existingUID => existingUID !== uid) || []
+            representatives: removeCommitteeMemberUid(prevCommitteeData?.representatives, uid)
         }));
 
         setLocalTeamMembers(prevTeamMembers => ({
             ...prevTeamMembers,
-            representatives: prevTeamMembers?.representatives?.filter(representative => representative?.uid !== uid) || []
+            representatives: removeCommitteeTeamMember(prevTeamMembers?.representatives, uid)
         }));
     };
 
@@ -441,13 +451,13 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                             </TouchableOpacity>
                         </View>
 
-                        {localTeamMembers.representatives?.map((representative, index) => (
-                            <View className='flex-row items-center mx-4 mt-3 justify-between' key={index}>
-                                <CommitteeTeamCard userData={representative!} />
+                        {localTeamMembers.representatives.map((representative) => (
+                            <View className='flex-row items-center mx-4 mt-3 justify-between' key={representative.uid}>
+                                <CommitteeTeamCard userData={representative} />
 
                                 <TouchableOpacity
                                     className='px-4'
-                                    onPress={() => { removeRepresentative(representative?.uid!) }}
+                                    onPress={() => { removeRepresentative(representative.uid) }}
                                 >
                                     <Octicons name="x" size={26} color="red" />
                                 </TouchableOpacity>
@@ -475,13 +485,13 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
                             </TouchableOpacity>
                         </View>
 
-                        {localTeamMembers.leads?.map((lead, index) => (
-                            <View className='flex-row items-center mx-4 mt-3 justify-between' key={index}>
-                                <CommitteeTeamCard userData={lead!} />
+                        {localTeamMembers.leads.map((lead) => (
+                            <View className='flex-row items-center mx-4 mt-3 justify-between' key={lead.uid}>
+                                <CommitteeTeamCard userData={lead} />
 
                                 <TouchableOpacity
                                     className='px-4'
-                                    onPress={() => { removeLead(lead?.uid!) }}
+                                    onPress={() => { removeLead(lead.uid) }}
                                 >
                                     <Octicons name="x" size={26} color="red" />
                                 </TouchableOpacity>
@@ -820,9 +830,9 @@ const CommitteeEditor = ({ navigation, route }: CommitteeEditorProps) => {
 }
 
 interface TeamMembersState {
-    leads: (PublicUserInfo | undefined)[];
-    representatives: (PublicUserInfo | undefined)[];
-    head: PublicUserInfo | null | undefined;
+    leads: CommitteeTeamMember[];
+    representatives: CommitteeTeamMember[];
+    head: CommitteeTeamMember | null;
 }
 
 type CommitteeEditorProps = {
