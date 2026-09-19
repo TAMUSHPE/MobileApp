@@ -12,7 +12,7 @@ import React, { useEffect, useState, createContext, ReactNode } from 'react'
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { User } from "../types/user"
 import { removeExpoPushToken } from '../helpers/pushNotification';
-import { signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseConfig';
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -28,7 +28,10 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
  */
 const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   const [userLoading, setUserLoading] = useState<boolean>(true);
-  const [userInfo, setUserInfo] = useState<User | undefined>(undefined)
+  const [userInfo, setUserInfo] = useState<User | undefined>(undefined);
+  const [cacheReady, setCacheReady] = useState<boolean>(false);
+  const [authReady, setAuthReady] = useState<boolean>(false);
+  const [authenticatedUid, setAuthenticatedUid] = useState<string | undefined>(undefined);
 
   const signOutUser = async (deleteExpoPushToken: boolean) => {
     try {
@@ -48,22 +51,69 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
   useEffect(() => {
     const getLocalUser = async () => {
       try {
-        setUserLoading(true);
         const userJSON = await AsyncStorage.getItem("@user");
         const userData = userJSON ? JSON.parse(userJSON) : undefined;
         setUserInfo(userData);
       } catch (error) {
-        console.error('Error while fetching user data:', error);
+        console.error('[UserContext] failed to hydrate user from AsyncStorage', error);
       } finally {
-        setUserLoading(false);
+        setCacheReady(true);
       }
     };
 
-    getLocalUser()
+    getLocalUser();
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, firebaseUser => {
+      setAuthenticatedUid(firebaseUser?.uid);
+      setAuthReady(true);
+    }, error => {
+      console.error('[UserContext] Firebase authentication restoration failed', error);
+      setAuthenticatedUid(undefined);
+      setAuthReady(true);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    if (!cacheReady || !authReady) return;
+
+    let cancelled = false;
+
+    const reconcileCachedUser = async () => {
+      const cachedUid = userInfo?.publicInfo?.uid;
+      const hasInvalidCachedIdentity = Boolean(
+        userInfo && (!authenticatedUid || !cachedUid || cachedUid !== authenticatedUid)
+      );
+
+      if (hasInvalidCachedIdentity) {
+        console.warn('[UserContext] clearing cached user because it does not match Firebase authentication');
+        try {
+          await AsyncStorage.removeItem('@user');
+          if (authenticatedUid) {
+            await signOut(auth);
+          }
+        } catch (error) {
+          console.error('[UserContext] failed to clear mismatched cached user', error);
+        } finally {
+          if (!cancelled) setUserInfo(undefined);
+        }
+      }
+
+      if (!cancelled) setUserLoading(false);
+    };
+
+    reconcileCachedUser();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authReady, authenticatedUid, cacheReady]);
+
   return (
-    <UserContext.Provider value={{ userInfo, setUserInfo, userLoading, setUserLoading, signOutUser }}>
+    <UserContext.Provider value={{ userInfo, setUserInfo, userLoading, setUserLoading, authReady, authenticatedUid, signOutUser }}>
       {children}
     </UserContext.Provider>
   );
@@ -78,6 +128,8 @@ type UserContextType = {
   setUserInfo: React.Dispatch<React.SetStateAction<User | undefined>>
   userLoading: boolean;
   setUserLoading: React.Dispatch<React.SetStateAction<boolean>>
+  authReady: boolean;
+  authenticatedUid: string | undefined;
   signOutUser: (deleteExpoPushToken: boolean) => Promise<void>;
 };
 

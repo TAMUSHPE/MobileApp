@@ -19,7 +19,7 @@ import { auth } from '../config/firebaseConfig';
  * @returns  The rendered root navigator.
  */
 const RootNavigator = () => {
-    const { userInfo, setUserInfo, userLoading, signOutUser } = useContext(UserContext)!;
+    const { userInfo, userLoading, authReady, authenticatedUid } = useContext(UserContext)!;
 
     /**
      * OLD IMPLEMENTATION - checkDataExpiration that is originally created to update a user data if it is expired
@@ -76,9 +76,15 @@ const RootNavigator = () => {
     //     }
     // }, [userInfo]);
 
-    if (userLoading) {
+    if (userLoading || !authReady) {
         return <RenderUserLoading />;
     }
+
+    const cachedUidMatchesAuth = Boolean(
+        authenticatedUid
+        && userInfo?.publicInfo?.uid
+        && authenticatedUid === userInfo.publicInfo.uid
+    );
 
     const linking = {
         prefixes: ['tamu-shpe://'],
@@ -98,7 +104,9 @@ const RootNavigator = () => {
     return (
         // Temp fallback for loading screen
         <NavigationContainer linking={linking} fallback={<RenderUserLoading />}>
-            {userInfo?.private?.privateInfo?.completedAccountSetup ? <MainStack /> : <AuthStack />}
+            {cachedUidMatchesAuth && userInfo?.private?.privateInfo?.completedAccountSetup
+                ? <MainStack />
+                : <AuthStack />}
         </NavigationContainer>
     );
 };

@@ -22,11 +22,14 @@ class MockAuth implements Auth {
     tenantId: string | null;
     currentUser: User | null;
     emulatorConfig: EmulatorConfig | null;
+    private authObservers = new Set<NextOrObserver<User | null>>();
 
     async setPersistence(persistence: Persistence): Promise<void> { }
 
     onAuthStateChanged(nextOrObserver: NextOrObserver<User | null>, error?: ErrorFn | undefined, completed?: CompleteFn | undefined): Unsubscribe {
-        return () => { };
+        this.authObservers.add(nextOrObserver);
+        Promise.resolve().then(() => this.notifyObserver(nextOrObserver));
+        return () => this.authObservers.delete(nextOrObserver);
     }
 
     beforeAuthStateChanged(callback: (user: User | null) => void | Promise<void>, onAbort?: (() => void) | undefined): Unsubscribe {
@@ -42,6 +45,7 @@ class MockAuth implements Auth {
     updateCurrentUser(user: User | null): Promise<void> {
         return new Promise((resolve) => {
             this.currentUser = user;
+            this.authObservers.forEach(observer => this.notifyObserver(observer));
             resolve()
         });
     }
@@ -52,6 +56,15 @@ class MockAuth implements Auth {
 
     async signOut(): Promise<void> {
         this.currentUser = null;
+        this.authObservers.forEach(observer => this.notifyObserver(observer));
+    }
+
+    private notifyObserver(observer: NextOrObserver<User | null>) {
+        if (typeof observer === 'function') {
+            observer(this.currentUser);
+        } else {
+            observer.next?.(this.currentUser);
+        }
     }
 
     constructor() {
@@ -176,6 +189,13 @@ const getAuth = jest.fn((app?: FirebaseApp): Auth => {
 
 const connectAuthEmulator = jest.fn((auth: Auth, url: string, options?: { disableWarnings: boolean; }): void => { });
 
+const onAuthStateChanged = jest.fn((
+    auth: Auth,
+    nextOrObserver: NextOrObserver<User | null>,
+    error?: ErrorFn,
+    completed?: CompleteFn,
+): Unsubscribe => auth.onAuthStateChanged(nextOrObserver, error, completed));
+
 const signIn = jest.fn(async (auth: Auth): Promise<UserCredential> => {
     const user = new MockUser();
 
@@ -207,5 +227,6 @@ export {
     signInAnonymously,
     signOut,
     connectAuthEmulator,
+    onAuthStateChanged,
     deleteUser
 };
