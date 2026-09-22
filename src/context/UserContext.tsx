@@ -84,17 +84,27 @@ const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
 
     const reconcileCachedUser = async () => {
       const cachedUid = userInfo?.publicInfo?.uid;
-      const hasInvalidCachedIdentity = Boolean(
-        userInfo && (!authenticatedUid || !cachedUid || cachedUid !== authenticatedUid)
-      );
+      if (userInfo && authenticatedUid && !cachedUid) {
+        // Caches created before publicInfo.uid was added can safely adopt the
+        // restored Firebase session's uid. The next refresh replaces this data.
+        const repairedUser = {
+          ...userInfo,
+          publicInfo: {
+            ...userInfo.publicInfo,
+            uid: authenticatedUid,
+          },
+        };
 
-      if (hasInvalidCachedIdentity) {
+        try {
+          await AsyncStorage.setItem('@user', JSON.stringify(repairedUser));
+          if (!cancelled) setUserInfo(repairedUser);
+        } catch (error) {
+          console.error('[UserContext] failed to repair legacy cached user', error);
+        }
+      } else if (userInfo && (!authenticatedUid || cachedUid !== authenticatedUid)) {
         console.warn('[UserContext] clearing cached user because it does not match Firebase authentication');
         try {
           await AsyncStorage.removeItem('@user');
-          if (authenticatedUid) {
-            await signOut(auth);
-          }
         } catch (error) {
           console.error('[UserContext] failed to clear mismatched cached user', error);
         } finally {
