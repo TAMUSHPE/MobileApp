@@ -1,11 +1,13 @@
 import { View, Text, Pressable, ActivityIndicator, TouchableOpacity, useColorScheme } from 'react-native';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Octicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserContext } from '../context/UserContext';
-import { setPrivateUserData } from '../api/firebaseUtils';
+import { getPrivateUserData, setPrivateUserData } from '../api/firebaseUtils';
 import { GENDER_OPTIONS } from '../types/user';
 import DismissibleModal from './DismissibleModal';
+
+type VerificationState = 'idle' | 'checking' | 'confirmed-missing' | 'answered' | 'suppressed';
 
 /**
  * A one-time prompt asking existing users for their gender.
@@ -13,17 +15,16 @@ import DismissibleModal from './DismissibleModal';
  * Users who created their account before the gender step was added to onboarding never
  * pass through ProfileSetup again, so this collects the value from them inside the main app.
  *
- * The modal cannot be dismissed: there is no close button, and `setVisible` is a no-op so
- * neither a backdrop tap nor the Android hardware back button will close it. "Prefer not to
- * say" is the opt-out. Because every option writes a non-empty value, answering permanently
- * closes the gate and the prompt can never re-appear.
+ * The modal is shown only after Firestore confirms that the authenticated user is missing
+ * a gender value. Verification and save failures suppress it for the current session so a
+ * stale cache, auth restoration delay, or connection problem can never trap the user.
  *
  * Once new-user onboarding has been live long enough that virtually no accounts are missing
  * a gender value, this component and its mount in MainStack can be deleted.
  */
 const GenderPromptModal = () => {
     const userContext = useContext(UserContext);
-    const { userInfo, setUserInfo } = userContext!;
+    const { userInfo, setUserInfo, authReady, authenticatedUid } = userContext!;
 
     const fixDarkMode = userInfo?.private?.privateInfo?.settings?.darkMode;
     const useSystemDefault = userInfo?.private?.privateInfo?.settings?.useSystemDefault;
@@ -32,35 +33,121 @@ const GenderPromptModal = () => {
 
     const [selectedGender, setSelectedGender] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState<string | null>(null);
+    const [verificationState, setVerificationState] = useState<VerificationState>('idle');
 
     // Checked against undefined rather than falsiness so that any written answer closes the gate.
     const needsGender = userInfo?.private?.privateInfo?.gender === undefined;
+    const cachedUid = userInfo?.publicInfo?.uid;
+    const identityMatches = Boolean(
+        authReady
+        && authenticatedUid
+        && cachedUid
+        && authenticatedUid === cachedUid
+    );
+
+    useEffect(() => {
+        let cancelled = false;
+
+        if (!needsGender) {
+            setVerificationState('answered');
+            return;
+        }
+
+        if (!identityMatches || !authenticatedUid) {
+            setVerificationState('idle');
+            return;
+        }
+
+        const verifyGender = async () => {
+            setVerificationState('checking');
+
+            try {
+                const privateInfo = await getPrivateUserData(authenticatedUid);
+                if (cancelled) return;
+
+                if (!privateInfo) {
+                    console.error('[GenderPrompt] private user document is missing; prompt suppressed');
+                    setVerificationState('suppressed');
+                    return;
+                }
+
+                if (privateInfo.gender === undefined) {
+                    setVerificationState('confirmed-missing');
+                    return;
+                }
+
+                setUserInfo(previousUser => previousUser
+                    ? {
+                        ...previousUser,
+                        private: {
+                            ...previousUser.private,
+                            privateInfo: {
+                                ...previousUser.private?.privateInfo,
+                                gender: privateInfo.gender,
+                            },
+                        },
+                    }
+                    : previousUser
+                );
+                setVerificationState('answered');
+
+                AsyncStorage.mergeItem('@user', JSON.stringify({
+                    private: { privateInfo: { gender: privateInfo.gender } },
+                })).catch(error => {
+                    console.error('[GenderPrompt] failed to repair cached gender', error);
+                });
+            } catch (error) {
+                if (cancelled) return;
+                console.error('[GenderPrompt] gender verification failed; prompt suppressed', error);
+                setVerificationState('suppressed');
+            }
+        };
+
+        verifyGender();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [authenticatedUid, identityMatches, needsGender, setUserInfo]);
 
     const handleSave = async () => {
-        if (!selectedGender || loading) return;
+        if (!selectedGender || loading || verificationState !== 'confirmed-missing') return;
+
+        if (!identityMatches) {
+            console.error('[GenderPrompt] save blocked because cached and authenticated users do not match');
+            setVerificationState('suppressed');
+            return;
+        }
 
         setLoading(true);
-        setError(null);
 
         try {
-            // Firestore first. If this throws the modal stays open, so local state can never
-            // claim success for a write that did not land.
             await setPrivateUserData({ gender: selectedGender });
+            setVerificationState('answered');
+            setUserInfo(previousUser => previousUser
+                ? {
+                    ...previousUser,
+                    private: {
+                        ...previousUser.private,
+                        privateInfo: {
+                            ...previousUser.private?.privateInfo,
+                            gender: selectedGender,
+                        },
+                    },
+                }
+                : previousUser
+            );
 
-            const updatedUserInfo = {
-                ...userInfo,
-                private: {
-                    ...userInfo?.private,
-                    privateInfo: { ...userInfo?.private?.privateInfo, gender: selectedGender },
-                },
-            };
-
-            await AsyncStorage.setItem("@user", JSON.stringify(updatedUserInfo));
-            setUserInfo(updatedUserInfo);
-        } catch (err) {
-            console.error("Error saving gender:", err);
-            setError("Could not save. Check your connection and try again.");
+            try {
+                await AsyncStorage.mergeItem('@user', JSON.stringify({
+                    private: { privateInfo: { gender: selectedGender } },
+                }));
+            } catch (error) {
+                console.error('[GenderPrompt] gender saved remotely but local cache update failed', error);
+            }
+        } catch (error) {
+            console.error('[GenderPrompt] gender save failed; prompt suppressed', error);
+            setVerificationState('suppressed');
         } finally {
             setLoading(false);
         }
@@ -82,7 +169,7 @@ const GenderPromptModal = () => {
         );
     };
 
-    if (!needsGender) {
+    if (!needsGender || !identityMatches || verificationState !== 'confirmed-missing') {
         return null;
     }
 
@@ -111,10 +198,6 @@ const GenderPromptModal = () => {
                         <GenderOption key={option} option={option} />
                     ))}
                 </View>
-
-                {error && (
-                    <Text className='text-red-500 text-base mb-2'>{error}</Text>
-                )}
 
                 <TouchableOpacity
                     onPress={handleSave}

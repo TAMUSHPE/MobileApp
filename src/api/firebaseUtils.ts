@@ -75,21 +75,20 @@ export const setPublicUserData = async (data: PublicUserInfo, uid: string = "") 
  */
 export const getPrivateUserData = async (uid: string = ""): Promise<PrivateUserInfo | undefined> => {
     if (!auth.currentUser?.uid) {
+        console.error("[UserData] private read blocked: no authenticated Firebase user");
         throw new Error("Authentication Error", { cause: "User uid is undefined" });
     }
     else if (!uid) {
         uid = auth.currentUser?.uid;
     }
 
-    return await getDoc(doc(db, `users/${uid}/private`, "privateInfo"))
-        .then((res) => {
-            const responseData = res.data()
-            return responseData;
-        })
-        .catch(err => {
-            console.error(err);
-            return undefined;
-        });
+    try {
+        const snapshot = await getDoc(doc(db, `users/${uid}/private`, "privateInfo"));
+        return snapshot.exists() ? snapshot.data() : undefined;
+    } catch (error) {
+        console.error("[UserData] private read failed", error);
+        throw error;
+    }
 };
 
 
@@ -100,10 +99,16 @@ export const getPrivateUserData = async (uid: string = ""): Promise<PrivateUserI
  */
 export const setPrivateUserData = async (data: PrivateUserInfo) => {
     if (!auth.currentUser?.uid) {
+        console.error("[UserData] private write blocked: no authenticated Firebase user");
         throw new Error("Authentication Error", { cause: "Current user uid is undefined" });
     }
 
-    await setDoc(doc(db, `users/${auth.currentUser?.uid!}/private`, "privateInfo"), data, { merge: true })
+    try {
+        await setDoc(doc(db, `users/${auth.currentUser.uid}/private`, "privateInfo"), data, { merge: true });
+    } catch (error) {
+        console.error("[UserData] private write failed", error);
+        throw error;
+    }
 };
 
 /**
@@ -472,6 +477,25 @@ export const fetchAndStoreUser = async () => {
     try {
         const firebaseUser = await getUser(auth.currentUser?.uid!);
         if (firebaseUser) {
+            if (!firebaseUser.private?.privateInfo) {
+                console.error("[UserData] refresh returned no private user data; preserving the existing cache");
+                return null;
+            }
+
+            const cachedUserJSON = await AsyncStorage.getItem("@user");
+            const cachedUser: User | undefined = cachedUserJSON ? JSON.parse(cachedUserJSON) : undefined;
+            const cachedGender = cachedUser?.private?.privateInfo?.gender;
+            const isSameCachedUser = Boolean(
+                cachedUser?.publicInfo?.uid
+                && cachedUser.publicInfo.uid === firebaseUser.publicInfo?.uid
+            );
+
+            // Gender is a one-time answer. Do not let an older in-flight snapshot remove a
+            // value that this device has already confirmed and persisted.
+            if (isSameCachedUser && cachedGender !== undefined && firebaseUser.private.privateInfo.gender === undefined) {
+                firebaseUser.private.privateInfo.gender = cachedGender;
+            }
+
             await AsyncStorage.setItem("@user", JSON.stringify(firebaseUser));
         } else {
             console.warn("User data undefined. Data was likely deleted from Firebase.");

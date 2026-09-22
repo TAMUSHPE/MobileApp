@@ -90,7 +90,9 @@ const RegisterScreen = ({ navigation }: NativeStackScreenProps<AuthStackParams>)
                 navigation.navigate("GuestVerification");
             })
             .catch((error) => {
-                const errorCode = error.message.split('(')[1].split(')')[0]
+                const errorCode = error instanceof Error
+                    ? error.message.match(/\(([^)]+)\)/)?.[1]
+                    : undefined;
                 console.log(errorCode)
                 switch (errorCode) {
                     case 'auth/email-already-in-use':
