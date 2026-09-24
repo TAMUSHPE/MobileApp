@@ -39,6 +39,7 @@ export type HomeStackParams = {
     Home: undefined;
     Members: undefined;
     MemberSHPE: undefined;
+    ConventionProgress: undefined;
 
     // Event Screens
     EventInfo: { event: SHPEEvent };

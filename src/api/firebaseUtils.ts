@@ -936,6 +936,77 @@ export const getInstagramPointsLog = async (uid: string): Promise<SHPEEventLog |
     }
 };
 
+/**
+ * Returns whether the authenticated member is on the national convention roster.
+ * Read-only: `convention-tracking/{uid}` is written only by admin Hono routes.
+ */
+export const isOnConventionRoster = async (uid: string): Promise<boolean> => {
+    try {
+        const trackingSnap = await getDoc(doc(db, "convention-tracking", uid));
+        return trackingSnap.exists();
+    } catch (error) {
+        console.error("Error checking convention roster:", error);
+        return false;
+    }
+};
+
+/**
+ * Loads own event-logs joined with event metadata for convention progress.
+ * Does not write. Callers derive eligibility client-side.
+ */
+export const getConventionAttendanceData = async (
+    uid: string
+): Promise<{
+    selected: boolean;
+    dateAdded?: Timestamp;
+    logs: SHPEEventLog[];
+    eventById: Map<string, { eventType: string; name: string | null; startTime: Timestamp | null }>;
+}> => {
+    const trackingSnap = await getDoc(doc(db, "convention-tracking", uid));
+    if (!trackingSnap.exists()) {
+        return {
+            selected: false,
+            logs: [],
+            eventById: new Map(),
+        };
+    }
+
+    const dateAdded = trackingSnap.data()?.dateAdded as Timestamp | undefined;
+    const logsSnapshot = await getDocs(collection(db, `users/${uid}/event-logs`));
+    const logs: SHPEEventLog[] = logsSnapshot.docs.map((logDoc) => {
+        const data = logDoc.data() as SHPEEventLog;
+        return {
+            ...data,
+            eventId: data.eventId ?? logDoc.id,
+        };
+    });
+
+    const eventIds = Array.from(
+        new Set(logs.map((log) => log.eventId).filter((id): id is string => Boolean(id)))
+    );
+    const eventById = new Map<
+        string,
+        { eventType: string; name: string | null; startTime: Timestamp | null }
+    >();
+
+    await Promise.all(
+        eventIds.map(async (eventId) => {
+            const eventSnap = await getDoc(doc(db, "events", eventId));
+            if (!eventSnap.exists()) {
+                return;
+            }
+            const event = eventSnap.data() as SHPEEvent;
+            eventById.set(eventId, {
+                eventType: event.eventType ?? "",
+                name: event.name ?? null,
+                startTime: event.startTime ?? null,
+            });
+        })
+    );
+
+    return { selected: true, dateAdded, logs, eventById };
+};
+
 
 // ============================================================================
 // Committee Utilities

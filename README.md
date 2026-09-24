@@ -210,6 +210,25 @@ TEMP LINK: https://github.com/TAMUSHPE/MobileApp/pull/378
 $ yarn test
 ```
 
+## Convention Progress (member view)
+
+Members on the national convention roster (`convention-tracking/{uid}`) see a Home
+entry for **Convention Progress**. Eligibility is derived client-side from
+event-logs (same rules as admin-dashboard `useConventionTracker`).
+
+**Production Firestore rules (owned outside this repo)** must allow a member to
+read their own roster doc only:
+
+```
+match /convention-tracking/{uid} {
+  allow read: if request.auth != null && request.auth.uid == uid;
+  allow write: if false; // officers write via admin Hono Admin SDK
+}
+```
+
+Officer list-reads of the full collection remain an admin concern. Emulator rules
+in this repo stay permissive and do not model production.
+
 ## Support
 
 If you have any questions, please contact
