@@ -14,7 +14,7 @@ import { UserContext } from '../../context/UserContext';
 import { isMemberVerified } from '../../helpers/membership';
 import { auth } from '../../config/firebaseConfig';
 import DismissibleModal from '../../components/DismissibleModal';
-import { fetchLatestVersion, fetchOfficeCount, fetchOfficerStatus, getMyEvents, getUser, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
+import { fetchLatestVersion, fetchOfficeCount, fetchOfficerStatus, getMyEvents, getUser, isOnConventionRoster, knockOnWall, setPublicUserData, updateOfficerStatus } from '../../api/firebaseUtils';
 import { EventType, SHPEEvent } from '../../types/events';
 import EventCard from '../events/EventCard';
 import { reverseFormattedFirebaseName } from '../../types/committees';
@@ -59,6 +59,7 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
     const [myEvents, setMyEvents] = useState<SHPEEvent[]>([]);
     const [interestOptionsModal, setInterestOptionsModal] = useState<boolean>(false);
     const [savedInterestLoading, setSavedInterestLoading] = useState<boolean>(false);
+    const [onConventionRoster, setOnConventionRoster] = useState<boolean>(false);
 
 
     const showUpdateAlert = () => {
@@ -159,6 +160,16 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
             if (isAdminLead) {
                 fetchEvents();
             }
+
+            const checkConventionRoster = async () => {
+                if (!auth.currentUser?.uid) {
+                    setOnConventionRoster(false);
+                    return;
+                }
+                const onRoster = await isOnConventionRoster(auth.currentUser.uid);
+                setOnConventionRoster(onRoster);
+            };
+            checkConventionRoster();
         }, [isAdminLead])
     );
 
@@ -427,6 +438,27 @@ const Home = ({ navigation, route }: NativeStackScreenProps<HomeStackParams>) =>
                             source={Images.SHPE_WHITE}
                         />
                         <Text className='text-xl font-bold text-white mx-auto'>Become a Member</Text>
+                    </TouchableOpacity>
+                )}
+
+                {/* Convention Progress — only when on convention-tracking roster */}
+                {onConventionRoster && (
+                    <TouchableOpacity
+                        className='flex-row bg-primary-blue items-center justify-center mx-4 mt-4 rounded-2xl py-3 px-4'
+                        onPress={() => navigation.navigate("ConventionProgress")}
+                        style={{
+                            shadowColor: "#000",
+                            shadowOffset: {
+                                width: 0,
+                                height: 2,
+                            },
+                            shadowOpacity: 0.25,
+                            shadowRadius: 3.84,
+                            elevation: 5,
+                        }}
+                    >
+                        <Octicons name="checklist" size={22} color="white" style={{ position: 'absolute', left: 16 }} />
+                        <Text className='text-xl font-bold text-white mx-auto'>Convention Progress</Text>
                     </TouchableOpacity>
                 )}
 

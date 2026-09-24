@@ -18,6 +18,7 @@ import UpdateEvent from "../screens/events/UpdateEvent";
 import QRCodeManager from "../screens/events/QRCodeManager";
 import MemberSHPE from "../screens/home/MemberSHPE";
 import Members from "../screens/home/Members";
+import ConventionProgress from "../screens/home/ConventionProgress";
 import { AboutSettingsScreen, AccountSettingsScreen, DisplaySettingsScreen, FAQSettingsScreen, FeedBackSettingsScreen, ProfileSettingsScreen, SettingsScreen } from "../screens/userProfile/Settings";
 import { UserContext } from "../context/UserContext";
 import { useColorScheme } from "react-native";
@@ -39,6 +40,7 @@ const HomeStack = () => {
                 <Stack.Screen name="Home" component={Home} />
                 <Stack.Screen name="MemberSHPE" component={MemberSHPE} />
                 <Stack.Screen name="Members" component={Members} />
+                <Stack.Screen name="ConventionProgress" component={ConventionProgress} />
             </Stack.Group>
 
             {/* Event Screens */}
