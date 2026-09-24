@@ -960,7 +960,12 @@ export const getConventionAttendanceData = async (
     selected: boolean;
     dateAdded?: Timestamp;
     logs: SHPEEventLog[];
-    eventById: Map<string, { eventType: string; name: string | null; startTime: Timestamp | null }>;
+    eventById: Map<string, {
+        eventType: string;
+        name: string | null;
+        startTime: Timestamp | null;
+        nationalConventionEligible: boolean;
+    }>;
 }> => {
     const trackingSnap = await getDoc(doc(db, "convention-tracking", uid));
     if (!trackingSnap.exists()) {
@@ -986,7 +991,12 @@ export const getConventionAttendanceData = async (
     );
     const eventById = new Map<
         string,
-        { eventType: string; name: string | null; startTime: Timestamp | null }
+        {
+            eventType: string;
+            name: string | null;
+            startTime: Timestamp | null;
+            nationalConventionEligible: boolean;
+        }
     >();
 
     await Promise.all(
@@ -1000,6 +1010,7 @@ export const getConventionAttendanceData = async (
                 eventType: event.eventType ?? "",
                 name: event.name ?? null,
                 startTime: event.startTime ?? null,
+                nationalConventionEligible: event.nationalConventionEligible === true,
             });
         })
     );

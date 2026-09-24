@@ -22,6 +22,7 @@ const eventMap = (
                 eventType: info.eventType,
                 name: info.name ?? null,
                 startTime: info.startTime ?? null,
+                nationalConventionEligible: info.nationalConventionEligible ?? true,
             },
         ])
     );
@@ -86,6 +87,27 @@ describe('deriveConventionAttendance', () => {
         expect(attendance.volunteer).toHaveLength(0);
         expect(attendance.workshop).toHaveLength(0);
         expect(attendance.generalMeeting).toHaveLength(0);
+    });
+
+    test('ignores events not marked eligible for national convention', () => {
+        const logs: SHPEEventLog[] = [
+            { eventId: 'eligible', signInTime: ts('2026-03-01T18:00:00Z') },
+            { eventId: 'ineligible', signInTime: ts('2026-03-08T18:00:00Z') },
+        ];
+        const events = eventMap([
+            ['eligible', {
+                eventType: EventType.VOLUNTEER_EVENT,
+                nationalConventionEligible: true,
+            }],
+            ['ineligible', {
+                eventType: EventType.VOLUNTEER_EVENT,
+                nationalConventionEligible: false,
+            }],
+        ]);
+
+        const attendance = deriveConventionAttendance(logs, events);
+
+        expect(attendance.volunteer.map((event) => event.eventId)).toEqual(['eligible']);
     });
 
     test('sorts each category by startTime ascending with unknown last', () => {

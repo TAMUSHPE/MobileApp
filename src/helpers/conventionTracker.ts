@@ -16,6 +16,7 @@ export interface ConventionEventInfo {
     eventType: string;
     name: string | null;
     startTime: Timestamp | null;
+    nationalConventionEligible: boolean;
 }
 
 /** One qualifying attendance: the event behind a unit of a category count. */
@@ -74,6 +75,7 @@ const CATEGORY_ORDER: ConventionCategoryKey[] = ['volunteer', 'workshop', 'gener
  * Buckets a member's `event-logs` into the qualifying events behind each
  * convention-attendance category.
  *
+ * Only events explicitly marked `nationalConventionEligible` are counted.
  * Attendance gate by category:
  *  - Volunteer Event: `signInTime` alone is enough
  *  - Workshop / General Meeting: BOTH `signInTime` AND `signOutTime`
@@ -99,7 +101,7 @@ export function deriveConventionAttendance(
         const eventId = log.eventId ?? '';
         const event = eventById.get(eventId);
         const category = event ? CATEGORY_BY_EVENT_TYPE[event.eventType] : undefined;
-        if (!event || !category) {
+        if (!event?.nationalConventionEligible || !category) {
             continue;
         }
 

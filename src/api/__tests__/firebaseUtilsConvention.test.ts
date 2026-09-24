@@ -64,4 +64,46 @@ describe('getConventionAttendanceData', () => {
 
         await expect(getConventionAttendanceData('member-1')).rejects.toBe(readError);
     });
+
+    test('preserves whether each event is eligible for national convention', async () => {
+        mockGetDoc.mockImplementation(async (reference) => {
+            switch (reference as unknown as string) {
+                case 'convention-tracking/member-1':
+                    return {
+                        exists: () => true,
+                        data: () => ({ dateAdded: undefined }),
+                    } as never;
+                case 'events/eligible-event':
+                    return {
+                        exists: () => true,
+                        data: () => ({
+                            eventType: 'Volunteer Event',
+                            name: 'Eligible event',
+                            nationalConventionEligible: true,
+                        }),
+                    } as never;
+                case 'events/legacy-event':
+                    return {
+                        exists: () => true,
+                        data: () => ({
+                            eventType: 'Volunteer Event',
+                            name: 'Legacy event',
+                        }),
+                    } as never;
+                default:
+                    throw new Error(`Unexpected document read: ${String(reference)}`);
+            }
+        });
+        mockGetDocs.mockResolvedValue({
+            docs: [
+                { id: 'eligible-event', data: () => ({ eventId: 'eligible-event' }) },
+                { id: 'legacy-event', data: () => ({ eventId: 'legacy-event' }) },
+            ],
+        } as never);
+
+        const result = await getConventionAttendanceData('member-1');
+
+        expect(result.eventById.get('eligible-event')?.nationalConventionEligible).toBe(true);
+        expect(result.eventById.get('legacy-event')?.nationalConventionEligible).toBe(false);
+    });
 });
